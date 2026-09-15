@@ -1,6 +1,6 @@
 # EDAI
 
-AI 기반 아날로그 회로 자동 설계 및 피드백 시스템
+AI 기반 아날로그 회로 자동 설계 시스템
 
 목표 성능 스펙만 입력하면 AI가 넷리스트를 생성하고, 오픈소스 시뮬레이터로 자동 검증한 뒤 목표 미달 시 재설계를 반복하는 시스템입니다.
 
@@ -61,6 +61,56 @@ Op-Amp, ADC 등 대표 회로에 목표 스펙을 여러 세트로 바꿔가며 
 | 곽승철 | UI/대시보드 구현 |
 
 지도교수: 채주형 교수님
+
+## 협업 방법 (브랜치 워크플로우)
+
+main 브랜치는 항상 정상 동작하는 상태로 유지하고, 각자 작업은 별도 브랜치에서 진행한 뒤 Pull Request로 합칩니다.
+
+1. 저장소를 내 컴퓨터로 가져오기 (최초 1회)
+
+   ```bash
+   git clone https://github.com/realppepper/EDAI.git
+   cd EDAI
+   ```
+
+2. 작업을 시작하기 전, 최신 main 코드를 받아오기
+
+   ```bash
+   git checkout main
+   git pull origin main
+   ```
+
+3. 내 작업용 브랜치 만들기
+
+   ```bash
+   git checkout -b feature/브랜치이름
+   ```
+
+   예: `feature/netlist-gen`, `feature/simulation`, `feature/dashboard`, `feature/metric-analysis`
+
+4. 코드 수정 후 커밋
+
+   ```bash
+   git add .
+   git commit -m "작업 내용 설명"
+   ```
+
+5. 내 브랜치를 GitHub에 올리기
+
+   ```bash
+   git push origin feature/브랜치이름
+   ```
+
+6. GitHub 저장소 페이지에서 Pull Request 생성 → 팀원 리뷰 후 main에 merge
+
+7. merge가 끝나면 로컬 main도 최신 상태로 갱신
+
+   ```bash
+   git checkout main
+   git pull origin main
+   ```
+
+새 작업을 시작할 때마다 2~3번부터 다시 반복하면 됩니다. 한 브랜치에 너무 오래 머무르지 말고, 작은 단위로 자주 PR을 올리는 게 충돌을 줄이는 데 좋아요.
 
 ## 참고 문헌
 
