@@ -1,0 +1,11 @@
+* 블록: 기준 전류 회로 (beta-multiplier) + 기동 회로
+* 단자: VDD VSS NB PB   (대문자 = 단자, 소문자 = 블록 안에서만 쓰는 노드)
+* 기준 전류 약 10 uA. NB 는 NMOS 전류원의 게이트 전압, PB 는 PMOS 전류원의 게이트 전압.
+XMB1 NB  NB  VSS VSS nfet_06v0 w=11.5u l=2u
+XMB2 PB  NB  nr  VSS nfet_06v0 w=11.5u l=2u m=4
+RB   nr  VSS 7.5k
+XMB3 PB  PB  VDD VDD pfet_06v0 w=24u l=2u
+XMB4 NB  PB  VDD VDD pfet_06v0 w=24u l=2u
+RS   VDD ns  3meg
+XMS1 ns  NB  VSS VSS nfet_06v0 w=2u l=2u
+XMS2 PB  ns  VSS VSS nfet_06v0 w=2u l=2u

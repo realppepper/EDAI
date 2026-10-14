@@ -1,0 +1,13 @@
+* 블록: 1단 - PMOS 입력 텔레스코픽 캐스코드
+* 단자: VDD VSS IN_PLUS IN_MINUS PB VBN VBT OUT
+* 입력쌍 위에 캐스코드를 바로 쌓아 전류 가지 하나로 높은 이득을 낸다. 소자가 세로로 쌓여 입력 범위가 가운데로 좁아진다.
+* VBT 는 PMOS 캐스코드의 게이트 전압 (bias_telescopic 이 만든다).
+XMT   tail PB       VDD  VDD  pfet_06v0 w=24u l=2u m=4
+XM1   y1   IN_MINUS tail tail pfet_06v0 w=40u l=1u m=2
+XM2   y2   IN_PLUS  tail tail pfet_06v0 w=40u l=1u m=2
+XMPC1 d1   VBT      y1   VDD  pfet_06v0 w=40u l=1u
+XMPC2 OUT  VBT      y2   VDD  pfet_06v0 w=40u l=1u
+XMN3  x1   d1       VSS  VSS  nfet_06v0 w=11.5u l=2u m=2
+XMN4  x2   d1       VSS  VSS  nfet_06v0 w=11.5u l=2u m=2
+XMNC1 d1   VBN      x1   VSS  nfet_06v0 w=23u l=2u
+XMNC2 OUT  VBN      x2   VSS  nfet_06v0 w=23u l=2u

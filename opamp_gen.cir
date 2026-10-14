@@ -1,0 +1,56 @@
+* OP-Amp - 블록 모음에서 조립한 회로 본체 (자동 생성. topology.py 가 다시 만들면 덮어쓴다)
+* 구조: PMOS 입력 폴디드 캐스코드 1단 + class-AB 출력단 + Miller 보상 (저항 포함)
+* 공정: GF180MCU 6 V 소자 (nfet_06v0, pfet_06v0). 모델은 테스트벤치가 불러온다.
+*
+* 핀: INP(비반전 입력) INN(반전 입력) OUT VDD VSS
+
+.subckt opamp INP INN OUT VDD VSS
+
+* --- 바이어스: 기준 전류 회로 (bias_beta_multiplier) ---
+XMB1_b1 nb nb VSS VSS nfet_06v0 w=11.5u l=2u
+XMB2_b1 pb nb nr_b1 VSS nfet_06v0 w=11.5u l=2u m=4
+RB_b1 nr_b1 VSS 7.5k
+XMB3_b1 pb pb VDD VDD pfet_06v0 w=24u l=2u
+XMB4_b1 nb pb VDD VDD pfet_06v0 w=24u l=2u
+RS_b1 VDD ns_b1 3meg
+XMS1_b1 ns_b1 nb VSS VSS nfet_06v0 w=2u l=2u
+XMS2_b1 pb ns_b1 VSS VSS nfet_06v0 w=2u l=2u
+
+* --- 바이어스: 캐스코드 게이트 바이어스 (bias_cascode) ---
+XMB5_b2 vbn2 pb VDD VDD pfet_06v0 w=24u l=2u
+XMB6_b2 vbn2 vbn2 VSS VSS nfet_06v0 w=1.2u l=2u
+XMB7_b2 vbp2 nb VSS VSS nfet_06v0 w=11.5u l=2u
+XMB8_b2 vbp2 vbp2 VDD VDD pfet_06v0 w=5u l=2u
+
+* --- 1단: PMOS 입력 폴디드 캐스코드 (stage1_pmos_folded_cascode) ---
+XMT_s1 tail_s1 pb VDD VDD pfet_06v0 w=24u l=2u m=4
+XM1_s1 fn1_s1 INN tail_s1 tail_s1 pfet_06v0 w=40u l=1u m=2
+XM2_s1 fn2_s1 INP tail_s1 tail_s1 pfet_06v0 w=40u l=1u m=2
+XMN3_s1 fn1_s1 nb VSS VSS nfet_06v0 w=11.5u l=2u m=4
+XMN4_s1 fn2_s1 nb VSS VSS nfet_06v0 w=11.5u l=2u m=4
+XMNC1_s1 d1_s1 vbn2 fn1_s1 VSS nfet_06v0 w=23u l=2u
+XMNC2_s1 gn vbn2 fn2_s1 VSS nfet_06v0 w=23u l=2u
+XMP3_s1 x1_s1 d1_s1 VDD VDD pfet_06v0 w=24u l=2u m=2
+XMP4_s1 x2_s1 d1_s1 VDD VDD pfet_06v0 w=24u l=2u m=2
+XMPC3_s1 d1_s1 vbp2 x1_s1 VDD pfet_06v0 w=40u l=1u
+XMPC4_s1 gp vbp2 x2_s1 VDD pfet_06v0 w=40u l=1u
+
+* --- 2단: class-AB 출력단 (stage2_class_ab) ---
+XMB9_s2 vabn_s2 pb VDD VDD pfet_06v0 w=24u l=2u
+XMAN2_s2 vabn_s2 vabn_s2 nan_s2 VSS nfet_06v0 w=5u l=1u
+XMAN1_s2 nan_s2 nan_s2 VSS VSS nfet_06v0 w=8.6u l=1u
+XMB10_s2 vabp_s2 nb VSS VSS nfet_06v0 w=11.5u l=2u
+XMAP2_s2 vabp_s2 vabp_s2 nap_s2 VDD pfet_06v0 w=10u l=1u
+XMAP1_s2 nap_s2 nap_s2 VDD VDD pfet_06v0 w=10.7u l=0.7u
+XMAN_s2 gp vabn_s2 gn VSS nfet_06v0 w=5u l=1u
+XMAP_s2 gn vabp_s2 gp VDD pfet_06v0 w=10u l=1u
+XMON_s2 OUT gn VSS VSS nfet_06v0 w=43u l=1u m=3
+XMOP_s2 OUT gp VDD VDD pfet_06v0 w=40u l=0.7u m=4
+
+* --- 보상: Miller 보상 (저항 포함) (comp_miller_rz) ---
+RZ_c1 gn nz_c1 600
+CC_c1 nz_c1 OUT 3p
+RZ_c2 gp nz_c2 600
+CC_c2 nz_c2 OUT 3p
+
+.ends opamp
