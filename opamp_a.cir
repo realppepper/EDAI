@@ -1,0 +1,49 @@
+* OP-Amp 후보 A - 회로 본체 (설계 대상)
+* 구조: PMOS 입력 폴디드 캐스코드 1단 + NMOS 공통소스 2단(class-A 출력) + Miller 보상
+* 공정: GF180MCU 6 V 소자 (nfet_06v0, pfet_06v0). 모델은 테스트벤치가 불러온다.
+* 대상 스펙: spec_tlv271.json (TLV271, VDD = 5 V)
+* 전원, 입력 신호, 부하, 해석 명령은 테스트벤치(tb_opamp_*.cir)에 있다.
+* 재설계할 때는 이 파일의 소자 값만 고친다.
+*
+* 핀: INP(비반전 입력) INN(반전 입력) OUT VDD VSS
+
+.subckt opamp INP INN OUT VDD VSS
+
+* --- 바이어스: 기준 전류 약 10 uA (beta-multiplier) + 기동 회로 ---
+XMB1 nb  nb  VSS VSS nfet_06v0 w=11.5u l=2u
+XMB2 pb  nb  nr  VSS nfet_06v0 w=11.5u l=2u m=4
+RB   nr  VSS 7.5k
+XMB3 pb  pb  VDD VDD pfet_06v0 w=24u l=2u
+XMB4 nb  pb  VDD VDD pfet_06v0 w=24u l=2u
+RS   VDD ns  3meg
+XMS1 ns  nb  VSS VSS nfet_06v0 w=2u l=2u
+XMS2 pb  ns  VSS VSS nfet_06v0 w=2u l=2u
+
+* --- 캐스코드 게이트 바이어스 ---
+XMB5 vbn2 pb   VDD VDD pfet_06v0 w=24u l=2u
+XMB6 vbn2 vbn2 VSS VSS nfet_06v0 w=1.2u l=2u
+XMB7 vbp2 nb   VSS VSS nfet_06v0 w=11.5u l=2u
+XMB8 vbp2 vbp2 VDD VDD pfet_06v0 w=5u l=2u
+
+* --- 1단: PMOS 입력 폴디드 캐스코드 ---
+XMT   tail pb   VDD  VDD  pfet_06v0 w=24u l=2u m=4
+XM1   fn1  INN  tail tail pfet_06v0 w=40u l=1u m=2
+XM2   fn2  INP  tail tail pfet_06v0 w=40u l=1u m=2
+XMN3  fn1  nb   VSS  VSS  nfet_06v0 w=11.5u l=2u m=4
+XMN4  fn2  nb   VSS  VSS  nfet_06v0 w=11.5u l=2u m=4
+XMNC1 d1   vbn2 fn1  VSS  nfet_06v0 w=23u l=2u
+XMNC2 o1   vbn2 fn2  VSS  nfet_06v0 w=23u l=2u
+XMP3  x1   d1   VDD  VDD  pfet_06v0 w=24u l=2u m=2
+XMP4  x2   d1   VDD  VDD  pfet_06v0 w=24u l=2u m=2
+XMPC3 d1   vbp2 x1   VDD  pfet_06v0 w=40u l=1u
+XMPC4 o1   vbp2 x2   VDD  pfet_06v0 w=40u l=1u
+
+* --- 2단: NMOS 공통소스 + PMOS 전류원 부하 (class-A) ---
+XM6   OUT  o1   VSS  VSS  nfet_06v0 w=43u l=1u m=3
+XM7   OUT  pb   VDD  VDD  pfet_06v0 w=24u l=2u m=25
+
+* --- Miller 보상 ---
+RZ    o1   nz   600
+CC    nz   OUT  6p
+
+.ends opamp

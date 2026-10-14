@@ -1,0 +1,21 @@
+* 테스트벤치: OP-Amp - 개방루프 주파수 응답 (단위이득 대역폭, 위상여유, 이득여유)
+* 중괄호 자리는 run_sim.py가 채운다. 이 파일을 직접 실행하지 않는다.
+* LFB는 DC에서만 출력을 반전 입력에 되먹여 동작점을 잡고, CFB는 AC에서 반전 입력을 접지한다.
+* 따라서 AC 해석에서는 루프가 열린 상태의 이득 V(OUT)/V(INP)가 나온다.
+
+.include {pdk_dir}/design.ngspice
+.lib {pdk_dir}/sm141064.ngspice typical
+.include {dut_file}
+
+X1   INP INN OUT VDD 0 opamp
+
+VDD  VDD  0    DC {vdd}
+EVCM VCM  0    VDD 0 0.5
+VIN  INP  VCM  DC 0 AC 1
+LFB  OUT  INN  1G
+CFB  INN  0    1G
+RL   OUT  VCM  {rl}
+CL   OUT  0    {cl}
+
+.ac dec 40 1 1g
+.end

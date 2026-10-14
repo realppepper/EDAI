@@ -1,0 +1,23 @@
+* 테스트벤치: OP-Amp - DC 서보 구성 (이득, CMRR, PSRR, 공급 전류)
+* 중괄호 자리는 run_sim.py가 채운다. 이 파일을 직접 실행하지 않는다.
+* E1이 반전 입력을 조절해 출력을 VREF에 맞춘다. 이때 두 입력의 차이가 입력 오프셋(VIO)이고,
+* 출력, 공통모드 입력, 전원을 각각 움직였을 때 VIO가 변하는 정도로 이득, CMRR, PSRR을 구한다.
+* VIC, VREF는 VDD/2에서 벗어난 양이다 (0이면 VDD/2).
+
+.include {pdk_dir}/design.ngspice
+.lib {pdk_dir}/sm141064.ngspice typical
+.include {dut_file}
+
+X1   INP INN OUT VDD 0 opamp
+
+VDD  VDD  0    DC {vdd}
+EIC  nic  0    VDD 0 0.5
+VIC  INP  nic  DC 0
+EREF nrf  0    VDD 0 0.5
+VREF VREF nrf  DC 0
+E1   INN  INP  OUT VREF 1
+EVCM VCM  0    VDD 0 0.5
+RL   OUT  VCM  {rl}
+
+{analysis_line}
+.end
