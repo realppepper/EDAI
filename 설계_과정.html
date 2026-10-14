@@ -1,0 +1,287 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EDAI 설계 과정: 데이터시트에서 결과값까지</title>
+<!--
+  손으로 고치는 문서입니다. 스크립트로 만들지 않았으므로 내용을 바꾸려면 이 파일을 직접 고치면 됩니다.
+  숫자는 2026-10-12 기준 sim_out/selection.json, sim_out/design_log.json 의 값입니다.
+  설계를 다시 돌려 숫자가 바뀌면 3~6장의 표를 같이 고쳐야 합니다.
+-->
+<style>
+  :root { --bg: #f9e2c3; --cream: #fdf8ea; --ink: #33271f; --ink-2: #6a584b; --ink-3: #9a8878; --line: rgba(51,39,31,.16);
+          --accent: #3a66b8; --pass: #2f7a55; --fail: #c24f36; --warn: #9a6216; }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); line-height: 1.7; font-size: 17px; word-break: keep-all;
+         font-family: "Pretendard Variable", "Pretendard", -apple-system, "Segoe UI", "Malgun Gothic", sans-serif;
+         background-image: linear-gradient(rgba(51,39,31,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(51,39,31,.05) 1px, transparent 1px);
+         background-size: 32px 32px; }
+  main { max-width: 980px; margin: 0 auto; padding: 56px 24px 120px; }
+  h1 { font-size: 38px; letter-spacing: -.025em; line-height: 1.25; margin: 0 0 12px; }
+  h2 { font-size: 26px; letter-spacing: -.02em; margin: 0 0 6px; }
+  h3 { font-size: 19px; margin: 26px 0 8px; }
+  p { margin: 0 0 12px; color: var(--ink-2); }
+  p strong, li strong { color: var(--ink); }
+  .lede { font-size: 19px; max-width: 800px; }
+  .eyebrow { font-size: 15px; font-weight: 700; color: var(--accent); margin-bottom: 6px; }
+  section { background: var(--cream); border-radius: 24px; padding: 30px 32px; margin-top: 22px; }
+  .flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 22px 0 0; padding: 0; list-style: none; }
+  .flow li { background: var(--ink); color: var(--cream); border-radius: 999px; padding: 7px 16px; font-size: 15px; font-weight: 600; }
+  .flow li.arrow { background: none; color: var(--ink-3); padding: 0 2px; }
+  .io { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 16px 0 6px; }
+  .io div { border: 1px solid var(--line); border-radius: 16px; padding: 14px 16px; font-size: 15.5px; color: var(--ink-2); }
+  .io b { display: block; font-size: 13px; color: var(--ink-3); margin-bottom: 4px; }
+  table { width: 100%; border-collapse: collapse; margin: 10px 0 14px; font-size: 15px; }
+  th { text-align: left; font-size: 13px; color: var(--ink-3); font-weight: 700; padding: 8px 10px; border-bottom: 2px solid var(--ink); }
+  td { padding: 9px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td.n, th.n { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; font-family: Consolas, "Malgun Gothic", monospace; }
+  .wrap { overflow-x: auto; }
+  .term { display: block; font-size: 13px; color: var(--ink-3); }
+  .chip { display: inline-block; font-size: 12.5px; font-weight: 700; padding: 2px 10px; border-radius: 999px; border: 1px solid var(--line); white-space: nowrap; }
+  .chip.pass { color: var(--pass); border-color: rgba(47,122,85,.5); }
+  .chip.fail { color: var(--fail); border-color: rgba(194,79,54,.55); }
+  .chip.warn { color: var(--warn); border-color: rgba(154,98,22,.45); }
+  .bad { color: var(--fail); font-weight: 700; }
+  .note { border-left: 3px solid var(--line); padding: 2px 0 2px 14px; font-size: 15.5px; color: var(--ink-2); margin: 10px 0 14px; }
+  code { font-family: Consolas, monospace; font-size: .92em; background: rgba(51,39,31,.07); padding: 1px 6px; border-radius: 6px; }
+  img { max-width: 100%; border: 1px solid var(--line); border-radius: 12px; background: #fff; }
+  ol, ul { color: var(--ink-2); padding-left: 22px; margin: 0 0 12px; }
+  @media (max-width: 720px) { .io { grid-template-columns: 1fr; } h1 { font-size: 30px; } section { padding: 22px 20px; } }
+  @media print { body { background: #fff; } section { break-inside: avoid; border: 1px solid #ddd; } }
+</style>
+</head>
+<body>
+<main>
+
+<div class="eyebrow">EDAI (17조) · 아날로그 IC 설계 자동화 및 피드백 시스템</div>
+<h1>데이터시트에서 결과값까지의 설계 과정</h1>
+<p class="lede">상용 OP-Amp(TLV271)의 데이터시트를 목표로 삼아, 회로 구조를 고르고 소자 크기를 정한 뒤 시뮬레이션으로 검증하기까지 거친 과정을 순서대로 적었습니다. 2026년 10월 12일 기준의 실제 실행 기록입니다.</p>
+<ol class="flow" aria-label="전체 흐름">
+  <li>1 스펙 읽기</li><li class="arrow">→</li>
+  <li>2 측정 방법 준비</li><li class="arrow">→</li>
+  <li>3 구조 고르기</li><li class="arrow">→</li>
+  <li>4 크기 정하기</li><li class="arrow">→</li>
+  <li>5 검증 결과</li>
+</ol>
+
+<section>
+  <h2>한눈에 보기</h2>
+  <p>데이터시트의 25개 항목 중 시뮬레이션으로 확인할 수 있는 <strong>15개를 설계 목표</strong>로 삼았습니다. 후보 구조 2개를 같은 조건으로 측정해 <strong>후보 2</strong>를 골랐고, 그 구조의 소자 크기를 LLM의 선택과 SymPy 계산으로 정했습니다. 시뮬레이션 결과를 보고 값을 고쳐 가며 <strong>4번째 시도에서 15개 목표를 모두 통과</strong>했습니다.</p>
+  <h3>역할 분담</h3>
+  <div class="wrap"><table>
+    <tr><th>누가</th><th>무엇을</th><th>파일</th></tr>
+    <tr><td>LLM</td><td>정해진 범위 안에서 6가지 설계 값을 고르고 이유를 답함. 미달 항목을 보고 값을 고침</td><td><code>llm_design.py</code></td></tr>
+    <tr><td>SymPy</td><td>고른 값에서 식으로 소자 크기와 예상 성능을 계산</td><td><code>sizing.py</code></td></tr>
+    <tr><td>ngspice</td><td>공정 모델(GF180MCU)로 회로를 시뮬레이션</td><td><code>run_sim.py</code>, <code>tb_opamp_*.cir</code></td></tr>
+    <tr><td>판정 코드</td><td>측정값을 설계 목표와 비교해 통과·미달을 정함</td><td><code>run_sim.py</code>, <code>spec_tlv271.json</code></td></tr>
+  </table></div>
+  <p class="note">LLM 모델은 OpenRouter의 <code>nvidia/nemotron-3-super-120b-a12b:free</code>, 시뮬레이터는 ngspice 43, 공정은 GF180MCU의 6 V 소자입니다. 모든 측정은 대표 공정 조건(typical), 27°C 한 가지에서 했습니다.</p>
+</section>
+
+<section>
+  <div class="eyebrow">1단계</div>
+  <h2>데이터시트에서 설계 목표 추출</h2>
+  <div class="io">
+    <div><b>넣은 것</b>TLV271 데이터시트 (TI SLOS351D) 5~7쪽의 특성 표</div>
+    <div><b>한 일</b>항목마다 이름, 조건, 최소·대표·최대 값을 옮기고 판정 대상과 제외 대상으로 분류</div>
+    <div><b>나온 것</b>설계 목표 15개, 측정 제외 10개 (<code>spec_tlv271.json</code>)</div>
+  </div>
+  <p><img src="assets/datasheet_table.png" alt="TLV271 데이터시트의 dc performance 표. 읽어 낸 줄이 색으로 표시되어 있다"></p>
+  <p>조건은 전원 5 V 단일 전원, 25°C입니다. 지금은 표의 값을 <strong>사람이 손으로 옮겨 적었습니다.</strong> 데이터시트에서 자동으로 뽑는 부분은 다른 팀원이 맡고 있습니다.</p>
+  <h3>합격 기준을 정한 방법</h3>
+  <ol>
+    <li>데이터시트에 최소값이나 최대값이 있으면 그 값을 그대로 씁니다 (9개).</li>
+    <li>대표값(typ)만 있으면 팀 기준을 씁니다. 클수록 좋은 항목은 대표값의 80% 이상, 작을수록 좋은 항목은 대표값의 120% 이하입니다 (6개).</li>
+    <li>시뮬레이션으로 잴 수 없거나 아직 측정을 만들지 않은 항목은 이유를 적고 판정에서 뺍니다 (10개).</li>
+  </ol>
+  <h3>설계 목표 15개</h3>
+  <div class="wrap"><table>
+    <tr><th>무엇을 보나</th><th>측정 조건</th><th class="n">목표</th><th>근거</th></tr>
+    <tr><td>신호를 얼마나 키우나<span class="term">대신호 차동 전압이득</span></td><td>출력 진폭 VDD/2, 부하 10 kΩ</td><td class="n">≥ 100 dB</td><td><span class="chip">데이터시트</span></td></tr>
+    <tr><td>두 입력에 함께 실린 잡음을 얼마나 걸러내나<span class="term">공통모드 제거비 (CMRR)</span></td><td>공통 입력 0 ~ VDD − 1.35 V</td><td class="n">≥ 65 dB</td><td><span class="chip">데이터시트</span></td></tr>
+    <tr><td>전원이 흔들려도 얼마나 버티나<span class="term">전원 제거비 (PSRR)</span></td><td>전원 2.7 ~ 16 V, 무부하</td><td class="n">≥ 70 dB</td><td><span class="chip">데이터시트</span></td></tr>
+    <tr><td>전기를 얼마나 쓰나<span class="term">공급 전류</span></td><td>출력 VDD/2</td><td class="n">≤ 660 µA</td><td><span class="chip">데이터시트</span></td></tr>
+    <tr><td>얼마나 빠른 신호까지 다루나<span class="term">단위이득 대역폭</span></td><td>부하 2 kΩ, 10 pF</td><td class="n">≥ 2.4 MHz</td><td><span class="chip warn">팀 기준</span></td></tr>
+    <tr><td>출력이 얼마나 빨리 변하나<span class="term">슬루율</span></td><td>출력 진폭 VDD/2, 부하 10 kΩ, 50 pF</td><td class="n">≥ 1.45 V/µs</td><td><span class="chip">데이터시트</span></td></tr>
+    <tr><td>얼마나 안정적으로 동작하나<span class="term">위상여유</span></td><td>부하 2 kΩ, 10 pF</td><td class="n">≥ 52°</td><td><span class="chip warn">팀 기준</span></td></tr>
+    <tr><td>안정성에 여유가 얼마나 있나<span class="term">이득여유</span></td><td>부하 2 kΩ, 10 pF</td><td class="n">≥ 14.4 dB</td><td><span class="chip warn">팀 기준</span></td></tr>
+    <tr><td>출력이 얼마나 빨리 자리 잡나<span class="term">정착시간 (0.1%)</span></td><td>1 V 계단, 이득 −1, 부하 2 kΩ, 47 pF</td><td class="n">≤ 2.4 µs</td><td><span class="chip warn">팀 기준</span></td></tr>
+    <tr><td>가벼운 부하에서 출력을 얼마나 높이 올리나<span class="term">High 출력 전압 (1 mA)</span></td><td>1 mA를 내보낼 때</td><td class="n">≥ 4.9 V</td><td><span class="chip">데이터시트</span></td></tr>
+    <tr><td>무거운 부하에서 출력을 얼마나 높이 올리나<span class="term">High 출력 전압 (5 mA)</span></td><td>5 mA를 내보낼 때</td><td class="n">≥ 4.6 V</td><td><span class="chip">데이터시트</span></td></tr>
+    <tr><td>가벼운 부하에서 출력을 얼마나 낮게 내리나<span class="term">Low 출력 전압 (1 mA)</span></td><td>1 mA를 받아들일 때</td><td class="n">≤ 0.1 V</td><td><span class="chip">데이터시트</span></td></tr>
+    <tr><td>무거운 부하에서 출력을 얼마나 낮게 내리나<span class="term">Low 출력 전압 (5 mA)</span></td><td>5 mA를 받아들일 때</td><td class="n">≤ 0.4 V</td><td><span class="chip">데이터시트</span></td></tr>
+    <tr><td>전류를 얼마나 내보낼 수 있나<span class="term">출력 전류 (+레일에서 0.5 V)</span></td><td>출력 VDD − 0.5 V</td><td class="n">≥ 5.6 mA</td><td><span class="chip warn">팀 기준</span></td></tr>
+    <tr><td>전류를 얼마나 받아들일 수 있나<span class="term">출력 전류 (−레일에서 0.5 V)</span></td><td>출력 0.5 V</td><td class="n">≥ 6.4 mA</td><td><span class="chip warn">팀 기준</span></td></tr>
+  </table></div>
+  <h3>측정에서 제외한 10개</h3>
+  <div class="wrap"><table>
+    <tr><th>항목</th><th>제외한 이유</th></tr>
+    <tr><td>입력 오프셋 전압, 오프셋 온도 드리프트</td><td>소자 편차로 생기는 값이라 통계(Monte Carlo) 해석과 온도 스윕이 필요함. 아직 만들지 않음</td></tr>
+    <tr><td>입력 오프셋 전류, 입력 바이어스 전류, 차동 입력 저항</td><td>MOS 입력이라 시뮬레이션에서는 0에 가깝게 나옴. 실제 값은 보호 소자의 누설이 정하므로 판정 의미가 없음</td></tr>
+    <tr><td>공통모드 입력 커패시턴스</td><td>패키지와 보호 소자의 기생 성분이 포함된 값이라 회로 넷리스트만으로 재현되지 않음</td></tr>
+    <tr><td>입력 잡음 전압 (1 kHz, 10 kHz), 입력 잡음 전류</td><td>아직 만들지 않음. 공정 모델로 잡음 해석이 가능하므로 추가 예정</td></tr>
+    <tr><td>전고조파 왜곡 + 잡음</td><td>아직 만들지 않음. 시간 해석과 주파수 분석이 필요함</td></tr>
+  </table></div>
+</section>
+
+<section>
+  <div class="eyebrow">2단계</div>
+  <h2>측정 방법 준비 (테스트벤치)</h2>
+  <div class="io">
+    <div><b>넣은 것</b>설계 목표 15개와 각 항목의 측정 조건</div>
+    <div><b>한 일</b>항목을 잴 수 있는 시험 회로 5종을 만들고, 결과에서 숫자를 뽑는 코드를 작성</div>
+    <div><b>나온 것</b><code>tb_opamp_*.cir</code> 5개와 <code>run_sim.measure_opamp()</code></div>
+  </div>
+  <p>회로 본체(<code>.subckt opamp</code>)와 테스트벤치를 따로 둡니다. 그래서 회로가 바뀌어도 같은 테스트벤치로 재므로 후보끼리, 회차끼리 공정하게 비교할 수 있습니다. 조건은 데이터시트의 조건을 그대로 따랐습니다.</p>
+  <div class="wrap"><table>
+    <tr><th>테스트벤치</th><th>재는 항목</th><th>재는 방법</th></tr>
+    <tr><td>직류 <span class="term">tb_opamp_dc.cir</span></td><td>이득, CMRR, PSRR, 공급 전류</td><td>출력을 원하는 전압에 맞추는 되먹임 회로(서보)를 걸고, 출력·공통 입력·전원을 움직일 때 입력 오프셋이 얼마나 변하는지로 계산. 공급 전류는 무부하, 출력 VDD/2에서 측정</td></tr>
+    <tr><td>주파수 응답 <span class="term">tb_opamp_ac.cir</span></td><td>대역폭, 위상여유, 이득여유</td><td>큰 인덕터와 커패시터로 직류에서는 되먹임을 걸고 교류에서는 끊어 개방루프 응답을 측정. 이득이 0 dB가 되는 주파수와 그때의 위상, 위상이 −180°일 때의 이득을 읽음</td></tr>
+    <tr><td>슬루율 <span class="term">tb_opamp_slew.cir</span></td><td>슬루율</td><td>이득 1 버퍼에 1 V ↔ 3.5 V 계단을 넣고 출력의 10% ~ 90% 구간 기울기를 계산. 오를 때와 내릴 때 중 느린 쪽을 사용</td></tr>
+    <tr><td>정착시간 <span class="term">tb_opamp_settle.cir</span></td><td>정착시간</td><td>이득 −1 증폭기에 1 V 계단을 넣고 출력이 최종값의 ±0.1% 안에 들어와 머무는 시각을 측정</td></tr>
+    <tr><td>출력 구동 <span class="term">tb_opamp_drive.cir</span></td><td>High·Low 출력 전압, 출력 전류</td><td>두 입력을 0.5 V 벌려 출력을 한쪽 끝으로 몰고, 1 mA·5 mA 부하를 걸었을 때의 출력 전압과 레일에서 0.5 V 떨어진 지점의 전류를 측정</td></tr>
+  </table></div>
+  <p class="note">전원 제거비는 데이터시트 조건이 2.7 ~ 16 V이지만, 6 V 소자를 쓰기 때문에 <strong>2.7 ~ 5.5 V 구간만</strong> 쟀습니다.</p>
+</section>
+
+<section>
+  <div class="eyebrow">3단계</div>
+  <h2>후보 구조 비교와 선정</h2>
+  <div class="io">
+    <div><b>넣은 것</b>후보 구조 2개 (<code>opamp_a.cir</code>, <code>opamp_b.cir</code>)</div>
+    <div><b>한 일</b>두 후보를 같은 테스트벤치 5종으로 측정하고 15개 목표로 판정</div>
+    <div><b>나온 것</b>후보 2 선정 (<code>sim_out/selection.json</code>)</div>
+  </div>
+  <div class="wrap"><table>
+    <tr><th></th><th>구조</th><th class="n">트랜지스터</th><th class="n">통과</th><th>결과</th></tr>
+    <tr><td><strong>후보 1</strong></td><td>PMOS 입력 폴디드 캐스코드 1단 + NMOS 공통소스 2단(class-A 출력) + Miller 보상</td><td class="n">23개</td><td class="n">12 / 15</td><td><span class="chip fail">탈락</span></td></tr>
+    <tr><td><strong>후보 2</strong></td><td>PMOS 입력 폴디드 캐스코드 1단 + class-AB 출력단 + Miller 보상</td><td class="n">31개</td><td class="n">15 / 15</td><td><span class="chip pass">선정</span></td></tr>
+  </table></div>
+  <h3>후보 1이 미달한 항목</h3>
+  <div class="wrap"><table>
+    <tr><th>무엇을 보나</th><th class="n">측정값</th><th class="n">목표</th></tr>
+    <tr><td>가벼운 부하에서 출력을 얼마나 높이 올리나<span class="term">High 출력 전압 (1 mA)</span></td><td class="n bad">−0.621 V</td><td class="n">≥ 4.9 V</td></tr>
+    <tr><td>무거운 부하에서 출력을 얼마나 높이 올리나<span class="term">High 출력 전압 (5 mA)</span></td><td class="n bad">−0.697 V</td><td class="n">≥ 4.6 V</td></tr>
+    <tr><td>전류를 얼마나 내보낼 수 있나<span class="term">출력 전류 (+레일에서 0.5 V)</span></td><td class="n bad">0.285 mA</td><td class="n">≥ 5.6 mA</td></tr>
+  </table></div>
+  <p>후보 1은 출력을 위로 밀어 주는 쪽이 고정된 작은 전류원이라 부하가 전류를 요구하면 출력을 높이 유지하지 못합니다. 후보 2는 위·아래 출력 소자가 모두 필요한 만큼 전류를 내는 class-AB 출력단이어서 이 세 항목을 통과했습니다. 선정 규칙은 단순합니다. <strong>판정한 목표를 모두 통과한 후보를 고릅니다.</strong></p>
+  <p class="note">위는 두 후보 회로를 미리 만들어 두고 시뮬레이션 결과로 고른 기록입니다. 10월 12일에 구조를 툴이 만드는 방식을 추가했습니다(아래).</p>
+  <h3>구조를 툴이 만드는 방식 (AMSnet-KG 논문 방식, 10/12 추가)</h3>
+  <ol>
+    <li><strong>블록 모음</strong>: 회로를 바이어스, 1단, 2단, 보상 블록으로 나눠 13개를 모아 두었습니다(<code>blocks/</code>). 1단은 5종(폴디드 캐스코드 PMOS·NMOS 입력, 텔레스코픽 캐스코드, 차동쌍 + 전류 미러 부하 PMOS·NMOS 입력), 2단은 3종(class-A NMOS·PMOS, class-AB), 보상은 2종입니다. 블록마다 고를 때 쓰는 성질(이득이 높다, 입력 범위가 0 V를 포함한다 등)과 단자가 하는 일을 적어 두었습니다.</li>
+    <li><strong>설계 전략</strong>: LLM이 스펙을 보고 필요한 성질을 따진 뒤 [역할, 관계, 값] 쌍으로 적습니다. 예: [1단, 이득, 높음], [2단, 내보내는 전류, 큼].</li>
+    <li><strong>블록 찾기와 조립</strong>: 코드가 쌍에 가장 잘 맞는 블록을 찾고, 단자가 하는 일을 맞춰 이어 넷리스트를 만듭니다. 함께 가질 수 없는 쌍이 섞여 있으면 성능 요구(입력 범위, 이득 등) 쪽을 따르고 어긋난 쌍을 기록합니다. 필요한 바이어스 회로는 자동으로 들어갑니다. 1단과 2단이 맞물리지 않는 조합이면 이유를 LLM에 돌려줍니다.</li>
+    <li><strong>시뮬레이션과 다시 정하기</strong>: 같은 테스트벤치로 판정하고, 미달이면 실제 성능을 LLM에 돌려줘 다른 구조를 받습니다.</li>
+  </ol>
+  <p>모음으로 만들 수 있는 조합은 50가지이고 그중 32가지가 조립됩니다. 32가지를 모두 시뮬레이션해 보면 15개를 다 통과하는 것은 "PMOS 입력 폴디드 캐스코드 1단 + class-AB 출력단 + Miller 보상" 두 가지(저항 유무)뿐입니다. 입력쌍만 NMOS로 바꾼 구조는 공통모드 제거비 하나가 미달(14개 통과)이고, 나머지는 2~12개 통과입니다.</p>
+  <p>LLM으로 4번 실행했고 4번 모두 15개를 통과하는 구조에 도달했습니다. 3번은 첫 제안에서 통과했고, 1번은 첫 구조(class-A 출력, 12개 통과)가 미달이어서 결과를 돌려받은 뒤 두 번째 제안에서 통과했습니다. 조립한 회로는 손으로 만든 후보 2와 소자가 같습니다.</p>
+  <p class="note">LLM의 답에는 틀린 부분이 있었습니다. 4번 중 3번에서 "NMOS 입력쌍"과 "입력 범위가 0 V를 포함"을 함께 적었는데, 이 둘은 함께 가질 수 없습니다. 블록 찾기 규칙이 성능 요구 쪽을 따라 PMOS 입력 블록을 골랐기 때문에 통과한 것입니다. LLM 혼자 맞힌 것이 아니라 "LLM의 요구 정리 + 코드의 블록 찾기"가 함께 낸 결과입니다.</p>
+  <p class="note">블록 안의 소자 크기는 미리 정해 둔 값입니다. 논문은 조립 뒤에 최적화로 크기를 다시 정하지만, 여기서는 4단계의 크기 결정 루프가 그 일을 맡고, 아직 "폴디드 캐스코드 + class-AB" 구조에만 동작합니다. 실행: <code>llm_topology.py</code>, 기록: <code>sim_out/topology_log.json</code>.</p>
+</section>
+
+<section>
+  <div class="eyebrow">4단계</div>
+  <h2>소자 크기 결정과 반복 개선</h2>
+  <div class="io">
+    <div><b>넣은 것</b>후보 2의 구조(<code>opamp_b.template</code>)와 설계 목표 15개</div>
+    <div><b>한 일</b>LLM의 선택 → SymPy 계산 → 시뮬레이션 판정을 통과할 때까지 반복 (최대 5회)</div>
+    <div><b>나온 것</b>최종 회로 <code>opamp_llm.cir</code>와 전체 이력 <code>sim_out/design_log.json</code></div>
+  </div>
+  <h3>한 회차의 순서</h3>
+  <ol>
+    <li><strong>LLM이 6가지 값을 고릅니다.</strong> 허용 범위는 코드가 정해 주고, LLM은 값과 값마다의 이유를 JSON으로 답합니다. 범위를 벗어난 값은 코드가 범위 안으로 맞춥니다.</li>
+    <li><strong>SymPy가 소자 크기를 계산합니다.</strong> 공정의 트랜지스터 특성표(<code>devices_gf180.json</code>, 효율 gm/ID별 전류밀도와 이득)를 읽어 아래 식을 풉니다. 폭이 50 µm를 넘는 소자는 같은 소자 여러 개로 나눕니다.</li>
+    <li><strong>회로 파일을 만듭니다.</strong> 구조 틀의 빈칸에 계산된 크기를 채웁니다.</li>
+    <li><strong>시뮬레이션하고 판정합니다.</strong> 2단계의 테스트벤치 5종을 그대로 씁니다.</li>
+    <li><strong>미달 항목을 LLM에 돌려줍니다.</strong> 이전 선택, 측정값, 미달 항목과 차이를 함께 넘기고 다시 1번으로 갑니다.</li>
+  </ol>
+  <h3>LLM이 고르는 6가지 값</h3>
+  <div class="wrap"><table>
+    <tr><th>값</th><th>정확한 뜻</th><th class="n">허용 범위</th></tr>
+    <tr><td>입력단에 흘리는 전류</td><td>입력단 꼬리 전류</td><td class="n">20, 40, 60, 80 µA</td></tr>
+    <tr><td>입력 트랜지스터의 효율</td><td>입력 트랜지스터의 gm/ID</td><td class="n">8 ~ 18 1/V</td></tr>
+    <tr><td>입력 트랜지스터의 길이</td><td>채널 길이</td><td class="n">0.7, 1, 2, 4 µm</td></tr>
+    <tr><td>이득을 높이는 보조 트랜지스터의 길이</td><td>캐스코드 트랜지스터의 채널 길이</td><td class="n">1, 2, 4 µm</td></tr>
+    <tr><td>안정화용 커패시터</td><td>Miller 보상 커패시터 하나의 값 (위·아래 2개)</td><td class="n">1 ~ 8 pF</td></tr>
+    <tr><td>출력단에 평소 흘리는 전류</td><td>출력단 대기 전류</td><td class="n">80 ~ 300 µA</td></tr>
+  </table></div>
+  <h3>계산에 쓰는 식</h3>
+  <div class="wrap"><table>
+    <tr><th>구하는 것</th><th>식</th></tr>
+    <tr><td>입력 트랜지스터 폭</td><td><code>I_tail / 2 = J_in × W_in / L_in</code> (전류 = 전류밀도 × 폭/길이)</td></tr>
+    <tr><td>1단 이득</td><td>입력 gm × (위쪽과 아래쪽 출력 저항의 병렬)</td></tr>
+    <tr><td>2단 이득</td><td>출력 소자 gm의 합 ÷ (출력 컨덕턴스 + 1/부하 저항)</td></tr>
+    <tr><td>단위이득 대역폭</td><td><code>I_tail × gm/ID ÷ (8π × C_c)</code></td></tr>
+    <tr><td>슬루율</td><td><code>I_tail ÷ (2 × C_c)</code></td></tr>
+  </table></div>
+  <h3>회차별 기록</h3>
+  <div class="wrap"><table>
+    <tr><th>회차</th><th>바꾼 값</th><th class="n">통과</th><th>미달 항목 (측정값 / 목표)</th></tr>
+    <tr><td>1</td><td>처음 고른 값: 입력단 전류 80 µA, 효율 18, 입력 길이 4 µm, 보조 길이 4 µm, 커패시터 8 pF, 출력단 전류 300 µA</td><td class="n">13 / 15</td><td>이득여유 13.26 dB / ≥ 14.4 dB<br>정착시간 2.50 µs / ≤ 2.4 µs</td></tr>
+    <tr><td>2</td><td>커패시터 8 → 6 pF</td><td class="n">12 / 15</td><td>위상여유 49.75° / ≥ 52°<br>이득여유 10.19 dB / ≥ 14.4 dB<br>정착시간 3.30 µs / ≤ 2.4 µs</td></tr>
+    <tr><td>3</td><td>입력단 전류 80 → 60 µA, 커패시터 6 → 8 pF, 출력단 전류 300 → 200 µA</td><td class="n">14 / 15</td><td>이득여유 14.21 dB / ≥ 14.4 dB</td></tr>
+    <tr><td>4</td><td>입력단 전류 60 → 40 µA</td><td class="n">15 / 15</td><td><span class="chip pass">모두 통과</span></td></tr>
+  </table></div>
+  <p>2회차에서는 정착시간을 줄이려고 커패시터를 줄였다가 안정성이 더 나빠졌습니다. 3회차에서 커패시터를 되돌리고 전류를 줄이는 쪽으로 방향을 바꿨고, 4회차에서 입력단 전류를 한 번 더 줄여 통과했습니다.</p>
+  <h3>식으로 계산한 값과 시뮬레이션 측정값 (4회차)</h3>
+  <div class="wrap"><table>
+    <tr><th>항목</th><th class="n">계산</th><th class="n">측정</th><th class="n">차이</th></tr>
+    <tr><td>전압이득</td><td class="n">127.4 dB</td><td class="n">128.1 dB</td><td class="n">+0.7 dB</td></tr>
+    <tr><td>단위이득 대역폭</td><td class="n">3.58 MHz</td><td class="n">3.66 MHz</td><td class="n">+2%</td></tr>
+    <tr><td>슬루율</td><td class="n">2.50 V/µs</td><td class="n">2.26 V/µs</td><td class="n">−10%</td></tr>
+    <tr><td>공급 전류</td><td class="n">342 µA</td><td class="n">462 µA</td><td class="n">+35%</td></tr>
+  </table></div>
+  <p class="note">이득과 대역폭은 식이 잘 맞습니다. 공급 전류는 식이 실제보다 작게 나옵니다. 기준 전류가 설계값 10 µA보다 크게 흐르는 것(약 11.6 µA)이 원인 중 하나로 확인되었고, 식을 보완해야 합니다.</p>
+</section>
+
+<section>
+  <div class="eyebrow">5단계</div>
+  <h2>최종 설계의 항목별 검증</h2>
+  <div class="io">
+    <div><b>넣은 것</b>4회차의 회로 <code>opamp_llm.cir</code> (트랜지스터 31개)</div>
+    <div><b>한 일</b>테스트벤치 5종으로 측정하고 15개 목표로 판정</div>
+    <div><b>나온 것</b>15개 모두 통과 (<code>sim_out/opamp_llm_result.json</code>)</div>
+  </div>
+  <div class="wrap"><table>
+    <tr><th>무엇을 보나</th><th class="n">측정값</th><th class="n">목표</th><th class="n">여유</th><th>판정</th></tr>
+    <tr><td>신호를 얼마나 키우나<span class="term">대신호 차동 전압이득</span></td><td class="n">128.1 dB</td><td class="n">≥ 100 dB</td><td class="n">+28.1 dB</td><td><span class="chip pass">통과</span></td></tr>
+    <tr><td>두 입력에 함께 실린 잡음을 얼마나 걸러내나<span class="term">공통모드 제거비</span></td><td class="n">115.6 dB</td><td class="n">≥ 65 dB</td><td class="n">+50.6 dB</td><td><span class="chip pass">통과</span></td></tr>
+    <tr><td>전원이 흔들려도 얼마나 버티나<span class="term">전원 제거비</span></td><td class="n">80.1 dB</td><td class="n">≥ 70 dB</td><td class="n">+10.1 dB</td><td><span class="chip pass">통과</span></td></tr>
+    <tr><td>전기를 얼마나 쓰나<span class="term">공급 전류</span></td><td class="n">462.2 µA</td><td class="n">≤ 660 µA</td><td class="n">30% 남음</td><td><span class="chip pass">통과</span></td></tr>
+    <tr><td>얼마나 빠른 신호까지 다루나<span class="term">단위이득 대역폭</span></td><td class="n">3.657 MHz</td><td class="n">≥ 2.4 MHz</td><td class="n">+52%</td><td><span class="chip pass">통과</span></td></tr>
+    <tr><td>출력이 얼마나 빨리 변하나<span class="term">슬루율</span></td><td class="n">2.26 V/µs</td><td class="n">≥ 1.45 V/µs</td><td class="n">+56%</td><td><span class="chip pass">통과</span></td></tr>
+    <tr><td>얼마나 안정적으로 동작하나<span class="term">위상여유</span></td><td class="n">78.0°</td><td class="n">≥ 52°</td><td class="n">+26.0°</td><td><span class="chip pass">통과</span></td></tr>
+    <tr><td>안정성에 여유가 얼마나 있나<span class="term">이득여유</span></td><td class="n">17.33 dB</td><td class="n">≥ 14.4 dB</td><td class="n">+2.9 dB</td><td><span class="chip pass">통과</span></td></tr>
+    <tr><td>출력이 얼마나 빨리 자리 잡나<span class="term">정착시간 (0.1%)</span></td><td class="n">0.94 µs</td><td class="n">≤ 2.4 µs</td><td class="n">61% 남음</td><td><span class="chip pass">통과</span></td></tr>
+    <tr><td>가벼운 부하에서 출력을 얼마나 높이 올리나<span class="term">High 출력 전압 (1 mA)</span></td><td class="n">4.958 V</td><td class="n">≥ 4.9 V</td><td class="n">+1%</td><td><span class="chip pass">통과</span></td></tr>
+    <tr><td>무거운 부하에서 출력을 얼마나 높이 올리나<span class="term">High 출력 전압 (5 mA)</span></td><td class="n">4.781 V</td><td class="n">≥ 4.6 V</td><td class="n">+4%</td><td><span class="chip pass">통과</span></td></tr>
+    <tr><td>가벼운 부하에서 출력을 얼마나 낮게 내리나<span class="term">Low 출력 전압 (1 mA)</span></td><td class="n">0.018 V</td><td class="n">≤ 0.1 V</td><td class="n">82% 남음</td><td><span class="chip pass">통과</span></td></tr>
+    <tr><td>무거운 부하에서 출력을 얼마나 낮게 내리나<span class="term">Low 출력 전압 (5 mA)</span></td><td class="n">0.092 V</td><td class="n">≤ 0.4 V</td><td class="n">77% 남음</td><td><span class="chip pass">통과</span></td></tr>
+    <tr><td>전류를 얼마나 내보낼 수 있나<span class="term">출력 전류 (+레일에서 0.5 V)</span></td><td class="n">10.75 mA</td><td class="n">≥ 5.6 mA</td><td class="n">+92%</td><td><span class="chip pass">통과</span></td></tr>
+    <tr><td>전류를 얼마나 받아들일 수 있나<span class="term">출력 전류 (−레일에서 0.5 V)</span></td><td class="n">23.89 mA</td><td class="n">≥ 6.4 mA</td><td class="n">+273%</td><td><span class="chip pass">통과</span></td></tr>
+  </table></div>
+</section>
+
+<section>
+  <h2>이 결과를 읽을 때 알아 둘 점</h2>
+  <ol>
+    <li><strong>15개 통과가 데이터시트 전체를 만족한다는 뜻은 아닙니다.</strong> 25개 중 10개는 아직 측정하지 않았고, 6개는 데이터시트 보장값이 아니라 팀 기준으로 판정했습니다.</li>
+    <li><strong>한 가지 조건에서만 확인했습니다.</strong> 대표 공정 조건, 27°C입니다. 공정 편차와 온도 범위는 확인하지 않았습니다.</li>
+    <li><strong>크기에 대한 기준이 없습니다.</strong> LLM이 이득을 최대로 하는 쪽을 골라 입력 트랜지스터의 폭 합계가 약 4 mm(49.5 µm × 80개)로 지나치게 큽니다. 면적 기준을 넣고, 통과한 뒤 줄이는 단계가 필요합니다.</li>
+    <li><strong>회로 안의 저항과 커패시터는 이상적인 소자입니다.</strong> 공정의 실제 소자로 바꾸면 값이 달라질 수 있습니다.</li>
+    <li><strong>전원 제거비는 2.7 ~ 5.5 V 구간만 쟀습니다.</strong> 2.7 V에서는 출력단 바이어스의 여유가 0.12 V로 작습니다.</li>
+    <li><strong>레이아웃과 그에 따른 기생 성분은 이 과제의 범위 밖입니다.</strong></li>
+  </ol>
+  <h3>같은 결과를 다시 만드는 방법</h3>
+  <p>WSL의 프로젝트 폴더에서 아래 순서로 실행합니다. LLM의 답은 실행할 때마다 달라질 수 있어 회차 수와 값이 위와 다르게 나올 수 있습니다.</p>
+  <ol>
+    <li><code>~/.venvs/edai/bin/python run_sim.py opamp_a opamp_b --select</code> : 후보 측정과 선정</li>
+    <li><code>~/.venvs/edai/bin/python llm_design.py</code> : 크기 결정 반복 (<code>opamp_llm.cir</code>와 <code>design_log.json</code>을 덮어씁니다)</li>
+    <li><code>~/.venvs/edai/bin/python ui_demo.py</code> : 화면으로 보기 (http://localhost:8080)</li>
+  </ol>
+</section>
+
+</main>
+</body>
+</html>
