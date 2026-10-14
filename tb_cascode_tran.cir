@@ -1,0 +1,15 @@
+* 테스트벤치: 캐스코드 증폭기 - 과도 파형 (Vin, Vout 눈으로 비교)
+* {dut_file} 자리에는 run_sim.py가 시험할 회로 파일을 넣는다. 이 파일을 직접 실행하지 않는다.
+* 대역폭보다 훨씬 낮은 100kHz 사인파를 넣어 감쇠/위상지연 없이 이득만 보이게 한다.
+
+.include {dut_file}
+
+X1  VIN VCASC VOUT VDD cascode
+
+VDD  VDD  0  DC 5
+VCASC VCASC 0 DC 1.4
+VIN  VIN  0  DC 0.9 SIN(0.9 0.05 100k)
+CL  VOUT 0   10p
+
+.tran 10n 50u
+.end

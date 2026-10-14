@@ -1,0 +1,14 @@
+* NMOS-input Cascode Amplifier (전력 최소화 설계) - 회로 본체 (설계 대상)
+* Case 1 - 예비캡스톤설계 (ngspice)
+* 목표: 스펙(이득 >= 20dB, 대역폭 >= 1MHz)을 10% 여유로 지키면서 전력 최소화
+*   RD = 14k  -> 대역폭 1/(2*pi*RD*CL) = 1.14MHz
+*   W/L = 19.6 (Vov = 0.2V 유지) -> ID ~ 79uA -> 이득 2*ID*RD/Vov ~ 11배 (20.8dB)
+* 전원, 입력 신호, 부하, 해석 명령은 테스트벤치(tb_cascode_*.cir)에 있다.
+
+.model NMOS1 NMOS (LEVEL=1 VTO=0.7 KP=200u LAMBDA=0.02)
+
+.subckt cascode VIN VCASC VOUT VDD
+RD  VDD VOUT 14k
+M1  VX   VIN   0  0  NMOS1 W=19.6u L=1u
+M2  VOUT VCASC VX VX NMOS1 W=19.6u L=1u
+.ends cascode

@@ -1,0 +1,15 @@
+* 테스트벤치: 캐스코드 증폭기 - AC 이득 / 대역폭
+* {dut_file} 자리에는 run_sim.py가 시험할 회로 파일을 넣는다. 이 파일을 직접 실행하지 않는다.
+* 이득과 -3dB 대역폭은 run_sim.py에서 raw 파형으로 직접 계산한다.
+
+.include {dut_file}
+
+X1  VIN VCASC VOUT VDD cascode
+
+VDD  VDD  0  DC 5
+VCASC VCASC 0 DC 1.4
+VIN  VIN  0  DC 0.9 AC 1
+CL  VOUT 0   10p
+
+.ac dec 30 1 100meg
+.end

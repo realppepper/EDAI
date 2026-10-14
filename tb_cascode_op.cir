@@ -1,0 +1,15 @@
+* 테스트벤치: 캐스코드 증폭기 - DC 동작점 / 소비전력
+* {dut_file} 자리에는 run_sim.py가 시험할 회로 파일을 넣는다. 이 파일을 직접 실행하지 않는다.
+* 소비전력은 run_sim.py에서 raw 파일의 VDD 전류로 계산한다.
+
+.include {dut_file}
+
+X1  VIN VCASC VOUT VDD cascode
+
+VDD  VDD  0  DC 5
+VCASC VCASC 0 DC 1.4
+VIN  VIN  0  DC 0.9
+CL  VOUT 0   10p
+
+.op
+.end

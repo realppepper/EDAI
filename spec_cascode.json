@@ -1,0 +1,11 @@
+{
+  "description": "스펙 파일 형식: specs의 각 항목은 measure(run_sim.py 측정값의 이름), label(표시 이름), unit(표시 단위), scale(측정값에 곱해 표시 단위로 바꾸는 값, 생략하면 1), min/typ/max(기준값, 없는 것은 생략), condition(시험 조건)으로 이루어진다. min, max가 있는 항목만 PASS/FAIL을 판정한다.",
+  "circuit": "cascode",
+  "source": "팀 자체 설정 (Case 1)",
+  "conditions": "VDD = 5 V, CL = 10 pF",
+  "specs": [
+    {"measure": "gain_dc", "label": "DC 전압이득", "unit": "dB", "min": 20},
+    {"measure": "f3db", "label": "-3dB 대역폭", "unit": "MHz", "scale": 1e-6, "min": 1},
+    {"measure": "power", "label": "소비전력", "unit": "mW", "scale": 1e3, "max": 10}
+  ]
+}
