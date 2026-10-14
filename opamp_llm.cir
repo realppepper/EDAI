@@ -1,0 +1,66 @@
+* opamp_llm - OP-Amp 후보 B 구조에 sizing.py 가 계산한 소자 크기를 채운 회로
+* 이 파일은 자동으로 만들어진다. 손으로 고치면 다음 실행에서 덮어쓴다.
+* 구조: PMOS 입력 폴디드 캐스코드 1단 + class-AB 출력단 + Miller 보상
+* A(opamp_a.cir)와 1단, 바이어스는 같고 출력단만 다르다. 위쪽 출력 소자(MOP)도 신호로
+* 구동해서, 평소 전류는 작게 유지하면서 전류를 내보내는 능력을 키운다.
+* 공정: GF180MCU 6 V 소자 (nfet_06v0, pfet_06v0). 모델은 테스트벤치가 불러온다.
+* 대상 스펙: spec_tlv271.json (TLV271, VDD = 5 V)
+* 전원, 입력 신호, 부하, 해석 명령은 테스트벤치(tb_opamp_*.cir)에 있다.
+*
+* 핀: INP(비반전 입력) INN(반전 입력) OUT VDD VSS
+
+.subckt opamp INP INN OUT VDD VSS
+
+* --- 바이어스: 기준 전류 약 10 uA (beta-multiplier) + 기동 회로 ---
+XMB1 nb  nb  VSS VSS nfet_06v0 w=11.5u l=2u
+XMB2 pb  nb  nr  VSS nfet_06v0 w=11.5u l=2u m=4
+RB   nr  VSS 7.5k
+XMB3 pb  pb  VDD VDD pfet_06v0 w=24u l=2u
+XMB4 nb  pb  VDD VDD pfet_06v0 w=24u l=2u
+RS   VDD ns  3meg
+XMS1 ns  nb  VSS VSS nfet_06v0 w=2u l=2u
+XMS2 pb  ns  VSS VSS nfet_06v0 w=2u l=2u
+
+* --- 캐스코드 게이트 바이어스 ---
+XMB5 vbn2 pb   VDD VDD pfet_06v0 w=24u l=2u
+XMB6 vbn2 vbn2 VSS VSS nfet_06v0 w=1.2u l=2u
+XMB7 vbp2 nb   VSS VSS nfet_06v0 w=11.5u l=2u
+XMB8 vbp2 vbp2 VDD VDD pfet_06v0 w=5u l=2u
+
+* --- class-AB 평소 전류 설정 (출력 소자와 플로팅 소자의 축소 복제를 쌓아 만든 전압) ---
+* vabn = Vgs(MON 의 1/15 복제) + Vgs(MAN 복제),  vabp = VDD - Vsg(MOP 의 1/15 복제) - Vsg(MAP 복제)
+XMB9  vabn pb   VDD  VDD  pfet_06v0 w=24u l=2u
+XMAN2 vabn vabn nan  VSS  nfet_06v0 w=5u l=1u
+XMAN1 nan  nan  VSS  VSS  nfet_06v0 w=8.6u l=1u
+XMB10 vabp nb   VSS  VSS  nfet_06v0 w=11.5u l=2u
+XMAP2 vabp vabp nap  VDD  pfet_06v0 w=10u l=1u
+XMAP1 nap  nap  VDD  VDD  pfet_06v0 w=10.7u l=0.7u
+
+* --- 1단: PMOS 입력 폴디드 캐스코드 ---
+XMT   tail pb   VDD  VDD  pfet_06v0 w=24u l=2u m=4
+XM1   fn1  INN  tail tail pfet_06v0 w=49.5u l=4u m=80
+XM2   fn2  INP  tail tail pfet_06v0 w=49.5u l=4u m=80
+XMN3  fn1  nb   VSS  VSS  nfet_06v0 w=11.5u l=2u m=4
+XMN4  fn2  nb   VSS  VSS  nfet_06v0 w=11.5u l=2u m=4
+XMNC1 d1   vbn2 fn1  VSS  nfet_06v0 w=49.69u l=4u m=1
+XMNC2 gn   vbn2 fn2  VSS  nfet_06v0 w=49.69u l=4u m=1
+XMP3  x1   d1   VDD  VDD  pfet_06v0 w=24u l=2u m=2
+XMP4  x2   d1   VDD  VDD  pfet_06v0 w=24u l=2u m=2
+XMPC3 d1   vbp2 x1   VDD  pfet_06v0 w=42.46u l=4u m=6
+XMPC4 gp   vbp2 x2   VDD  pfet_06v0 w=42.46u l=4u m=6
+
+* --- 플로팅 class-AB 제어: 두 출력 소자의 게이트(gp, gn) 사이 전압을 유지 ---
+XMAN  gp   vabn gn   VSS  nfet_06v0 w=5u l=1u
+XMAP  gn   vabp gp   VDD  pfet_06v0 w=10u l=1u
+
+* --- 출력단: 위(MOP)와 아래(MON)가 모두 신호로 구동된다 ---
+XMON  OUT  gn   VSS  VSS  nfet_06v0 w=43u l=1u m=4
+XMOP  OUT  gp   VDD  VDD  pfet_06v0 w=42.67u l=0.7u m=5
+
+* --- Miller 보상 (위, 아래 각각) ---
+RZ1   gn   nz1  600
+CC1   nz1  OUT  8p
+RZ2   gp   nz2  600
+CC2   nz2  OUT  8p
+
+.ends opamp
