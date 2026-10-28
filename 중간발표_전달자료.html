@@ -1,0 +1,302 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>EDAI 중간발표 전달자료</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+KR:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: 한 줄 읽기 폭의 짧은 문서. 논문 세 편을 같은 틀(한 줄 요약 / 방법 / 가져온 것)로 나란히 읽게 한다. */
+:root {
+  --paper: #f7f8fa; --sheet: #ffffff; --ink: #18202b; --ink-2: #4d5866; --ink-3: #7c8794; --rule: #d9dee5;
+  --accent: #1f5f8b; --accent-soft: #e4eef6; --warn: #9a5b00; --warn-soft: #fbefdc;
+  --sans: "IBM Plex Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", system-ui, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) { --paper: #12161c; --sheet: #191f27; --ink: #e6ebf1; --ink-2: #aeb8c4; --ink-3: #7f8a97; --rule: #2c3540;
+    --accent: #7db7e0; --accent-soft: #1d2c3a; --warn: #e7b25e; --warn-soft: #33281a; color-scheme: dark; }
+}
+:root[data-theme="dark"] { --paper: #12161c; --sheet: #191f27; --ink: #e6ebf1; --ink-2: #aeb8c4; --ink-3: #7f8a97; --rule: #2c3540;
+  --accent: #7db7e0; --accent-soft: #1d2c3a; --warn: #e7b25e; --warn-soft: #33281a; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 16px; line-height: 1.7; word-break: keep-all; overflow-wrap: anywhere; }
+.page { max-width: 820px; margin: 0 auto; padding-block: 40px 88px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+header { display: grid; gap: 10px; padding-bottom: 24px; border-bottom: 2px solid var(--ink); }
+.kicker { font-family: var(--mono); font-size: 12.5px; letter-spacing: .06em; color: var(--ink-3); text-transform: uppercase; }
+h1 { font-size: clamp(28px, 5vw, 36px); line-height: 1.25; margin: 0; letter-spacing: -.02em; text-wrap: balance; }
+.lede { color: var(--ink-2); margin: 0; max-width: 64ch; }
+section { padding-top: 40px; display: grid; gap: 14px; }
+h2 { font-size: 22px; margin: 0; letter-spacing: -.01em; text-wrap: balance; }
+h3 { font-size: 18px; margin: 0; }
+p { margin: 0; max-width: 68ch; }
+.muted { color: var(--ink-2); }
+ol, ul { margin: 0; padding-left: 22px; display: grid; gap: 6px; max-width: 70ch; }
+code { font-family: var(--mono); font-size: .9em; background: var(--accent-soft); padding: 1px 6px; border-radius: 4px; }
+.say { background: var(--sheet); border: 1px solid var(--rule); border-left: 4px solid var(--accent); padding: 18px 20px; display: grid; gap: 10px; }
+.paper { background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: 18px 20px; display: grid; gap: 10px; }
+.paper .src { font-family: var(--mono); font-size: 12.5px; color: var(--ink-3); }
+.paper .one { font-weight: 500; }
+.paper .take { background: var(--accent-soft); border-radius: 6px; padding: 10px 14px; font-size: 15px; }
+.paper .take b { color: var(--accent); }
+.note { background: var(--warn-soft); border-radius: 6px; padding: 12px 16px; font-size: 15px; }
+.note b { color: var(--warn); }
+.wrap { overflow-x: auto; border: 1px solid var(--rule); background: var(--sheet); }
+table { border-collapse: collapse; width: 100%; font-size: 14.5px; min-width: 560px; }
+th { text-align: left; font-weight: 500; font-size: 12.5px; letter-spacing: .04em; color: var(--ink-3); border-bottom: 1.5px solid var(--ink); padding: 9px 12px; white-space: nowrap; }
+td { padding: 9px 12px; border-bottom: 1px solid var(--rule); vertical-align: top; }
+tr:last-child td { border-bottom: 0; }
+td.n, th.n { text-align: right; font-family: var(--mono); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.qa details { background: var(--sheet); border: 1px solid var(--rule); border-radius: 8px; padding: 12px 16px; }
+.qa { display: grid; gap: 10px; }
+.qa summary { cursor: pointer; font-weight: 500; }
+.qa summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+.qa details p { margin-top: 8px; color: var(--ink-2); }
+.step { display: grid; gap: 8px; padding-left: 14px; border-left: 2px solid var(--rule); }
+.step h4 { margin: 0; font-size: 16px; }
+.eq { font-family: var(--mono); font-size: 14px; background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 14px; overflow-x: auto; white-space: nowrap; }
+table.mat { min-width: 420px; font-family: var(--mono); font-size: 13.5px; }
+table.mat td, table.mat th { text-align: center; }
+table.mat td:first-child, table.mat th:first-child { text-align: left; }
+footer { margin-top: 48px; padding-top: 16px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--ink-3); }
+</style>
+</head>
+<body>
+
+<div class="page">
+<header>
+  <div class="kicker">EDAI 17조 · 중간발표 10/30 · 김지윤 파트</div>
+  <h1>중간발표 전달자료</h1>
+  <p class="lede">김지윤 파트는 <b>회로 구조(토폴로지)를 정하는 로직</b>입니다. 참고한 논문 세 편이 구조를 어떻게 정하는지, 그중 무엇을 가져와 구현했는지, 결과가 어땠는지를 정리했습니다.</p>
+</header>
+
+<section>
+  <h2>발표에서 말할 것</h2>
+  <div class="say">
+    <ol>
+      <li><b>문제</b>: LLM에게 넷리스트를 통째로 쓰게 하면 구조가 근거 없이 정해지고, 동작하지 않는 회로가 자주 나옵니다. 그래서 구조를 정하는 단계를 따로 떼었습니다.</li>
+      <li><b>방법</b>: 논문(AMSnet-KG, AnalogXpert)처럼 검증된 회로 블록을 모아 두고, LLM은 필요한 성질만 말하고, 코드가 블록을 찾아 조립합니다.</li>
+      <li><b>결과</b>: TLV271 스펙으로 4번 실행해 4번 모두 15개 목표를 통과하는 구조에 도달했습니다.</li>
+    </ol>
+  </div>
+</section>
+
+<section>
+  <h2>왜 구조를 따로 정하는가</h2>
+  <p>LLM이 SPICE 넷리스트를 처음부터 쓰는 방식(AnalogCoder)은 유효한 회로가 약 57%이고, 소자 10개 이하의 작은 회로에서만 동작했다고 보고됩니다. 구조를 고른 이유도 설명하기 어렵습니다. 반대로 블록을 조합하는 방식은 동작이 확인된 조각만 쓰므로 회로가 깨지지 않고, "왜 이 구조인지"를 블록의 성질로 설명할 수 있습니다.</p>
+</section>
+
+<section>
+  <h2>참고 논문 세 편</h2>
+
+  <div class="paper">
+    <div class="src">AMSnet-KG · arXiv 2411.13560 · ACM TODAES 2025</div>
+    <h3>회로 지식 그래프에서 찾아 조립하기</h3>
+    <p class="one">회로를 새로 그리지 않고, 창고에서 맞는 조각을 찾아 조립합니다.</p>
+    <ol>
+      <li>교과서와 논문의 회로도 894개를 넷리스트로 바꾸고, "이득이 높다", "부하가 전류 미러다" 같은 설명을 붙여 지식 그래프에 저장</li>
+      <li>LLM이 스펙을 보고 설계 전략을 세움 (예: "1단은 차동 증폭기, 2단은 공통소스, Miller 보상")</li>
+      <li>전략을 [대상, 관계, 값] 쌍으로 바꿔 그래프에서 검색 (RAG)</li>
+      <li>찾은 조각을 단자의 기능("이건 출력, 이건 바이어스")에 맞춰 코드가 이어 붙임</li>
+      <li>베이지안 최적화로 크기를 정하고, 목표 미달이면 실제 성능을 LLM에 알려 구조를 다시 정함</li>
+    </ol>
+    <div class="take"><b>가져온 것</b>: 블록 창고, [대상, 관계, 값] 쌍으로 찾기, 단자 기능으로 조립하기, 미달 시 구조 다시 정하기. 구현의 뼈대입니다.</div>
+  </div>
+
+  <div class="paper">
+    <div class="src">AnalogXpert · arXiv 2412.19824 · ISEDA 2025</div>
+    <h3>블록 고르기와 연결하기를 나누고, 코드가 점검하기</h3>
+    <p class="one">서브회로 모음을 두고 "블록 고르기 → 블록 연결하기" 두 단계로 나눈 뒤, 잘못된 연결을 코드가 잡아 LLM에 고치게 합니다.</p>
+    <ol>
+      <li>실무 경험으로 정리한 서브회로 모음으로 설계 공간을 줄임</li>
+      <li>점검은 LLM이 아니라 정해진 규칙의 프로그램이 함 (떠 있는 단자, 맞지 않는 블록 종류 등)</li>
+      <li>틀린 곳을 알려 주고 최대 10번 고치게 함</li>
+      <li>실제 설계 과제 성공률 23%. 같은 조건에서 GPT-4o 단독은 3%, AnalogCoder는 6%</li>
+    </ol>
+    <div class="take"><b>가져온 것</b>: 조립 결과를 코드로 점검하고, 만들 수 없는 조합이면 이유를 LLM에 돌려줘 고치게 하는 단계. 성공률이 23%에 그친다는 점에서 점검과 재시도가 꼭 필요하다는 근거로도 씁니다. 다만 이 논문처럼 LLM이 블록을 이름으로 직접 고르게 하지는 않았습니다 (이유는 아래 "LLM이 블록을 직접 고르지 않는 이유").</div>
+  </div>
+
+  <div class="paper">
+    <div class="src">AaLLM · arXiv 2608.13472 · 2026 · 아래 "AaLLM 자세히"에 단계별 설명</div>
+    <h3>후보를 시뮬레이션해 순위를 매기고, 근거를 보고 고르기</h3>
+    <p class="one">후보 구조를 여러 개 만든 뒤, 기본 크기로 먼저 시뮬레이션해 순위를 매기고, 회로 이론 자료를 검색해 그 근거로 최종 구조를 고릅니다.</p>
+    <ol>
+      <li><b>후보 생성</b>: 회로를 "소자-노드 연결 행렬"로 바꿔 FLAN-T5 모델을 학습. 스펙을 넣으면 연결 행렬을 채워 후보를 냄. 교과서에 없는 새 구조도 나옴</li>
+      <li><b>예비 순위</b>: 후보마다 기본 크기로 시뮬레이션하고, 스펙과의 거리(항목별 가중치를 둔 오차)로 순위를 매김</li>
+      <li><b>근거 있는 선택</b>: 교과서·논문 문단을 의미 검색과 단어 검색으로 함께 찾아, LLM이 그 내용을 보고 고름. 의미 검색만 쓰면 CMRR과 PSRR 같은 비슷한 약어를 헷갈려서 둘을 섞었다고 설명</li>
+      <li>OP-Amp 24개 스펙에서 만든 구조가 모두 SPICE로 동작 (Pass@1 100%)</li>
+    </ol>
+    <p><b>논문의 결론</b>: 학습한 모델이 만든 구조는 OP-Amp 24개 스펙 모두에서 구조와 동작이 유효했고(Pass@1 100%), 교과서에 없는 새 구조도 알려진 구조와 비슷한 성능(일부 회로는 성능 지표가 최대 3배)을 냈습니다. 크기 결정까지 합쳐 기존 방법보다 SPICE 시뮬레이션 횟수를 3~4.5배, 걸린 시간을 40배 줄였다고 보고합니다.</p>
+    <p><b>이 논문을 고른 이유</b></p>
+    <ol>
+      <li><b>우리 방식의 약점을 정면으로 다룹니다.</b> 논문은 블록 모음 방식의 한계를 "모음에 있는 구조밖에 못 고른다", 기본 소자를 마구 조합하는 방식의 한계를 "어느 것이 동작하는지 가릴 방법이 없다"로 짚습니다. 우리 방식이 바로 첫 번째 한계를 안고 있습니다.</li>
+      <li><b>LLM의 글 대신 시뮬레이션 결과로 고릅니다.</b> 우리 실험에서 LLM은 함께 가질 수 없는 성질을 적는 실수를 했습니다. 후보를 먼저 시뮬레이션해 순위를 보여 주면 LLM이 숫자를 근거로 고르므로 이런 실수가 줄어듭니다.</li>
+      <li><b>조건이 우리와 가깝습니다.</b> OP-Amp를 대상으로 하고 공개 공정(SkyWater 130 nm)으로 시뮬레이션합니다. 우리도 공개 공정(GF180MCU)을 씁니다.</li>
+      <li><b>학습 부분을 Colab으로 해 볼 수 있습니다.</b> 구조 생성 모델(FLAN-T5 base)은 무료 Colab GPU로 학습할 수 있는 크기입니다.</li>
+    </ol>
+    <div class="take"><b>결론 (우리가 가져올 것)</b>: 다음 단계로 "후보를 기본 크기로 시뮬레이션해 순위를 매기고, 측정값과 블록 설명을 근거로 LLM이 고르는" 방식을 넣습니다. 학습으로 새 구조를 만드는 부분은 "스펙 → 구조" 짝 데이터를 먼저 만들어야 해서 마지막 단계로 둡니다.</div>
+  </div>
+
+  <div class="wrap"><table>
+    <thead><tr><th>논문</th><th>구조를 만드는 법</th><th>구조를 고르는 근거</th><th>학습 필요</th></tr></thead>
+    <tbody>
+      <tr><td>AMSnet-KG</td><td>창고에서 검색해 조립</td><td>LLM 전략 + 회로 설명</td><td>없음</td></tr>
+      <tr><td>AnalogXpert</td><td>서브회로 고르기 + 연결</td><td>LLM + 코드 점검</td><td>없음</td></tr>
+      <tr><td>AaLLM</td><td>학습한 모델이 생성</td><td>예비 시뮬레이션 + 문헌 검색</td><td>FLAN-T5 학습</td></tr>
+      <tr><td><b>우리</b></td><td>블록 창고에서 검색해 조립</td><td>LLM 전략 + 블록 설명 + 코드 점검</td><td>없음</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section id="aallm">
+  <h2>AaLLM 자세히</h2>
+  <p class="muted">Habib, Hart, Fayazi (University of Utah), arXiv 2608.13472, 2026년 8월. 구조 생성부터 크기 결정까지 한 흐름으로 처리하는 LLM 기반 설계 틀입니다. 여기서는 구조를 정하는 부분을 중심으로 설명합니다.</p>
+
+  <div class="step">
+    <h4>1. 문제를 어떻게 보나</h4>
+    <p>설계를 "구조 T"와 "소자 값 x"를 함께 찾는 문제로 봅니다. T는 유효한 구조들의 집합에서, x는 그 구조의 크기·바이어스 값에서 고르고, 사용자가 준 성능 조건(이득 이상, 전력 이하 등)을 모두 만족해야 합니다. 그리고 두 일을 서로 다른 모델에 맡깁니다. 구조는 <b>학습한 작은 모델(FLAN-T5)</b>이 만들고, 크기는 <b>LLM 에이전트 셋</b>이 시뮬레이션을 돌려 가며 정합니다.</p>
+  </div>
+
+  <div class="step">
+    <h4>2. 회로를 표로 바꾼다 (소자-노드 연결 행렬)</h4>
+    <p>회로를 넷리스트 글이 아니라 표로 나타냅니다. 행은 소자, 열은 노드이고, 칸에는 "그 소자의 어느 단자가 그 노드에 붙는가"를 적습니다. 아래는 차동쌍 일부를 예로 든 것입니다 (d 드레인, g 게이트, s 소스, b 바디).</p>
+    <div class="wrap"><table class="mat">
+      <thead><tr><th>소자</th><th>INP</th><th>INN</th><th>tail</th><th>n1</th><th>OUT</th><th>VSS</th></tr></thead>
+      <tbody>
+        <tr><td>M1 (NMOS)</td><td>·</td><td>g</td><td>s</td><td>d</td><td>·</td><td>b</td></tr>
+        <tr><td>M2 (NMOS)</td><td>g</td><td>·</td><td>s</td><td>·</td><td>d</td><td>b</td></tr>
+        <tr><td>M5 (NMOS)</td><td>·</td><td>·</td><td>d</td><td>·</td><td>·</td><td>s, b</td></tr>
+      </tbody>
+    </table></div>
+    <p>이 표를 "소자 종류 목록 | 소자 이름 | 노드 이름 | 연결 칸" 네 부분으로 이어 붙여 한 줄의 글로 만듭니다. 길이가 항상 같아서, 모델이 글자를 하나씩 낼 때 지금 몇 번째 칸인지 알 수 있고, 칸마다 올 수 있는 값만 내도록 막을 수 있습니다. 그래서 <b>형식이 틀린 회로가 나오지 않습니다</b>. 이 표현은 LaMAGIC 논문에서 가져왔습니다.</p>
+  </div>
+
+  <div class="step">
+    <h4>3. 스펙을 점 하나로 바꾼다</h4>
+    <p>사용자는 "이득 60 dB 이상"처럼 범위로 말하지만, 모델은 학습 때 "이득 = 63 dB" 같은 값 하나를 보고 배웠습니다. 그래서 항목마다 학습 데이터에 있던 범위와 사용자 조건이 겹치는 구간을 구하고, 그 가운데 값을 목표로 씁니다.</p>
+    <div class="eq">[ℓ, u] = [max(사용자 하한, 학습 하한), min(사용자 상한, 학습 상한)],  목표 = (ℓ + u) / 2</div>
+    <p class="muted">가운데를 고르는 이유는 학습 범위의 가장자리에서 모델이 가장 부정확하기 때문입니다. 사용자가 말하지 않은 항목은 학습 데이터의 평균을 쓰고, 조건이 학습 범위를 벗어나면 가장 가까운 끝값으로 맞추고 경고를 냅니다.</p>
+  </div>
+
+  <div class="step">
+    <h4>4. 후보 구조를 만든다 (FLAN-T5 학습)</h4>
+    <p>목표 스펙을 "Gain: 63 dB, UGB: 50 MHz ..." 같은 글로 앞에 붙이고, 뒤에 빈칸이 뚫린 연결 표 틀을 붙여 모델에 넣습니다. 모델은 빈칸을 채워 연결 표를 완성합니다. 스펙을 읽는 부분(인코더)과 표를 채우는 부분(디코더)이 나뉜 FLAN-T5를 쓴 이유는, 이 모델이 원래 "문장에서 지운 부분을 맞히는" 방식으로 학습되어 빈칸 채우기 과제와 잘 맞기 때문입니다.</p>
+    <p>학습은 쉬운 것부터 세 단계로 합니다.</p>
+    <ol>
+      <li>소자 종류는 알려 주고 연결만 맞히게 함. 이때 소자 순서를 무작위로 섞어 "회로의 기능은 소자를 적은 순서가 아니라 연결이 정한다"는 것을 배우게 함</li>
+      <li>섞기를 빼고 같은 과제를 다시 학습해, 실제로 쓸 때의 순서에 익숙해지게 함</li>
+      <li>소자 종류와 연결을 모두 가리고 맞히게 함. 이제 어떤 소자를 쓸지까지 모델이 정함</li>
+    </ol>
+    <p class="muted">스펙 하나에 후보를 여러 개 냅니다 (실험에서는 시드 5개 × 후보 10개).</p>
+  </div>
+
+  <div class="step">
+    <h4>5. 후보를 시뮬레이션해 순위를 매긴다</h4>
+    <p>후보마다 기본 소자 값을 넣어 SPICE로 한 번 돌리고, 측정값이 목표에서 얼마나 떨어졌는지로 점수를 매깁니다. 점수가 작을수록 좋습니다.</p>
+    <div class="eq">점수 = Σ (항목 가중치) × |측정값 − 목표값| / (|목표값| + ε)</div>
+    <p class="muted">이 순위로 최종 구조를 정하지는 않습니다. 시뮬레이션으로 확인된 "짧은 후보 목록"을 만드는 단계입니다.</p>
+  </div>
+
+  <div class="step">
+    <h4>6. 문헌을 검색해 근거를 보고 고른다 (RAG)</h4>
+    <p>후보 목록, 각 후보의 예비 측정값, 사용자 스펙을 묶어 질문을 만들고, 교과서(Razavi)·논문·공정 문서를 잘라 둔 문단에서 관련 내용을 찾습니다. 찾은 문단을 읽고 LLM이 최종 구조를 고릅니다.</p>
+    <ol>
+      <li><b>두 가지 검색을 함께 씁니다.</b> 뜻이 비슷한 문단을 찾는 의미 검색과, 단어가 정확히 같은 문단을 찾는 단어 검색(BM25)입니다. 의미 검색만 쓰면 CMRR과 PSRR처럼 비슷한 약어를 헷갈리고, 단어 검색만 쓰면 다르게 표현한 같은 내용을 놓치기 때문입니다.</li>
+      <li><b>두 결과를 순위로 합칩니다.</b> 점수 = α / (의미 검색 순위 + 1) + (1 − α) / (단어 검색 순위 + 1)</li>
+      <li><b>문단에 설명을 붙여 둡니다.</b> 저장하기 전에 LLM이 각 문단에 "이 문단이 원래 문서의 어느 부분인지" 짧은 설명을 붙여, 잘린 문단만 보고는 알 수 없는 맥락을 살립니다.</li>
+      <li>필요하면 인터넷에서 논문을 더 찾아 읽는 기능도 있습니다.</li>
+    </ol>
+  </div>
+
+  <div class="step">
+    <h4>7. 크기를 정한다 (참고)</h4>
+    <p>세 에이전트가 시뮬레이션을 돌며 소자 값을 고칩니다. Critic(눈)은 결과를 보고 무엇이 얼마나 부족한지와 책임 있는 소자를 짚고, Evaluator(두뇌)는 여러 회차의 흐름을 보고 한 항목이 제자리걸음이면 전략을 바꾸거나 특정 값을 못 건드리게 막고, Designer(손)만 실제로 값을 바꿉니다. 직류 동작점 → 주파수 응답 → 시간 응답 순으로 하나씩 맞춥니다. 이 부분은 김지윤 파트(구조) 밖입니다.</p>
+  </div>
+
+  <h3>실험 결과</h3>
+  <div class="wrap"><table>
+    <thead><tr><th>실험</th><th>결과</th></tr></thead>
+    <tbody>
+      <tr><td>구조 생성: OP-Amp 목표 스펙 24개, 스펙마다 후보 50개</td><td>형식과 동작 모두 유효 100% (Pass@1)</td></tr>
+      <tr><td>새로 만든 구조와 교과서 구조(Miller OTA) 비교, 어려운 과제 12개 × 2회</td><td>둘 다 24번 중 22번 성공. 성능 지표 평균은 새 구조 0.394, 교과서 구조 0.454</td></tr>
+      <tr><td>AnaFlow와 비교 (같은 공정, 같은 회로)</td><td>SPICE 2번 대 9번 (4.5배 적음), 시간 40배 짧음</td></tr>
+      <tr><td>Atelier와 비교 (2단 회로 4개 × 2회)</td><td>8번 중 8번 대 4번, 시뮬레이션 910번 대 2540번</td></tr>
+      <tr><td>RAG를 뺀 경우와 비교 (Miller OTA)</td><td>반복 17.3번 → 10.3번, 대역폭 11.2 → 19.5 MHz</td></tr>
+    </tbody>
+  </table></div>
+  <p class="muted">공정은 SkyWater 130 nm입니다. 구조 생성은 FLAN-T5 base, 구조 선택은 Claude Haiku 4.5, 크기 결정은 Claude Sonnet 4.6을 썼습니다.</p>
+
+  <h3>읽을 때 주의할 점</h3>
+  <ol>
+    <li><b>"동작이 유효하다"의 기준이 느슨합니다.</b> 시뮬레이션이 수렴하고 이득이 0 dB보다 크면 유효로 셉니다. 스펙을 만족한다는 뜻이 아닙니다.</li>
+    <li><b>학습 데이터가 무엇인지 본문에 없습니다.</b> 어떤 회로 몇 개로 학습했는지가 적혀 있지 않아, 우리가 따라 하려면 데이터부터 만들어야 합니다.</li>
+    <li><b>새 구조가 평균적으로 더 좋지는 않습니다.</b> "최대 3배"는 특정 과제 하나(0.318 대 0.108)의 값이고, 평균은 교과서 구조가 조금 높습니다.</li>
+    <li><b>스펙이 단순합니다.</b> 이득, 대역폭, 위상여유, 전력 네 가지입니다. 우리는 데이터시트 15개 항목을 판정합니다.</li>
+    <li><b>강한 유료 모델을 씁니다.</b> 우리는 무료 모델이라 LLM 판단의 질이 더 낮을 수 있습니다.</li>
+  </ol>
+
+  <h3>우리에게 적용하면</h3>
+  <div class="wrap"><table>
+    <thead><tr><th>AaLLM 단계</th><th>우리 대응</th><th>상태</th></tr></thead>
+    <tbody>
+      <tr><td>후보 생성 (FLAN-T5)</td><td>블록 모음 조립으로 대신. 조립되는 32개가 후보</td><td>있음</td></tr>
+      <tr><td>후보 순위 (기본 값 시뮬레이션)</td><td>32개 전체를 이미 시뮬레이션해 둠. 점수 식만 붙이면 됨</td><td>다음 단계</td></tr>
+      <tr><td>근거 있는 선택 (RAG)</td><td>상위 후보의 측정값 + 블록 설명을 LLM에 주고 이유와 함께 고르게 함. 문헌 검색은 그다음</td><td>다음 단계</td></tr>
+      <tr><td>후보 생성 학습</td><td>블록 조합 × 여러 소자 값으로 시뮬레이션해 "스펙 → 구조" 데이터를 만들고, Colab에서 FLAN-T5 학습</td><td>마지막 단계</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<section>
+  <h2>구현과 결과</h2>
+  <ol>
+    <li><b>블록 13개</b>: 1단 5종(폴디드 캐스코드 PMOS·NMOS 입력, 텔레스코픽, 차동쌍 + 전류 미러 PMOS·NMOS 입력), 2단 3종(class-A 2종, class-AB), 보상 2종, 바이어스 3종. 모두 GF180MCU 공정 모델로 동작을 확인</li>
+    <li><b>LLM</b>: TLV271 스펙을 보고 필요한 성질을 [역할, 관계, 값] 쌍으로 적음. 예: [1단, 입력 범위, 0 V 포함], [2단, 내보내는 전류, 큼]</li>
+    <li><b>코드</b>: 쌍에 가장 잘 맞는 블록을 찾고, 단자 기능을 맞춰 조립하고, 필요한 바이어스 회로를 자동으로 넣음</li>
+    <li><b>재시도</b>: 시뮬레이션에서 미달이면 실제 측정값을 LLM에 돌려줘 다른 구조를 받음</li>
+  </ol>
+  <h3>LLM이 블록을 직접 고르지 않는 이유</h3>
+  <p>LLM은 블록 이름을 고르지 않고 "필요한 성질"만 적습니다. 실제로 블록을 고르는 것은 그 성질로 검색하는 코드입니다. AMSnet-KG를 따른 방식이고, 이유는 세 가지입니다.</p>
+  <ol>
+    <li><b>블록이 늘어나도 그대로 씁니다.</b> 이름으로 고르게 하려면 모든 블록 설명을 LLM에 다 보여 줘야 합니다. 블록이 수백 개가 되면 불가능하고, 성질로 검색하면 블록 수와 상관없이 동작합니다. RAG(검색해서 가져온 자료로 답하기)를 쓰는 이유가 이것입니다.</li>
+    <li><b>고른 이유가 남습니다.</b> "입력 범위가 0 V를 포함해야 해서"처럼 스펙에서 나온 성질이 기록으로 남아, 왜 이 구조인지 설명할 수 있습니다.</li>
+    <li><b>LLM은 목록 정보에 약합니다.</b> 회로의 성질을 따지는 것은 잘하지만, 어느 블록이 어떤 단자를 가졌는지 같은 목록 정보는 틀리기 쉽습니다.</li>
+  </ol>
+  <p class="muted">다만 지금처럼 블록이 13개뿐이면 이름으로 직접 고르게 하는 편이 더 단순하고 정확할 수 있습니다. 블록을 늘릴 것을 전제로 검색 방식을 택했습니다.</p>
+  <div class="wrap"><table>
+    <thead><tr><th>확인한 것</th><th class="n">결과</th></tr></thead>
+    <tbody>
+      <tr><td>블록으로 만들 수 있는 조합 / 실제로 조립되는 조합</td><td class="n">50 / 32</td></tr>
+      <tr><td>32개를 모두 시뮬레이션했을 때 15개 목표를 다 통과하는 구조</td><td class="n">2</td></tr>
+      <tr><td>LLM 4번 실행 중 통과 구조에 도달한 횟수</td><td class="n">4 / 4</td></tr>
+      <tr><td>그중 첫 제안에서 바로 통과 / 재시도 후 통과</td><td class="n">3 / 1</td></tr>
+    </tbody>
+  </table></div>
+  <p class="muted">통과한 구조는 "PMOS 입력 폴디드 캐스코드 + class-AB 출력단 + Miller 보상"입니다. 입력 범위가 0 V를 포함해야 하고, 출력이 mA 단위 전류를 내야 하는 TLV271의 조건과 맞습니다.</p>
+  <div class="note"><b>정직하게 말할 점.</b> LLM이 함께 가질 수 없는 성질("NMOS 입력쌍"과 "입력 범위 0 V 포함")을 적은 경우가 4번 중 3번 있었고, 블록 찾기 규칙이 성능 요구 쪽을 따라 바로잡았습니다. 결과는 LLM 혼자가 아니라 LLM과 코드가 함께 낸 것입니다. 또 통과 구조가 32개 중 2개뿐이라 정답이 좁은 문제입니다.</div>
+</section>
+
+<section>
+  <h2>다음 계획</h2>
+  <ol>
+    <li><b>AaLLM식 선택</b>: 조립되는 후보를 기본 크기로 시뮬레이션해 순위를 매기고, 상위 후보의 측정값과 블록 설명을 LLM에 주어 이유와 함께 고르게 함</li>
+    <li><b>블록 늘리기</b>: 공개 데이터셋 AMSnet(넷리스트 792개)에서 OP-Amp 블록을 가져와 후보를 늘림</li>
+    <li><b>새 구조 생성</b>: 여유가 있으면 AaLLM처럼 FLAN-T5를 Colab에서 학습해 블록에 없는 구조를 만들어 봄</li>
+  </ol>
+</section>
+
+<section>
+  <h2>예상 질문</h2>
+  <div class="qa">
+    <details><summary>LLM이 회로를 직접 그리나요?</summary><p>아닙니다. LLM은 필요한 성질만 말하고, 회로는 동작이 확인된 블록을 코드가 조립합니다. 그래서 깨진 회로가 나오지 않습니다.</p></details>
+    <details><summary>블록에 없는 새 구조는 못 만들지 않나요?</summary><p>맞습니다. 이것이 블록 방식의 한계이고, AaLLM 논문이 학습 모델로 푼 부분입니다. 블록 방식으로 안정성을 먼저 확보하고, 학습 기반 생성은 다음 단계로 시도할 계획입니다.</p></details>
+    <details><summary>한 번에 맞힌 건 문제가 쉬워서 아닌가요?</summary><p>그럴 수 있습니다. 32개 구조 중 정답이 2개라 범위가 좁습니다. 블록을 늘리고 다른 데이터시트로 시험해야 정확히 평가할 수 있습니다.</p></details>
+    <details><summary>왜 학습 모델(YOLO 등)을 안 쓰나요?</summary><p>YOLO는 회로도 그림을 넷리스트로 바꾸는 데 쓰는 모델이라 구조를 고르는 일과는 다릅니다. 넷리스트가 이미 들어 있는 공개 데이터가 있어서 지금은 필요하지 않습니다.</p></details>
+  </div>
+</section>
+
+<footer>숫자는 2026-10-12 실행 기록 기준입니다. 코드: github.com/realppepper/EDAI, 브랜치 feature/jiyun-opamp-design-loop (blocks/, topology.py, llm_topology.py)</footer>
+</div>
+</body>
+</html>
