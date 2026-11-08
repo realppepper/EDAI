@@ -1,0 +1,3919 @@
+[
+ {
+  "name": "AnalogGenie 282",
+  "table": "PM1 D=OUT G=N1 S=VDD B=VDD\nPM2 D=N1 G=N1 S=VDD B=VDD\nNM1 D=OUT G=IN2 S=IB1 B=VSS\nNM2 D=N1 G=IN1 S=IB1 B=VSS\nC1 P=OUT N=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 2,
+  "polarity": [
+   "IN1",
+   "IN2"
+  ],
+  "transistors": 4,
+  "measured": {
+   "gain_dc": -11.93470218154798,
+   "ugbw": null,
+   "pm": null,
+   "gm": null,
+   "idd": 2.000030770367043e-05,
+   "sr": null,
+   "ts": 2.4749999999999763e-07,
+   "cmrr": 55.07192254683686,
+   "psrr": 49.3872075098789,
+   "voh_1ma": 0.22063520389627866,
+   "vol_1ma": 8.033530518967137,
+   "gain_unloaded": 41.45237911749514
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "36.4u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "35u",
+    "l": "2u"
+   },
+   "NM1": {
+    "w": "8.43u",
+    "l": "1u"
+   },
+   "NM2": {
+    "w": "8.78u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT N1 VDD VDD pfet_06v0 w=36.4u l=2u\nXPM2 N1 N1 VDD VDD pfet_06v0 w=35u l=2u\nXNM1 OUT INN IB1 VSS nfet_06v0 w=8.43u l=1u\nXNM2 N1 INP IB1 VSS nfet_06v0 w=8.78u l=1u\nC1 OUT VSS 1p\nIBIAS_IB1 IB1 VSS dc 2e-05\n.ends opamp\n",
+  "seconds": 8.8
+ },
+ {
+  "name": "AnalogGenie 282",
+  "table": "PM1 D=OUT G=N1 S=VDD B=VDD\nPM2 D=N1 G=N1 S=VDD B=VDD\nNM1 D=OUT G=IN2 S=IB1 B=VSS\nNM2 D=N1 G=IN1 S=IB1 B=VSS\nC1 P=OUT N=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 2,
+  "polarity": [
+   "IN1",
+   "IN2"
+  ],
+  "transistors": 4,
+  "measured": {
+   "gain_dc": -6.706378529556064,
+   "ugbw": null,
+   "pm": null,
+   "gm": null,
+   "idd": 2.0000106411824066e-05,
+   "sr": null,
+   "ts": 4.0249999999999615e-07,
+   "cmrr": 49.061420745102666,
+   "psrr": 47.025357237964194,
+   "voh_1ma": 0.6643386978091208,
+   "vol_1ma": 7.221567748590012,
+   "gain_unloaded": 41.53407386936911
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "61.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "11.9u",
+    "l": "2u"
+   },
+   "NM1": {
+    "w": "14.2u",
+    "l": "1u"
+   },
+   "NM2": {
+    "w": "2.99u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT N1 VDD VDD pfet_06v0 w=61.7u l=2u\nXPM2 N1 N1 VDD VDD pfet_06v0 w=11.9u l=2u\nXNM1 OUT INN IB1 VSS nfet_06v0 w=14.2u l=1u\nXNM2 N1 INP IB1 VSS nfet_06v0 w=2.99u l=1u\nC1 OUT VSS 1p\nIBIAS_IB1 IB1 VSS dc 2e-05\n.ends opamp\n",
+  "seconds": 10.5
+ },
+ {
+  "name": "AnalogGenie 983",
+  "table": "PM1 D=OUT G=N1 S=VDD B=VDD\nPM2 D=VSS G=N2 S=N1 B=VDD\nPM3 D=N1 G=N3 S=VDD B=VDD\nPM4 D=N4 G=N3 S=VDD B=VDD\nPM5 D=N5 G=N6 S=VDD B=VDD\nPM6 D=N6 G=N6 S=VDD B=VDD\nPM7 D=N7 G=N3 S=VDD B=VDD\nPM8 D=N3 G=N8 S=N4 B=VDD\nPM9 D=N2 G=N8 S=N7 B=VDD\nNM1 D=OUT G=VB1 S=VSS B=VSS\nNM2 D=N9 G=VB1 S=VSS B=VSS\nNM3 D=N10 G=IN2 S=N9 B=VSS\nNM4 D=N6 G=IN2 S=N9 B=VSS\nNM5 D=N6 G=IN1 S=N9 B=VSS\nNM6 D=N11 G=IN1 S=N9 B=VSS\nNM7 D=N8 G=N5 S=N11 B=VSS\nNM8 D=N5 G=N5 S=N9 B=VSS\nNM9 D=N2 G=N5 S=N10 B=VSS\nR1 P=N3 N=N8\nC1 P=N2 N=OUT",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": false,
+  "off": [],
+  "triode": [
+   "PM4",
+   "PM7",
+   "NM3",
+   "NM6"
+  ],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 18,
+  "measured": {
+   "gain_dc": 35.935561328161334,
+   "ugbw": 141334.43080557536,
+   "pm": 92.80789846840665,
+   "gm": 45.20041234035185,
+   "idd": 0.0005476313006097227,
+   "sr": null,
+   "ts": 4.487499999999957e-06,
+   "cmrr": 3.3061743861386956,
+   "psrr": 24.180204159149035,
+   "voh_1ma": -0.4360160774343167,
+   "vol_1ma": 6.9747918965643505,
+   "gain_unloaded": 93.08773827285748
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "48.4u",
+    "l": "1u"
+   },
+   "PM2": {
+    "w": "88.1u",
+    "l": "1u",
+    "m": "7"
+   },
+   "PM3": {
+    "w": "88.1u",
+    "l": "1u",
+    "m": "7"
+   },
+   "PM4": {
+    "w": "1.81u",
+    "l": "1u"
+   },
+   "PM7": {
+    "w": "2.06u",
+    "l": "1u"
+   },
+   "PM5": {
+    "w": "34.2u",
+    "l": "2u"
+   },
+   "PM6": {
+    "w": "29.5u",
+    "l": "2u"
+   },
+   "PM8": {
+    "w": "1.81u",
+    "l": "1u"
+   },
+   "PM9": {
+    "w": "2.06u",
+    "l": "1u"
+   },
+   "NM1": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM3": {
+    "w": "0.718u",
+    "l": "1u"
+   },
+   "NM4": {
+    "w": "4.65u",
+    "l": "1u"
+   },
+   "NM5": {
+    "w": "2.75u",
+    "l": "1u"
+   },
+   "NM6": {
+    "w": "0.632u",
+    "l": "1u"
+   },
+   "NM7": {
+    "w": "0.632u",
+    "l": "1u"
+   },
+   "NM8": {
+    "w": "7.44u",
+    "l": "2u"
+   },
+   "NM9": {
+    "w": "0.718u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT N1 VDD VDD pfet_06v0 w=48.4u l=1u\nXPM2 VSS N2 N1 VDD pfet_06v0 w=88.1u l=1u m=7\nXPM3 N1 N3 VDD VDD pfet_06v0 w=88.1u l=1u m=7\nXPM4 N4 N3 VDD VDD pfet_06v0 w=1.81u l=1u\nXPM5 N5 N6 VDD VDD pfet_06v0 w=34.2u l=2u\nXPM6 N6 N6 VDD VDD pfet_06v0 w=29.5u l=2u\nXPM7 N7 N3 VDD VDD pfet_06v0 w=2.06u l=1u\nXPM8 N3 N8 N4 VDD pfet_06v0 w=1.81u l=1u\nXPM9 N2 N8 N7 VDD pfet_06v0 w=2.06u l=1u\nXNM1 OUT VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 N9 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM3 N10 INP N9 VSS nfet_06v0 w=0.718u l=1u\nXNM4 N6 INP N9 VSS nfet_06v0 w=4.65u l=1u\nXNM5 N6 INN N9 VSS nfet_06v0 w=2.75u l=1u\nXNM6 N11 INN N9 VSS nfet_06v0 w=0.632u l=1u\nXNM7 N8 N5 N11 VSS nfet_06v0 w=0.632u l=1u\nXNM8 N5 N5 N9 VSS nfet_06v0 w=7.44u l=2u\nXNM9 N2 N5 N10 VSS nfet_06v0 w=0.718u l=1u\nR1 N3 N8 10k\nC1 N2 OUT 1p\nVBIAS_VB1 VB1 VSS dc 0.9286\n.ends opamp\n",
+  "seconds": 18.2
+ },
+ {
+  "name": "AnalogGenie 983",
+  "table": "PM1 D=OUT G=N1 S=VDD B=VDD\nPM2 D=VSS G=N2 S=N1 B=VDD\nPM3 D=N1 G=N3 S=VDD B=VDD\nPM4 D=N4 G=N3 S=VDD B=VDD\nPM5 D=N5 G=N6 S=VDD B=VDD\nPM6 D=N6 G=N6 S=VDD B=VDD\nPM7 D=N7 G=N3 S=VDD B=VDD\nPM8 D=N3 G=N8 S=N4 B=VDD\nPM9 D=N2 G=N8 S=N7 B=VDD\nNM1 D=OUT G=VB1 S=VSS B=VSS\nNM2 D=N9 G=VB1 S=VSS B=VSS\nNM3 D=N10 G=IN2 S=N9 B=VSS\nNM4 D=N6 G=IN2 S=N9 B=VSS\nNM5 D=N6 G=IN1 S=N9 B=VSS\nNM6 D=N11 G=IN1 S=N9 B=VSS\nNM7 D=N8 G=N5 S=N11 B=VSS\nNM8 D=N5 G=N5 S=N9 B=VSS\nNM9 D=N2 G=N5 S=N10 B=VSS\nR1 P=N3 N=N8\nC1 P=N2 N=OUT",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": true,
+  "saturated_all": false,
+  "off": [],
+  "triode": [
+   "PM4",
+   "PM7",
+   "NM3",
+   "NM6"
+  ],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 18,
+  "measured": {
+   "gain_dc": 51.47306514398721,
+   "ugbw": 566897.4543805221,
+   "pm": 94.67291659148786,
+   "gm": 44.755474582895005,
+   "idd": 0.0006297671237814943,
+   "sr": null,
+   "ts": 4.552499999999957e-06,
+   "cmrr": 3.3061452042192063,
+   "psrr": 24.37455852373406,
+   "voh_1ma": 4.8453481471095,
+   "vol_1ma": 5.890851646188356,
+   "gain_unloaded": 93.25260081733018
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "83.7u",
+    "l": "1u",
+    "m": "3"
+   },
+   "PM2": {
+    "w": "88.1u",
+    "l": "1u",
+    "m": "7"
+   },
+   "PM3": {
+    "w": "88.1u",
+    "l": "1u",
+    "m": "7"
+   },
+   "PM4": {
+    "w": "1.81u",
+    "l": "1u"
+   },
+   "PM7": {
+    "w": "2.06u",
+    "l": "1u"
+   },
+   "PM5": {
+    "w": "34.2u",
+    "l": "2u"
+   },
+   "PM6": {
+    "w": "29.5u",
+    "l": "2u"
+   },
+   "PM8": {
+    "w": "1.81u",
+    "l": "1u"
+   },
+   "PM9": {
+    "w": "2.06u",
+    "l": "1u"
+   },
+   "NM1": {
+    "w": "74.8u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM3": {
+    "w": "0.718u",
+    "l": "1u"
+   },
+   "NM4": {
+    "w": "4.65u",
+    "l": "1u"
+   },
+   "NM5": {
+    "w": "2.75u",
+    "l": "1u"
+   },
+   "NM6": {
+    "w": "0.632u",
+    "l": "1u"
+   },
+   "NM7": {
+    "w": "0.632u",
+    "l": "1u"
+   },
+   "NM8": {
+    "w": "7.44u",
+    "l": "2u"
+   },
+   "NM9": {
+    "w": "0.718u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT N1 VDD VDD pfet_06v0 w=83.7u l=1u m=3\nXPM2 VSS N2 N1 VDD pfet_06v0 w=88.1u l=1u m=7\nXPM3 N1 N3 VDD VDD pfet_06v0 w=88.1u l=1u m=7\nXPM4 N4 N3 VDD VDD pfet_06v0 w=1.81u l=1u\nXPM5 N5 N6 VDD VDD pfet_06v0 w=34.2u l=2u\nXPM6 N6 N6 VDD VDD pfet_06v0 w=29.5u l=2u\nXPM7 N7 N3 VDD VDD pfet_06v0 w=2.06u l=1u\nXPM8 N3 N8 N4 VDD pfet_06v0 w=1.81u l=1u\nXPM9 N2 N8 N7 VDD pfet_06v0 w=2.06u l=1u\nXNM1 OUT VB1 VSS VSS nfet_06v0 w=74.8u l=2u\nXNM2 N9 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM3 N10 INP N9 VSS nfet_06v0 w=0.718u l=1u\nXNM4 N6 INP N9 VSS nfet_06v0 w=4.65u l=1u\nXNM5 N6 INN N9 VSS nfet_06v0 w=2.75u l=1u\nXNM6 N11 INN N9 VSS nfet_06v0 w=0.632u l=1u\nXNM7 N8 N5 N11 VSS nfet_06v0 w=0.632u l=1u\nXNM8 N5 N5 N9 VSS nfet_06v0 w=7.44u l=2u\nXNM9 N2 N5 N10 VSS nfet_06v0 w=0.718u l=1u\nR1 N3 N8 10k\nC1 N2 OUT 1p\nVBIAS_VB1 VB1 VSS dc 0.9286\n.ends opamp\n",
+  "seconds": 22.7
+ },
+ {
+  "name": "AnalogGenie 1788",
+  "table": "PM1 D=OUT G=VB2 S=N1 B=VDD\nPM2 D=N1 G=VB1 S=VDD B=VDD\nPM3 D=N2 G=VB1 S=VDD B=VDD\nPM4 D=VB3 G=N3 S=VDD B=VDD\nPM5 D=N4 G=VB2 S=N2 B=VDD\nPM6 D=N5 G=N3 S=VDD B=VDD\nPM7 D=N3 G=N3 S=VDD B=VDD\nNM1 D=VB3 G=VB3 S=VSS B=VSS\nNM2 D=N6 G=N4 S=VSS B=VSS\nNM3 D=N7 G=N4 S=VSS B=VSS\nNM4 D=OUT G=N5 S=N7 B=VSS\nNM5 D=N1 G=IN1 S=N8 B=VSS\nNM6 D=N2 G=IN2 S=N8 B=VSS\nNM7 D=N8 G=N9 S=VSS B=VSS\nNM8 D=N9 G=N9 S=VSS B=VSS\nNM9 D=N3 G=VB3 S=N10 B=VSS\nNM10 D=N4 G=N5 S=N6 B=VSS\nNM11 D=N5 G=N5 S=N9 B=VSS\nR1 P=N10 N=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": false,
+  "off": [],
+  "triode": [
+   "NM10"
+  ],
+  "reason": "",
+  "iterations": 4,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 18,
+  "measured": {
+   "gain_dc": -20.351167340790923,
+   "ugbw": null,
+   "pm": null,
+   "gm": 62.356022370176454,
+   "idd": 6.072742740839952e-05,
+   "sr": null,
+   "ts": 3.574999999999966e-07,
+   "cmrr": 5.384259754118013,
+   "psrr": 62.86955309046903,
+   "voh_1ma": -0.677669743076132,
+   "vol_1ma": 6.671512906394345,
+   "gain_unloaded": 74.4287847418469
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "64.4u",
+    "l": "1u"
+   },
+   "PM2": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM4": {
+    "w": "25.9u",
+    "l": "2u"
+   },
+   "PM6": {
+    "w": "24.7u",
+    "l": "2u"
+   },
+   "PM7": {
+    "w": "22.5u",
+    "l": "2u"
+   },
+   "PM5": {
+    "w": "63u",
+    "l": "1u"
+   },
+   "NM1": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "8.74u",
+    "l": "1u"
+   },
+   "NM3": {
+    "w": "9.13u",
+    "l": "1u"
+   },
+   "NM4": {
+    "w": "14.1u",
+    "l": "1u"
+   },
+   "NM5": {
+    "w": "3.06u",
+    "l": "1u"
+   },
+   "NM6": {
+    "w": "3.38u",
+    "l": "1u"
+   },
+   "NM7": {
+    "w": "5.61u",
+    "l": "2u"
+   },
+   "NM8": {
+    "w": "5.38u",
+    "l": "2u"
+   },
+   "NM9": {
+    "w": "5.6u",
+    "l": "1u"
+   },
+   "NM10": {
+    "w": "13.5u",
+    "l": "1u"
+   },
+   "NM11": {
+    "w": "5.38u",
+    "l": "2u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT VB2 N1 VDD pfet_06v0 w=64.4u l=1u\nXPM2 N1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM3 N2 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM4 VB3 N3 VDD VDD pfet_06v0 w=25.9u l=2u\nXPM5 N4 VB2 N2 VDD pfet_06v0 w=63u l=1u\nXPM6 N5 N3 VDD VDD pfet_06v0 w=24.7u l=2u\nXPM7 N3 N3 VDD VDD pfet_06v0 w=22.5u l=2u\nXNM1 VB3 VB3 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 N6 N4 VSS VSS nfet_06v0 w=8.74u l=1u\nXNM3 N7 N4 VSS VSS nfet_06v0 w=9.13u l=1u\nXNM4 OUT N5 N7 VSS nfet_06v0 w=14.1u l=1u\nXNM5 N1 INN N8 VSS nfet_06v0 w=3.06u l=1u\nXNM6 N2 INP N8 VSS nfet_06v0 w=3.38u l=1u\nXNM7 N8 N9 VSS VSS nfet_06v0 w=5.61u l=2u\nXNM8 N9 N9 VSS VSS nfet_06v0 w=5.38u l=2u\nXNM9 N3 VB3 N10 VSS nfet_06v0 w=5.6u l=1u\nXNM10 N4 N5 N6 VSS nfet_06v0 w=13.5u l=1u\nXNM11 N5 N5 N9 VSS nfet_06v0 w=5.38u l=2u\nR1 N10 VSS 10k\nVBIAS_VB1 VDD VB1 dc 1.1009\nVBIAS_VB2 VDD VB2 dc 1.6303\nVBIAS_VB3 VB3 VSS dc 0.9286\n.ends opamp\n",
+  "seconds": 20.5
+ },
+ {
+  "name": "AnalogGenie 1788",
+  "table": "PM1 D=OUT G=VB2 S=N1 B=VDD\nPM2 D=N1 G=VB1 S=VDD B=VDD\nPM3 D=N2 G=VB1 S=VDD B=VDD\nPM4 D=VB3 G=N3 S=VDD B=VDD\nPM5 D=N4 G=VB2 S=N2 B=VDD\nPM6 D=N5 G=N3 S=VDD B=VDD\nPM7 D=N3 G=N3 S=VDD B=VDD\nNM1 D=VB3 G=VB3 S=VSS B=VSS\nNM2 D=N6 G=N4 S=VSS B=VSS\nNM3 D=N7 G=N4 S=VSS B=VSS\nNM4 D=OUT G=N5 S=N7 B=VSS\nNM5 D=N1 G=IN1 S=N8 B=VSS\nNM6 D=N2 G=IN2 S=N8 B=VSS\nNM7 D=N8 G=N9 S=VSS B=VSS\nNM8 D=N9 G=N9 S=VSS B=VSS\nNM9 D=N3 G=VB3 S=N10 B=VSS\nNM10 D=N4 G=N5 S=N6 B=VSS\nNM11 D=N5 G=N5 S=N9 B=VSS\nR1 P=N10 N=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": true,
+  "saturated_all": false,
+  "off": [],
+  "triode": [
+   "NM10"
+  ],
+  "reason": "",
+  "iterations": 4,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 18,
+  "measured": {
+   "gain_dc": -20.32867456897852,
+   "ugbw": null,
+   "pm": null,
+   "gm": 62.29922691133321,
+   "idd": 6.0727429889693406e-05,
+   "sr": null,
+   "ts": 3.574999999999966e-07,
+   "cmrr": 5.235076715560746,
+   "psrr": 61.441762947078374,
+   "voh_1ma": -0.6775926770358908,
+   "vol_1ma": 6.670610397823182,
+   "gain_unloaded": 74.42258826344255
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "64.6u",
+    "l": "1u"
+   },
+   "PM2": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM4": {
+    "w": "25.9u",
+    "l": "2u"
+   },
+   "PM6": {
+    "w": "24.7u",
+    "l": "2u"
+   },
+   "PM7": {
+    "w": "22.5u",
+    "l": "2u"
+   },
+   "PM5": {
+    "w": "62.8u",
+    "l": "1u"
+   },
+   "NM1": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "8.73u",
+    "l": "1u"
+   },
+   "NM3": {
+    "w": "9.17u",
+    "l": "1u"
+   },
+   "NM4": {
+    "w": "14.2u",
+    "l": "1u"
+   },
+   "NM5": {
+    "w": "3.04u",
+    "l": "1u"
+   },
+   "NM6": {
+    "w": "3.41u",
+    "l": "1u"
+   },
+   "NM7": {
+    "w": "5.61u",
+    "l": "2u"
+   },
+   "NM8": {
+    "w": "5.38u",
+    "l": "2u"
+   },
+   "NM9": {
+    "w": "5.6u",
+    "l": "1u"
+   },
+   "NM10": {
+    "w": "13.5u",
+    "l": "1u"
+   },
+   "NM11": {
+    "w": "5.38u",
+    "l": "2u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT VB2 N1 VDD pfet_06v0 w=64.6u l=1u\nXPM2 N1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM3 N2 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM4 VB3 N3 VDD VDD pfet_06v0 w=25.9u l=2u\nXPM5 N4 VB2 N2 VDD pfet_06v0 w=62.8u l=1u\nXPM6 N5 N3 VDD VDD pfet_06v0 w=24.7u l=2u\nXPM7 N3 N3 VDD VDD pfet_06v0 w=22.5u l=2u\nXNM1 VB3 VB3 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 N6 N4 VSS VSS nfet_06v0 w=8.73u l=1u\nXNM3 N7 N4 VSS VSS nfet_06v0 w=9.17u l=1u\nXNM4 OUT N5 N7 VSS nfet_06v0 w=14.2u l=1u\nXNM5 N1 INN N8 VSS nfet_06v0 w=3.04u l=1u\nXNM6 N2 INP N8 VSS nfet_06v0 w=3.41u l=1u\nXNM7 N8 N9 VSS VSS nfet_06v0 w=5.61u l=2u\nXNM8 N9 N9 VSS VSS nfet_06v0 w=5.38u l=2u\nXNM9 N3 VB3 N10 VSS nfet_06v0 w=5.6u l=1u\nXNM10 N4 N5 N6 VSS nfet_06v0 w=13.5u l=1u\nXNM11 N5 N5 N9 VSS nfet_06v0 w=5.38u l=2u\nR1 N10 VSS 10k\nVBIAS_VB1 VDD VB1 dc 1.1009\nVBIAS_VB2 VDD VB2 dc 1.6303\nVBIAS_VB3 VB3 VSS dc 0.9286\n.ends opamp\n",
+  "seconds": 23.9
+ },
+ {
+  "name": "AnalogGenie 1809",
+  "table": "PM1 D=OUT G=N1 S=VDD B=VDD\nPM2 D=N2 G=N3 S=VDD B=VDD\nPM3 D=N1 G=N1 S=VDD B=VDD\nPM4 D=N3 G=N3 S=VDD B=VDD\nPM5 D=N4 G=N5 S=VDD B=VDD\nPM6 D=N5 G=N5 S=VDD B=VDD\nNM1 D=OUT G=N2 S=VSS B=VSS\nNM2 D=N2 G=N2 S=VSS B=VSS\nNM3 D=N1 G=IN1 S=N6 B=VSS\nNM4 D=N3 G=IN2 S=N6 B=VSS\nNM5 D=N6 G=N4 S=VSS B=VSS\nNM6 D=N4 G=N4 S=VSS B=VSS\nR1 P=N5 N=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN1",
+   "IN2"
+  ],
+  "transistors": 12,
+  "measured": {
+   "gain_dc": 19.400612680768788,
+   "ugbw": 47542573.32248176,
+   "pm": 44.146304887920024,
+   "gm": 15.712853932783942,
+   "idd": 0.0021454585646812478,
+   "sr": 13097520.933559788,
+   "ts": 9.203951246048724e-08,
+   "cmrr": 4.294346363744791,
+   "psrr": 57.703340009356666,
+   "voh_1ma": -0.3492549737743032,
+   "vol_1ma": 1.7671476021125117,
+   "gain_unloaded": 51.355523826738235
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "96.1u",
+    "l": "2u",
+    "m": "13"
+   },
+   "PM3": {
+    "w": "98.5u",
+    "l": "2u",
+    "m": "11"
+   },
+   "PM2": {
+    "w": "93.8u",
+    "l": "2u",
+    "m": "10"
+   },
+   "PM4": {
+    "w": "89.7u",
+    "l": "2u",
+    "m": "8"
+   },
+   "PM5": {
+    "w": "96.2u",
+    "l": "2u",
+    "m": "18"
+   },
+   "PM6": {
+    "w": "95.7u",
+    "l": "2u",
+    "m": "14"
+   },
+   "NM1": {
+    "w": "90.7u",
+    "l": "2u",
+    "m": "3"
+   },
+   "NM2": {
+    "w": "68.1u",
+    "l": "2u",
+    "m": "3"
+   },
+   "NM3": {
+    "w": "90.5u",
+    "l": "1u",
+    "m": "3"
+   },
+   "NM4": {
+    "w": "89.9u",
+    "l": "1u",
+    "m": "2"
+   },
+   "NM5": {
+    "w": "98.1u",
+    "l": "2u",
+    "m": "4"
+   },
+   "NM6": {
+    "w": "94.3u",
+    "l": "2u",
+    "m": "4"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT N1 VDD VDD pfet_06v0 w=96.1u l=2u m=13\nXPM2 N2 N3 VDD VDD pfet_06v0 w=93.8u l=2u m=10\nXPM3 N1 N1 VDD VDD pfet_06v0 w=98.5u l=2u m=11\nXPM4 N3 N3 VDD VDD pfet_06v0 w=89.7u l=2u m=8\nXPM5 N4 N5 VDD VDD pfet_06v0 w=96.2u l=2u m=18\nXPM6 N5 N5 VDD VDD pfet_06v0 w=95.7u l=2u m=14\nXNM1 OUT N2 VSS VSS nfet_06v0 w=90.7u l=2u m=3\nXNM2 N2 N2 VSS VSS nfet_06v0 w=68.1u l=2u m=3\nXNM3 N1 INP N6 VSS nfet_06v0 w=90.5u l=1u m=3\nXNM4 N3 INN N6 VSS nfet_06v0 w=89.9u l=1u m=2\nXNM5 N6 N4 VSS VSS nfet_06v0 w=98.1u l=2u m=4\nXNM6 N4 N4 VSS VSS nfet_06v0 w=94.3u l=2u m=4\nR1 N5 VSS 10k\n.ends opamp\n",
+  "seconds": 14.3
+ },
+ {
+  "name": "AnalogGenie 1809",
+  "table": "PM1 D=OUT G=N1 S=VDD B=VDD\nPM2 D=N2 G=N3 S=VDD B=VDD\nPM3 D=N1 G=N1 S=VDD B=VDD\nPM4 D=N3 G=N3 S=VDD B=VDD\nPM5 D=N4 G=N5 S=VDD B=VDD\nPM6 D=N5 G=N5 S=VDD B=VDD\nNM1 D=OUT G=N2 S=VSS B=VSS\nNM2 D=N2 G=N2 S=VSS B=VSS\nNM3 D=N1 G=IN1 S=N6 B=VSS\nNM4 D=N3 G=IN2 S=N6 B=VSS\nNM5 D=N6 G=N4 S=VSS B=VSS\nNM6 D=N4 G=N4 S=VSS B=VSS\nR1 P=N5 N=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN1",
+   "IN2"
+  ],
+  "transistors": 12,
+  "measured": {
+   "gain_dc": 23.631686822516222,
+   "ugbw": 52339331.668438606,
+   "pm": 13.728467793442917,
+   "gm": 4.1624776360929365,
+   "idd": 0.0021853868568357713,
+   "sr": 14123529.445997652,
+   "ts": 7.07701763803026e-08,
+   "cmrr": 3.4903006703129593,
+   "psrr": 53.81403123017658,
+   "voh_1ma": -0.31952012430524623,
+   "vol_1ma": 0.05939283255363736,
+   "gain_unloaded": 51.46081001746799
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "PM3": {
+    "w": "97u",
+    "l": "2u",
+    "m": "16"
+   },
+   "PM2": {
+    "w": "81.4u",
+    "l": "2u",
+    "m": "4"
+   },
+   "PM4": {
+    "w": "82.7u",
+    "l": "2u",
+    "m": "3"
+   },
+   "PM5": {
+    "w": "96.2u",
+    "l": "2u",
+    "m": "18"
+   },
+   "PM6": {
+    "w": "95.7u",
+    "l": "2u",
+    "m": "14"
+   },
+   "NM1": {
+    "w": "95.3u",
+    "l": "2u",
+    "m": "5"
+   },
+   "NM2": {
+    "w": "70.9u",
+    "l": "2u"
+   },
+   "NM3": {
+    "w": "97.1u",
+    "l": "1u",
+    "m": "4"
+   },
+   "NM4": {
+    "w": "62.1u",
+    "l": "1u"
+   },
+   "NM5": {
+    "w": "98u",
+    "l": "2u",
+    "m": "4"
+   },
+   "NM6": {
+    "w": "94.3u",
+    "l": "2u",
+    "m": "4"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT N1 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM2 N2 N3 VDD VDD pfet_06v0 w=81.4u l=2u m=4\nXPM3 N1 N1 VDD VDD pfet_06v0 w=97u l=2u m=16\nXPM4 N3 N3 VDD VDD pfet_06v0 w=82.7u l=2u m=3\nXPM5 N4 N5 VDD VDD pfet_06v0 w=96.2u l=2u m=18\nXPM6 N5 N5 VDD VDD pfet_06v0 w=95.7u l=2u m=14\nXNM1 OUT N2 VSS VSS nfet_06v0 w=95.3u l=2u m=5\nXNM2 N2 N2 VSS VSS nfet_06v0 w=70.9u l=2u\nXNM3 N1 INP N6 VSS nfet_06v0 w=97.1u l=1u m=4\nXNM4 N3 INN N6 VSS nfet_06v0 w=62.1u l=1u\nXNM5 N6 N4 VSS VSS nfet_06v0 w=98u l=2u m=4\nXNM6 N4 N4 VSS VSS nfet_06v0 w=94.3u l=2u m=4\nR1 N5 VSS 10k\n.ends opamp\n",
+  "seconds": 13.5
+ },
+ {
+  "name": "AnalogGenie 1830",
+  "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD\nPM2 D=VB2 G=VB2 S=VDD B=VDD\nPM3 D=OUT G=N1 S=VDD B=VDD\nPM4 D=N2 G=VB2 S=VDD B=VDD\nPM5 D=N3 G=N4 S=VDD B=VDD\nPM6 D=N1 G=N1 S=VDD B=VDD\nPM7 D=N4 G=N4 S=VDD B=VDD\nPM8 D=N5 G=N6 S=VDD B=VDD\nPM9 D=N6 G=N6 S=VDD B=VDD\nNM1 D=OUT G=N3 S=VSS B=VSS\nNM2 D=VB1 G=N5 S=VSS B=VSS\nNM3 D=N3 G=N3 S=VSS B=VSS\nNM4 D=N1 G=IN1 S=N7 B=VSS\nNM5 D=N4 G=IN2 S=N7 B=VSS\nNM6 D=N7 G=N5 S=VSS B=VSS\nNM7 D=N5 G=N5 S=VSS B=VSS\nNM8 D=N6 G=N8 S=VSS B=VSS\nNM9 D=VB2 G=N2 S=N8 B=VSS\nNM10 D=N2 G=N8 S=VSS B=VSS\nR1 P=N8 N=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN1",
+   "IN2"
+  ],
+  "transistors": 19,
+  "measured": {
+   "gain_dc": 0.8774351886407405,
+   "ugbw": 3672519.2214602414,
+   "pm": 149.90134143961893,
+   "gm": 33.79036270635083,
+   "idd": 0.00046039969159219894,
+   "sr": null,
+   "ts": 3.624536572390999e-07,
+   "cmrr": 3.5176767982469292,
+   "psrr": 56.809812211676416,
+   "voh_1ma": -0.6761031007316182,
+   "vol_1ma": 6.092478950770326,
+   "gain_unloaded": 51.21279152073022
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM4": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "68.3u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM6": {
+    "w": "58.4u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM5": {
+    "w": "50.5u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM7": {
+    "w": "75.5u",
+    "l": "2u"
+   },
+   "PM8": {
+    "w": "90.1u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM9": {
+    "w": "67.8u",
+    "l": "2u",
+    "m": "2"
+   },
+   "NM1": {
+    "w": "30.2u",
+    "l": "2u"
+   },
+   "NM3": {
+    "w": "22u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "65.3u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "41.8u",
+    "l": "2u"
+   },
+   "NM7": {
+    "w": "39.3u",
+    "l": "2u"
+   },
+   "NM4": {
+    "w": "29.2u",
+    "l": "1u"
+   },
+   "NM5": {
+    "w": "18.9u",
+    "l": "1u"
+   },
+   "NM8": {
+    "w": "21.9u",
+    "l": "1u"
+   },
+   "NM10": {
+    "w": "11.4u",
+    "l": "1u"
+   },
+   "NM9": {
+    "w": "49.2u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 VB2 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM3 OUT N1 VDD VDD pfet_06v0 w=68.3u l=2u m=2\nXPM4 N2 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM5 N3 N4 VDD VDD pfet_06v0 w=50.5u l=2u m=2\nXPM6 N1 N1 VDD VDD pfet_06v0 w=58.4u l=2u m=2\nXPM7 N4 N4 VDD VDD pfet_06v0 w=75.5u l=2u\nXPM8 N5 N6 VDD VDD pfet_06v0 w=90.1u l=2u m=2\nXPM9 N6 N6 VDD VDD pfet_06v0 w=67.8u l=2u m=2\nXNM1 OUT N3 VSS VSS nfet_06v0 w=30.2u l=2u\nXNM2 VB1 N5 VSS VSS nfet_06v0 w=65.3u l=2u\nXNM3 N3 N3 VSS VSS nfet_06v0 w=22u l=2u\nXNM4 N1 INP N7 VSS nfet_06v0 w=29.2u l=1u\nXNM5 N4 INN N7 VSS nfet_06v0 w=18.9u l=1u\nXNM6 N7 N5 VSS VSS nfet_06v0 w=41.8u l=2u\nXNM7 N5 N5 VSS VSS nfet_06v0 w=39.3u l=2u\nXNM8 N6 N8 VSS VSS nfet_06v0 w=21.9u l=1u\nXNM9 VB2 N2 N8 VSS nfet_06v0 w=49.2u l=1u\nXNM10 N2 N8 VSS VSS nfet_06v0 w=11.4u l=1u\nR1 N8 VSS 10k\nVBIAS_VB1 VDD VB1 dc 1.1009\nVBIAS_VB2 VDD VB2 dc 1.1009\n.ends opamp\n",
+  "seconds": 21.5
+ },
+ {
+  "name": "AnalogGenie 1830",
+  "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD\nPM2 D=VB2 G=VB2 S=VDD B=VDD\nPM3 D=OUT G=N1 S=VDD B=VDD\nPM4 D=N2 G=VB2 S=VDD B=VDD\nPM5 D=N3 G=N4 S=VDD B=VDD\nPM6 D=N1 G=N1 S=VDD B=VDD\nPM7 D=N4 G=N4 S=VDD B=VDD\nPM8 D=N5 G=N6 S=VDD B=VDD\nPM9 D=N6 G=N6 S=VDD B=VDD\nNM1 D=OUT G=N3 S=VSS B=VSS\nNM2 D=VB1 G=N5 S=VSS B=VSS\nNM3 D=N3 G=N3 S=VSS B=VSS\nNM4 D=N1 G=IN1 S=N7 B=VSS\nNM5 D=N4 G=IN2 S=N7 B=VSS\nNM6 D=N7 G=N5 S=VSS B=VSS\nNM7 D=N5 G=N5 S=VSS B=VSS\nNM8 D=N6 G=N8 S=VSS B=VSS\nNM9 D=VB2 G=N2 S=N8 B=VSS\nNM10 D=N2 G=N8 S=VSS B=VSS\nR1 P=N8 N=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN1",
+   "IN2"
+  ],
+  "transistors": 19,
+  "measured": {
+   "gain_dc": 14.539160027825462,
+   "ugbw": 26805904.647708654,
+   "pm": 52.98378499119309,
+   "gm": 14.244765646979106,
+   "idd": 0.0006458409291786166,
+   "sr": 7799310.646668557,
+   "ts": 1.3249999999999873e-07,
+   "cmrr": 3.433927535395551,
+   "psrr": 57.027717746979576,
+   "voh_1ma": -0.4740597275807059,
+   "vol_1ma": 5.3848771900771055,
+   "gain_unloaded": 51.21974076731465
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM4": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "96.1u",
+    "l": "2u",
+    "m": "7"
+   },
+   "PM6": {
+    "w": "57.4u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM5": {
+    "w": "51.6u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM7": {
+    "w": "77.4u",
+    "l": "2u"
+   },
+   "PM8": {
+    "w": "90.1u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM9": {
+    "w": "67.8u",
+    "l": "2u",
+    "m": "2"
+   },
+   "NM1": {
+    "w": "73.4u",
+    "l": "2u",
+    "m": "2"
+   },
+   "NM3": {
+    "w": "22.5u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "65.3u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "41.8u",
+    "l": "2u"
+   },
+   "NM7": {
+    "w": "39.3u",
+    "l": "2u"
+   },
+   "NM4": {
+    "w": "28.7u",
+    "l": "1u"
+   },
+   "NM5": {
+    "w": "19.4u",
+    "l": "1u"
+   },
+   "NM8": {
+    "w": "21.9u",
+    "l": "1u"
+   },
+   "NM10": {
+    "w": "11.4u",
+    "l": "1u"
+   },
+   "NM9": {
+    "w": "49.2u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 VB2 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM3 OUT N1 VDD VDD pfet_06v0 w=96.1u l=2u m=7\nXPM4 N2 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM5 N3 N4 VDD VDD pfet_06v0 w=51.6u l=2u m=2\nXPM6 N1 N1 VDD VDD pfet_06v0 w=57.4u l=2u m=2\nXPM7 N4 N4 VDD VDD pfet_06v0 w=77.4u l=2u\nXPM8 N5 N6 VDD VDD pfet_06v0 w=90.1u l=2u m=2\nXPM9 N6 N6 VDD VDD pfet_06v0 w=67.8u l=2u m=2\nXNM1 OUT N3 VSS VSS nfet_06v0 w=73.4u l=2u m=2\nXNM2 VB1 N5 VSS VSS nfet_06v0 w=65.3u l=2u\nXNM3 N3 N3 VSS VSS nfet_06v0 w=22.5u l=2u\nXNM4 N1 INP N7 VSS nfet_06v0 w=28.7u l=1u\nXNM5 N4 INN N7 VSS nfet_06v0 w=19.4u l=1u\nXNM6 N7 N5 VSS VSS nfet_06v0 w=41.8u l=2u\nXNM7 N5 N5 VSS VSS nfet_06v0 w=39.3u l=2u\nXNM8 N6 N8 VSS VSS nfet_06v0 w=21.9u l=1u\nXNM9 VB2 N2 N8 VSS nfet_06v0 w=49.2u l=1u\nXNM10 N2 N8 VSS VSS nfet_06v0 w=11.4u l=1u\nR1 N8 VSS 10k\nVBIAS_VB1 VDD VB1 dc 1.1009\nVBIAS_VB2 VDD VB2 dc 1.1009\n.ends opamp\n",
+  "seconds": 20.2
+ },
+ {
+  "name": "AnalogGenie 1851",
+  "table": "PM1 D=VB2 G=VB2 S=VDD B=VDD\nPM2 D=OUT G=N1 S=VDD B=VDD\nPM3 D=VB1 G=N2 S=VDD B=VDD\nPM4 D=N3 G=VB2 S=VDD B=VDD\nPM5 D=N1 G=N1 S=VDD B=VDD\nPM6 D=N4 G=IN2 S=N5 B=VDD\nPM7 D=N6 G=IN1 S=N5 B=VDD\nPM8 D=N5 G=N2 S=VDD B=VDD\nPM9 D=N2 G=N2 S=VDD B=VDD\nNM1 D=VB1 G=VB1 S=VSS B=VSS\nNM2 D=OUT G=N4 S=VSS B=VSS\nNM3 D=VB2 G=N3 S=VSS B=VSS\nNM4 D=N1 G=N6 S=VSS B=VSS\nNM5 D=N4 G=N4 S=VSS B=VSS\nNM6 D=N6 G=N6 S=VSS B=VSS\nNM7 D=N2 G=N3 S=VSS B=VSS\nNM8 D=N7 G=N3 S=VSS B=VSS\nR1 P=N3 N=N7",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 17,
+  "measured": {
+   "gain_dc": 6.40446595145506,
+   "ugbw": 13842853.24479352,
+   "pm": 106.36564461938778,
+   "gm": 40.475602774653126,
+   "idd": 0.0006840771856830162,
+   "sr": 1949614.8560787002,
+   "ts": 3.7558261759882455e-07,
+   "cmrr": 90.98025760180194,
+   "psrr": 55.482412046988365,
+   "voh_1ma": -0.6370311867163776,
+   "vol_1ma": 5.708723052016105,
+   "gain_unloaded": 51.03665945417841
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM4": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "84.2u",
+    "l": "2u",
+    "m": "3"
+   },
+   "PM5": {
+    "w": "71.8u",
+    "l": "2u",
+    "m": "3"
+   },
+   "PM3": {
+    "w": "84.9u",
+    "l": "2u",
+    "m": "5"
+   },
+   "PM8": {
+    "w": "78.4u",
+    "l": "2u",
+    "m": "4"
+   },
+   "PM9": {
+    "w": "79.8u",
+    "l": "2u",
+    "m": "4"
+   },
+   "PM6": {
+    "w": "71.3u",
+    "l": "1u",
+    "m": "3"
+   },
+   "PM7": {
+    "w": "75.9u",
+    "l": "1u",
+    "m": "2"
+   },
+   "NM1": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "54.7u",
+    "l": "2u"
+   },
+   "NM5": {
+    "w": "39.9u",
+    "l": "2u"
+   },
+   "NM3": {
+    "w": "53u",
+    "l": "1u"
+   },
+   "NM7": {
+    "w": "51.5u",
+    "l": "1u"
+   },
+   "NM8": {
+    "w": "11.5u",
+    "l": "1u"
+   },
+   "NM4": {
+    "w": "46.8u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "28.4u",
+    "l": "2u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB2 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT N1 VDD VDD pfet_06v0 w=84.2u l=2u m=3\nXPM3 VB1 N2 VDD VDD pfet_06v0 w=84.9u l=2u m=5\nXPM4 N3 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM5 N1 N1 VDD VDD pfet_06v0 w=71.8u l=2u m=3\nXPM6 N4 INP N5 VDD pfet_06v0 w=71.3u l=1u m=3\nXPM7 N6 INN N5 VDD pfet_06v0 w=75.9u l=1u m=2\nXPM8 N5 N2 VDD VDD pfet_06v0 w=78.4u l=2u m=4\nXPM9 N2 N2 VDD VDD pfet_06v0 w=79.8u l=2u m=4\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT N4 VSS VSS nfet_06v0 w=54.7u l=2u\nXNM3 VB2 N3 VSS VSS nfet_06v0 w=53u l=1u\nXNM4 N1 N6 VSS VSS nfet_06v0 w=46.8u l=2u\nXNM5 N4 N4 VSS VSS nfet_06v0 w=39.9u l=2u\nXNM6 N6 N6 VSS VSS nfet_06v0 w=28.4u l=2u\nXNM7 N2 N3 VSS VSS nfet_06v0 w=51.5u l=1u\nXNM8 N7 N3 VSS VSS nfet_06v0 w=11.5u l=1u\nR1 N3 N7 10k\nVBIAS_VB1 VB1 VSS dc 0.9286\nVBIAS_VB2 VDD VB2 dc 1.1009\n.ends opamp\n",
+  "seconds": 20.5
+ },
+ {
+  "name": "AnalogGenie 1851",
+  "table": "PM1 D=VB2 G=VB2 S=VDD B=VDD\nPM2 D=OUT G=N1 S=VDD B=VDD\nPM3 D=VB1 G=N2 S=VDD B=VDD\nPM4 D=N3 G=VB2 S=VDD B=VDD\nPM5 D=N1 G=N1 S=VDD B=VDD\nPM6 D=N4 G=IN2 S=N5 B=VDD\nPM7 D=N6 G=IN1 S=N5 B=VDD\nPM8 D=N5 G=N2 S=VDD B=VDD\nPM9 D=N2 G=N2 S=VDD B=VDD\nNM1 D=VB1 G=VB1 S=VSS B=VSS\nNM2 D=OUT G=N4 S=VSS B=VSS\nNM3 D=VB2 G=N3 S=VSS B=VSS\nNM4 D=N1 G=N6 S=VSS B=VSS\nNM5 D=N4 G=N4 S=VSS B=VSS\nNM6 D=N6 G=N6 S=VSS B=VSS\nNM7 D=N2 G=N3 S=VSS B=VSS\nNM8 D=N7 G=N3 S=VSS B=VSS\nR1 P=N3 N=N7",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 17,
+  "measured": {
+   "gain_dc": 19.96222766971803,
+   "ugbw": 38374722.18642843,
+   "pm": 54.7724577262553,
+   "gm": 27.15685466858068,
+   "idd": 0.0010437189505408907,
+   "sr": 13329425.377857355,
+   "ts": 1.4565164889409418e-07,
+   "cmrr": 88.82512243619182,
+   "psrr": 55.47106424907249,
+   "voh_1ma": 4.734724955103811,
+   "vol_1ma": 5.288898000414229,
+   "gain_unloaded": 51.0357555363104
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM4": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "94.6u",
+    "l": "2u",
+    "m": "13"
+   },
+   "PM5": {
+    "w": "69.8u",
+    "l": "2u",
+    "m": "3"
+   },
+   "PM3": {
+    "w": "84.9u",
+    "l": "2u",
+    "m": "5"
+   },
+   "PM8": {
+    "w": "78.4u",
+    "l": "2u",
+    "m": "4"
+   },
+   "PM9": {
+    "w": "79.8u",
+    "l": "2u",
+    "m": "4"
+   },
+   "PM6": {
+    "w": "72.4u",
+    "l": "1u",
+    "m": "3"
+   },
+   "PM7": {
+    "w": "74.2u",
+    "l": "1u",
+    "m": "2"
+   },
+   "NM1": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "89.1u",
+    "l": "2u",
+    "m": "3"
+   },
+   "NM5": {
+    "w": "40.6u",
+    "l": "2u"
+   },
+   "NM3": {
+    "w": "53u",
+    "l": "1u"
+   },
+   "NM7": {
+    "w": "51.5u",
+    "l": "1u"
+   },
+   "NM8": {
+    "w": "11.5u",
+    "l": "1u"
+   },
+   "NM4": {
+    "w": "45.5u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "27.7u",
+    "l": "2u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB2 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT N1 VDD VDD pfet_06v0 w=94.6u l=2u m=13\nXPM3 VB1 N2 VDD VDD pfet_06v0 w=84.9u l=2u m=5\nXPM4 N3 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM5 N1 N1 VDD VDD pfet_06v0 w=69.8u l=2u m=3\nXPM6 N4 INP N5 VDD pfet_06v0 w=72.4u l=1u m=3\nXPM7 N6 INN N5 VDD pfet_06v0 w=74.2u l=1u m=2\nXPM8 N5 N2 VDD VDD pfet_06v0 w=78.4u l=2u m=4\nXPM9 N2 N2 VDD VDD pfet_06v0 w=79.8u l=2u m=4\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT N4 VSS VSS nfet_06v0 w=89.1u l=2u m=3\nXNM3 VB2 N3 VSS VSS nfet_06v0 w=53u l=1u\nXNM4 N1 N6 VSS VSS nfet_06v0 w=45.5u l=2u\nXNM5 N4 N4 VSS VSS nfet_06v0 w=40.6u l=2u\nXNM6 N6 N6 VSS VSS nfet_06v0 w=27.7u l=2u\nXNM7 N2 N3 VSS VSS nfet_06v0 w=51.5u l=1u\nXNM8 N7 N3 VSS VSS nfet_06v0 w=11.5u l=1u\nR1 N3 N7 10k\nVBIAS_VB1 VB1 VSS dc 0.9286\nVBIAS_VB2 VDD VB2 dc 1.1009\n.ends opamp\n",
+  "seconds": 20.5
+ },
+ {
+  "name": "AnalogGenie 1872",
+  "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD\nPM2 D=OUT G=N1 S=VDD B=VDD\nPM3 D=N2 G=VB1 S=VDD B=VDD\nPM4 D=N1 G=N1 S=VDD B=VDD\nPM5 D=N3 G=IN2 S=N4 B=VDD\nPM6 D=N5 G=IN1 S=N4 B=VDD\nPM7 D=N4 G=N6 S=VDD B=VDD\nPM8 D=N6 G=N6 S=VDD B=VDD\nNM1 D=OUT G=N3 S=VSS B=VSS\nNM2 D=N1 G=N5 S=VSS B=VSS\nNM3 D=N3 G=N3 S=VSS B=VSS\nNM4 D=N5 G=N5 S=VSS B=VSS\nNM5 D=N6 G=N7 S=VSS B=VSS\nNM6 D=VB1 G=N2 S=N7 B=VSS\nNM7 D=N2 G=N7 S=VSS B=VSS\nR1 P=N7 N=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 15,
+  "measured": {
+   "gain_dc": -1.5218963177835352,
+   "ugbw": null,
+   "pm": null,
+   "gm": 47.91311649177994,
+   "idd": 0.00026011256623797573,
+   "sr": null,
+   "ts": 4.120370996425135e-07,
+   "cmrr": 78.93144995726341,
+   "psrr": 55.24818123787295,
+   "voh_1ma": -0.6772783768489812,
+   "vol_1ma": 6.403900708130072,
+   "gain_unloaded": 51.19031204882241
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "54.1u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM4": {
+    "w": "92.5u",
+    "l": "2u"
+   },
+   "PM5": {
+    "w": "91.4u",
+    "l": "1u"
+   },
+   "PM6": {
+    "w": "64.1u",
+    "l": "1u"
+   },
+   "PM7": {
+    "w": "66.7u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM8": {
+    "w": "67.8u",
+    "l": "2u",
+    "m": "2"
+   },
+   "NM1": {
+    "w": "23.2u",
+    "l": "2u"
+   },
+   "NM3": {
+    "w": "17.1u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "20.1u",
+    "l": "2u"
+   },
+   "NM4": {
+    "w": "12u",
+    "l": "2u"
+   },
+   "NM5": {
+    "w": "21.9u",
+    "l": "1u"
+   },
+   "NM7": {
+    "w": "11.4u",
+    "l": "1u"
+   },
+   "NM6": {
+    "w": "49.2u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT N1 VDD VDD pfet_06v0 w=54.1u l=2u m=2\nXPM3 N2 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM4 N1 N1 VDD VDD pfet_06v0 w=92.5u l=2u\nXPM5 N3 INP N4 VDD pfet_06v0 w=91.4u l=1u\nXPM6 N5 INN N4 VDD pfet_06v0 w=64.1u l=1u\nXPM7 N4 N6 VDD VDD pfet_06v0 w=66.7u l=2u m=2\nXPM8 N6 N6 VDD VDD pfet_06v0 w=67.8u l=2u m=2\nXNM1 OUT N3 VSS VSS nfet_06v0 w=23.2u l=2u\nXNM2 N1 N5 VSS VSS nfet_06v0 w=20.1u l=2u\nXNM3 N3 N3 VSS VSS nfet_06v0 w=17.1u l=2u\nXNM4 N5 N5 VSS VSS nfet_06v0 w=12u l=2u\nXNM5 N6 N7 VSS VSS nfet_06v0 w=21.9u l=1u\nXNM6 VB1 N2 N7 VSS nfet_06v0 w=49.2u l=1u\nXNM7 N2 N7 VSS VSS nfet_06v0 w=11.4u l=1u\nR1 N7 VSS 10k\nVBIAS_VB1 VDD VB1 dc 1.1009\n.ends opamp\n",
+  "seconds": 12.1
+ },
+ {
+  "name": "AnalogGenie 1872",
+  "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD\nPM2 D=OUT G=N1 S=VDD B=VDD\nPM3 D=N2 G=VB1 S=VDD B=VDD\nPM4 D=N1 G=N1 S=VDD B=VDD\nPM5 D=N3 G=IN2 S=N4 B=VDD\nPM6 D=N5 G=IN1 S=N4 B=VDD\nPM7 D=N4 G=N6 S=VDD B=VDD\nPM8 D=N6 G=N6 S=VDD B=VDD\nNM1 D=OUT G=N3 S=VSS B=VSS\nNM2 D=N1 G=N5 S=VSS B=VSS\nNM3 D=N3 G=N3 S=VSS B=VSS\nNM4 D=N5 G=N5 S=VSS B=VSS\nNM5 D=N6 G=N7 S=VSS B=VSS\nNM6 D=VB1 G=N2 S=N7 B=VSS\nNM7 D=N2 G=N7 S=VSS B=VSS\nR1 P=N7 N=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 15,
+  "measured": {
+   "gain_dc": 12.089453430542946,
+   "ugbw": 20025610.59894165,
+   "pm": 74.45310476233921,
+   "gm": 34.1442468366845,
+   "idd": 0.00039727273633320193,
+   "sr": 4757440.082084773,
+   "ts": 2.3249999999999777e-07,
+   "cmrr": 79.70079016333042,
+   "psrr": 55.4600591172968,
+   "voh_1ma": -0.4585674565858151,
+   "vol_1ma": 5.519851862380437,
+   "gain_unloaded": 51.181421897862535
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "86.7u",
+    "l": "2u",
+    "m": "6"
+   },
+   "PM4": {
+    "w": "88.9u",
+    "l": "2u"
+   },
+   "PM5": {
+    "w": "93.5u",
+    "l": "1u"
+   },
+   "PM6": {
+    "w": "62u",
+    "l": "1u"
+   },
+   "PM7": {
+    "w": "66.7u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM8": {
+    "w": "67.8u",
+    "l": "2u",
+    "m": "2"
+   },
+   "NM1": {
+    "w": "56.5u",
+    "l": "2u",
+    "m": "2"
+   },
+   "NM3": {
+    "w": "17.4u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "19.3u",
+    "l": "2u"
+   },
+   "NM4": {
+    "w": "11.6u",
+    "l": "2u"
+   },
+   "NM5": {
+    "w": "21.9u",
+    "l": "1u"
+   },
+   "NM7": {
+    "w": "11.4u",
+    "l": "1u"
+   },
+   "NM6": {
+    "w": "49.2u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT N1 VDD VDD pfet_06v0 w=86.7u l=2u m=6\nXPM3 N2 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM4 N1 N1 VDD VDD pfet_06v0 w=88.9u l=2u\nXPM5 N3 INP N4 VDD pfet_06v0 w=93.5u l=1u\nXPM6 N5 INN N4 VDD pfet_06v0 w=62u l=1u\nXPM7 N4 N6 VDD VDD pfet_06v0 w=66.7u l=2u m=2\nXPM8 N6 N6 VDD VDD pfet_06v0 w=67.8u l=2u m=2\nXNM1 OUT N3 VSS VSS nfet_06v0 w=56.5u l=2u m=2\nXNM2 N1 N5 VSS VSS nfet_06v0 w=19.3u l=2u\nXNM3 N3 N3 VSS VSS nfet_06v0 w=17.4u l=2u\nXNM4 N5 N5 VSS VSS nfet_06v0 w=11.6u l=2u\nXNM5 N6 N7 VSS VSS nfet_06v0 w=21.9u l=1u\nXNM6 VB1 N2 N7 VSS nfet_06v0 w=49.2u l=1u\nXNM7 N2 N7 VSS VSS nfet_06v0 w=11.4u l=1u\nR1 N7 VSS 10k\nVBIAS_VB1 VDD VB1 dc 1.1009\n.ends opamp\n",
+  "seconds": 11.3
+ },
+ {
+  "name": "AnalogGenie 1893",
+  "table": "PM1 D=OUT G=VB1 S=VDD B=VDD\nPM2 D=VB1 G=VB1 S=VDD B=VDD\nPM3 D=N1 G=N2 S=VDD B=VDD\nPM4 D=N2 G=N2 S=VDD B=VDD\nNM1 D=OUT G=IN1 S=N3 B=VSS\nNM2 D=VB1 G=IN2 S=N3 B=VSS\nNM3 D=N3 G=N1 S=VSS B=VSS\nNM4 D=N1 G=N1 S=VSS B=VSS\nR1 P=N2 N=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 5,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 8,
+  "measured": {
+   "gain_dc": -6.607551670813039,
+   "ugbw": null,
+   "pm": null,
+   "gm": null,
+   "idd": 0.0013359367468334924,
+   "sr": null,
+   "ts": 2.6749999999999744e-07,
+   "cmrr": 12.738294202703738,
+   "psrr": 32.10039034514904,
+   "voh_1ma": 0.3713419727202003,
+   "vol_1ma": 6.054225940141627,
+   "gain_unloaded": 41.43110151434391
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "97u",
+    "l": "2u",
+    "m": "16"
+   },
+   "PM4": {
+    "w": "95.7u",
+    "l": "2u",
+    "m": "14"
+   },
+   "NM1": {
+    "w": "17.4u",
+    "l": "1u"
+   },
+   "NM2": {
+    "w": "93.8u",
+    "l": "1u",
+    "m": "4"
+   },
+   "NM3": {
+    "w": "85.3u",
+    "l": "2u",
+    "m": "4"
+   },
+   "NM4": {
+    "w": "84.5u",
+    "l": "2u",
+    "m": "4"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM3 N1 N2 VDD VDD pfet_06v0 w=97u l=2u m=16\nXPM4 N2 N2 VDD VDD pfet_06v0 w=95.7u l=2u m=14\nXNM1 OUT INN N3 VSS nfet_06v0 w=17.4u l=1u\nXNM2 VB1 INP N3 VSS nfet_06v0 w=93.8u l=1u m=4\nXNM3 N3 N1 VSS VSS nfet_06v0 w=85.3u l=2u m=4\nXNM4 N1 N1 VSS VSS nfet_06v0 w=84.5u l=2u m=4\nR1 N2 VSS 10k\nVBIAS_VB1 VDD VB1 dc 1.1009\n.ends opamp\n",
+  "seconds": 18.9
+ },
+ {
+  "name": "AnalogGenie 1893",
+  "table": "PM1 D=OUT G=VB1 S=VDD B=VDD\nPM2 D=VB1 G=VB1 S=VDD B=VDD\nPM3 D=N1 G=N2 S=VDD B=VDD\nPM4 D=N2 G=N2 S=VDD B=VDD\nNM1 D=OUT G=IN1 S=N3 B=VSS\nNM2 D=VB1 G=IN2 S=N3 B=VSS\nNM3 D=N3 G=N1 S=VSS B=VSS\nNM4 D=N1 G=N1 S=VSS B=VSS\nR1 P=N2 N=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 8,
+  "measured": {
+   "gain_dc": 5.980294970558736,
+   "ugbw": 13704441.112855045,
+   "pm": 119.80586721799159,
+   "gm": null,
+   "idd": 0.0014622126882041049,
+   "sr": 1854598.4773543307,
+   "ts": 2.3249999999999777e-07,
+   "cmrr": 12.492133545852502,
+   "psrr": 29.865706841157817,
+   "voh_1ma": 0.9521961060447052,
+   "vol_1ma": 5.235946641516806,
+   "gain_unloaded": 41.26429258872432
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "85.9u",
+    "l": "2u",
+    "m": "4"
+   },
+   "PM2": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "96.2u",
+    "l": "2u",
+    "m": "18"
+   },
+   "PM4": {
+    "w": "95.7u",
+    "l": "2u",
+    "m": "14"
+   },
+   "NM1": {
+    "w": "87.5u",
+    "l": "1u"
+   },
+   "NM2": {
+    "w": "91u",
+    "l": "1u",
+    "m": "4"
+   },
+   "NM3": {
+    "w": "98.2u",
+    "l": "2u",
+    "m": "4"
+   },
+   "NM4": {
+    "w": "94.3u",
+    "l": "2u",
+    "m": "4"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT VB1 VDD VDD pfet_06v0 w=85.9u l=2u m=4\nXPM2 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM3 N1 N2 VDD VDD pfet_06v0 w=96.2u l=2u m=18\nXPM4 N2 N2 VDD VDD pfet_06v0 w=95.7u l=2u m=14\nXNM1 OUT INN N3 VSS nfet_06v0 w=87.5u l=1u\nXNM2 VB1 INP N3 VSS nfet_06v0 w=91u l=1u m=4\nXNM3 N3 N1 VSS VSS nfet_06v0 w=98.2u l=2u m=4\nXNM4 N1 N1 VSS VSS nfet_06v0 w=94.3u l=2u m=4\nR1 N2 VSS 10k\nVBIAS_VB1 VDD VB1 dc 1.1009\n.ends opamp\n",
+  "seconds": 21.0
+ },
+ {
+  "name": "AnalogGenie 1914",
+  "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD\nPM2 D=OUT G=N1 S=VDD B=VDD\nPM3 D=N2 G=VB1 S=VDD B=VDD\nPM4 D=N1 G=N1 S=VDD B=VDD\nPM5 D=N1 G=N1 S=VDD B=VDD\nPM6 D=N3 G=N4 S=VDD B=VDD\nPM7 D=N4 G=N4 S=VDD B=VDD\nNM1 D=OUT G=IN1 S=N5 B=VSS\nNM2 D=VB1 G=N2 S=VSS B=VSS\nNM3 D=N1 G=IN2 S=N5 B=VSS\nNM4 D=N5 G=N3 S=VSS B=VSS\nNM5 D=N1 G=N3 S=VSS B=VSS\nNM6 D=N3 G=N3 S=VSS B=VSS\nNM7 D=N4 G=N2 S=VSS B=VSS\nNM8 D=N6 G=N2 S=VSS B=VSS\nR1 P=N2 N=N6",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 15,
+  "measured": {
+   "gain_dc": -6.77136253931102,
+   "ugbw": null,
+   "pm": null,
+   "gm": null,
+   "idd": 0.0008331193542860001,
+   "sr": null,
+   "ts": 3.8182168659849526e-07,
+   "cmrr": 10.086140154427945,
+   "psrr": 33.69487000397644,
+   "voh_1ma": 0.6962630032782202,
+   "vol_1ma": 5.297572648483793,
+   "gain_unloaded": 32.5857309388577
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "84.8u",
+    "l": "2u",
+    "m": "5"
+   },
+   "PM4": {
+    "w": "90.9u",
+    "l": "2u",
+    "m": "4"
+   },
+   "PM5": {
+    "w": "90.9u",
+    "l": "2u",
+    "m": "4"
+   },
+   "PM6": {
+    "w": "84.5u",
+    "l": "2u",
+    "m": "5"
+   },
+   "PM7": {
+    "w": "79.8u",
+    "l": "2u",
+    "m": "4"
+   },
+   "NM1": {
+    "w": "51.2u",
+    "l": "1u",
+    "m": "2"
+   },
+   "NM2": {
+    "w": "53u",
+    "l": "1u"
+   },
+   "NM7": {
+    "w": "51.5u",
+    "l": "1u"
+   },
+   "NM8": {
+    "w": "11.5u",
+    "l": "1u"
+   },
+   "NM3": {
+    "w": "10.6u",
+    "l": "1u"
+   },
+   "NM4": {
+    "w": "98.2u",
+    "l": "2u"
+   },
+   "NM5": {
+    "w": "74.4u",
+    "l": "2u",
+    "m": "2"
+   },
+   "NM6": {
+    "w": "92u",
+    "l": "2u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT N1 VDD VDD pfet_06v0 w=84.8u l=2u m=5\nXPM3 N2 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM4 N1 N1 VDD VDD pfet_06v0 w=90.9u l=2u m=4\nXPM5 N1 N1 VDD VDD pfet_06v0 w=90.9u l=2u m=4\nXPM6 N3 N4 VDD VDD pfet_06v0 w=84.5u l=2u m=5\nXPM7 N4 N4 VDD VDD pfet_06v0 w=79.8u l=2u m=4\nXNM1 OUT INN N5 VSS nfet_06v0 w=51.2u l=1u m=2\nXNM2 VB1 N2 VSS VSS nfet_06v0 w=53u l=1u\nXNM3 N1 INP N5 VSS nfet_06v0 w=10.6u l=1u\nXNM4 N5 N3 VSS VSS nfet_06v0 w=98.2u l=2u\nXNM5 N1 N3 VSS VSS nfet_06v0 w=74.4u l=2u m=2\nXNM6 N3 N3 VSS VSS nfet_06v0 w=92u l=2u\nXNM7 N4 N2 VSS VSS nfet_06v0 w=51.5u l=1u\nXNM8 N6 N2 VSS VSS nfet_06v0 w=11.5u l=1u\nR1 N2 N6 10k\nVBIAS_VB1 VDD VB1 dc 1.1009\n.ends opamp\n",
+  "seconds": 64048.5
+ },
+ {
+  "name": "AnalogGenie 1914",
+  "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD\nPM2 D=OUT G=N1 S=VDD B=VDD\nPM3 D=N2 G=VB1 S=VDD B=VDD\nPM4 D=N1 G=N1 S=VDD B=VDD\nPM5 D=N1 G=N1 S=VDD B=VDD\nPM6 D=N3 G=N4 S=VDD B=VDD\nPM7 D=N4 G=N4 S=VDD B=VDD\nNM1 D=OUT G=IN1 S=N5 B=VSS\nNM2 D=VB1 G=N2 S=VSS B=VSS\nNM3 D=N1 G=IN2 S=N5 B=VSS\nNM4 D=N5 G=N3 S=VSS B=VSS\nNM5 D=N1 G=N3 S=VSS B=VSS\nNM6 D=N3 G=N3 S=VSS B=VSS\nNM7 D=N4 G=N2 S=VSS B=VSS\nNM8 D=N6 G=N2 S=VSS B=VSS\nR1 P=N2 N=N6",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": false,
+  "saturated_all": false,
+  "off": [
+   "NM3"
+  ],
+  "triode": [
+   "PM2"
+  ],
+  "reason": "출력이 VCM 에서 벗어남",
+  "iterations": 8,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 15,
+  "measured": null,
+  "valid": false,
+  "seconds": 7.4
+ },
+ {
+  "name": "AnalogGenie 1935",
+  "table": "PM1 D=OUT G=N1 S=VDD B=VDD\nPM2 D=VB1 G=N2 S=VDD B=VDD\nPM3 D=N1 G=N1 S=VDD B=VDD\nPM4 D=N3 G=N1 S=VDD B=VDD\nPM5 D=N1 G=N1 S=VDD B=VDD\nPM6 D=N4 G=N2 S=VDD B=VDD\nPM7 D=N5 G=N2 S=VDD B=VDD\nPM8 D=N2 G=N2 S=VDD B=VDD\nNM1 D=VB1 G=VB1 S=VSS B=VSS\nNM2 D=OUT G=IN1 S=N6 B=VSS\nNM3 D=N1 G=IN2 S=N6 B=VSS\nNM4 D=N6 G=N3 S=VSS B=VSS\nNM5 D=N3 G=N3 S=VSS B=VSS\nNM6 D=N1 G=N4 S=VSS B=VSS\nNM7 D=N4 G=N4 S=VSS B=VSS\nNM8 D=N5 G=N5 S=VSS B=VSS\nNM9 D=N7 G=N5 S=VSS B=VSS\nNM10 D=N2 G=VB1 S=N7 B=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": false,
+  "off": [],
+  "triode": [
+   "NM9"
+  ],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 18,
+  "measured": {
+   "gain_dc": -42.88156683856569,
+   "ugbw": null,
+   "pm": null,
+   "gm": null,
+   "idd": 3.7202280862900334e-06,
+   "sr": null,
+   "ts": 3.9249999999999624e-07,
+   "cmrr": 12.610705750748137,
+   "psrr": 53.33768381896068,
+   "voh_1ma": -0.6871951851313298,
+   "vol_1ma": 21.951719288574395,
+   "gain_unloaded": 38.64282842044799
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "1.79u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "1.52u",
+    "l": "2u"
+   },
+   "PM4": {
+    "w": "2.02u",
+    "l": "2u"
+   },
+   "PM5": {
+    "w": "1.52u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "1.82u",
+    "l": "2u"
+   },
+   "PM6": {
+    "w": "1.82u",
+    "l": "2u"
+   },
+   "PM7": {
+    "w": "1.82u",
+    "l": "2u"
+   },
+   "PM8": {
+    "w": "1.37u",
+    "l": "2u"
+   },
+   "NM1": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "0.5u",
+    "l": "1u"
+   },
+   "NM3": {
+    "w": "0.5u",
+    "l": "1u"
+   },
+   "NM4": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM5": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM7": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM8": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM9": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM10": {
+    "w": "0.5u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT N1 VDD VDD pfet_06v0 w=1.79u l=2u\nXPM2 VB1 N2 VDD VDD pfet_06v0 w=1.82u l=2u\nXPM3 N1 N1 VDD VDD pfet_06v0 w=1.52u l=2u\nXPM4 N3 N1 VDD VDD pfet_06v0 w=2.02u l=2u\nXPM5 N1 N1 VDD VDD pfet_06v0 w=1.52u l=2u\nXPM6 N4 N2 VDD VDD pfet_06v0 w=1.82u l=2u\nXPM7 N5 N2 VDD VDD pfet_06v0 w=1.82u l=2u\nXPM8 N2 N2 VDD VDD pfet_06v0 w=1.37u l=2u\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT INN N6 VSS nfet_06v0 w=0.5u l=1u\nXNM3 N1 INP N6 VSS nfet_06v0 w=0.5u l=1u\nXNM4 N6 N3 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM5 N3 N3 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM6 N1 N4 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM7 N4 N4 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM8 N5 N5 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM9 N7 N5 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM10 N2 VB1 N7 VSS nfet_06v0 w=0.5u l=1u\nVBIAS_VB1 VB1 VSS dc 0.9286\n.ends opamp\n",
+  "seconds": 25.4
+ },
+ {
+  "name": "AnalogGenie 1935",
+  "table": "PM1 D=OUT G=N1 S=VDD B=VDD\nPM2 D=VB1 G=N2 S=VDD B=VDD\nPM3 D=N1 G=N1 S=VDD B=VDD\nPM4 D=N3 G=N1 S=VDD B=VDD\nPM5 D=N1 G=N1 S=VDD B=VDD\nPM6 D=N4 G=N2 S=VDD B=VDD\nPM7 D=N5 G=N2 S=VDD B=VDD\nPM8 D=N2 G=N2 S=VDD B=VDD\nNM1 D=VB1 G=VB1 S=VSS B=VSS\nNM2 D=OUT G=IN1 S=N6 B=VSS\nNM3 D=N1 G=IN2 S=N6 B=VSS\nNM4 D=N6 G=N3 S=VSS B=VSS\nNM5 D=N3 G=N3 S=VSS B=VSS\nNM6 D=N1 G=N4 S=VSS B=VSS\nNM7 D=N4 G=N4 S=VSS B=VSS\nNM8 D=N5 G=N5 S=VSS B=VSS\nNM9 D=N7 G=N5 S=VSS B=VSS\nNM10 D=N2 G=VB1 S=N7 B=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": true,
+  "saturated_all": false,
+  "off": [],
+  "triode": [
+   "NM9"
+  ],
+  "reason": "무부하 이득 부족 (-203.0 dB)",
+  "iterations": 8,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 18,
+  "measured": {
+   "gain_dc": -33.261178490941596,
+   "ugbw": null,
+   "pm": null,
+   "gm": null,
+   "idd": 3.6545533675455956e-06,
+   "sr": null,
+   "ts": 3.874999999999963e-07,
+   "cmrr": 61.82399403340743,
+   "psrr": 6.060470710940187,
+   "voh_1ma": -0.6825813906135204,
+   "vol_1ma": 13.118152237441631,
+   "gain_unloaded": -203.03843953794367
+  },
+  "valid": false,
+  "sizes": {
+   "PM1": {
+    "w": "6.88u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "1.44u",
+    "l": "2u"
+   },
+   "PM4": {
+    "w": "1.93u",
+    "l": "2u"
+   },
+   "PM5": {
+    "w": "1.44u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "1.82u",
+    "l": "2u"
+   },
+   "PM6": {
+    "w": "1.82u",
+    "l": "2u"
+   },
+   "PM7": {
+    "w": "1.82u",
+    "l": "2u"
+   },
+   "PM8": {
+    "w": "1.37u",
+    "l": "2u"
+   },
+   "NM1": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "0.5u",
+    "l": "1u"
+   },
+   "NM3": {
+    "w": "0.5u",
+    "l": "1u"
+   },
+   "NM4": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM5": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM7": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM8": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM9": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM10": {
+    "w": "0.5u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT N1 VDD VDD pfet_06v0 w=6.88u l=2u\nXPM2 VB1 N2 VDD VDD pfet_06v0 w=1.82u l=2u\nXPM3 N1 N1 VDD VDD pfet_06v0 w=1.44u l=2u\nXPM4 N3 N1 VDD VDD pfet_06v0 w=1.93u l=2u\nXPM5 N1 N1 VDD VDD pfet_06v0 w=1.44u l=2u\nXPM6 N4 N2 VDD VDD pfet_06v0 w=1.82u l=2u\nXPM7 N5 N2 VDD VDD pfet_06v0 w=1.82u l=2u\nXPM8 N2 N2 VDD VDD pfet_06v0 w=1.37u l=2u\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT INN N6 VSS nfet_06v0 w=0.5u l=1u\nXNM3 N1 INP N6 VSS nfet_06v0 w=0.5u l=1u\nXNM4 N6 N3 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM5 N3 N3 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM6 N1 N4 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM7 N4 N4 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM8 N5 N5 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM9 N7 N5 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM10 N2 VB1 N7 VSS nfet_06v0 w=0.5u l=1u\nVBIAS_VB1 VB1 VSS dc 0.9286\n.ends opamp\n",
+  "seconds": 28.0
+ },
+ {
+  "name": "AnalogGenie 1956",
+  "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD\nPM2 D=OUT G=VB2 S=N1 B=VDD\nPM3 D=N2 G=VB1 S=VDD B=VDD\nPM4 D=N3 G=VB2 S=N4 B=VDD\nPM5 D=N1 G=N3 S=VDD B=VDD\nPM6 D=N4 G=N3 S=VDD B=VDD\nNM1 D=OUT G=IN1 S=N5 B=VSS\nNM2 D=VB1 G=N6 S=VSS B=VSS\nNM3 D=N3 G=IN2 S=N5 B=VSS\nNM4 D=N5 G=N2 S=VSS B=VSS\nNM5 D=N2 G=N2 S=VSS B=VSS\nNM6 D=N6 G=N6 S=N7 B=VSS\nR1 P=N7 N=VSS\nR2 P=VDD N=N6",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 3,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 12,
+  "measured": {
+   "gain_dc": -11.544023849623102,
+   "ugbw": null,
+   "pm": null,
+   "gm": null,
+   "idd": 0.20668867448777478,
+   "sr": null,
+   "ts": 2.2749999999999782e-07,
+   "cmrr": 25.713896586844896,
+   "psrr": 50.82380041595793,
+   "voh_1ma": -0.6605546603050905,
+   "vol_1ma": 7.462272312177985,
+   "gain_unloaded": 42.48175471239585
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "44.5u",
+    "l": "1u"
+   },
+   "PM4": {
+    "w": "44.3u",
+    "l": "1u"
+   },
+   "PM5": {
+    "w": "27.4u",
+    "l": "1u"
+   },
+   "PM6": {
+    "w": "27.3u",
+    "l": "1u"
+   },
+   "NM1": {
+    "w": "8.85u",
+    "l": "1u"
+   },
+   "NM2": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM3": {
+    "w": "9.52u",
+    "l": "1u"
+   },
+   "NM4": {
+    "w": "16u",
+    "l": "2u"
+   },
+   "NM5": {
+    "w": "15.5u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "64.8u",
+    "l": "2u",
+    "m": "2"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT VB2 N1 VDD pfet_06v0 w=44.5u l=1u\nXPM3 N2 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM4 N3 VB2 N4 VDD pfet_06v0 w=44.3u l=1u\nXPM5 N1 N3 VDD VDD pfet_06v0 w=27.4u l=1u\nXPM6 N4 N3 VDD VDD pfet_06v0 w=27.3u l=1u\nXNM1 OUT INN N5 VSS nfet_06v0 w=8.85u l=1u\nXNM2 VB1 N6 VSS VSS nfet_06v0 w=100u l=2u m=20\nXNM3 N3 INP N5 VSS nfet_06v0 w=9.52u l=1u\nXNM4 N5 N2 VSS VSS nfet_06v0 w=16u l=2u\nXNM5 N2 N2 VSS VSS nfet_06v0 w=15.5u l=2u\nXNM6 N6 N6 N7 VSS nfet_06v0 w=64.8u l=2u m=2\nR1 N7 VSS 10k\nR2 VDD N6 10k\nVBIAS_VB1 VDD VB1 dc 1.1009\nVBIAS_VB2 VDD VB2 dc 1.6303\n.ends opamp\n",
+  "seconds": 18.8
+ },
+ {
+  "name": "AnalogGenie 1956",
+  "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD\nPM2 D=OUT G=VB2 S=N1 B=VDD\nPM3 D=N2 G=VB1 S=VDD B=VDD\nPM4 D=N3 G=VB2 S=N4 B=VDD\nPM5 D=N1 G=N3 S=VDD B=VDD\nPM6 D=N4 G=N3 S=VDD B=VDD\nNM1 D=OUT G=IN1 S=N5 B=VSS\nNM2 D=VB1 G=N6 S=VSS B=VSS\nNM3 D=N3 G=IN2 S=N5 B=VSS\nNM4 D=N5 G=N2 S=VSS B=VSS\nNM5 D=N2 G=N2 S=VSS B=VSS\nNM6 D=N6 G=N6 S=N7 B=VSS\nR1 P=N7 N=VSS\nR2 P=VDD N=N6",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 4,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 12,
+  "measured": {
+   "gain_dc": -11.389848509331447,
+   "ugbw": null,
+   "pm": null,
+   "gm": null,
+   "idd": 0.20668894221500375,
+   "sr": null,
+   "ts": 2.1749999999999792e-07,
+   "cmrr": 25.657891384139532,
+   "psrr": 50.798653619211215,
+   "voh_1ma": -0.6601763406985696,
+   "vol_1ma": 7.469869142128788,
+   "gain_unloaded": 42.503011730798534
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "44.4u",
+    "l": "1u"
+   },
+   "PM4": {
+    "w": "43.9u",
+    "l": "1u"
+   },
+   "PM5": {
+    "w": "27.3u",
+    "l": "1u"
+   },
+   "PM6": {
+    "w": "27u",
+    "l": "1u"
+   },
+   "NM1": {
+    "w": "9.17u",
+    "l": "1u"
+   },
+   "NM2": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM3": {
+    "w": "9.42u",
+    "l": "1u"
+   },
+   "NM4": {
+    "w": "16.2u",
+    "l": "2u"
+   },
+   "NM5": {
+    "w": "15.5u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "64.8u",
+    "l": "2u",
+    "m": "2"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT VB2 N1 VDD pfet_06v0 w=44.4u l=1u\nXPM3 N2 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM4 N3 VB2 N4 VDD pfet_06v0 w=43.9u l=1u\nXPM5 N1 N3 VDD VDD pfet_06v0 w=27.3u l=1u\nXPM6 N4 N3 VDD VDD pfet_06v0 w=27u l=1u\nXNM1 OUT INN N5 VSS nfet_06v0 w=9.17u l=1u\nXNM2 VB1 N6 VSS VSS nfet_06v0 w=100u l=2u m=20\nXNM3 N3 INP N5 VSS nfet_06v0 w=9.42u l=1u\nXNM4 N5 N2 VSS VSS nfet_06v0 w=16.2u l=2u\nXNM5 N2 N2 VSS VSS nfet_06v0 w=15.5u l=2u\nXNM6 N6 N6 N7 VSS nfet_06v0 w=64.8u l=2u m=2\nR1 N7 VSS 10k\nR2 VDD N6 10k\nVBIAS_VB1 VDD VB1 dc 1.1009\nVBIAS_VB2 VDD VB2 dc 1.6303\n.ends opamp\n",
+  "seconds": 24.5
+ },
+ {
+  "name": "AnalogGenie 1977",
+  "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD\nPM2 D=OUT G=VB3 S=N1 B=VDD\nPM3 D=N2 G=VB1 S=VDD B=VDD\nPM4 D=VB2 G=N3 S=VDD B=VDD\nPM5 D=N4 G=VB3 S=N5 B=VDD\nPM6 D=N1 G=N4 S=VDD B=VDD\nPM7 D=N5 G=N4 S=VDD B=VDD\nPM8 D=N6 G=N3 S=VDD B=VDD\nPM9 D=N7 G=N3 S=VDD B=VDD\nPM10 D=N3 G=N3 S=VDD B=VDD\nNM1 D=VB2 G=VB2 S=VSS B=VSS\nNM2 D=OUT G=IN1 S=N8 B=VSS\nNM3 D=VB1 G=N6 S=VSS B=VSS\nNM4 D=N4 G=IN2 S=N8 B=VSS\nNM5 D=N8 G=N2 S=VSS B=VSS\nNM6 D=N2 G=N2 S=VSS B=VSS\nNM7 D=N6 G=N6 S=VSS B=VSS\nNM8 D=N7 G=N7 S=VSS B=VSS\nNM9 D=N9 G=N7 S=VSS B=VSS\nNM10 D=N3 G=VB2 S=N9 B=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": false,
+  "off": [],
+  "triode": [
+   "NM9"
+  ],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 20,
+  "measured": {
+   "gain_dc": -11.02329103217466,
+   "ugbw": null,
+   "pm": null,
+   "gm": null,
+   "idd": 4.647070492308992e-05,
+   "sr": null,
+   "ts": 1.9249999999999816e-07,
+   "cmrr": 25.78658309783809,
+   "psrr": 50.818366481689736,
+   "voh_1ma": -0.6571132658539026,
+   "vol_1ma": 7.361131619302641,
+   "gain_unloaded": 42.482715525484515
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "47.3u",
+    "l": "1u"
+   },
+   "PM4": {
+    "w": "1.82u",
+    "l": "2u"
+   },
+   "PM8": {
+    "w": "1.82u",
+    "l": "2u"
+   },
+   "PM9": {
+    "w": "1.82u",
+    "l": "2u"
+   },
+   "PM10": {
+    "w": "1.37u",
+    "l": "2u"
+   },
+   "PM5": {
+    "w": "47.2u",
+    "l": "1u"
+   },
+   "PM6": {
+    "w": "29.1u",
+    "l": "1u"
+   },
+   "PM7": {
+    "w": "29u",
+    "l": "1u"
+   },
+   "NM1": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "9.4u",
+    "l": "1u"
+   },
+   "NM3": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM7": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM4": {
+    "w": "10.1u",
+    "l": "1u"
+   },
+   "NM5": {
+    "w": "17u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "15.5u",
+    "l": "2u"
+   },
+   "NM8": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM9": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM10": {
+    "w": "0.5u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT VB3 N1 VDD pfet_06v0 w=47.3u l=1u\nXPM3 N2 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM4 VB2 N3 VDD VDD pfet_06v0 w=1.82u l=2u\nXPM5 N4 VB3 N5 VDD pfet_06v0 w=47.2u l=1u\nXPM6 N1 N4 VDD VDD pfet_06v0 w=29.1u l=1u\nXPM7 N5 N4 VDD VDD pfet_06v0 w=29u l=1u\nXPM8 N6 N3 VDD VDD pfet_06v0 w=1.82u l=2u\nXPM9 N7 N3 VDD VDD pfet_06v0 w=1.82u l=2u\nXPM10 N3 N3 VDD VDD pfet_06v0 w=1.37u l=2u\nXNM1 VB2 VB2 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT INN N8 VSS nfet_06v0 w=9.4u l=1u\nXNM3 VB1 N6 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM4 N4 INP N8 VSS nfet_06v0 w=10.1u l=1u\nXNM5 N8 N2 VSS VSS nfet_06v0 w=17u l=2u\nXNM6 N2 N2 VSS VSS nfet_06v0 w=15.5u l=2u\nXNM7 N6 N6 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM8 N7 N7 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM9 N9 N7 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM10 N3 VB2 N9 VSS nfet_06v0 w=0.5u l=1u\nVBIAS_VB1 VDD VB1 dc 1.1009\nVBIAS_VB2 VB2 VSS dc 0.9286\nVBIAS_VB3 VDD VB3 dc 1.6303\n.ends opamp\n",
+  "seconds": 23.9
+ },
+ {
+  "name": "AnalogGenie 1977",
+  "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD\nPM2 D=OUT G=VB3 S=N1 B=VDD\nPM3 D=N2 G=VB1 S=VDD B=VDD\nPM4 D=VB2 G=N3 S=VDD B=VDD\nPM5 D=N4 G=VB3 S=N5 B=VDD\nPM6 D=N1 G=N4 S=VDD B=VDD\nPM7 D=N5 G=N4 S=VDD B=VDD\nPM8 D=N6 G=N3 S=VDD B=VDD\nPM9 D=N7 G=N3 S=VDD B=VDD\nPM10 D=N3 G=N3 S=VDD B=VDD\nNM1 D=VB2 G=VB2 S=VSS B=VSS\nNM2 D=OUT G=IN1 S=N8 B=VSS\nNM3 D=VB1 G=N6 S=VSS B=VSS\nNM4 D=N4 G=IN2 S=N8 B=VSS\nNM5 D=N8 G=N2 S=VSS B=VSS\nNM6 D=N2 G=N2 S=VSS B=VSS\nNM7 D=N6 G=N6 S=VSS B=VSS\nNM8 D=N7 G=N7 S=VSS B=VSS\nNM9 D=N9 G=N7 S=VSS B=VSS\nNM10 D=N3 G=VB2 S=N9 B=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": true,
+  "saturated_all": false,
+  "off": [],
+  "triode": [
+   "NM9"
+  ],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 20,
+  "measured": {
+   "gain_dc": -10.966777744764444,
+   "ugbw": null,
+   "pm": null,
+   "gm": null,
+   "idd": 4.64709177140106e-05,
+   "sr": null,
+   "ts": 1.874999999999982e-07,
+   "cmrr": 25.796282666622762,
+   "psrr": 50.80866531209027,
+   "voh_1ma": -0.656993337899153,
+   "vol_1ma": 7.350827052859497,
+   "gain_unloaded": 42.48319999998473
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "47.6u",
+    "l": "1u"
+   },
+   "PM4": {
+    "w": "1.82u",
+    "l": "2u"
+   },
+   "PM8": {
+    "w": "1.82u",
+    "l": "2u"
+   },
+   "PM9": {
+    "w": "1.82u",
+    "l": "2u"
+   },
+   "PM10": {
+    "w": "1.37u",
+    "l": "2u"
+   },
+   "PM5": {
+    "w": "46.9u",
+    "l": "1u"
+   },
+   "PM6": {
+    "w": "29.3u",
+    "l": "1u"
+   },
+   "PM7": {
+    "w": "28.9u",
+    "l": "1u"
+   },
+   "NM1": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "9.45u",
+    "l": "1u"
+   },
+   "NM3": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM7": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM4": {
+    "w": "10.1u",
+    "l": "1u"
+   },
+   "NM5": {
+    "w": "17u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "15.5u",
+    "l": "2u"
+   },
+   "NM8": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM9": {
+    "w": "0.5u",
+    "l": "2u"
+   },
+   "NM10": {
+    "w": "0.5u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT VB3 N1 VDD pfet_06v0 w=47.6u l=1u\nXPM3 N2 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM4 VB2 N3 VDD VDD pfet_06v0 w=1.82u l=2u\nXPM5 N4 VB3 N5 VDD pfet_06v0 w=46.9u l=1u\nXPM6 N1 N4 VDD VDD pfet_06v0 w=29.3u l=1u\nXPM7 N5 N4 VDD VDD pfet_06v0 w=28.9u l=1u\nXPM8 N6 N3 VDD VDD pfet_06v0 w=1.82u l=2u\nXPM9 N7 N3 VDD VDD pfet_06v0 w=1.82u l=2u\nXPM10 N3 N3 VDD VDD pfet_06v0 w=1.37u l=2u\nXNM1 VB2 VB2 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT INN N8 VSS nfet_06v0 w=9.45u l=1u\nXNM3 VB1 N6 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM4 N4 INP N8 VSS nfet_06v0 w=10.1u l=1u\nXNM5 N8 N2 VSS VSS nfet_06v0 w=17u l=2u\nXNM6 N2 N2 VSS VSS nfet_06v0 w=15.5u l=2u\nXNM7 N6 N6 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM8 N7 N7 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM9 N9 N7 VSS VSS nfet_06v0 w=0.5u l=2u\nXNM10 N3 VB2 N9 VSS nfet_06v0 w=0.5u l=1u\nVBIAS_VB1 VDD VB1 dc 1.1009\nVBIAS_VB2 VB2 VSS dc 0.9286\nVBIAS_VB3 VDD VB3 dc 1.6303\n.ends opamp\n",
+  "seconds": 23.0
+ },
+ {
+  "name": "AnalogGenie 1998",
+  "table": "PM1 D=VB2 G=VB2 S=VDD B=VDD\nPM2 D=OUT G=IN2 S=N1 B=VDD\nPM3 D=VB1 G=N2 S=VDD B=VDD\nPM4 D=N3 G=VB2 S=VDD B=VDD\nPM5 D=N4 G=IN1 S=N1 B=VDD\nPM6 D=N1 G=N5 S=VDD B=VDD\nPM7 D=N5 G=N5 S=VDD B=VDD\nPM8 D=N2 G=N2 S=VDD B=VDD\nNM1 D=VB1 G=VB1 S=VSS B=VSS\nNM2 D=OUT G=VB3 S=N6 B=VSS\nNM3 D=N5 G=VB1 S=VSS B=VSS\nNM4 D=N4 G=VB3 S=N7 B=VSS\nNM5 D=N6 G=N4 S=VSS B=VSS\nNM6 D=N7 G=N4 S=VSS B=VSS\nNM7 D=N2 G=N8 S=VSS B=VSS\nNM8 D=VB2 G=N3 S=N8 B=VSS\nNM9 D=N3 G=N8 S=VSS B=VSS\nR1 P=N8 N=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN1",
+   "IN2"
+  ],
+  "transistors": 17,
+  "measured": {
+   "gain_dc": -11.78285848865569,
+   "ugbw": null,
+   "pm": null,
+   "gm": null,
+   "idd": 0.0002536062059945932,
+   "sr": null,
+   "ts": 2.461821667967291e-07,
+   "cmrr": 16.501921803915344,
+   "psrr": 60.74287721883991,
+   "voh_1ma": -0.6851261419651189,
+   "vol_1ma": 6.03465205752146,
+   "gain_unloaded": 51.51361879161265
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM4": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "41.6u",
+    "l": "1u"
+   },
+   "PM3": {
+    "w": "90.2u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM8": {
+    "w": "67.8u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM5": {
+    "w": "42.4u",
+    "l": "1u"
+   },
+   "PM6": {
+    "w": "72u",
+    "l": "2u"
+   },
+   "PM7": {
+    "w": "73.6u",
+    "l": "2u"
+   },
+   "NM1": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM3": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "9.22u",
+    "l": "1u"
+   },
+   "NM4": {
+    "w": "9.1u",
+    "l": "1u"
+   },
+   "NM5": {
+    "w": "5.96u",
+    "l": "1u"
+   },
+   "NM6": {
+    "w": "5.88u",
+    "l": "1u"
+   },
+   "NM7": {
+    "w": "21.9u",
+    "l": "1u"
+   },
+   "NM9": {
+    "w": "11.4u",
+    "l": "1u"
+   },
+   "NM8": {
+    "w": "49.2u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB2 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT INN N1 VDD pfet_06v0 w=41.6u l=1u\nXPM3 VB1 N2 VDD VDD pfet_06v0 w=90.2u l=2u m=2\nXPM4 N3 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM5 N4 INP N1 VDD pfet_06v0 w=42.4u l=1u\nXPM6 N1 N5 VDD VDD pfet_06v0 w=72u l=2u\nXPM7 N5 N5 VDD VDD pfet_06v0 w=73.6u l=2u\nXPM8 N2 N2 VDD VDD pfet_06v0 w=67.8u l=2u m=2\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT VB3 N6 VSS nfet_06v0 w=9.22u l=1u\nXNM3 N5 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM4 N4 VB3 N7 VSS nfet_06v0 w=9.1u l=1u\nXNM5 N6 N4 VSS VSS nfet_06v0 w=5.96u l=1u\nXNM6 N7 N4 VSS VSS nfet_06v0 w=5.88u l=1u\nXNM7 N2 N8 VSS VSS nfet_06v0 w=21.9u l=1u\nXNM8 VB2 N3 N8 VSS nfet_06v0 w=49.2u l=1u\nXNM9 N3 N8 VSS VSS nfet_06v0 w=11.4u l=1u\nR1 N8 VSS 10k\nVBIAS_VB1 VB1 VSS dc 0.9286\nVBIAS_VB2 VDD VB2 dc 1.1009\nVBIAS_VB3 VB3 VSS dc 1.4921\n.ends opamp\n",
+  "seconds": 34.1
+ },
+ {
+  "name": "AnalogGenie 1998",
+  "table": "PM1 D=VB2 G=VB2 S=VDD B=VDD\nPM2 D=OUT G=IN2 S=N1 B=VDD\nPM3 D=VB1 G=N2 S=VDD B=VDD\nPM4 D=N3 G=VB2 S=VDD B=VDD\nPM5 D=N4 G=IN1 S=N1 B=VDD\nPM6 D=N1 G=N5 S=VDD B=VDD\nPM7 D=N5 G=N5 S=VDD B=VDD\nPM8 D=N2 G=N2 S=VDD B=VDD\nNM1 D=VB1 G=VB1 S=VSS B=VSS\nNM2 D=OUT G=VB3 S=N6 B=VSS\nNM3 D=N5 G=VB1 S=VSS B=VSS\nNM4 D=N4 G=VB3 S=N7 B=VSS\nNM5 D=N6 G=N4 S=VSS B=VSS\nNM6 D=N7 G=N4 S=VSS B=VSS\nNM7 D=N2 G=N8 S=VSS B=VSS\nNM8 D=VB2 G=N3 S=N8 B=VSS\nNM9 D=N3 G=N8 S=VSS B=VSS\nR1 P=N8 N=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN1",
+   "IN2"
+  ],
+  "transistors": 17,
+  "measured": {
+   "gain_dc": -11.74451015915717,
+   "ugbw": null,
+   "pm": null,
+   "gm": null,
+   "idd": 0.00025363524468856666,
+   "sr": null,
+   "ts": 2.4119731624991444e-07,
+   "cmrr": 16.49824760857722,
+   "psrr": 60.762779041990306,
+   "voh_1ma": -0.6851130921186398,
+   "vol_1ma": 6.031616031451483,
+   "gain_unloaded": 51.52203549802627
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM4": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "41.9u",
+    "l": "1u"
+   },
+   "PM3": {
+    "w": "90.2u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM8": {
+    "w": "67.8u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM5": {
+    "w": "42.3u",
+    "l": "1u"
+   },
+   "PM6": {
+    "w": "72.1u",
+    "l": "2u"
+   },
+   "PM7": {
+    "w": "73.6u",
+    "l": "2u"
+   },
+   "NM1": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM3": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "9.25u",
+    "l": "1u"
+   },
+   "NM4": {
+    "w": "9.07u",
+    "l": "1u"
+   },
+   "NM5": {
+    "w": "5.98u",
+    "l": "1u"
+   },
+   "NM6": {
+    "w": "5.87u",
+    "l": "1u"
+   },
+   "NM7": {
+    "w": "21.9u",
+    "l": "1u"
+   },
+   "NM9": {
+    "w": "11.4u",
+    "l": "1u"
+   },
+   "NM8": {
+    "w": "49.2u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB2 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT INN N1 VDD pfet_06v0 w=41.9u l=1u\nXPM3 VB1 N2 VDD VDD pfet_06v0 w=90.2u l=2u m=2\nXPM4 N3 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM5 N4 INP N1 VDD pfet_06v0 w=42.3u l=1u\nXPM6 N1 N5 VDD VDD pfet_06v0 w=72.1u l=2u\nXPM7 N5 N5 VDD VDD pfet_06v0 w=73.6u l=2u\nXPM8 N2 N2 VDD VDD pfet_06v0 w=67.8u l=2u m=2\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT VB3 N6 VSS nfet_06v0 w=9.25u l=1u\nXNM3 N5 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM4 N4 VB3 N7 VSS nfet_06v0 w=9.07u l=1u\nXNM5 N6 N4 VSS VSS nfet_06v0 w=5.98u l=1u\nXNM6 N7 N4 VSS VSS nfet_06v0 w=5.87u l=1u\nXNM7 N2 N8 VSS VSS nfet_06v0 w=21.9u l=1u\nXNM8 VB2 N3 N8 VSS nfet_06v0 w=49.2u l=1u\nXNM9 N3 N8 VSS VSS nfet_06v0 w=11.4u l=1u\nR1 N8 VSS 10k\nVBIAS_VB1 VB1 VSS dc 0.9286\nVBIAS_VB2 VDD VB2 dc 1.1009\nVBIAS_VB3 VB3 VSS dc 1.4921\n.ends opamp\n",
+  "seconds": 31.0
+ },
+ {
+  "name": "AnalogGenie 2019",
+  "table": "PM1 D=OUT G=IN2 S=N1 B=VDD\nPM2 D=VB1 G=N2 S=VDD B=VDD\nPM3 D=VB2 G=N2 S=VDD B=VDD\nPM4 D=N3 G=IN1 S=N1 B=VDD\nPM5 D=N1 G=N4 S=VDD B=VDD\nPM6 D=N4 G=N4 S=VDD B=VDD\nPM7 D=N2 G=N2 S=VDD B=VDD\nNM1 D=VB1 G=VB1 S=VSS B=VSS\nNM2 D=VB2 G=VB2 S=VSS B=VSS\nNM3 D=OUT G=VB3 S=N5 B=VSS\nNM4 D=N4 G=VB1 S=VSS B=VSS\nNM5 D=N3 G=VB3 S=N6 B=VSS\nNM6 D=N5 G=N3 S=VSS B=VSS\nNM7 D=N6 G=N3 S=VSS B=VSS\nNM8 D=N2 G=VB2 S=N7 B=VSS\nR1 P=N7 N=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 4,
+  "polarity": [
+   "IN1",
+   "IN2"
+  ],
+  "transistors": 15,
+  "measured": {
+   "gain_dc": -11.76732706767299,
+   "ugbw": null,
+   "pm": null,
+   "gm": null,
+   "idd": 6.434983064936989e-05,
+   "sr": null,
+   "ts": 2.461729329529387e-07,
+   "cmrr": 16.501511296274934,
+   "psrr": 60.76429534983874,
+   "voh_1ma": -0.6851126260901346,
+   "vol_1ma": 6.02863927906197,
+   "gain_unloaded": 51.513891363862385
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "41.7u",
+    "l": "1u"
+   },
+   "PM2": {
+    "w": "25.9u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "25.9u",
+    "l": "2u"
+   },
+   "PM7": {
+    "w": "22.5u",
+    "l": "2u"
+   },
+   "PM4": {
+    "w": "42.7u",
+    "l": "1u"
+   },
+   "PM5": {
+    "w": "72.4u",
+    "l": "2u"
+   },
+   "PM6": {
+    "w": "73.6u",
+    "l": "2u"
+   },
+   "NM1": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM4": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM3": {
+    "w": "9.24u",
+    "l": "1u"
+   },
+   "NM5": {
+    "w": "9.18u",
+    "l": "1u"
+   },
+   "NM6": {
+    "w": "5.97u",
+    "l": "1u"
+   },
+   "NM7": {
+    "w": "5.93u",
+    "l": "1u"
+   },
+   "NM8": {
+    "w": "5.6u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT INN N1 VDD pfet_06v0 w=41.7u l=1u\nXPM2 VB1 N2 VDD VDD pfet_06v0 w=25.9u l=2u\nXPM3 VB2 N2 VDD VDD pfet_06v0 w=25.9u l=2u\nXPM4 N3 INP N1 VDD pfet_06v0 w=42.7u l=1u\nXPM5 N1 N4 VDD VDD pfet_06v0 w=72.4u l=2u\nXPM6 N4 N4 VDD VDD pfet_06v0 w=73.6u l=2u\nXPM7 N2 N2 VDD VDD pfet_06v0 w=22.5u l=2u\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 VB2 VB2 VSS VSS nfet_06v0 w=15u l=2u\nXNM3 OUT VB3 N5 VSS nfet_06v0 w=9.24u l=1u\nXNM4 N4 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM5 N3 VB3 N6 VSS nfet_06v0 w=9.18u l=1u\nXNM6 N5 N3 VSS VSS nfet_06v0 w=5.97u l=1u\nXNM7 N6 N3 VSS VSS nfet_06v0 w=5.93u l=1u\nXNM8 N2 VB2 N7 VSS nfet_06v0 w=5.6u l=1u\nR1 N7 VSS 10k\nVBIAS_VB1 VB1 VSS dc 0.9286\nVBIAS_VB2 VB2 VSS dc 0.9286\nVBIAS_VB3 VB3 VSS dc 1.4921\n.ends opamp\n",
+  "seconds": 19.1
+ },
+ {
+  "name": "AnalogGenie 2019",
+  "table": "PM1 D=OUT G=IN2 S=N1 B=VDD\nPM2 D=VB1 G=N2 S=VDD B=VDD\nPM3 D=VB2 G=N2 S=VDD B=VDD\nPM4 D=N3 G=IN1 S=N1 B=VDD\nPM5 D=N1 G=N4 S=VDD B=VDD\nPM6 D=N4 G=N4 S=VDD B=VDD\nPM7 D=N2 G=N2 S=VDD B=VDD\nNM1 D=VB1 G=VB1 S=VSS B=VSS\nNM2 D=VB2 G=VB2 S=VSS B=VSS\nNM3 D=OUT G=VB3 S=N5 B=VSS\nNM4 D=N4 G=VB1 S=VSS B=VSS\nNM5 D=N3 G=VB3 S=N6 B=VSS\nNM6 D=N5 G=N3 S=VSS B=VSS\nNM7 D=N6 G=N3 S=VSS B=VSS\nNM8 D=N2 G=VB2 S=N7 B=VSS\nR1 P=N7 N=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 4,
+  "polarity": [
+   "IN1",
+   "IN2"
+  ],
+  "transistors": 15,
+  "measured": {
+   "gain_dc": -11.718551992673596,
+   "ugbw": null,
+   "pm": null,
+   "gm": null,
+   "idd": 6.437811516535898e-05,
+   "sr": null,
+   "ts": 2.412407401996748e-07,
+   "cmrr": 16.461550910411535,
+   "psrr": 61.125798639390624,
+   "voh_1ma": -0.6852440805682241,
+   "vol_1ma": 6.032873400273725,
+   "gain_unloaded": 51.5920715084929
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "43.3u",
+    "l": "1u"
+   },
+   "PM2": {
+    "w": "25.9u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "25.9u",
+    "l": "2u"
+   },
+   "PM7": {
+    "w": "22.5u",
+    "l": "2u"
+   },
+   "PM4": {
+    "w": "41.3u",
+    "l": "1u"
+   },
+   "PM5": {
+    "w": "72.5u",
+    "l": "2u"
+   },
+   "PM6": {
+    "w": "73.6u",
+    "l": "2u"
+   },
+   "NM1": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM4": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM3": {
+    "w": "8.98u",
+    "l": "1u"
+   },
+   "NM5": {
+    "w": "8.86u",
+    "l": "1u"
+   },
+   "NM6": {
+    "w": "5.81u",
+    "l": "1u"
+   },
+   "NM7": {
+    "w": "5.73u",
+    "l": "1u"
+   },
+   "NM8": {
+    "w": "5.6u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT INN N1 VDD pfet_06v0 w=43.3u l=1u\nXPM2 VB1 N2 VDD VDD pfet_06v0 w=25.9u l=2u\nXPM3 VB2 N2 VDD VDD pfet_06v0 w=25.9u l=2u\nXPM4 N3 INP N1 VDD pfet_06v0 w=41.3u l=1u\nXPM5 N1 N4 VDD VDD pfet_06v0 w=72.5u l=2u\nXPM6 N4 N4 VDD VDD pfet_06v0 w=73.6u l=2u\nXPM7 N2 N2 VDD VDD pfet_06v0 w=22.5u l=2u\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 VB2 VB2 VSS VSS nfet_06v0 w=15u l=2u\nXNM3 OUT VB3 N5 VSS nfet_06v0 w=8.98u l=1u\nXNM4 N4 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM5 N3 VB3 N6 VSS nfet_06v0 w=8.86u l=1u\nXNM6 N5 N3 VSS VSS nfet_06v0 w=5.81u l=1u\nXNM7 N6 N3 VSS VSS nfet_06v0 w=5.73u l=1u\nXNM8 N2 VB2 N7 VSS nfet_06v0 w=5.6u l=1u\nR1 N7 VSS 10k\nVBIAS_VB1 VB1 VSS dc 0.9286\nVBIAS_VB2 VB2 VSS dc 0.9286\nVBIAS_VB3 VB3 VSS dc 1.4921\n.ends opamp\n",
+  "seconds": 17.5
+ },
+ {
+  "name": "AnalogGenie 2040",
+  "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD\nPM2 D=OUT G=N1 S=VDD B=VDD\nPM3 D=N2 G=VB1 S=VDD B=VDD\nPM4 D=N1 G=N3 S=VDD B=VDD\nPM5 D=N3 G=N3 S=VDD B=VDD\nPM6 D=N4 G=N5 S=VDD B=VDD\nNM1 D=OUT G=N2 S=VSS B=VSS\nNM2 D=VB1 G=N4 S=VSS B=VSS\nNM3 D=N1 G=IN1 S=N6 B=VSS\nNM4 D=N3 G=IN2 S=N6 B=VSS\nNM5 D=N6 G=N2 S=VSS B=VSS\nNM6 D=N2 G=N2 S=VSS B=VSS\nNM7 D=N4 G=N4 S=VSS B=VSS\nNM8 D=N5 G=N4 S=VSS B=VSS\nR1 P=VDD N=N4\nR2 P=VDD N=N5\nC1 P=OUT N=N1",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": false,
+  "off": [],
+  "triode": [
+   "PM6",
+   "NM8"
+  ],
+  "reason": "",
+  "iterations": 3,
+  "polarity": [
+   "IN1",
+   "IN2"
+  ],
+  "transistors": 14,
+  "measured": {
+   "gain_dc": 36.75383645213015,
+   "ugbw": 5693523.7177981585,
+   "pm": 52.67444091087488,
+   "gm": 13.548993695910193,
+   "idd": 0.3844289717291207,
+   "sr": null,
+   "ts": 5.724999999999945e-07,
+   "cmrr": 3.285260305918803,
+   "psrr": 94.25553014125823,
+   "voh_1ma": 4.685071655338559,
+   "vol_1ma": 6.798952744912805,
+   "gain_unloaded": 90.65793573105523
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "57.8u",
+    "l": "1u"
+   },
+   "PM4": {
+    "w": "36.7u",
+    "l": "2u"
+   },
+   "PM5": {
+    "w": "36.7u",
+    "l": "2u"
+   },
+   "PM6": {
+    "w": "100u",
+    "l": "1u",
+    "m": "20"
+   },
+   "NM1": {
+    "w": "17.5u",
+    "l": "2u"
+   },
+   "NM5": {
+    "w": "16u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "15.5u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM7": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM8": {
+    "w": "93.3u",
+    "l": "2u",
+    "m": "4"
+   },
+   "NM3": {
+    "w": "9.18u",
+    "l": "1u"
+   },
+   "NM4": {
+    "w": "9.19u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT N1 VDD VDD pfet_06v0 w=57.8u l=1u\nXPM3 N2 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM4 N1 N3 VDD VDD pfet_06v0 w=36.7u l=2u\nXPM5 N3 N3 VDD VDD pfet_06v0 w=36.7u l=2u\nXPM6 N4 N5 VDD VDD pfet_06v0 w=100u l=1u m=20\nXNM1 OUT N2 VSS VSS nfet_06v0 w=17.5u l=2u\nXNM2 VB1 N4 VSS VSS nfet_06v0 w=100u l=2u m=20\nXNM3 N1 INP N6 VSS nfet_06v0 w=9.18u l=1u\nXNM4 N3 INN N6 VSS nfet_06v0 w=9.19u l=1u\nXNM5 N6 N2 VSS VSS nfet_06v0 w=16u l=2u\nXNM6 N2 N2 VSS VSS nfet_06v0 w=15.5u l=2u\nXNM7 N4 N4 VSS VSS nfet_06v0 w=100u l=2u m=20\nXNM8 N5 N4 VSS VSS nfet_06v0 w=93.3u l=2u m=4\nR1 VDD N4 10k\nR2 VDD N5 10k\nC1 OUT N1 1p\nVBIAS_VB1 VDD VB1 dc 1.1009\n.ends opamp\n",
+  "seconds": 19.1
+ },
+ {
+  "name": "AnalogGenie 2040",
+  "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD\nPM2 D=OUT G=N1 S=VDD B=VDD\nPM3 D=N2 G=VB1 S=VDD B=VDD\nPM4 D=N1 G=N3 S=VDD B=VDD\nPM5 D=N3 G=N3 S=VDD B=VDD\nPM6 D=N4 G=N5 S=VDD B=VDD\nNM1 D=OUT G=N2 S=VSS B=VSS\nNM2 D=VB1 G=N4 S=VSS B=VSS\nNM3 D=N1 G=IN1 S=N6 B=VSS\nNM4 D=N3 G=IN2 S=N6 B=VSS\nNM5 D=N6 G=N2 S=VSS B=VSS\nNM6 D=N2 G=N2 S=VSS B=VSS\nNM7 D=N4 G=N4 S=VSS B=VSS\nNM8 D=N5 G=N4 S=VSS B=VSS\nR1 P=VDD N=N4\nR2 P=VDD N=N5\nC1 P=OUT N=N1",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": true,
+  "saturated_all": false,
+  "off": [],
+  "triode": [
+   "PM6",
+   "NM8"
+  ],
+  "reason": "",
+  "iterations": 3,
+  "polarity": [
+   "IN1",
+   "IN2"
+  ],
+  "transistors": 14,
+  "measured": {
+   "gain_dc": 50.44467272380121,
+   "ugbw": 10706331.493885672,
+   "pm": 52.406207302728234,
+   "gm": 17.236118928456428,
+   "idd": 0.3845236990085187,
+   "sr": null,
+   "ts": 5.924999999999943e-07,
+   "cmrr": 3.2852543141171227,
+   "psrr": 94.1972601726345,
+   "voh_1ma": 4.9338922008665955,
+   "vol_1ma": 5.861725938333305,
+   "gain_unloaded": 90.66453680876575
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "94.4u",
+    "l": "1u",
+    "m": "3"
+   },
+   "PM4": {
+    "w": "36.7u",
+    "l": "2u"
+   },
+   "PM5": {
+    "w": "36.7u",
+    "l": "2u"
+   },
+   "PM6": {
+    "w": "100u",
+    "l": "1u",
+    "m": "20"
+   },
+   "NM1": {
+    "w": "85.9u",
+    "l": "2u"
+   },
+   "NM5": {
+    "w": "16u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "15.5u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM7": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM8": {
+    "w": "93.3u",
+    "l": "2u",
+    "m": "4"
+   },
+   "NM3": {
+    "w": "9.18u",
+    "l": "1u"
+   },
+   "NM4": {
+    "w": "9.19u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT N1 VDD VDD pfet_06v0 w=94.4u l=1u m=3\nXPM3 N2 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM4 N1 N3 VDD VDD pfet_06v0 w=36.7u l=2u\nXPM5 N3 N3 VDD VDD pfet_06v0 w=36.7u l=2u\nXPM6 N4 N5 VDD VDD pfet_06v0 w=100u l=1u m=20\nXNM1 OUT N2 VSS VSS nfet_06v0 w=85.9u l=2u\nXNM2 VB1 N4 VSS VSS nfet_06v0 w=100u l=2u m=20\nXNM3 N1 INP N6 VSS nfet_06v0 w=9.18u l=1u\nXNM4 N3 INN N6 VSS nfet_06v0 w=9.19u l=1u\nXNM5 N6 N2 VSS VSS nfet_06v0 w=16u l=2u\nXNM6 N2 N2 VSS VSS nfet_06v0 w=15.5u l=2u\nXNM7 N4 N4 VSS VSS nfet_06v0 w=100u l=2u m=20\nXNM8 N5 N4 VSS VSS nfet_06v0 w=93.3u l=2u m=4\nR1 VDD N4 10k\nR2 VDD N5 10k\nC1 OUT N1 1p\nVBIAS_VB1 VDD VB1 dc 1.1009\n.ends opamp\n",
+  "seconds": 26.4
+ },
+ {
+  "name": "AnalogGenie 2061",
+  "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD\nPM2 D=OUT G=N1 S=VDD B=VDD\nPM3 D=N1 G=N2 S=VDD B=VDD\nPM4 D=N2 G=N2 S=VDD B=VDD\nPM5 D=N3 G=N4 S=VDD B=VDD\nPM6 D=N4 G=N4 S=N5 B=VDD\nNM1 D=OUT G=N3 S=VSS B=VSS\nNM2 D=VB1 G=N3 S=VSS B=VSS\nNM3 D=N1 G=IN1 S=N6 B=VSS\nNM4 D=N2 G=IN2 S=N6 B=VSS\nNM5 D=N6 G=N3 S=VSS B=VSS\nNM6 D=N3 G=N3 S=VSS B=VSS\nR1 P=VDD N=N5\nR2 P=N4 N=VSS\nC1 P=OUT N=N1",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 3,
+  "polarity": [
+   "IN1",
+   "IN2"
+  ],
+  "transistors": 12,
+  "measured": {
+   "gain_dc": 63.02225049477104,
+   "ugbw": 858666104.6440592,
+   "pm": -13.946042048330185,
+   "gm": -13.761525302688852,
+   "idd": 0.19942509522378316,
+   "sr": 2973346.65261441,
+   "ts": 1.7999999999999997e-05,
+   "cmrr": 3.275893578712314,
+   "psrr": 69.26464876585435,
+   "voh_1ma": 4.54050884585389,
+   "vol_1ma": 0.00838278576990853,
+   "gain_unloaded": 65.32360901079839
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "100u",
+    "l": "1u",
+    "m": "20"
+   },
+   "PM3": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "PM4": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "PM5": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "PM6": {
+    "w": "93.6u",
+    "l": "2u",
+    "m": "6"
+   },
+   "NM1": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM2": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM5": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM6": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM3": {
+    "w": "100u",
+    "l": "1u",
+    "m": "20"
+   },
+   "NM4": {
+    "w": "100u",
+    "l": "1u",
+    "m": "20"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT N1 VDD VDD pfet_06v0 w=100u l=1u m=20\nXPM3 N1 N2 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM4 N2 N2 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM5 N3 N4 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM6 N4 N4 N5 VDD pfet_06v0 w=93.6u l=2u m=6\nXNM1 OUT N3 VSS VSS nfet_06v0 w=100u l=2u m=20\nXNM2 VB1 N3 VSS VSS nfet_06v0 w=100u l=2u m=20\nXNM3 N1 INP N6 VSS nfet_06v0 w=100u l=1u m=20\nXNM4 N2 INN N6 VSS nfet_06v0 w=100u l=1u m=20\nXNM5 N6 N3 VSS VSS nfet_06v0 w=100u l=2u m=20\nXNM6 N3 N3 VSS VSS nfet_06v0 w=100u l=2u m=20\nR1 VDD N5 10k\nR2 N4 VSS 10k\nC1 OUT N1 1p\nVBIAS_VB1 VDD VB1 dc 1.1009\n.ends opamp\n",
+  "seconds": 181.9
+ },
+ {
+  "name": "AnalogGenie 2061",
+  "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD\nPM2 D=OUT G=N1 S=VDD B=VDD\nPM3 D=N1 G=N2 S=VDD B=VDD\nPM4 D=N2 G=N2 S=VDD B=VDD\nPM5 D=N3 G=N4 S=VDD B=VDD\nPM6 D=N4 G=N4 S=N5 B=VDD\nNM1 D=OUT G=N3 S=VSS B=VSS\nNM2 D=VB1 G=N3 S=VSS B=VSS\nNM3 D=N1 G=IN1 S=N6 B=VSS\nNM4 D=N2 G=IN2 S=N6 B=VSS\nNM5 D=N6 G=N3 S=VSS B=VSS\nNM6 D=N3 G=N3 S=VSS B=VSS\nR1 P=VDD N=N5\nR2 P=N4 N=VSS\nC1 P=OUT N=N1",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 3,
+  "polarity": [
+   "IN1",
+   "IN2"
+  ],
+  "transistors": 12,
+  "measured": {
+   "gain_dc": 63.02225049477104,
+   "ugbw": 858666104.6440592,
+   "pm": -13.946042048330185,
+   "gm": -13.761525302688852,
+   "idd": 0.19942509522378316,
+   "sr": 2973346.65261441,
+   "ts": 1.7999999999999997e-05,
+   "cmrr": 3.275893578712314,
+   "psrr": 69.26464876585435,
+   "voh_1ma": 4.54050884585389,
+   "vol_1ma": 0.00838278576990853,
+   "gain_unloaded": 65.32360901079839
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "100u",
+    "l": "1u",
+    "m": "20"
+   },
+   "PM3": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "PM4": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "PM5": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "PM6": {
+    "w": "93.6u",
+    "l": "2u",
+    "m": "6"
+   },
+   "NM1": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM2": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM5": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM6": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM3": {
+    "w": "100u",
+    "l": "1u",
+    "m": "20"
+   },
+   "NM4": {
+    "w": "100u",
+    "l": "1u",
+    "m": "20"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT N1 VDD VDD pfet_06v0 w=100u l=1u m=20\nXPM3 N1 N2 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM4 N2 N2 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM5 N3 N4 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM6 N4 N4 N5 VDD pfet_06v0 w=93.6u l=2u m=6\nXNM1 OUT N3 VSS VSS nfet_06v0 w=100u l=2u m=20\nXNM2 VB1 N3 VSS VSS nfet_06v0 w=100u l=2u m=20\nXNM3 N1 INP N6 VSS nfet_06v0 w=100u l=1u m=20\nXNM4 N2 INN N6 VSS nfet_06v0 w=100u l=1u m=20\nXNM5 N6 N3 VSS VSS nfet_06v0 w=100u l=2u m=20\nXNM6 N3 N3 VSS VSS nfet_06v0 w=100u l=2u m=20\nR1 VDD N5 10k\nR2 N4 VSS 10k\nC1 OUT N1 1p\nVBIAS_VB1 VDD VB1 dc 1.1009\n.ends opamp\n",
+  "seconds": 185.4
+ },
+ {
+  "name": "AnalogGenie 2082",
+  "table": "PM1 D=OUT G=N1 S=VDD B=VDD\nPM2 D=VB1 G=N2 S=VDD B=VDD\nPM3 D=N3 G=N1 S=VDD B=VDD\nPM4 D=N4 G=IN2 S=N3 B=VDD\nPM5 D=N5 G=IN1 S=N3 B=VDD\nPM6 D=N1 G=N1 S=VDD B=VDD\nPM7 D=N2 G=N2 S=VDD B=VDD\nPM8 D=N6 G=N6 S=VDD B=VDD\nPM9 D=N7 G=N6 S=VDD B=VDD\nNM1 D=VB1 G=VB1 S=VSS B=VSS\nNM2 D=OUT G=N4 S=VSS B=VSS\nNM3 D=N1 G=VB1 S=VSS B=VSS\nNM4 D=N4 G=N5 S=VSS B=VSS\nNM5 D=N5 G=N5 S=VSS B=VSS\nNM6 D=N2 G=N7 S=VSS B=VSS\nNM7 D=N6 G=N7 S=VSS B=VSS\nNM8 D=N7 G=N7 S=VSS B=VSS\nR1 P=VDD N=N7\nC1 P=OUT N=N4",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 6,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 17,
+  "measured": {
+   "gain_dc": 40.629824204589575,
+   "ugbw": 5895471.108942681,
+   "pm": 54.35994130112722,
+   "gm": 14.72488608406809,
+   "idd": 0.2022035477884552,
+   "sr": null,
+   "ts": 5.524999999999947e-07,
+   "cmrr": 87.72083992391998,
+   "psrr": 96.70870559515933,
+   "voh_1ma": -0.6872922199363652,
+   "vol_1ma": 0.31331060652601245,
+   "gain_unloaded": 90.5680385576091
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "82.4u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "72.2u",
+    "l": "2u"
+   },
+   "PM6": {
+    "w": "73.6u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "PM7": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "PM4": {
+    "w": "42u",
+    "l": "1u"
+   },
+   "PM5": {
+    "w": "42.3u",
+    "l": "1u"
+   },
+   "PM8": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "PM9": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM1": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM3": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "13.4u",
+    "l": "1u"
+   },
+   "NM4": {
+    "w": "7.83u",
+    "l": "2u"
+   },
+   "NM5": {
+    "w": "7.9u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM7": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM8": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT N1 VDD VDD pfet_06v0 w=82.4u l=2u\nXPM2 VB1 N2 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM3 N3 N1 VDD VDD pfet_06v0 w=72.2u l=2u\nXPM4 N4 INP N3 VDD pfet_06v0 w=42u l=1u\nXPM5 N5 INN N3 VDD pfet_06v0 w=42.3u l=1u\nXPM6 N1 N1 VDD VDD pfet_06v0 w=73.6u l=2u\nXPM7 N2 N2 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM8 N6 N6 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM9 N7 N6 VDD VDD pfet_06v0 w=100u l=2u m=20\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT N4 VSS VSS nfet_06v0 w=13.4u l=1u\nXNM3 N1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM4 N4 N5 VSS VSS nfet_06v0 w=7.83u l=2u\nXNM5 N5 N5 VSS VSS nfet_06v0 w=7.9u l=2u\nXNM6 N2 N7 VSS VSS nfet_06v0 w=100u l=2u m=20\nXNM7 N6 N7 VSS VSS nfet_06v0 w=100u l=2u m=20\nXNM8 N7 N7 VSS VSS nfet_06v0 w=100u l=2u m=20\nR1 VDD N7 10k\nC1 OUT N4 1p\nVBIAS_VB1 VB1 VSS dc 0.9286\n.ends opamp\n",
+  "seconds": 15.9
+ },
+ {
+  "name": "AnalogGenie 2082",
+  "table": "PM1 D=OUT G=N1 S=VDD B=VDD\nPM2 D=VB1 G=N2 S=VDD B=VDD\nPM3 D=N3 G=N1 S=VDD B=VDD\nPM4 D=N4 G=IN2 S=N3 B=VDD\nPM5 D=N5 G=IN1 S=N3 B=VDD\nPM6 D=N1 G=N1 S=VDD B=VDD\nPM7 D=N2 G=N2 S=VDD B=VDD\nPM8 D=N6 G=N6 S=VDD B=VDD\nPM9 D=N7 G=N6 S=VDD B=VDD\nNM1 D=VB1 G=VB1 S=VSS B=VSS\nNM2 D=OUT G=N4 S=VSS B=VSS\nNM3 D=N1 G=VB1 S=VSS B=VSS\nNM4 D=N4 G=N5 S=VSS B=VSS\nNM5 D=N5 G=N5 S=VSS B=VSS\nNM6 D=N2 G=N7 S=VSS B=VSS\nNM7 D=N6 G=N7 S=VSS B=VSS\nNM8 D=N7 G=N7 S=VSS B=VSS\nR1 P=VDD N=N7\nC1 P=OUT N=N4",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 6,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 17,
+  "measured": {
+   "gain_dc": 54.49182119289702,
+   "ugbw": 12218186.332725627,
+   "pm": 58.108709142018995,
+   "gm": 19.472926237059298,
+   "idd": 0.20230184141889163,
+   "sr": 2338929.9721626183,
+   "ts": 3.1248049585745193e-07,
+   "cmrr": 88.11808912911042,
+   "psrr": 97.05444999567335,
+   "voh_1ma": -0.6711281416125174,
+   "vol_1ma": 0.06235006789354445,
+   "gain_unloaded": 90.56907583770811
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "82.7u",
+    "l": "2u",
+    "m": "5"
+   },
+   "PM3": {
+    "w": "72.2u",
+    "l": "2u"
+   },
+   "PM6": {
+    "w": "73.6u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "PM7": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "PM4": {
+    "w": "42u",
+    "l": "1u"
+   },
+   "PM5": {
+    "w": "42.3u",
+    "l": "1u"
+   },
+   "PM8": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "PM9": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM1": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM3": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "67u",
+    "l": "1u"
+   },
+   "NM4": {
+    "w": "7.83u",
+    "l": "2u"
+   },
+   "NM5": {
+    "w": "7.89u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM7": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   },
+   "NM8": {
+    "w": "100u",
+    "l": "2u",
+    "m": "20"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT N1 VDD VDD pfet_06v0 w=82.7u l=2u m=5\nXPM2 VB1 N2 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM3 N3 N1 VDD VDD pfet_06v0 w=72.2u l=2u\nXPM4 N4 INP N3 VDD pfet_06v0 w=42u l=1u\nXPM5 N5 INN N3 VDD pfet_06v0 w=42.3u l=1u\nXPM6 N1 N1 VDD VDD pfet_06v0 w=73.6u l=2u\nXPM7 N2 N2 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM8 N6 N6 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM9 N7 N6 VDD VDD pfet_06v0 w=100u l=2u m=20\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT N4 VSS VSS nfet_06v0 w=67u l=1u\nXNM3 N1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM4 N4 N5 VSS VSS nfet_06v0 w=7.83u l=2u\nXNM5 N5 N5 VSS VSS nfet_06v0 w=7.89u l=2u\nXNM6 N2 N7 VSS VSS nfet_06v0 w=100u l=2u m=20\nXNM7 N6 N7 VSS VSS nfet_06v0 w=100u l=2u m=20\nXNM8 N7 N7 VSS VSS nfet_06v0 w=100u l=2u m=20\nR1 VDD N7 10k\nC1 OUT N4 1p\nVBIAS_VB1 VB1 VSS dc 0.9286\n.ends opamp\n",
+  "seconds": 15.6
+ },
+ {
+  "name": "AnalogGenie 2103",
+  "table": "PM1 D=OUT G=N1 S=VDD B=VDD\nPM2 D=VB1 G=N2 S=VDD B=VDD\nPM3 D=VB2 G=N2 S=VDD B=VDD\nPM4 D=N3 G=N1 S=VDD B=VDD\nPM5 D=N4 G=IN2 S=N3 B=VDD\nPM6 D=N5 G=IN1 S=N3 B=VDD\nPM7 D=N1 G=N1 S=VDD B=VDD\nPM8 D=N2 G=N2 S=VDD B=VDD\nNM1 D=VB1 G=VB1 S=VSS B=VSS\nNM2 D=OUT G=N4 S=VSS B=VSS\nNM3 D=N1 G=VB1 S=VSS B=VSS\nNM4 D=N2 G=VB2 S=VSS B=VSS\nNM5 D=N6 G=VB2 S=VSS B=VSS\nNM6 D=N4 G=N5 S=VSS B=VSS\nNM7 D=N5 G=N5 S=VSS B=VSS\nR1 P=VB2 N=N6\nC1 P=OUT N=N4",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 2,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 15,
+  "measured": {
+   "gain_dc": 39.89337158836415,
+   "ugbw": 5646161.158893212,
+   "pm": 54.49698930693913,
+   "gm": 14.475198645110483,
+   "idd": 0.0001340222685900144,
+   "sr": null,
+   "ts": 5.674999999999946e-07,
+   "cmrr": 88.73849400957704,
+   "psrr": 98.41858772618335,
+   "voh_1ma": -0.6875640074417072,
+   "vol_1ma": 0.3450238590163192,
+   "gain_unloaded": 90.55700364752883
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "76.1u",
+    "l": "2u"
+   },
+   "PM4": {
+    "w": "72.6u",
+    "l": "2u"
+   },
+   "PM7": {
+    "w": "73.6u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "78.7u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "78.7u",
+    "l": "2u"
+   },
+   "PM8": {
+    "w": "73.6u",
+    "l": "2u"
+   },
+   "PM5": {
+    "w": "42.3u",
+    "l": "1u"
+   },
+   "PM6": {
+    "w": "42.4u",
+    "l": "1u"
+   },
+   "NM1": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM3": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "12.3u",
+    "l": "1u"
+   },
+   "NM4": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM5": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "7.9u",
+    "l": "2u"
+   },
+   "NM7": {
+    "w": "7.91u",
+    "l": "2u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT N1 VDD VDD pfet_06v0 w=76.1u l=2u\nXPM2 VB1 N2 VDD VDD pfet_06v0 w=78.7u l=2u\nXPM3 VB2 N2 VDD VDD pfet_06v0 w=78.7u l=2u\nXPM4 N3 N1 VDD VDD pfet_06v0 w=72.6u l=2u\nXPM5 N4 INP N3 VDD pfet_06v0 w=42.3u l=1u\nXPM6 N5 INN N3 VDD pfet_06v0 w=42.4u l=1u\nXPM7 N1 N1 VDD VDD pfet_06v0 w=73.6u l=2u\nXPM8 N2 N2 VDD VDD pfet_06v0 w=73.6u l=2u\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT N4 VSS VSS nfet_06v0 w=12.3u l=1u\nXNM3 N1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM4 N2 VB2 VSS VSS nfet_06v0 w=15u l=2u\nXNM5 N6 VB2 VSS VSS nfet_06v0 w=15u l=2u\nXNM6 N4 N5 VSS VSS nfet_06v0 w=7.9u l=2u\nXNM7 N5 N5 VSS VSS nfet_06v0 w=7.91u l=2u\nR1 VB2 N6 10k\nC1 OUT N4 1p\nVBIAS_VB1 VB1 VSS dc 0.9286\nVBIAS_VB2 VB2 VSS dc 0.9286\n.ends opamp\n",
+  "seconds": 15.9
+ },
+ {
+  "name": "AnalogGenie 2103",
+  "table": "PM1 D=OUT G=N1 S=VDD B=VDD\nPM2 D=VB1 G=N2 S=VDD B=VDD\nPM3 D=VB2 G=N2 S=VDD B=VDD\nPM4 D=N3 G=N1 S=VDD B=VDD\nPM5 D=N4 G=IN2 S=N3 B=VDD\nPM6 D=N5 G=IN1 S=N3 B=VDD\nPM7 D=N1 G=N1 S=VDD B=VDD\nPM8 D=N2 G=N2 S=VDD B=VDD\nNM1 D=VB1 G=VB1 S=VSS B=VSS\nNM2 D=OUT G=N4 S=VSS B=VSS\nNM3 D=N1 G=VB1 S=VSS B=VSS\nNM4 D=N2 G=VB2 S=VSS B=VSS\nNM5 D=N6 G=VB2 S=VSS B=VSS\nNM6 D=N4 G=N5 S=VSS B=VSS\nNM7 D=N5 G=N5 S=VSS B=VSS\nR1 P=VB2 N=N6\nC1 P=OUT N=N4",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": true,
+  "saturated_all": true,
+  "off": [],
+  "triode": [],
+  "reason": "",
+  "iterations": 2,
+  "polarity": [
+   "IN2",
+   "IN1"
+  ],
+  "transistors": 15,
+  "measured": {
+   "gain_dc": 53.808557836397156,
+   "ugbw": 11999941.211011551,
+   "pm": 57.2656817144627,
+   "gm": 19.096753594318855,
+   "idd": 0.0002248296728525168,
+   "sr": 2110181.378620582,
+   "ts": 3.1749999999999696e-07,
+   "cmrr": 88.82583690003584,
+   "psrr": 98.30370395853429,
+   "voh_1ma": -0.6729329034952121,
+   "vol_1ma": 0.06703313540819478,
+   "gain_unloaded": 90.56647234265918
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "95.5u",
+    "l": "2u",
+    "m": "4"
+   },
+   "PM4": {
+    "w": "72.6u",
+    "l": "2u"
+   },
+   "PM7": {
+    "w": "73.6u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "78.7u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "78.7u",
+    "l": "2u"
+   },
+   "PM8": {
+    "w": "73.6u",
+    "l": "2u"
+   },
+   "PM5": {
+    "w": "42.3u",
+    "l": "1u"
+   },
+   "PM6": {
+    "w": "42.4u",
+    "l": "1u"
+   },
+   "NM1": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM3": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "61.9u",
+    "l": "1u"
+   },
+   "NM4": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM5": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "7.9u",
+    "l": "2u"
+   },
+   "NM7": {
+    "w": "7.91u",
+    "l": "2u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT N1 VDD VDD pfet_06v0 w=95.5u l=2u m=4\nXPM2 VB1 N2 VDD VDD pfet_06v0 w=78.7u l=2u\nXPM3 VB2 N2 VDD VDD pfet_06v0 w=78.7u l=2u\nXPM4 N3 N1 VDD VDD pfet_06v0 w=72.6u l=2u\nXPM5 N4 INP N3 VDD pfet_06v0 w=42.3u l=1u\nXPM6 N5 INN N3 VDD pfet_06v0 w=42.4u l=1u\nXPM7 N1 N1 VDD VDD pfet_06v0 w=73.6u l=2u\nXPM8 N2 N2 VDD VDD pfet_06v0 w=73.6u l=2u\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT N4 VSS VSS nfet_06v0 w=61.9u l=1u\nXNM3 N1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM4 N2 VB2 VSS VSS nfet_06v0 w=15u l=2u\nXNM5 N6 VB2 VSS VSS nfet_06v0 w=15u l=2u\nXNM6 N4 N5 VSS VSS nfet_06v0 w=7.9u l=2u\nXNM7 N5 N5 VSS VSS nfet_06v0 w=7.91u l=2u\nR1 VB2 N6 10k\nC1 OUT N4 1p\nVBIAS_VB1 VB1 VSS dc 0.9286\nVBIAS_VB2 VB2 VSS dc 0.9286\n.ends opamp\n",
+  "seconds": 17.9
+ },
+ {
+  "name": "AnalogGenie 2124",
+  "table": "PM1 D=VB2 G=VB2 S=VDD B=VDD\nPM2 D=OUT G=IN2 S=N1 B=VDD\nPM3 D=VB1 G=N2 S=VDD B=VDD\nPM4 D=N3 G=VB2 S=VDD B=VDD\nPM5 D=N4 G=VB2 S=VDD B=VDD\nPM6 D=N5 G=IN1 S=N1 B=VDD\nPM7 D=N1 G=N2 S=VDD B=VDD\nPM8 D=N2 G=N2 S=VDD B=VDD\nNM1 D=VB1 G=VB1 S=VSS B=VSS\nNM2 D=OUT G=N5 S=VSS B=VSS\nNM3 D=N5 G=N5 S=VSS B=VSS\nNM4 D=N2 G=N4 S=VSS B=VSS\nNM5 D=N3 G=N3 S=VSS B=VSS\nNM6 D=N6 G=N3 S=VSS B=VSS\nNM7 D=VB2 G=N4 S=N6 B=VSS\nNM8 D=N4 G=N4 S=VSS B=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": false,
+  "off": [],
+  "triode": [
+   "NM6"
+  ],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN1",
+   "IN2"
+  ],
+  "transistors": 16,
+  "measured": {
+   "gain_dc": -5.734780279755157,
+   "ugbw": null,
+   "pm": null,
+   "gm": null,
+   "idd": 0.00016846120134643942,
+   "sr": null,
+   "ts": 3.3749999999999677e-07,
+   "cmrr": 16.59333668070691,
+   "psrr": 54.40935990227147,
+   "voh_1ma": -0.6839250031496653,
+   "vol_1ma": 4.404125252842461,
+   "gain_unloaded": 47.075077180058784
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM4": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM5": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "78.8u",
+    "l": "1u"
+   },
+   "PM3": {
+    "w": "80.4u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM7": {
+    "w": "59.5u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM8": {
+    "w": "60.4u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM6": {
+    "w": "59.9u",
+    "l": "1u"
+   },
+   "NM1": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "15.2u",
+    "l": "2u"
+   },
+   "NM3": {
+    "w": "11.2u",
+    "l": "2u"
+   },
+   "NM4": {
+    "w": "26.2u",
+    "l": "2u"
+   },
+   "NM8": {
+    "w": "15.5u",
+    "l": "2u"
+   },
+   "NM5": {
+    "w": "15.5u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "0.526u",
+    "l": "2u"
+   },
+   "NM7": {
+    "w": "0.605u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB2 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT INN N1 VDD pfet_06v0 w=78.8u l=1u\nXPM3 VB1 N2 VDD VDD pfet_06v0 w=80.4u l=2u m=2\nXPM4 N3 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM5 N4 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM6 N5 INP N1 VDD pfet_06v0 w=59.9u l=1u\nXPM7 N1 N2 VDD VDD pfet_06v0 w=59.5u l=2u m=2\nXPM8 N2 N2 VDD VDD pfet_06v0 w=60.4u l=2u m=2\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT N5 VSS VSS nfet_06v0 w=15.2u l=2u\nXNM3 N5 N5 VSS VSS nfet_06v0 w=11.2u l=2u\nXNM4 N2 N4 VSS VSS nfet_06v0 w=26.2u l=2u\nXNM5 N3 N3 VSS VSS nfet_06v0 w=15.5u l=2u\nXNM6 N6 N3 VSS VSS nfet_06v0 w=0.526u l=2u\nXNM7 VB2 N4 N6 VSS nfet_06v0 w=0.605u l=1u\nXNM8 N4 N4 VSS VSS nfet_06v0 w=15.5u l=2u\nVBIAS_VB1 VB1 VSS dc 0.9286\nVBIAS_VB2 VDD VB2 dc 1.1009\n.ends opamp\n",
+  "seconds": 23.4
+ },
+ {
+  "name": "AnalogGenie 2124",
+  "table": "PM1 D=VB2 G=VB2 S=VDD B=VDD\nPM2 D=OUT G=IN2 S=N1 B=VDD\nPM3 D=VB1 G=N2 S=VDD B=VDD\nPM4 D=N3 G=VB2 S=VDD B=VDD\nPM5 D=N4 G=VB2 S=VDD B=VDD\nPM6 D=N5 G=IN1 S=N1 B=VDD\nPM7 D=N1 G=N2 S=VDD B=VDD\nPM8 D=N2 G=N2 S=VDD B=VDD\nNM1 D=VB1 G=VB1 S=VSS B=VSS\nNM2 D=OUT G=N5 S=VSS B=VSS\nNM3 D=N5 G=N5 S=VSS B=VSS\nNM4 D=N2 G=N4 S=VSS B=VSS\nNM5 D=N3 G=N3 S=VSS B=VSS\nNM6 D=N6 G=N3 S=VSS B=VSS\nNM7 D=VB2 G=N4 S=N6 B=VSS\nNM8 D=N4 G=N4 S=VSS B=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": true,
+  "saturated_all": false,
+  "off": [],
+  "triode": [
+   "NM6"
+  ],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN1",
+   "IN2"
+  ],
+  "transistors": 16,
+  "measured": {
+   "gain_dc": -2.1790876042591747,
+   "ugbw": null,
+   "pm": null,
+   "gm": null,
+   "idd": 0.0001685235868581388,
+   "sr": null,
+   "ts": 2.8898119447289963e-07,
+   "cmrr": 16.549094594369418,
+   "psrr": 53.615667945799856,
+   "voh_1ma": -0.6817131998110965,
+   "vol_1ma": 4.150428886660734,
+   "gain_unloaded": 47.14455902961123
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM4": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM5": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "59.1u",
+    "l": "1u",
+    "m": "2"
+   },
+   "PM3": {
+    "w": "80.4u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM7": {
+    "w": "59.6u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM8": {
+    "w": "60.4u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM6": {
+    "w": "20.8u",
+    "l": "1u"
+   },
+   "NM1": {
+    "w": "15u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "22.5u",
+    "l": "2u"
+   },
+   "NM3": {
+    "w": "3.88u",
+    "l": "2u"
+   },
+   "NM4": {
+    "w": "26.2u",
+    "l": "2u"
+   },
+   "NM8": {
+    "w": "15.5u",
+    "l": "2u"
+   },
+   "NM5": {
+    "w": "15.5u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "0.526u",
+    "l": "2u"
+   },
+   "NM7": {
+    "w": "0.605u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB2 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT INN N1 VDD pfet_06v0 w=59.1u l=1u m=2\nXPM3 VB1 N2 VDD VDD pfet_06v0 w=80.4u l=2u m=2\nXPM4 N3 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM5 N4 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM6 N5 INP N1 VDD pfet_06v0 w=20.8u l=1u\nXPM7 N1 N2 VDD VDD pfet_06v0 w=59.6u l=2u m=2\nXPM8 N2 N2 VDD VDD pfet_06v0 w=60.4u l=2u m=2\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT N5 VSS VSS nfet_06v0 w=22.5u l=2u\nXNM3 N5 N5 VSS VSS nfet_06v0 w=3.88u l=2u\nXNM4 N2 N4 VSS VSS nfet_06v0 w=26.2u l=2u\nXNM5 N3 N3 VSS VSS nfet_06v0 w=15.5u l=2u\nXNM6 N6 N3 VSS VSS nfet_06v0 w=0.526u l=2u\nXNM7 VB2 N4 N6 VSS nfet_06v0 w=0.605u l=1u\nXNM8 N4 N4 VSS VSS nfet_06v0 w=15.5u l=2u\nVBIAS_VB1 VB1 VSS dc 0.9286\nVBIAS_VB2 VDD VB2 dc 1.1009\n.ends opamp\n",
+  "seconds": 19.0
+ },
+ {
+  "name": "AnalogGenie 2145",
+  "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD\nPM2 D=OUT G=IN2 S=N1 B=VDD\nPM3 D=N2 G=VB1 S=VDD B=VDD\nPM4 D=N3 G=VB1 S=VDD B=VDD\nPM5 D=N4 G=IN1 S=N1 B=VDD\nPM6 D=N1 G=N5 S=VDD B=VDD\nPM7 D=N5 G=N5 S=VDD B=VDD\nNM1 D=OUT G=N4 S=VSS B=VSS\nNM2 D=N4 G=N4 S=VSS B=VSS\nNM3 D=N5 G=N3 S=VSS B=VSS\nNM4 D=N2 G=N2 S=VSS B=VSS\nNM5 D=N6 G=N2 S=VSS B=VSS\nNM6 D=VB1 G=N3 S=N6 B=VSS\nNM7 D=N3 G=N3 S=VSS B=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 1.0,
+  "op_ok": true,
+  "saturated_all": false,
+  "off": [],
+  "triode": [
+   "NM5"
+  ],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN1",
+   "IN2"
+  ],
+  "transistors": 14,
+  "measured": {
+   "gain_dc": -5.734780279755092,
+   "ugbw": null,
+   "pm": null,
+   "gm": null,
+   "idd": 0.00011658898150426228,
+   "sr": null,
+   "ts": 3.3749999999999677e-07,
+   "cmrr": 16.593336680706933,
+   "psrr": 54.40935990227292,
+   "voh_1ma": -0.6839250031496654,
+   "vol_1ma": 4.404125252842462,
+   "gain_unloaded": 47.07507718005879
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM4": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "78.8u",
+    "l": "1u"
+   },
+   "PM5": {
+    "w": "59.9u",
+    "l": "1u"
+   },
+   "PM6": {
+    "w": "59.5u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM7": {
+    "w": "60.4u",
+    "l": "2u",
+    "m": "2"
+   },
+   "NM1": {
+    "w": "15.2u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "11.2u",
+    "l": "2u"
+   },
+   "NM3": {
+    "w": "26.2u",
+    "l": "2u"
+   },
+   "NM7": {
+    "w": "15.5u",
+    "l": "2u"
+   },
+   "NM4": {
+    "w": "15.5u",
+    "l": "2u"
+   },
+   "NM5": {
+    "w": "0.526u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "0.605u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT INN N1 VDD pfet_06v0 w=78.8u l=1u\nXPM3 N2 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM4 N3 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM5 N4 INP N1 VDD pfet_06v0 w=59.9u l=1u\nXPM6 N1 N5 VDD VDD pfet_06v0 w=59.5u l=2u m=2\nXPM7 N5 N5 VDD VDD pfet_06v0 w=60.4u l=2u m=2\nXNM1 OUT N4 VSS VSS nfet_06v0 w=15.2u l=2u\nXNM2 N4 N4 VSS VSS nfet_06v0 w=11.2u l=2u\nXNM3 N5 N3 VSS VSS nfet_06v0 w=26.2u l=2u\nXNM4 N2 N2 VSS VSS nfet_06v0 w=15.5u l=2u\nXNM5 N6 N2 VSS VSS nfet_06v0 w=0.526u l=2u\nXNM6 VB1 N3 N6 VSS nfet_06v0 w=0.605u l=1u\nXNM7 N3 N3 VSS VSS nfet_06v0 w=15.5u l=2u\nVBIAS_VB1 VDD VB1 dc 1.1009\n.ends opamp\n",
+  "seconds": 12.9
+ },
+ {
+  "name": "AnalogGenie 2145",
+  "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD\nPM2 D=OUT G=IN2 S=N1 B=VDD\nPM3 D=N2 G=VB1 S=VDD B=VDD\nPM4 D=N3 G=VB1 S=VDD B=VDD\nPM5 D=N4 G=IN1 S=N1 B=VDD\nPM6 D=N1 G=N5 S=VDD B=VDD\nPM7 D=N5 G=N5 S=VDD B=VDD\nNM1 D=OUT G=N4 S=VSS B=VSS\nNM2 D=N4 G=N4 S=VSS B=VSS\nNM3 D=N5 G=N3 S=VSS B=VSS\nNM4 D=N2 G=N2 S=VSS B=VSS\nNM5 D=N6 G=N2 S=VSS B=VSS\nNM6 D=VB1 G=N3 S=N6 B=VSS\nNM7 D=N3 G=N3 S=VSS B=VSS",
+  "unit_current": 2e-05,
+  "output_scale": 5.0,
+  "op_ok": true,
+  "saturated_all": false,
+  "off": [],
+  "triode": [
+   "NM5"
+  ],
+  "reason": "",
+  "iterations": 8,
+  "polarity": [
+   "IN1",
+   "IN2"
+  ],
+  "transistors": 14,
+  "measured": {
+   "gain_dc": -2.1790876042591747,
+   "ugbw": null,
+   "pm": null,
+   "gm": null,
+   "idd": 0.00011665136701596342,
+   "sr": null,
+   "ts": 2.8899744956992195e-07,
+   "cmrr": 16.549094594369425,
+   "psrr": 53.61566794580184,
+   "voh_1ma": -0.6817131998110966,
+   "vol_1ma": 4.150428886660732,
+   "gain_unloaded": 47.14455902961127
+  },
+  "valid": true,
+  "sizes": {
+   "PM1": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM3": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM4": {
+    "w": "68.7u",
+    "l": "2u"
+   },
+   "PM2": {
+    "w": "59.1u",
+    "l": "1u",
+    "m": "2"
+   },
+   "PM5": {
+    "w": "20.8u",
+    "l": "1u"
+   },
+   "PM6": {
+    "w": "59.6u",
+    "l": "2u",
+    "m": "2"
+   },
+   "PM7": {
+    "w": "60.4u",
+    "l": "2u",
+    "m": "2"
+   },
+   "NM1": {
+    "w": "22.5u",
+    "l": "2u"
+   },
+   "NM2": {
+    "w": "3.88u",
+    "l": "2u"
+   },
+   "NM3": {
+    "w": "26.2u",
+    "l": "2u"
+   },
+   "NM7": {
+    "w": "15.5u",
+    "l": "2u"
+   },
+   "NM4": {
+    "w": "15.5u",
+    "l": "2u"
+   },
+   "NM5": {
+    "w": "0.526u",
+    "l": "2u"
+   },
+   "NM6": {
+    "w": "0.605u",
+    "l": "1u"
+   }
+  },
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT INN N1 VDD pfet_06v0 w=59.1u l=1u m=2\nXPM3 N2 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM4 N3 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM5 N4 INP N1 VDD pfet_06v0 w=20.8u l=1u\nXPM6 N1 N5 VDD VDD pfet_06v0 w=59.6u l=2u m=2\nXPM7 N5 N5 VDD VDD pfet_06v0 w=60.4u l=2u m=2\nXNM1 OUT N4 VSS VSS nfet_06v0 w=22.5u l=2u\nXNM2 N4 N4 VSS VSS nfet_06v0 w=3.88u l=2u\nXNM3 N5 N3 VSS VSS nfet_06v0 w=26.2u l=2u\nXNM4 N2 N2 VSS VSS nfet_06v0 w=15.5u l=2u\nXNM5 N6 N2 VSS VSS nfet_06v0 w=0.526u l=2u\nXNM6 VB1 N3 N6 VSS nfet_06v0 w=0.605u l=1u\nXNM7 N3 N3 VSS VSS nfet_06v0 w=15.5u l=2u\nVBIAS_VB1 VDD VB1 dc 1.1009\n.ends opamp\n",
+  "seconds": 12.1
+ }
+]

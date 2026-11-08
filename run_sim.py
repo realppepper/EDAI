@@ -43,6 +43,7 @@ PDK_DIR = os.environ.get("EDAI_PDK_DIR", str(Path.home() / "pdk" / "gf180mcu_fd_
 
 HERE = Path(__file__).resolve().parent
 OUT_DIR = HERE / "sim_out"
+SIM_TIMEOUT_S = 300        # ngspice 한 번 실행의 시간 제한. 수렴하지 않고 멈추는 회로를 건너뛰기 위함
 OUT_DIR.mkdir(exist_ok=True)
 
 TB_PREFIX = "tb_"
@@ -142,11 +143,15 @@ def run(netlist_path: Path) -> RawRead:
     """ngspice를 배치 모드로 실행하고 결과 raw 파일을 읽어서 돌려준다."""
     raw_path = OUT_DIR / f"{netlist_path.stem}.raw"
     log_path = OUT_DIR / f"{netlist_path.stem}.log"
-    result = subprocess.run(
-        [NGSPICE_EXE, "-b", "-r", str(raw_path), "-o", str(log_path), str(netlist_path)],
-        capture_output=True,
-        text=True,
-    )
+    try:
+        result = subprocess.run(
+            [NGSPICE_EXE, "-b", "-r", str(raw_path), "-o", str(log_path), str(netlist_path)],
+            capture_output=True,
+            text=True,
+            timeout=SIM_TIMEOUT_S,
+        )
+    except subprocess.TimeoutExpired:
+        raise RuntimeError(f"{netlist_path.name} 시뮬레이션이 {SIM_TIMEOUT_S}초 안에 끝나지 않음") from None
     if result.returncode != 0 or not raw_path.exists():
         raise RuntimeError(
             f"{netlist_path.name} 시뮬레이션 실패 (exit {result.returncode}). "
