@@ -5,11 +5,15 @@
     ~/.venvs/edai/bin/python label_dataset.py blocks          # 블록 조립 구조 32개로 도구 검증
     ~/.venvs/edai/bin/python label_dataset.py analoggenie 20  # AnalogGenie 구조 20개 (범주별로 고르게)
     ~/.venvs/edai/bin/python label_dataset.py analoggenie all
+    python label_dataset.py rejudge data/labels_analoggenie_all.json   # 시뮬레이션 없이 "동작" 판정만 다시
 
 결과: data/labels_<이름>.json
-"동작"의 기준: 크기를 정한 회로를 전압 팔로워로 묶었을 때 출력이 VCM 근처에 있고,
-부하 없이 잰 개방루프 이득이 VALID_MIN_GAIN_DB 이상이다.
-테스트벤치의 다른 값(대역폭, 위상여유 등)은 데이터시트 조건(부하 2 kΩ, 10 kΩ 등)으로 잰 값이다.
+"동작"의 기준 (세 가지 모두. 데이터시트와 상관없이 OP-Amp 라면 같은 기준):
+    1. 전압 팔로워로 묶었을 때 출력이 VCM 근처에 있다
+    2. 모든 트랜지스터가 켜져 있고 포화 영역에 있다
+    3. 부하 없이 잰 개방루프 이득이 VALID_MIN_GAIN_DB 이상이다
+성능 값(대역폭, 위상여유, 2 kΩ 부하 이득, 전류 등)은 거르지 않고 그대로 기록한다.
+이 값들은 데이터시트 조건(TLV271: 부하 2 kΩ, 10 kΩ 등)으로 잰 것이다.
 구조 하나를 VARIANTS 의 (전류, 출력단 배율) 마다 따로 만들어 여러 줄의 데이터를 얻는다.
 """
 
@@ -65,22 +69,58 @@ def label(table: dict, passives: dict = None, unit_current: float = auto_size.UN
     sized = auto_size.auto_size(table, passives, unit_current, output_scale)
     record = {"unit_current": unit_current, "output_scale": output_scale, "op_ok": sized.get("vout") is not None and abs(sized["vout"] - auto_size.VCM) <= auto_size.OUTPUT_TOLERANCE,
               "saturated_all": sized["ok"], "off": sized.get("off"), "triode": sized.get("triode"),
+              "startup": sized.get("startup"),
               "reason": sized.get("reason"), "iterations": sized.get("iterations"), "polarity": sized.get("polarity"),
               "transistors": len(auto_size.mos_rows(table))}
-    record["measured"], record["valid"] = None, False
+    record["measured"] = None
     if record["op_ok"]:
         try:
             record["measured"] = measure(sized["subckt"])
         except Exception as error:  # 수렴 실패 등
-            record["reason"] = f"측정 실패: {str(error)[:200]}"
-        else:
-            gain = record["measured"]["gain_unloaded"]
-            record["valid"] = bool(gain is not None and gain >= VALID_MIN_GAIN_DB)
-            record["reason"] = "" if record["valid"] else f"무부하 이득 부족 ({gain:.1f} dB)"
+            record["measure_error"] = f"측정 실패: {str(error)[:200]}"
         record["sizes"] = sized["sizes"]
         record["subckt"] = sized["subckt"]
+    judge(record)
     record["seconds"] = round(time.time() - started, 1)
     return record
+
+
+def judge(record: dict) -> dict:
+    """"동작" 여부와 이유를 정한다. 기준은 맨 위 설명의 세 가지. record 를 고쳐서 돌려준다."""
+    measured = record.get("measured") or {}
+    gain = measured.get("gain_unloaded")
+    if not record["op_ok"]:
+        reason = record.get("reason") or "출력이 VCM 에서 벗어남"
+    elif record.get("off"):
+        reason = f"꺼진 소자 {', '.join(record['off'])}"
+    elif record.get("triode"):
+        reason = f"포화 영역 밖 소자 {', '.join(record['triode'])}"
+    elif record.get("measure_error"):
+        reason = record["measure_error"]
+    elif gain is None or gain < VALID_MIN_GAIN_DB:
+        reason = f"무부하 이득 부족 ({gain if gain is None else round(gain, 1)} dB)"
+    else:
+        reason = ""
+    record["valid"], record["reason"] = not reason, reason
+    return record
+
+
+def rejudge(path: Path) -> None:
+    """이미 만든 결과 파일을 지금 기준으로 다시 판정한다 (시뮬레이션 없음)."""
+    records = json.loads(path.read_text(encoding="utf-8"))
+    before = sum(r["valid"] for r in records)
+    for r in records:
+        if (r.get("reason") or "").startswith("측정 실패"):  # 예전 형식: 측정 실패를 reason 에 적었다
+            r["measure_error"] = r["reason"]
+        startup = auto_size.startup_devices(nt.parse_table_text(r["table"]))
+        r["off"] = [n for n in r.get("off") or [] if n not in startup]
+        r["triode"] = [n for n in r.get("triode") or [] if n not in startup]
+        r["startup"] = sorted(startup)
+        judge(r)
+    path.write_text(json.dumps(records, ensure_ascii=False, indent=1), encoding="utf-8")
+    working = {r["name"] for r in records if r["valid"]}
+    print(f"{path.name}: 동작 {before} -> {sum(r['valid'] for r in records)} / {len(records)} 줄, "
+          f"구조 기준 {len(working)} / {len({r['name'] for r in records})}")
 
 
 def block_items():
@@ -104,6 +144,10 @@ def analoggenie_items(count):
 
 
 def main() -> None:
+    if len(sys.argv) > 2 and sys.argv[1] == "rejudge":
+        for name in sys.argv[2:]:
+            rejudge(Path(name))
+        return
     if len(sys.argv) < 2 or sys.argv[1] not in ("blocks", "analoggenie"):
         print(__doc__)
         return
