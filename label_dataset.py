@@ -19,6 +19,7 @@
 """
 
 import json
+import os
 import sys
 import time
 from pathlib import Path
@@ -32,6 +33,10 @@ import topology
 
 DATA_DIR = run_sim.HERE / "data"
 DESIGN_NAME = "opamp_auto"            # run_sim 이 OP-Amp 로 알아보도록 opamp 로 시작한다
+# 나눠 돌리기: EDAI_WORKER="i/n" 이면 remeasure 가 할 일의 i 번째 몫만 하고, 임시 회로 이름도 따로 쓴다
+WORKER = os.environ.get("EDAI_WORKER")
+if WORKER:
+    DESIGN_NAME = f"opamp_w{WORKER.split('/')[0]}_"
 VALID_MIN_GAIN_DB = 20.0          # 이 이상이면 "확실히 증폭한다"로 본다 (성능 기준이 아니라 동작 기준)
 # 학습 데이터에 남기는 측정값 (run_sim.measure_opamp 의 이름)
 KEPT_MEASURES = ("avd", "gain_dc", "ugbw", "pm", "gm", "idd", "sr", "ts", "cmrr", "psrr",
@@ -145,12 +150,42 @@ def analoggenie_items(count):
         yield f"AnalogGenie {circuit['id']}", nt.parse_table_text(circuit["table"]), None
 
 
+def record_key(r: dict) -> str:
+    return f"{r['name']}|{r['unit_current']}|{r['output_scale']}"
+
+
+def merge_shards(path: Path, records: list) -> None:
+    """나눠 돌린 결과(<이름>.w#.json)를 본 파일에 합치고 지운다."""
+    shards = sorted(path.parent.glob(f"{path.stem}.w*.json"))
+    if not shards:
+        return
+    by_key = {record_key(r): r for r in records}
+    for shard in shards:
+        for key, updated in json.loads(shard.read_text(encoding="utf-8")).items():
+            by_key[key].update(updated)
+    path.write_text(json.dumps(records, ensure_ascii=False, indent=1), encoding="utf-8")
+    for shard in shards:
+        shard.unlink()
+    print(f"{path.name}: 나눠 돌린 결과 {len(shards)}개를 합침", flush=True)
+
+
 def remeasure(path: Path) -> None:
     """동작하는 줄을 저장된 회로(subckt)로 다시 측정해 KEPT_MEASURES 를 모두 채운다 (크기 정하기는 다시 하지 않음).
-    이미 다 채운 줄은 건너뛰므로 중간에 멈춰도 이어서 돌릴 수 있다."""
+    이미 다 채운 줄은 건너뛰므로 중간에 멈춰도 이어서 돌릴 수 있다.
+    EDAI_WORKER="i/n" 이면 i 번째 몫만 하고 결과를 <이름>.w<i>.json 에 따로 적는다.
+    모두 끝난 뒤 EDAI_WORKER 없이 한 번 더 실행하면 합친다."""
     records = json.loads(path.read_text(encoding="utf-8"))
+    if not WORKER:
+        merge_shards(path, records)
     todo = [r for r in records if r["valid"] and r.get("subckt")
             and not all(key in (r["measured"] or {}) for key in KEPT_MEASURES)]
+    shard_path, shard = None, {}
+    if WORKER:
+        index, total = (int(x) for x in WORKER.split("/"))
+        todo = todo[index::total]
+        shard_path = path.parent / f"{path.stem}.w{index}.json"
+        shard = json.loads(shard_path.read_text(encoding="utf-8")) if shard_path.exists() else {}
+        todo = [r for r in todo if record_key(r) not in shard]
     print(f"{path.name}: 다시 측정할 줄 {len(todo)}", flush=True)
     for count, r in enumerate(todo, 1):
         started = time.time()
@@ -161,7 +196,11 @@ def remeasure(path: Path) -> None:
         judge(r)
         print(f"  {count}/{len(todo)} {r['name']} (출력 x{r['output_scale']:g}) "
               f"{'동작' if r['valid'] else r['reason']}  ({time.time() - started:.1f} s)", flush=True)
-        path.write_text(json.dumps(records, ensure_ascii=False, indent=1), encoding="utf-8")
+        if shard_path:
+            shard[record_key(r)] = {k: r.get(k) for k in ("measured", "measure_error", "valid", "reason") if k in r}
+            shard_path.write_text(json.dumps(shard, ensure_ascii=False), encoding="utf-8")
+        else:
+            path.write_text(json.dumps(records, ensure_ascii=False, indent=1), encoding="utf-8")
 
 
 def main() -> None:
