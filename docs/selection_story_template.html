@@ -1,0 +1,471 @@
+<title>TLV271 구조 선택 이야기</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+/* 영상처럼 넘어가는 장면 11개. 1200x675 무대를 화면 폭에 맞춰 줄이고, 자막은 무대 아래 보통 글자 크기로 둔다.
+   어두운 오실로스코프 화면 한 가지 모양으로 고정한다 */
+:root {
+  --bg: #0b1316; --stage: #0f1b20; --panel: #15252b; --ink: #e6eef0; --muted: #8ea0a6; --line: #26383f;
+  --accent: #4fb8d8; --violet: #a48ff0; --pass: #4cc27a; --fail: #ee6b5c; --warn: #f0a94a; --ghost: #33454c;
+  --sans: "IBM Plex Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+  color-scheme: dark;
+}
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); margin: 0; }
+.page { max-width: 1240px; margin: 0 auto; padding-block: 20px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 14px; }
+.top { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.top h1 { font-size: 20px; margin: 0; font-weight: 700; }
+.top .meta { font-size: 13px; color: var(--muted); }
+.screen { position: relative; width: 100%; border-radius: 10px; overflow: hidden; background: var(--stage); border: 1px solid var(--line); }
+.stage { position: absolute; left: 0; top: 0; width: 1200px; height: 675px; transform-origin: 0 0; overflow: hidden; }
+.stage::after { content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: radial-gradient(ellipse at 50% 40%, transparent 55%, rgba(0,0,0,.35)); }
+.scene-title { position: absolute; left: 40px; top: 28px; display: flex; gap: 14px; align-items: baseline; z-index: 3; }
+.scene-title .no { font-family: var(--mono); color: var(--accent); font-size: 18px; }
+.scene-title .name { font-size: 30px; font-weight: 700; }
+
+/* 자막과 조작 */
+.caption { min-height: 92px; display: grid; gap: 6px; align-content: start; }
+.caption p { margin: 0; font-size: 18px; line-height: 1.6; max-width: 72ch; }
+.caption p.old { color: var(--muted); font-size: 15px; }
+.caption p.new { animation: cap .5s ease both; }
+@keyframes cap { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+.controls { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.controls button { font: inherit; font-size: 14px; padding: 8px 14px; border-radius: 8px; border: 1px solid var(--line);
+  background: var(--panel); color: var(--ink); cursor: pointer; }
+.controls button.primary { background: var(--accent); color: #062029; border-color: var(--accent); font-weight: 700; min-width: 92px; }
+.controls button:focus-visible, .seg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.segs { display: flex; gap: 4px; flex: 1 1 260px; min-width: 0; }
+.seg { flex: 1; height: 26px; border: 0; padding: 0; background: transparent; cursor: pointer; display: grid; align-items: center; }
+.seg span { display: block; height: 5px; border-radius: 3px; background: var(--ghost); overflow: hidden; }
+.seg span i { display: block; height: 100%; width: 0; background: var(--accent); }
+.hint { font-size: 12px; color: var(--muted); }
+
+/* 무대 요소 */
+.h { opacity: 0; }
+.abs { position: absolute; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; }
+.big { font-family: var(--mono); font-weight: 500; }
+.label { font-size: 15px; color: var(--muted); }
+.mono { font-family: var(--mono); }
+.chip { font-family: var(--mono); font-size: 15px; padding: 6px 10px; border-radius: 6px; background: var(--panel); border: 1px solid var(--line); display: flex; justify-content: space-between; gap: 10px; }
+.chip b { color: var(--accent); font-weight: 500; }
+.arrow { font-size: 64px; color: var(--accent); font-family: var(--mono); }
+.model { display: grid; place-items: center; text-align: center; border: 2px solid var(--accent); border-radius: 18px; background: var(--panel); }
+.model .t { font-size: 30px; font-weight: 700; } .model .s { font-size: 14px; color: var(--muted); }
+.dot { position: absolute; width: 14px; height: 14px; border-radius: 3px; background: var(--accent); transition: background .6s, opacity .6s, transform .6s; }
+.dot.out1 { background: var(--fail); opacity: .18; }
+.dot.out2 { background: var(--ghost); opacity: .35; }
+.dot.blk { background: var(--violet); }
+.counter { display: grid; gap: 2px; }
+.counter .big { font-size: 46px; line-height: 1; }
+.counter .label { font-size: 16px; }
+.tile { position: absolute; border-radius: 8px; background: var(--panel); border: 2px solid var(--line); display: grid; place-items: center; text-align: center;
+  font-family: var(--mono); transition: background .35s, border-color .35s, opacity .5s, transform .5s; }
+.tile .n { font-size: 12px; color: var(--muted); } .tile .r { font-size: 18px; font-weight: 500; }
+.tile.beam { border-color: var(--accent); } .tile.sample { border-color: var(--violet); }
+.tile.ok { background: #173a28; border-color: var(--pass); } .tile.ok .r { color: var(--pass); }
+.tile.bad { background: #3a1d1b; border-color: var(--fail); } .tile.bad .r { color: var(--fail); font-size: 12px; }
+.tile.rule { background: #3a2b14; border-color: var(--warn); }
+.tile.scan { box-shadow: 0 0 0 4px var(--accent), 0 0 30px var(--accent); }
+.bar-h { height: 34px; border-radius: 6px; background: var(--ghost); overflow: hidden; }
+.bar-h i { display: block; height: 100%; width: 0; background: var(--accent); }
+.rank-bar { position: absolute; bottom: 110px; border-radius: 6px 6px 0 0; background: var(--accent); transform-origin: bottom; }
+.rank-bar.sel { background: var(--pass); box-shadow: 0 0 34px rgba(76,194,122,.6); }
+.rank-lab { position: absolute; bottom: 80px; font-family: var(--mono); font-size: 13px; color: var(--muted); text-align: center; }
+.rank-val { position: absolute; font-family: var(--mono); font-size: 16px; text-align: center; }
+.refline { position: absolute; border-top: 2px dashed var(--warn); }
+.pill { font-size: 13px; font-weight: 700; padding: 2px 10px; border-radius: 10px; }
+.pill.PASS { background: #173a28; color: var(--pass); } .pill.FAIL { background: #3a1d1b; color: var(--fail); } .pill.미측정 { background: var(--ghost); color: var(--muted); }
+.specrow { display: grid; grid-template-columns: 1fr 130px 120px 70px; gap: 8px; align-items: center; font-size: 15px; padding: 5px 0; border-bottom: 1px solid var(--line); }
+.specrow .mono { font-size: 14px; }
+svg text { font-family: var(--mono); fill: var(--muted); font-size: 13px; }
+.g-link { stroke: #5b7179; stroke-width: 1.6; fill: none; }
+.g-link.G { stroke-dasharray: 5 4; }
+.g-dev rect { fill: var(--panel); stroke-width: 2; } .g-dev.pm rect { stroke: var(--violet); } .g-dev.nm rect { stroke: var(--accent); } .g-dev.rc rect { stroke: var(--muted); }
+.g-dev.added rect { fill: #1d4553; }
+.g-dev text { fill: var(--ink); font-size: 13px; font-weight: 500; }
+.g-net circle { fill: #5b7179; } .g-net.port circle { fill: var(--stage); stroke-width: 3; }
+.g-net.rail circle { stroke: var(--violet); } .g-net.in circle { stroke: var(--accent); } .g-net.out circle { stroke: var(--warn); } .g-net.bias circle { stroke: var(--pass); }
+.g-net text { fill: var(--ink); font-size: 14px; font-weight: 700; }
+.draw { stroke-dasharray: 1; stroke-dashoffset: 1; }
+
+@keyframes pop { from { opacity: 0; transform: scale(.6); } to { opacity: 1; transform: none; } }
+@keyframes rise { from { opacity: 0; transform: translateY(28px); } to { opacity: 1; transform: none; } }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes fly { from { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(.2); } to { opacity: 1; transform: none; } }
+@keyframes drop { from { opacity: 1; transform: none; } to { opacity: 0; transform: translateY(70px) rotate(10deg); } }
+@keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes drawline { to { stroke-dashoffset: 0; } }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(79,184,216,0); } 50% { box-shadow: 0 0 46px 6px rgba(79,184,216,.55); } }
+@keyframes type { from { opacity: 1; clip-path: inset(0 100% 0 0); } to { opacity: 1; clip-path: inset(0 0 0 0); } }
+.paused * { animation-play-state: paused !important; }
+.rm * { animation-duration: 1ms !important; animation-delay: 0ms !important; transition: none !important; }
+@media (max-width: 700px) { .caption p { font-size: 16px; } .caption p.old { font-size: 14px; } }
+</style>
+
+<div class="page">
+  <div class="top"><h1>TLV271 구조 선택 이야기</h1><span class="meta" id="meta"></span></div>
+  <div class="screen" id="screen"><div class="stage" id="stage"></div></div>
+  <div class="controls">
+    <button id="prev" type="button" aria-label="이전 장면">이전</button>
+    <button id="play" type="button" class="primary">일시정지</button>
+    <button id="next" type="button" aria-label="다음 장면">다음</button>
+    <div class="segs" id="segs"></div>
+  </div>
+  <div class="caption" id="caption" aria-live="polite"></div>
+  <p class="hint">스페이스: 재생/멈춤 · ←/→: 장면 이동 · 아래 막대를 누르면 그 장면으로 갑니다</p>
+</div>
+
+<script>
+const DATA = /*DATA*/null;
+const E = DATA.entries;
+const S = DATA.summary || {ranking: [], selected: null};
+const SEL = S.selected;
+const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const stage = document.getElementById("stage");
+const fmt = v => v == null ? "—" : (Math.abs(v) >= 1000 || (Math.abs(v) < 0.01 && v !== 0) ? Number(v).toPrecision(3) : String(+Number(v).toPrecision(3)));
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const bestVariant = e => e.best ? e.variants.find(v => v.output_scale === e.best.output_scale) : null;
+const novelty = e => e.nearest.added.length + e.nearest.removed.length;
+const working = E.filter(e => e.best);
+const rulesOk = E.filter(e => e.rules.ok);
+const generated = DATA.generated.beam + DATA.generated.sample;
+const trainMax = Math.max(...DATA.training.map(t => t.passed));
+const trainMaxCount = DATA.training.filter(t => t.passed === trainMax).length;
+const fromGenie = DATA.training.filter(t => t.source.includes("analoggenie")).length;
+const fromBlocks = DATA.training.length - fromGenie;
+function shortReason(r) {
+  if (!r) return "";
+  if (r.startsWith("꺼진 소자")) return "꺼진 소자";
+  if (r.startsWith("포화 영역 밖")) return "포화 밖";
+  if (r.includes("이득")) return "이득 부족";
+  if (r.includes("시간 초과")) return "시간 초과";
+  if (r.includes("출력")) return "출력 벗어남";
+  return "탈락";
+}
+
+/* ---------- 시간표: 멈추면 장면 시계도 멈춘다 ---------- */
+let events = [], tweens = [], t = 0, playing = !reduce, last = null, idx = 0, captions = [];
+const at = (ms, fn) => events.push({ms, fn});
+const tween = (ms, dur, fn) => tweens.push({ms, dur, fn, done: false});
+const ease = p => 1 - Math.pow(1 - p, 3);
+function el(cls, html = "", style = {}, parent = stage) {
+  const d = document.createElement("div"); d.className = cls; d.innerHTML = html; Object.assign(d.style, style); parent.appendChild(d); return d;
+}
+const px = v => v + "px";
+function anim(node, ms, name = "pop", dur = 600) {
+  at(ms, () => { node.style.animation = `${name} ${dur}ms cubic-bezier(.2,.8,.2,1) forwards`; });
+}
+function count(node, ms, dur, to, suffix = "") {
+  tween(ms, dur, p => { node.textContent = Math.round(to * p).toLocaleString() + suffix; });
+}
+function caption(lines) { captions = lines; lines.forEach(([ms]) => at(ms, renderCaption)); }
+function renderCaption() {
+  const shown = captions.filter(([ms]) => ms <= t);
+  const box = document.getElementById("caption");
+  box.innerHTML = shown.map(([, text], k) => `<p class="${k === shown.length - 1 ? "new" : "old"}">${text}</p>`).join("");
+}
+function title(n, name) { el("scene-title", `<span class="no">${n} / ${SCENES.length}</span><span class="name">${name}</span>`); }
+
+/* ---------- 장면 ---------- */
+const SCENES = [
+{ name: "목표", dur: 9000, build() {
+  const spec = el("abs card", "", {left: px(60), top: px(100), width: px(380), height: px(540), padding: "16px", boxSizing: "border-box"});
+  anim(spec, 200, "rise");
+  el("", `<div class="label">데이터시트</div><div style="font-size:26px;font-weight:700;margin-bottom:10px">TLV271</div>`, {}, spec);
+  DATA.spec.forEach((s, k) => { const c = el("chip h", `<span>${esc(s.symbol)}</span><b>${esc(s.target)}</b>`, {marginTop: "4px", fontSize: "13px", padding: "3px 8px"}, spec); anim(c, 600 + k * 110, "rise", 400); });
+  const a = el("abs arrow h", "→", {left: px(480), top: px(320)}); anim(a, 2600, "pop");
+  const box = el("abs card h", "", {left: px(600), top: px(140), width: px(540), height: px(460), border: "2px dashed var(--accent)", display: "grid", placeItems: "center", textAlign: "center"});
+  box.innerHTML = `<div><div style="font-size:30px;font-weight:700">어떤 회로 구조로<br>만들어야 할까?</div><div class="mono" style="margin-top:24px;color:var(--muted);font-size:16px;line-height:1.9">PM1 D=OUT G=N1 S=VDD B=VDD<br>NM1 D=N1 G=IN1 S=N3 B=VSS<br>NM2 D=N2 G=IN2 S=N3 B=VSS<br>…</div></div>`;
+  anim(box, 3000, "pop", 800);
+  caption([[0, "목표: TLV271 데이터시트의 목표값 15개를 넣으면, 그 값을 맞출 OP-Amp 회로 구조를 자동으로 고르는 것입니다."],
+           [3200, "구조란 트랜지스터를 어디에 어떻게 연결할지 정한 표입니다. 한 줄이 소자 하나이고, D·G·S·B는 트랜지스터의 네 단자입니다."]]);
+}},
+{ name: "학습 재료 모으기", dur: 11000, build() {
+  const total = 568, opamp = 435, cols = 26, pitch = 21, x0 = 60, y0 = 110;
+  const dots = [];
+  for (let k = 0; k < total; k++) { const d = el("dot h", "", {left: px(x0 + (k % cols) * pitch), top: px(y0 + Math.floor(k / cols) * pitch)}); dots.push(d); anim(d, 200 + k * 2, "pop", 300); }
+  const order = dots.map((d, k) => [((k * 7919) % 568), d]).sort((a, b) => a[0] - b[0]).map(x => x[1]);
+  at(3000, () => order.slice(0, total - opamp).forEach(d => d.classList.add("out1")));
+  at(5600, () => order.slice(total - opamp, total - fromGenie).forEach(d => d.classList.add("out2")));
+  const blocks = [];
+  for (let k = 0; k < fromBlocks; k++) { const d = el("dot blk h", "", {left: px(x0 + ((total + k) % cols) * pitch), top: px(y0 + Math.floor((total + k) / cols) * pitch)}); blocks.push(d); anim(d, 8000 + k * 60, "pop", 400); }
+  const right = el("abs", "", {left: px(640), top: px(110), width: px(520), display: "grid", gap: "26px"});
+  const rows = [[200, total, "AnalogGenie 공개 회로", "var(--accent)"], [3000, opamp, "그중 OP-Amp만", "var(--ink)"],
+                [5600, fromGenie, "크기 정하고 시뮬레이션해서 실제로 동작한 구조", "var(--pass)"], [8000, DATA.training.length, `+ 직접 만든 블록 조합 ${fromBlocks}개 = 학습 구조`, "var(--violet)"]];
+  rows.forEach(([ms, n, label, color]) => {
+    const c = el("counter h", `<span class="big" style="color:${color}">0</span><span class="label">${label}</span>`, {}, right);
+    anim(c, ms, "rise"); count(c.querySelector(".big"), ms, 1200, n);
+  });
+  const fin = el("abs h", `<span class="label">학습 문장</span> <span class="big" style="font-size:30px">${DATA.train.train.toLocaleString()}</span>`, {left: px(640), top: px(590)});
+  anim(fin, 9500, "rise");
+  caption([[0, "먼저 학습 재료입니다. 공개 회로 데이터 AnalogGenie에서 회로 568개를 가져왔습니다. 네모 하나가 회로 하나입니다."],
+           [3000, "그중 OP-Amp인 435개만 남깁니다."],
+           [5600, `회로마다 트랜지스터 크기를 자동으로 정하고 ngspice로 시뮬레이션해서, 실제로 증폭기로 동작한 구조 ${fromGenie}개만 씁니다.`],
+           [8000, `직접 만든 블록 조합 ${fromBlocks}개를 더하면 구조 ${DATA.training.length}개, 학습 문장 ${DATA.train.train.toLocaleString()}개가 됩니다.`]]);
+}},
+{ name: "모델 학습", dur: 12000, build() {
+  const ex = DATA.train.example;
+  const left = el("abs card h", "", {left: px(40), top: px(110), width: px(330), height: px(420), padding: "16px", boxSizing: "border-box"});
+  left.innerHTML = `<div class="label">입력: 스펙 문장</div><div class="mono" style="font-size:14px;line-height:1.7;margin-top:8px">${esc(ex.input).replace(/; /g, ";<br>")}</div>`;
+  anim(left, 200, "rise");
+  const m = el("abs model h", `<div><div class="t">FLAN-T5</div><div class="s">가중치 2.5억 개</div></div>`, {left: px(420), top: px(230), width: px(220), height: px(160)});
+  anim(m, 1800, "pop");
+  at(2600, () => { m.style.animation = "pulse 1.6s ease-in-out infinite"; m.style.opacity = 1; });
+  const a1 = el("abs arrow h", "→", {left: px(375), top: px(270), fontSize: "40px"}); anim(a1, 1600, "fade");
+  const a2 = el("abs arrow h", "→", {left: px(650), top: px(270), fontSize: "40px"}); anim(a2, 3000, "fade");
+  const right = el("abs card h", `<div class="label">출력: 구조 표</div>`, {left: px(700), top: px(110), width: px(460), height: px(420), padding: "16px", boxSizing: "border-box", overflow: "hidden"});
+  anim(right, 3000, "rise");
+  ex.target.split(" ; ").forEach((r, k) => { const line = el("mono h", esc(r), {fontSize: "14px", lineHeight: "1.75"}, right); anim(line, 3400 + k * 260, "type", 380); });
+  const ep = el("abs h", `<div class="label" style="margin-bottom:6px">학습 반복 <span class="mono" id="epn">0</span> / ${DATA.epochs} 에폭 · Colab GPU · 약 2시간</div><div class="bar-h"><i id="epb"></i></div>`, {left: px(40), top: px(570), width: px(1120)});
+  anim(ep, 7000, "rise");
+  tween(7400, 3800, p => { document.getElementById("epb").style.width = (p * 100) + "%"; document.getElementById("epn").textContent = Math.round(p * DATA.epochs); });
+  caption([[0, `모델에게 '스펙 문장 → 구조 표' 짝을 ${DATA.train.train.toLocaleString()}개 보여 주고 따라 쓰게 학습합니다. 왼쪽이 실제 학습 문장 하나입니다.`],
+           [3200, "오른쪽이 그 문장의 정답 구조입니다. 예를 들어 PM1 D=OUT은 PMOS 1번의 드레인(D)이 출력(OUT)에 연결된다는 뜻입니다."],
+           [7000, `같은 자료를 ${DATA.epochs}번 되풀이해 학습했고, Colab GPU로 약 2시간 걸렸습니다.`]]);
+}},
+{ name: "모델 시험", dur: 10000, build() {
+  const n = DATA.eval_count;
+  for (let k = 0; k < n; k++) { const s = el("abs h", "", {left: px(60 + k * 45), top: px(120), width: px(36), height: px(36), borderRadius: "6px", background: "var(--violet)"}); anim(s, 200 + k * 40, "pop", 300); }
+  el("abs label", `학습에 넣지 않은 구조 ${n}개의 스펙으로 시험`, {left: px(60), top: px(166)});
+  const items = [["형식이 맞는 표를 씀", DATA.eval["형식 통과"], "var(--accent)", 1600], ["연결 규칙까지 통과", DATA.eval["검사 모두 통과"], "var(--pass)", 3000],
+                 ["정답 구조와 똑같음", DATA.eval["정답과 같음"], "var(--fail)", 4800], ["학습 때 본 구조를 그대로 씀", DATA.eval["학습 데이터에 있는 구조"], "var(--warn)", 6200]];
+  items.forEach(([label, v, color, ms], k) => {
+    const row = el("abs h", `<div style="display:flex;justify-content:space-between;font-size:20px;margin-bottom:8px"><span>${label}</span><span class="mono"><b class="cv">0</b> / ${n}</span></div><div class="bar-h"><i style="background:${color}"></i></div>`,
+      {left: px(60), top: px(230 + k * 100), width: px(1080)});
+    anim(row, ms, "rise", 400);
+    tween(ms + 300, 1100, p => { row.querySelector("i").style.width = (100 * v / n * p) + "%"; row.querySelector(".cv").textContent = Math.round(v * p); });
+  });
+  caption([[0, `학습에 쓰지 않은 구조 ${n}개의 스펙을 넣어 시험했습니다.`],
+           [3000, "형식과 연결 규칙은 거의 다 지킵니다."],
+           [4800, "하지만 처음 보는 스펙에도 학습 때 본 구조를 그대로 내는 경우가 많습니다. 새 구조를 지어낸다기보다, 아는 구조 중에서 알맞은 것을 고르는 쪽에 가깝습니다."]]);
+}},
+{ name: "TLV271 후보 만들기", dur: 10000, build() {
+  const inp = el("abs card h", `<span class="label">TLV271 → 문장</span><div class="mono" style="font-size:13px;margin-top:4px;line-height:1.5">${esc(DATA.input)}</div>`, {left: px(40), top: px(90), width: px(1120), padding: "10px 16px", boxSizing: "border-box"});
+  anim(inp, 200, "rise");
+  const m = el("abs model h", `<div><div class="t">FLAN-T5</div></div>`, {left: px(500), top: px(200), width: px(200), height: px(90)});
+  anim(m, 1200, "pop");
+  at(1500, () => { m.style.animation = "pulse 1.4s ease-in-out 2"; m.style.opacity = 1; });
+  const tiles = [], cols = 10, tw = 100, th = 54, gx = 110, gy = 64, x0 = 50, y0 = 330;
+  for (let k = 0; k < generated; k++) {
+    const isBeam = k < DATA.generated.beam;
+    const x = x0 + (k % cols) * gx, y = y0 + Math.floor(k / cols) * gy;
+    const tl = el(`tile h ${isBeam ? "beam" : "sample"}`, `<span class="r" style="font-size:13px">${isBeam ? "빔" : "무작위"}</span>`, {left: px(x), top: px(y), width: px(tw), height: px(th)});
+    tl.style.setProperty("--dx", px(600 - x - tw / 2)); tl.style.setProperty("--dy", px(245 - y - th / 2));
+    anim(tl, 2400 + k * 50, "fly", 700); tiles.push(tl);
+  }
+  const dup = generated - E.length;
+  at(5600, () => tiles.slice(-dup).forEach(tl => { tl.style.animation = "drop 700ms ease forwards"; }));
+  const c = el("abs h", `<span class="big" style="font-size:40px">${generated}</span> <span class="label">개 생성 →</span> <span class="big" style="font-size:40px;color:var(--pass)">${E.length}</span> <span class="label">개 서로 다른 후보</span>`, {left: px(760), top: px(200)});
+  anim(c, 6200, "rise");
+  caption([[0, "이제 시험입니다. TLV271 목표값을 같은 형식의 문장으로 바꿔 모델에 넣습니다. TLV271은 학습에 한 번도 쓰지 않았습니다."],
+           [2400, `모델이 구조를 ${generated}번 써 냅니다. 가장 그럴듯한 답 ${DATA.generated.beam}개(빔 탐색, 파란 테두리)와 조금씩 무작위로 바꾼 답 ${DATA.generated.sample}개(보라 테두리)입니다.`],
+           [5600, `같은 답 ${dup}개를 지우면 서로 다른 후보 ${E.length}개가 남습니다.`]]);
+}},
+{ name: "규칙 검사", dur: 9000, build() {
+  const cols = 11, tw = 92, th = 70, gx = 100, gy = 84, x0 = 50, y0 = 110;
+  const tiles = E.map((e, k) => { const tl = el(`tile h ${e.how}`, `<span class="n">후보</span><span class="r">${e.no}</span>`, {left: px(x0 + (k % cols) * gx), top: px(y0 + Math.floor(k / cols) * gy), width: px(tw), height: px(th)}); anim(tl, 100 + k * 25, "pop", 300); return tl; });
+  E.forEach((e, k) => at(1600 + k * 90, () => { tiles[k].classList.add("scan"); setTimeout(() => tiles[k].classList.remove("scan"), 250); if (!e.rules.ok) tiles[k].classList.add("rule"); }));
+  const failed = E.map((e, k) => [e, k]).filter(([e]) => !e.rules.ok);
+  at(5200, () => failed.forEach(([, k]) => { tiles[k].style.animation = "drop 800ms ease forwards"; }));
+  const box = el("abs card h", "", {left: px(50), top: px(390), width: px(1100), padding: "16px 20px", boxSizing: "border-box"});
+  box.innerHTML = `<div class="label" style="margin-bottom:6px">걸린 이유</div>` + failed.map(([e]) => `<div style="font-size:16px">후보 ${e.no}: ${esc(e.rules.problems.join(", "))}</div>`).join("");
+  anim(box, 4200, "rise");
+  const c = el("abs h", `<span class="big" style="font-size:40px">${E.length}</span> <span class="label">→</span> <span class="big" style="font-size:40px;color:var(--pass)">${rulesOk.length}</span> <span class="label">개 통과</span>`, {left: px(820), top: px(32)});
+  anim(c, 6000, "rise");
+  caption([[0, "시뮬레이션 전에 간단한 규칙부터 봅니다. 입력·출력·전원 단자가 다 있는지, 입력이 트랜지스터 게이트에 붙는지, 한 곳에만 붙어 떠 있는 노드가 없는지입니다."],
+           [5200, `규칙에 걸린 ${failed.length}개를 빼고 ${rulesOk.length}개가 다음 단계로 갑니다.`]]);
+}},
+{ name: "크기 정하기와 시뮬레이션", dur: 2400 + rulesOk.length * 330 + 3500, build() {
+  const cols = 7, tw = 120, th = 82, gx = 132, gy = 96, x0 = 40, y0 = 110;
+  const tiles = rulesOk.map((e, k) => el("tile h", `<span class="n">후보 ${e.no}</span><span class="r">…</span>`, {left: px(x0 + (k % cols) * gx), top: px(y0 + Math.floor(k / cols) * gy), width: px(tw), height: px(th)}));
+  tiles.forEach((tl, k) => anim(tl, 100 + k * 30, "pop", 300));
+  const side = el("abs", "", {left: px(985), top: px(110), width: px(190), display: "grid", gap: "14px"});
+  const cOk = el("counter", `<span class="big" style="color:var(--pass)">0</span><span class="label">동작</span>`, {}, side);
+  const cBad = el("counter", `<span class="big" style="color:var(--fail)">0</span><span class="label">탈락</span>`, {}, side);
+  const reasons = el("", "", {fontSize: "14px", color: "var(--muted)", lineHeight: "1.7"}, side);
+  let ok = 0, bad = 0; const tally = {};
+  rulesOk.forEach((e, k) => at(2400 + k * 330, () => {
+    const tl = tiles[k]; tl.classList.add("scan"); setTimeout(() => tl.classList.remove("scan"), 300);
+    if (e.best) { tl.classList.add("ok"); tl.querySelector(".r").textContent = `${e.best.passed}/15`; ok++; cOk.querySelector(".big").textContent = ok; }
+    else { const r = shortReason(e.variants[0] && e.variants[0].reason); tl.classList.add("bad"); tl.querySelector(".r").textContent = r; bad++; cBad.querySelector(".big").textContent = bad; tally[r] = (tally[r] || 0) + 1;
+      reasons.innerHTML = Object.entries(tally).sort((a, b) => b[1] - a[1]).map(([r2, n]) => `${r2} ${n}`).join("<br>"); }
+  }));
+  caption([[0, "남은 후보마다 트랜지스터 크기(W/L)를 자동으로 정하고 ngspice로 시뮬레이션합니다. 출력단 전류를 1배, 5배 두 가지로 해 봅니다."],
+           [2400, "동작 판정: 출력이 VDD/2 근처에 있고, 모든 트랜지스터가 켜져 증폭할 수 있는 상태(포화 영역)이고, 이득이 20 dB 이상이어야 합니다."],
+           [2400 + rulesOk.length * 160, "동작하면 TLV271 15개 항목을 재서 통과 수를 적습니다. 꺼진 소자는 전류가 흐르지 않는 트랜지스터입니다."]]);
+}},
+{ name: "순위 매기기", dur: 10000, build() {
+  const order = S.ranking || [];
+  const chartL = 120, chartW = 960, chartH = 400, base = 675 - 110;
+  const bw = Math.min(70, chartW / order.length - 14);
+  const yOf = v => chartH * v / 15;
+  for (let v = 0; v <= 15; v += 5) { el("abs", "", {left: px(chartL - 10), width: px(chartW + 20), top: px(base - yOf(v)), borderTop: "1px solid var(--line)"}); el("abs mono", String(v), {left: px(chartL - 40), top: px(base - yOf(v) - 10), fontSize: "13px", color: "var(--muted)"}); }
+  el("abs label", "통과 항목 수 (15개 중)", {left: px(chartL - 40), top: px(base - chartH - 40)});
+  order.forEach((i, r) => {
+    const e = E[i], x = chartL + r * (chartW / order.length) + 7;
+    const b = el(`rank-bar h ${i === SEL ? "sel" : ""}`, "", {left: px(x), width: px(bw), height: px(yOf(e.best.passed))});
+    at(600 + r * 150, () => { b.style.opacity = 1; b.style.animation = "grow 700ms cubic-bezier(.2,.8,.2,1) both"; });
+    const lab = el("rank-lab h", `후보<br>${e.no}`, {left: px(x - 10), width: px(bw + 20)}); anim(lab, 600 + r * 150, "fade");
+    const val = el("rank-val h", `${e.best.passed}`, {left: px(x), width: px(bw), bottom: px(110 + yOf(e.best.passed) + 6)}); anim(val, 1100 + r * 150, "fade");
+  });
+  const ref = el("refline h", "", {left: px(chartL - 10), width: px(chartW + 20), top: px(base - yOf(trainMax))}); anim(ref, 4200, "fade");
+  const refl = el("abs h", `학습 구조 ${DATA.training.length}개를 같은 방식으로 재면 최고 ${trainMax}/15 (${trainMaxCount}개)`, {left: px(chartL + 10), top: px(base - yOf(trainMax) - 30), color: "var(--warn)", fontSize: "16px"}); anim(refl, 4200, "rise");
+  if (SEL != null) { const s = el("abs h", `선택: 후보 ${E[SEL].no}`, {left: px(chartL + 7 - 20), top: px(base - yOf(E[SEL].best.passed) - 70), color: "var(--pass)", fontSize: "22px", fontWeight: 700}); anim(s, 6200, "pop"); }
+  caption([[0, "동작한 후보를 통과 항목 수로 줄 세웁니다. 통과 수가 같으면 전류를 덜 쓰는 쪽이 앞입니다."],
+           [4200, `비교 기준: 학습에 쓴 구조 ${DATA.training.length}개를 같은 방식으로 재면 최고 ${trainMax}/15입니다. 후보들은 아직 그보다 낮습니다.`],
+           [6200, SEL == null ? "동작한 후보가 없습니다." : `가장 많이 통과한 후보 ${E[SEL].no}(${E[SEL].best.passed}/15)를 고릅니다.`]]);
+}},
+{ name: "고른 회로", dur: 12000, build() {
+  if (SEL == null) return;
+  const e = E[SEL], v = bestVariant(e);
+  const W = 1200, H = 590, top = 80;
+  const nodes = [], links = [], netIndex = {};
+  const cls = n => n === "VDD" || n === "VSS" ? "rail" : n === "IN1" || n === "IN2" ? "in" : n === "OUT" ? "out" : /^(VB|IB)/.test(n) ? "bias" : "";
+  const net = n => {
+    if (!(n in netIndex)) { netIndex[n] = nodes.length; const nd = {type: "net", label: n, cls: cls(n), port: ["VDD", "VSS", "IN1", "IN2", "OUT"].includes(n)};
+      if (n === "VDD") nd.fy = 30; if (n === "VSS") nd.fy = H - 30; if (n === "IN1") { nd.fx = 60; nd.fy = H * .42; } if (n === "IN2") { nd.fx = 60; nd.fy = H * .6; } if (n === "OUT") { nd.fx = W - 70; nd.fy = H / 2; }
+      nodes.push(nd); }
+    return netIndex[n];
+  };
+  const added = new Set(e.nearest.added);
+  e.rows.forEach(([name, pins]) => {
+    const di = nodes.length; const txt = [name, ...Object.entries(pins).map(([p, n]) => `${p}=${n}`)].join(" ");
+    nodes.push({type: "dev", label: name, kind: name.startsWith("PM") ? "pm" : name.startsWith("NM") ? "nm" : "rc", added: added.has(txt)});
+    Object.entries(pins).forEach(([p, n]) => { if (p === "B" && (n === "VDD" || n === "VSS")) return; links.push({source: di, target: net(n), pin: p}); });
+  });
+  if (typeof d3 !== "undefined") {
+    const sim = d3.forceSimulation(nodes).force("link", d3.forceLink(links).distance(l => l.pin === "G" ? 80 : 56).strength(.7))
+      .force("charge", d3.forceManyBody().strength(-320)).force("y", d3.forceY(d => d.type === "dev" ? (d.kind === "pm" ? H * .28 : d.kind === "nm" ? H * .72 : H / 2) : H / 2).strength(.12))
+      .force("x", d3.forceX(W / 2).strength(.03)).force("collide", d3.forceCollide(d => d.type === "dev" ? 30 : 14)).stop();
+    for (let k = 0; k < 400; k++) sim.tick();
+    nodes.forEach(d => { d.x = Math.max(40, Math.min(W - 40, d.x)); d.y = Math.max(24, Math.min(H - 24, d.y)); });
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", `0 0 ${W} ${H}`); Object.assign(svg.style, {position: "absolute", left: 0, top: px(top), width: px(W), height: px(H)});
+    stage.appendChild(svg);
+    let html = "";
+    links.forEach((l, k) => { html += `<path class="g-link ${l.pin} draw" pathLength="1" d="M${l.source.x},${l.source.y}L${l.target.x},${l.target.y}" data-k="${k}"/>`; });
+    nodes.forEach((n, k) => {
+      if (n.type === "net") html += `<g class="g-net ${n.port || n.cls === "bias" ? "port" : ""} ${n.cls} h" data-n="${k}" transform="translate(${n.x},${n.y})"><circle r="${n.port ? 11 : n.cls === "bias" ? 7 : 5}"/>${n.port || n.cls === "bias" ? `<text x="${n.label === "OUT" ? -16 : 14}" y="${n.label === "VDD" ? -12 : n.label === "VSS" ? 24 : 5}" text-anchor="${n.label === "OUT" ? "end" : "start"}">${n.label}</text>` : ""}</g>`;
+      else html += `<g class="g-dev ${n.kind} ${n.added ? "added" : ""} h" data-n="${k}" transform="translate(${n.x},${n.y})"><rect x="-26" y="-14" width="52" height="28" rx="5"/><text text-anchor="middle" dy="5">${n.label}</text></g>`;
+    });
+    svg.innerHTML = html;
+    svg.querySelectorAll("g[data-n]").forEach(g => { const k = +g.dataset.n; const isDev = nodes[k].type === "dev";
+      at(isDev ? 400 + k * 60 : 200, () => { g.style.opacity = 1; const shape = g.querySelector(isDev ? "rect" : "circle"); shape.style.transformBox = "fill-box"; shape.style.transformOrigin = "center"; shape.style.animation = "pop 500ms ease both"; }); });
+    svg.querySelectorAll("path[data-k]").forEach((p, k) => at(1500 + k * 45, () => { p.style.animation = "drawline 700ms ease forwards"; }));
+  }
+  const nT = e.rows.filter(r => /^[NP]M/.test(r[0])).length;
+  const tag = el("abs card h", `<div class="label">후보 ${e.no} · 트랜지스터 ${nT}개</div><div style="font-size:15px;margin-top:4px"><span style="color:var(--violet)">보라 = PMOS</span> · <span style="color:var(--accent)">파랑 = NMOS</span> · 점선 = 게이트 연결</div>`, {right: px(30), top: px(24), padding: "10px 14px"});
+  anim(tag, 600, "rise");
+  const nv = novelty(e);
+  caption([[0, `선택된 후보 ${e.no}의 연결 구조입니다. 네모가 트랜지스터, 동그라미가 연결 노드입니다.`],
+           [4000, "위가 전원(VDD), 아래가 접지(VSS), 왼쪽이 두 입력(IN1, IN2), 오른쪽이 출력(OUT)입니다. 위쪽에 PMOS, 아래쪽에 NMOS가 모입니다."],
+           [8000, nv === 0 ? "이 구조는 학습 데이터에 있던 구조와 같습니다." : `학습 데이터에서 가장 비슷한 구조와 ${nv}줄이 다릅니다. 진하게 칠한 소자가 달라진 부분입니다.`]]);
+}},
+{ name: "측정 결과", dur: 13000, build() {
+  if (SEL == null) return;
+  const e = E[SEL], v = bestVariant(e), c = e.curves;
+  const by = Object.fromEntries(v.spec.map(s => [s.measure, s]));
+  if (c && c.freq) {
+    const W = 560, H = 380, L = 60, T = 120, f0 = c.freq[0], f1 = c.freq[c.freq.length - 1];
+    const top = Math.ceil(Math.max(...c.mag_db) / 20) * 20, bot = -40;
+    const X = f => L + W * (Math.log10(f) - Math.log10(f0)) / (Math.log10(f1) - Math.log10(f0));
+    const Y = m => T + H * (top - Math.max(bot, Math.min(top, m))) / (top - bot);
+    let d = ""; c.freq.forEach((f, k) => { d += (k ? "L" : "M") + X(f).toFixed(1) + "," + Y(c.mag_db[k]).toFixed(1); });
+    let grid = ""; for (let m = bot; m <= top; m += 20) grid += `<line x1="${L}" x2="${L + W}" y1="${Y(m)}" y2="${Y(m)}" stroke="var(--line)"/><text x="${L - 8}" y="${Y(m) + 4}" text-anchor="end">${m}</text>`;
+    for (let p = Math.ceil(Math.log10(f0)); p <= Math.floor(Math.log10(f1)); p += 2) { const f = 10 ** p; grid += `<text x="${X(f)}" y="${T + H + 20}" text-anchor="middle">${f >= 1e6 ? f / 1e6 + "M" : f >= 1e3 ? f / 1e3 + "k" : f}</text>`; }
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("viewBox", "0 0 1200 675"); Object.assign(svg.style, {position: "absolute", inset: 0, width: px(1200), height: px(675)});
+    svg.innerHTML = `${grid}<line x1="${L}" x2="${L + W}" y1="${Y(0)}" y2="${Y(0)}" stroke="var(--muted)" stroke-dasharray="4 4"/>
+      <text x="${L}" y="${T - 14}" style="fill:var(--ink);font-size:15px">이득 (dB) · 주파수 (Hz)</text>
+      <path d="${d}" class="draw" pathLength="1" style="stroke:var(--accent);stroke-width:3;fill:none" id="bodePath"/>`;
+    stage.appendChild(svg);
+    at(800, () => { svg.querySelector("#bodePath").style.animation = "drawline 2600ms ease forwards"; });
+    const note = el("abs h", `DC 이득 <b class="mono">${fmt(c.mag_db[0])} dB</b> · 0 dB 지점(대역폭) <b class="mono">${by.ugbw ? fmt(by.ugbw.value) + " MHz" : "—"}</b>`, {left: px(L), top: px(T + H + 40), fontSize: "16px"});
+    anim(note, 3400, "rise");
+  }
+  const box = el("abs", "", {left: px(670), top: px(96), width: px(500)});
+  el("specrow", `<span class="label">항목</span><span class="label">목표</span><span class="label">측정</span><span></span>`, {}, box);
+  DATA.spec.forEach((s, k) => {
+    const r = by[s.measure];
+    const row = el("specrow h", `<span>${esc(s.label)}</span><span class="mono">${esc(s.target)}</span><span class="mono">${r ? fmt(r.value) + " " + esc(s.unit) : "—"}</span><span class="pill ${r ? r.status : "미측정"}">${r ? (r.status === "PASS" ? "통과" : r.status === "FAIL" ? "미달" : "못 잼") : "—"}</span>`, {fontSize: "14px", padding: "3px 0"}, box);
+    anim(row, 3600 + k * 220, "rise", 350);
+  });
+  const fails = v.spec.filter(r => r.status !== "PASS").map(r => (DATA.spec.find(s => s.measure === r.measure) || {}).label).filter(Boolean);
+  caption([[0, "고른 회로를 시뮬레이션으로 잰 결과입니다. 왼쪽은 주파수에 따른 이득입니다. 선이 0 dB를 지나는 곳까지가 증폭할 수 있는 대역입니다."],
+           [3600, "오른쪽은 TLV271 15개 항목의 목표와 측정값입니다."],
+           [3600 + 15 * 220, `15개 중 ${e.best.passed}개 통과. 미달: ${fails.slice(0, 5).join(", ")}${fails.length > 5 ? " 등" : ""}.`]]);
+}},
+{ name: "정리", dur: 12000, build() {
+  const nums = [[E.length, "구조 후보", "var(--ink)"], [rulesOk.length, "규칙 통과", "var(--accent)"], [working.length, "동작", "var(--pass)"], [SEL == null ? 0 : E[SEL].best.passed, "선택 구조 통과 항목 / 15", "var(--warn)"]];
+  nums.forEach(([n, label, color], k) => {
+    const c = el("abs card h", `<div class="big" style="font-size:64px;color:${color}">${n}</div><div class="label" style="font-size:17px">${label}</div>`, {left: px(40 + k * 285), top: px(120), width: px(265), height: px(170), padding: "22px", boxSizing: "border-box"});
+    anim(c, 300 + k * 400, "pop");
+  });
+  const lines = [["자동으로 되는 것", "데이터시트 목표값 → 구조 후보 생성 → 규칙 검사 → 크기 정하기 → 시뮬레이션 → 선택"],
+                 ["아직 부족한 것", `지금 크기는 '동작하는' 크기일 뿐 스펙에 맞춘 크기가 아니라서, 통과 수가 학습 구조 최고(${trainMax}/15)보다 낮습니다.`],
+                 ["다음 단계", "고른 구조의 크기를 스펙에 맞춰 다시 조정합니다 (기존 LLM + 수식 설계 루프)."]];
+  lines.forEach(([h, text], k) => {
+    const r = el("abs h", `<div class="label" style="font-size:15px">${h}</div><div style="font-size:21px;margin-top:2px">${text}</div>`, {left: px(40), top: px(340 + k * 100), width: px(1120)});
+    anim(r, 2400 + k * 1500, "rise");
+  });
+  caption([[0, "정리하면, 데이터시트 목표값에서 시작해 구조 후보 생성, 걸러내기, 시뮬레이션, 선택까지 사람 손 없이 이어집니다."],
+           [3900, "통과 수가 낮은 이유는 구조가 아니라 크기 때문일 수 있습니다. 지금은 모든 구조를 같은 규칙으로 '일단 동작하게'만 크기를 정합니다."],
+           [5400, "다음은 고른 구조의 트랜지스터 크기를 TLV271 목표에 맞춰 다시 조정하는 단계입니다."]]);
+}},
+];
+
+/* ---------- 재생 ---------- */
+const segs = document.getElementById("segs");
+segs.innerHTML = SCENES.map((s, k) => `<button class="seg" type="button" data-k="${k}" aria-label="${k + 1}. ${s.name}"><span><i></i></span></button>`).join("");
+function enter(k) {
+  idx = Math.max(0, Math.min(SCENES.length - 1, k));
+  stage.innerHTML = ""; events = []; tweens = []; t = 0; captions = [];
+  stage.className = "stage" + (playing ? "" : " paused") + (reduce ? " rm" : "");
+  title(idx + 1, SCENES[idx].name);
+  SCENES[idx].build();
+  events.sort((a, b) => a.ms - b.ms);
+  if (reduce) { t = SCENES[idx].dur; flush(); }
+  document.getElementById("meta").textContent = `${idx + 1}. ${SCENES[idx].name}`;
+  renderCaption(); paintSegs();
+}
+function flush() {
+  while (events.length && events[0].ms <= t) events.shift().fn();
+  tweens.forEach(tw => { if (tw.done || t < tw.ms) return; const p = Math.min(1, (t - tw.ms) / tw.dur); tw.fn(ease(p)); if (p >= 1) tw.done = true; });
+}
+function paintSegs() {
+  segs.querySelectorAll(".seg i").forEach((bar, k) => { bar.style.width = k < idx ? "100%" : k > idx ? "0%" : Math.min(100, 100 * t / SCENES[idx].dur) + "%"; });
+}
+function loop(now) {
+  if (last != null && playing) {
+    t += now - last; flush(); paintSegs();
+    if (t >= SCENES[idx].dur) { if (idx < SCENES.length - 1) enter(idx + 1); else setPlaying(false); }
+  }
+  last = now; requestAnimationFrame(loop);
+}
+function setPlaying(p) {
+  playing = p; stage.classList.toggle("paused", !p);
+  document.getElementById("play").textContent = p ? "일시정지" : (idx === SCENES.length - 1 && t >= SCENES[idx].dur ? "처음부터" : "재생");
+}
+document.getElementById("play").addEventListener("click", () => {
+  if (!playing && idx === SCENES.length - 1 && t >= SCENES[idx].dur) { setPlaying(true); enter(0); return; }
+  setPlaying(!playing);
+});
+document.getElementById("prev").addEventListener("click", () => enter(idx - 1));
+document.getElementById("next").addEventListener("click", () => enter(idx + 1));
+segs.addEventListener("click", ev => { const b = ev.target.closest(".seg"); if (b) enter(+b.dataset.k); });
+document.addEventListener("keydown", ev => {
+  if (ev.key === " ") { ev.preventDefault(); document.getElementById("play").click(); }
+  if (ev.key === "ArrowRight") enter(idx + 1);
+  if (ev.key === "ArrowLeft") enter(idx - 1);
+});
+const screen = document.getElementById("screen");
+function fit() { const s = screen.clientWidth / 1200; stage.style.transform = `scale(${s})`; screen.style.height = (675 * s) + "px"; }
+new ResizeObserver(fit).observe(screen); fit();
+setPlaying(playing); enter(0); requestAnimationFrame(loop);
+</script>
