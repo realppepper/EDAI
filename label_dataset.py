@@ -6,6 +6,7 @@
     ~/.venvs/edai/bin/python label_dataset.py analoggenie 20  # AnalogGenie 구조 20개 (범주별로 고르게)
     ~/.venvs/edai/bin/python label_dataset.py analoggenie all
     python label_dataset.py rejudge data/labels_analoggenie_all.json   # 시뮬레이션 없이 "동작" 판정만 다시
+    ~/.venvs/edai/bin/python label_dataset.py remeasure data/labels_blocks.json  # 동작하는 줄만 측정을 다시 (크기는 그대로)
 
 결과: data/labels_<이름>.json
 "동작"의 기준 (세 가지 모두. 데이터시트와 상관없이 OP-Amp 라면 같은 기준):
@@ -33,7 +34,8 @@ DATA_DIR = run_sim.HERE / "data"
 DESIGN_NAME = "opamp_auto"            # run_sim 이 OP-Amp 로 알아보도록 opamp 로 시작한다
 VALID_MIN_GAIN_DB = 20.0          # 이 이상이면 "확실히 증폭한다"로 본다 (성능 기준이 아니라 동작 기준)
 # 학습 데이터에 남기는 측정값 (run_sim.measure_opamp 의 이름)
-KEPT_MEASURES = ("gain_dc", "ugbw", "pm", "gm", "idd", "sr", "ts", "cmrr", "psrr", "voh_1ma", "vol_1ma")
+KEPT_MEASURES = ("avd", "gain_dc", "ugbw", "pm", "gm", "idd", "sr", "ts", "cmrr", "psrr",
+                 "voh_1ma", "voh_5ma", "vol_1ma", "vol_5ma", "io_source", "io_sink")
 
 
 def measure(subckt: str) -> dict:
@@ -143,7 +145,30 @@ def analoggenie_items(count):
         yield f"AnalogGenie {circuit['id']}", nt.parse_table_text(circuit["table"]), None
 
 
+def remeasure(path: Path) -> None:
+    """동작하는 줄을 저장된 회로(subckt)로 다시 측정해 KEPT_MEASURES 를 모두 채운다 (크기 정하기는 다시 하지 않음).
+    이미 다 채운 줄은 건너뛰므로 중간에 멈춰도 이어서 돌릴 수 있다."""
+    records = json.loads(path.read_text(encoding="utf-8"))
+    todo = [r for r in records if r["valid"] and r.get("subckt")
+            and not all(key in (r["measured"] or {}) for key in KEPT_MEASURES)]
+    print(f"{path.name}: 다시 측정할 줄 {len(todo)}", flush=True)
+    for count, r in enumerate(todo, 1):
+        started = time.time()
+        try:
+            r["measured"] = measure(r["subckt"])
+        except Exception as error:  # 수렴 실패 등. 예전 값은 그대로 두고 표시만 한다
+            r["measure_error"] = f"측정 실패: {str(error)[:200]}"
+        judge(r)
+        print(f"  {count}/{len(todo)} {r['name']} (출력 x{r['output_scale']:g}) "
+              f"{'동작' if r['valid'] else r['reason']}  ({time.time() - started:.1f} s)", flush=True)
+        path.write_text(json.dumps(records, ensure_ascii=False, indent=1), encoding="utf-8")
+
+
 def main() -> None:
+    if len(sys.argv) > 2 and sys.argv[1] == "remeasure":
+        for name in sys.argv[2:]:
+            remeasure(Path(name))
+        return
     if len(sys.argv) > 2 and sys.argv[1] == "rejudge":
         for name in sys.argv[2:]:
             rejudge(Path(name))
