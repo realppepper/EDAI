@@ -5,7 +5,7 @@
     python make_train_data.py
 결과: data/train/train.jsonl, val.jsonl, tlv271.json  (Colab 노트북 colab/flan_t5_structure.ipynb 에 올린다)
 
-입력 문장: 측정값을 스펙 파일(spec_tlv271.json)과 같은 항목 이름·단위로 적는다.
+입력 문장: 측정값을 OP-Amp 공통 측정 항목 15개(이름·단위는 스펙 파일 형식을 따름)로 적는다.
     "op-amp spec: avd 105 dB; idd 550 uA; ugbw 3 MHz; ..."
 정답: 구조 표를 한 줄로 이은 글. 소자 사이는 " ; " 로 나눈다 (T5 토크나이저가 줄바꿈을 지우기 때문).
     "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=N1 G=N1 S=VDD B=VDD ; ..."
