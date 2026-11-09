@@ -204,10 +204,41 @@ def run_op(subckt: str, table: dict, polarity: tuple) -> dict:
     return {"vout": float(values["v(out)"]), "devices": devices}
 
 
-def saturation_report(op: dict) -> dict:
-    off = [n for n, d in op["devices"].items() if d is None or d["id"] < OFF_CURRENT]
-    triode = [n for n, d in op["devices"].items() if d and d["id"] >= OFF_CURRENT and d["vds"] < d["vdsat"] + SAT_MARGIN]
-    return {"off": off, "triode": triode}
+def startup_devices(table: dict) -> set:
+    """기동 회로(start-up) 소자를 연결 모양으로 찾는다.
+
+    정상 상태에서 기동 스위치는 꺼지고, 감시 소자는 포화 영역 밖에 있도록 설계되므로 포화 검사에서 뺀다.
+    모양: 안쪽 노드 X 에 (전원으로 가는 저항) + (드레인 하나 = 감시 소자) + (게이트들) 만 붙어 있고,
+    X 가 게이트인 소자 중 드레인이나 소스가 다이오드 연결 노드(바이어스)에 붙은 것이 기동 스위치다.
+    """
+    mos = mos_rows(table)
+    diode_nets = {row["pins"]["G"] for row in mos if row["pins"]["G"] == row["pins"]["D"]}
+    by_net = {}
+    for row in table["rows"]:
+        for pin, net in row["pins"].items():
+            by_net.setdefault(net, []).append((row, pin))
+    found = set()
+    for net, links in by_net.items():
+        if net in RAILS or net in table["ports"] or net in diode_nets:
+            continue
+        pull = [r for r, _ in links if r["kind"] == "res" and set(r["pins"].values()) - {net} <= set(RAILS)]
+        drains = [r for r, p in links if r["kind"] in ("nmos", "pmos") and p == "D"]
+        gates = [r for r, p in links if r["kind"] in ("nmos", "pmos") and p == "G"]
+        if not pull or len(drains) != 1 or len(pull) + len(drains) + len(gates) != len(links):
+            continue
+        switches = [r for r in gates if r["pins"]["D"] in diode_nets or r["pins"]["S"] in diode_nets]
+        if switches:
+            found |= {r["name"] for r in switches} | {drains[0]["name"]}
+    return found
+
+
+def saturation_report(op: dict, table: dict) -> dict:
+    """꺼진 소자와 포화 영역 밖 소자. 기동 회로 소자는 빼고 따로 적는다."""
+    startup = startup_devices(table)
+    checked = {n: d for n, d in op["devices"].items() if n not in startup}
+    off = [n for n, d in checked.items() if d is None or d["id"] < OFF_CURRENT]
+    triode = [n for n, d in checked.items() if d and d["id"] >= OFF_CURRENT and d["vds"] < d["vdsat"] + SAT_MARGIN]
+    return {"off": off, "triode": triode, "startup": sorted(startup)}
 
 
 # ---------------------------------------------------------------- 전체
@@ -261,7 +292,7 @@ def auto_size(table: dict, passive_values: dict = None, unit_current: float = UN
             return {"ok": False, "reason": "반복 중 동작점 계산 실패", "roles": roles, "iterations": iterations}
         if change < CONVERGED_CHANGE:
             break
-    report = saturation_report(op)
+    report = saturation_report(op, table)
     output_ok = abs(op["vout"] - VCM) <= OUTPUT_TOLERANCE
     ok = output_ok and not report["off"] and not report["triode"]
     reason = "" if ok else ("출력이 VCM 에서 벗어남" if not output_ok else "포화 영역이 아닌 소자 있음")
