@@ -1,4 +1,4 @@
-<title>TLV271 구조 선택 이야기</title>
+<title>데이터시트에서 회로도까지</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
@@ -102,14 +102,28 @@ svg text { font-family: var(--mono); fill: var(--muted); font-size: 13px; }
 @keyframes grow { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 @keyframes drawline { to { stroke-dashoffset: 0; } }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(79,184,216,0); } 50% { box-shadow: 0 0 46px 6px rgba(79,184,216,.55); } }
+@keyframes wipe { from { opacity: 1; clip-path: inset(0 100% 0 0); } to { opacity: 1; clip-path: inset(0 0 0 0); } }
 @keyframes type { from { opacity: 1; clip-path: inset(0 100% 0 0); } to { opacity: 1; clip-path: inset(0 0 0 0); } }
+.paper { background: #fbfbf7; border-radius: 12px; padding: 18px; box-sizing: border-box; box-shadow: 0 20px 60px rgba(0,0,0,.45); }
+.paper svg text { fill: #000; font-family: "Courier New", monospace; }
+.step { position: absolute; border: 2px solid var(--line); border-radius: 14px; background: var(--panel); padding: 14px 12px; box-sizing: border-box; display: grid; gap: 6px; align-content: start; transition: border-color .4s, box-shadow .4s, background .4s; }
+.step .k { font-family: var(--mono); color: var(--muted); font-size: 14px; }
+.step .t { font-size: 19px; font-weight: 700; line-height: 1.3; }
+.step .d { font-size: 14px; color: var(--muted); line-height: 1.45; }
+.step.on { border-color: var(--accent); background: #17323b; box-shadow: 0 0 30px rgba(79,184,216,.35); }
+.step.on .k { color: var(--accent); }
+.xrow { display: grid; grid-template-columns: 210px 1fr 40px 190px; gap: 10px; align-items: center; font-size: 15px; padding: 5px 0; border-bottom: 1px solid var(--line); }
+.xrow .src { font-family: var(--mono); font-size: 13px; color: var(--muted); }
+.xrow .to { font-family: var(--mono); color: var(--pass); font-weight: 500; }
+.xrow.miss { opacity: .45; }
+.xrow.miss .to { color: var(--muted); }
 .paused * { animation-play-state: paused !important; }
 .rm * { animation-duration: 1ms !important; animation-delay: 0ms !important; transition: none !important; }
 @media (max-width: 700px) { .caption p { font-size: 16px; } .caption p.old { font-size: 14px; } }
 </style>
 
 <div class="page">
-  <div class="top"><h1>TLV271 구조 선택 이야기</h1><span class="meta" id="meta"></span></div>
+  <div class="top"><h1 id="h1">데이터시트에서 회로도까지</h1><span class="meta" id="meta"></span></div>
   <div class="screen" id="screen"><div class="stage" id="stage"></div></div>
   <div class="controls">
     <button id="prev" type="button" aria-label="이전 장면">이전</button>
@@ -135,6 +149,9 @@ const novelty = e => e.nearest.added.length + e.nearest.removed.length;
 const working = E.filter(e => e.best);
 const rulesOk = E.filter(e => e.rules.ok);
 const generated = DATA.generated.beam + DATA.generated.sample;
+const NJ = DATA.spec.length;                       // 판정하는 항목 수
+const PART = DATA.part;
+const X = DATA.extraction;
 const trainMax = Math.max(...DATA.training.map(t => t.passed));
 const trainMaxCount = DATA.training.filter(t => t.passed === trainMax).length;
 const fromGenie = DATA.training.filter(t => t.source.includes("analoggenie")).length;
@@ -147,6 +164,18 @@ function shortReason(r) {
   if (r.includes("시간 초과")) return "시간 초과";
   if (r.includes("출력")) return "출력 벗어남";
   return "탈락";
+}
+
+/* netlistsvg 회로도를 상자 크기에 맞춰 넣는다 */
+function paper(box, svgText) {
+  box.innerHTML = svgText || '<div style="color:#555;padding:20px">회로도가 아직 없습니다 (make_schematic_svg.py)</div>';
+  const svg = box.querySelector("svg");
+  if (svg) {
+    const w = svg.getAttribute("width"), h = svg.getAttribute("height");
+    if (w && h && !svg.getAttribute("viewBox")) svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+    svg.removeAttribute("width"); svg.removeAttribute("height");
+    Object.assign(svg.style, {width: "100%", height: "100%"});
+  }
 }
 
 /* ---------- 시간표: 멈추면 장면 시계도 멈춘다 ---------- */
@@ -173,20 +202,43 @@ function renderCaption() {
 function title(n, name) { el("scene-title", `<span class="no">${n} / ${SCENES.length}</span><span class="name">${name}</span>`); }
 
 /* ---------- 장면 ---------- */
-const SCENES = [
-{ name: "목표", dur: 9000, build() {
-  const spec = el("abs card", "", {left: px(60), top: px(100), width: px(380), height: px(540), padding: "16px", boxSizing: "border-box"});
-  anim(spec, 200, "rise");
-  el("", `<div class="label">데이터시트</div><div style="font-size:26px;font-weight:700;margin-bottom:10px">TLV271</div>`, {}, spec);
-  DATA.spec.forEach((s, k) => { const c = el("chip h", `<span>${esc(s.symbol)}</span><b>${esc(s.target)}</b>`, {marginTop: "4px", fontSize: "13px", padding: "3px 8px"}, spec); anim(c, 600 + k * 110, "rise", 400); });
-  const a = el("abs arrow h", "→", {left: px(480), top: px(320)}); anim(a, 2600, "pop");
-  const box = el("abs card h", "", {left: px(600), top: px(140), width: px(540), height: px(460), border: "2px dashed var(--accent)", display: "grid", placeItems: "center", textAlign: "center"});
-  box.innerHTML = `<div><div style="font-size:30px;font-weight:700">어떤 회로 구조로<br>만들어야 할까?</div><div class="mono" style="margin-top:24px;color:var(--muted);font-size:16px;line-height:1.9">PM1 D=OUT G=N1 S=VDD B=VDD<br>NM1 D=N1 G=IN1 S=N3 B=VSS<br>NM2 D=N2 G=IN2 S=N3 B=VSS<br>…</div></div>`;
-  anim(box, 3000, "pop", 800);
-  caption([[0, "목표: TLV271 데이터시트의 목표값 15개를 넣으면, 그 값을 맞출 OP-Amp 회로 구조를 자동으로 고르는 것입니다."],
-           [3200, "구조란 트랜지스터를 어디에 어떻게 연결할지 정한 표입니다. 한 줄이 소자 하나이고, D·G·S·B는 트랜지스터의 네 단자입니다."]]);
+const SCENES = [].concat([
+{ name: "목표", dur: 10000, build() {
+  const pdf = el("abs card h", `<div class="label">입력</div><div style="font-size:28px;font-weight:700;margin-top:4px">OP-Amp 데이터시트</div><div class="mono" style="color:var(--muted);margin-top:2px">PDF</div>`, {left: px(50), top: px(150), width: px(300), height: px(380), padding: "22px", boxSizing: "border-box"});
+  for (let k = 0; k < 9; k++) el("", "", {height: "10px", width: (60 + (k * 37) % 40) + "%", background: "var(--ghost)", borderRadius: "4px", marginTop: k ? "12px" : "26px"}, pdf);
+  anim(pdf, 200, "rise");
+  const a1 = el("abs arrow h", "→", {left: px(370), top: px(300)}); anim(a1, 1600, "pop");
+  const m = el("abs model h", `<div><div class="t">EDAI</div><div class="s">자동 설계</div></div>`, {left: px(450), top: px(270), width: px(150), height: px(130)});
+  anim(m, 1900, "pop"); at(2500, () => { m.style.animation = "pulse 1.6s ease-in-out 3"; m.style.opacity = 1; });
+  const a2 = el("abs arrow h", "→", {left: px(615), top: px(300)}); anim(a2, 3200, "pop");
+  const out = el("abs paper h", "", {left: px(700), top: px(110), width: px(460), height: px(460)});
+  paper(out, SEL != null ? E[SEL].schematic : null);
+  anim(out, 3600, "wipe", 1600);
+  const lab = el("abs h", `<span class="label">출력: 트랜지스터 회로도</span>`, {left: px(700), top: px(585)}); anim(lab, 4800, "fade");
+  caption([[0, "목표: OP-Amp 데이터시트(PDF)를 넣으면, 그 성능을 낼 수 있는 트랜지스터 회로가 회로도로 나오게 하는 것입니다."],
+           [3600, "지금은 사람이 데이터시트를 읽고, 회로 구조를 고르고, 크기를 정합니다. 이 과정을 자동으로 이어 붙였습니다."]]);
 }},
-{ name: "학습 재료 모으기", dur: 11000, build() {
+{ name: "전체 흐름", dur: 13000, build() {
+  const steps = [["데이터시트", "PDF 그대로"], ["정보 추출", "핀, 전기적 특성 표"], ["충족 기준 정리", "시험할 항목과 목표값"],
+                 ["구조 후보 생성", "학습한 언어 모델 FLAN-T5"], ["걸러내기·시뮬레이션", "규칙 검사, 크기 정하기, ngspice"],
+                 ["판정·선택", "목표값 통과 수로 순위"], ["회로도", "netlistsvg 자동 배치"]];
+  const w = 150, gap = 11, x0 = 30, y = 200;
+  const boxes = steps.map(([t2, d], k) => {
+    const b = el("step h", `<span class="k">${k + 1}</span><span class="t">${t2}</span><span class="d">${d}</span>`, {left: px(x0 + k * (w + gap)), top: px(y), width: px(w), height: px(190)});
+    anim(b, 200 + k * 150, "rise", 500);
+    return b;
+  });
+  boxes.forEach((b, k) => at(1800 + k * 1100, () => { boxes.forEach(x => x.classList.remove("on")); b.classList.add("on"); }));
+  at(1800 + steps.length * 1100, () => boxes.forEach(x => x.classList.add("on")));
+  const brace1 = el("abs h", `<div style="border-top:2px solid var(--violet);padding-top:8px;color:var(--violet);font-size:17px">무엇을 맞춰야 하나</div>`, {left: px(x0), top: px(y + 215), width: px(3 * w + 2 * gap)});
+  const brace2 = el("abs h", `<div style="border-top:2px solid var(--pass);padding-top:8px;color:var(--pass);font-size:17px">어떤 회로로 맞추나</div>`, {left: px(x0 + 3 * (w + gap)), top: px(y + 215), width: px(4 * w + 3 * gap)});
+  anim(brace1, 9800, "rise"); anim(brace2, 10400, "rise");
+  caption([[0, "전체 흐름은 7단계입니다."],
+           [1800, "데이터시트에서 핀과 전기적 특성 표를 뽑고, 그중 시뮬레이션으로 확인할 항목과 목표값을 정리합니다."],
+           [5100, "목표값을 학습한 언어 모델에 넣어 회로 구조 후보를 여러 개 받고, 규칙 검사와 시뮬레이션으로 걸러 가장 잘 맞는 구조를 고릅니다."],
+           [8400, "고른 구조는 회로도로 그려 냅니다. 먼저 구조를 고르는 모델을 어떻게 준비했는지 보고, " + (X ? `${esc(X.device.name)} 데이터시트를 실제로 넣어 봅니다.` : `${PART}로 시험합니다.`)]]);
+}},
+{ name: "준비 1: 학습 재료", dur: 11000, build() {
   const total = 568, opamp = 435, cols = 26, pitch = 21, x0 = 60, y0 = 110;
   const dots = [];
   for (let k = 0; k < total; k++) { const d = el("dot h", "", {left: px(x0 + (k % cols) * pitch), top: px(y0 + Math.floor(k / cols) * pitch)}); dots.push(d); anim(d, 200 + k * 2, "pop", 300); }
@@ -204,12 +256,12 @@ const SCENES = [
   });
   const fin = el("abs h", `<span class="label">학습 문장</span> <span class="big" style="font-size:30px">${DATA.train.train.toLocaleString()}</span>`, {left: px(640), top: px(590)});
   anim(fin, 9500, "rise");
-  caption([[0, "먼저 학습 재료입니다. 공개 회로 데이터 AnalogGenie에서 회로 568개를 가져왔습니다. 네모 하나가 회로 하나입니다."],
+  caption([[0, "구조를 고르는 모델의 학습 재료입니다. 공개 회로 데이터 AnalogGenie에서 회로 568개를 가져왔습니다. 네모 하나가 회로 하나입니다."],
            [3000, "그중 OP-Amp인 435개만 남깁니다."],
            [5600, `회로마다 트랜지스터 크기를 자동으로 정하고 ngspice로 시뮬레이션해서, 실제로 증폭기로 동작한 구조 ${fromGenie}개만 씁니다.`],
            [8000, `직접 만든 블록 조합 ${fromBlocks}개를 더하면 구조 ${DATA.training.length}개, 학습 문장 ${DATA.train.train.toLocaleString()}개가 됩니다.`]]);
 }},
-{ name: "모델 학습", dur: 12000, build() {
+{ name: "준비 2: 모델 학습", dur: 12000, build() {
   const ex = DATA.train.example;
   const left = el("abs card h", "", {left: px(40), top: px(110), width: px(330), height: px(420), padding: "16px", boxSizing: "border-box"});
   left.innerHTML = `<div class="label">입력: 스펙 문장</div><div class="mono" style="font-size:14px;line-height:1.7;margin-top:8px">${esc(ex.input).replace(/; /g, ";<br>")}</div>`;
@@ -229,7 +281,7 @@ const SCENES = [
            [3200, "오른쪽이 그 문장의 정답 구조입니다. 예를 들어 PM1 D=OUT은 PMOS 1번의 드레인(D)이 출력(OUT)에 연결된다는 뜻입니다."],
            [7000, `같은 자료를 ${DATA.epochs}번 되풀이해 학습했고, Colab GPU로 약 2시간 걸렸습니다.`]]);
 }},
-{ name: "모델 시험", dur: 10000, build() {
+{ name: "준비 3: 모델 시험", dur: 10000, build() {
   const n = DATA.eval_count;
   for (let k = 0; k < n; k++) { const s = el("abs h", "", {left: px(60 + k * 45), top: px(120), width: px(36), height: px(36), borderRadius: "6px", background: "var(--violet)"}); anim(s, 200 + k * 40, "pop", 300); }
   el("abs label", `학습에 넣지 않은 구조 ${n}개의 스펙으로 시험`, {left: px(60), top: px(166)});
@@ -245,8 +297,68 @@ const SCENES = [
            [3000, "형식과 연결 규칙은 거의 다 지킵니다."],
            [4800, "하지만 처음 보는 스펙에도 학습 때 본 구조를 그대로 내는 경우가 많습니다. 새 구조를 지어낸다기보다, 아는 구조 중에서 알맞은 것을 고르는 쪽에 가깝습니다."]]);
 }},
-{ name: "TLV271 후보 만들기", dur: 10000, build() {
-  const inp = el("abs card h", `<span class="label">TLV271 → 문장</span><div class="mono" style="font-size:13px;margin-top:4px;line-height:1.5">${esc(DATA.input)}</div>`, {left: px(40), top: px(90), width: px(1120), padding: "10px 16px", boxSizing: "border-box"});
+{ name: "시연: 데이터시트 넣기", when: () => !!X, dur: 10000, build() {
+  const d = X.device;
+  const desc = d.description || "";
+  const card = el("abs card h", `<div class="label">입력한 데이터시트</div><div style="font-size:34px;font-weight:700;margin-top:4px">${esc(d.name)}</div><div style="color:var(--accent);font-size:17px;margin-top:2px">${esc(d.category || "")}</div><div style="font-size:15px;color:var(--muted);margin-top:14px;line-height:1.6">${esc(desc.slice(0, 260))}${desc.length > 260 ? "…" : ""}</div>`, {left: px(40), top: px(100), width: px(520), height: px(470), padding: "24px", boxSizing: "border-box"});
+  anim(card, 200, "rise");
+  const pins = el("abs card h", `<div class="label" style="margin-bottom:8px">뽑아 낸 핀 ${X.pins.length}개</div>`, {left: px(600), top: px(100), width: px(560), padding: "18px 22px", boxSizing: "border-box"});
+  anim(pins, 2000, "rise");
+  const roleColor = r => /OUT/i.test(r) ? "var(--warn)" : /POWER|SUPPLY|GROUND/i.test(r) ? "var(--violet)" : /IN|SIGNAL/i.test(r) ? "var(--accent)" : "var(--muted)";
+  X.pins.slice(0, 10).forEach((p, k) => {
+    const r = el("h", `<span class="mono" style="width:40px;display:inline-block;color:var(--muted)">${esc(p.pin_number || "")}</span><span class="mono" style="width:90px;display:inline-block">${esc(p.name)}</span><span style="color:${roleColor((p.direction || "") + (p.role || ""))};width:110px;display:inline-block">${esc(p.direction || "")}</span><span style="color:var(--muted);font-size:14px">${esc((p.description || "").slice(0, 34))}</span>`, {fontSize: "15px", padding: "5px 0", borderBottom: "1px solid var(--line)"}, pins);
+    anim(r, 2600 + k * 220, "rise", 350);
+  });
+  caption([[0, `이제 실제로 해 봅니다. ${esc(d.name)} 데이터시트(PDF)를 넣습니다. 구조 모델은 이 부품을 학습한 적이 없습니다.`],
+           [2000, `먼저 핀 ${X.pins.length}개와 각 핀의 역할(입력, 출력, 전원)을 읽어 냅니다.`]]);
+}},
+{ name: "시연: 특성 표 추출", when: () => !!X, dur: 12000, build() {
+  const cats = Object.entries(X.categories).sort((a, b) => b[1] - a[1]);
+  const left = el("abs", "", {left: px(40), top: px(100), width: px(430), display: "grid", gap: "12px"});
+  const total = el("counter h", `<span class="big">0</span><span class="label">데이터시트에서 뽑은 특성 줄</span>`, {}, left);
+  anim(total, 200, "rise"); count(total.querySelector(".big"), 200, 1400, X.total_rows);
+  const max = cats[0][1];
+  cats.forEach(([c, n], k) => {
+    const isE = c.toUpperCase() === "ELECTRICAL";
+    const r = el("h", `<div style="display:flex;justify-content:space-between;font-size:15px"><span style="color:${isE ? "var(--ink)" : "var(--muted)"}">${isE ? "전기적 특성" : esc(c)}</span><span class="mono">${n}</span></div><div class="bar-h" style="height:12px"><i style="background:${isE ? "var(--accent)" : "var(--ghost)"}"></i></div>`, {}, left);
+    anim(r, 1600 + k * 200, "rise", 400);
+    tween(1800 + k * 200, 900, p => { r.querySelector("i").style.width = (100 * n / max * p) + "%"; });
+  });
+  const right = el("abs card h", `<div class="label" style="margin-bottom:6px">뽑힌 줄 예시 (전기적 특성)</div>`, {left: px(500), top: px(100), width: px(660), padding: "16px 20px", boxSizing: "border-box"});
+  anim(right, 4200, "rise");
+  DATA.spec.filter(s => s.extracted).slice(0, 9).forEach((s, k) => {
+    const x = s.extracted, v = [x.min, x.typ, x.max].map(a => a == null ? "–" : a).join(" / ");
+    const r = el("h", `<div style="display:flex;gap:10px;align-items:baseline"><span class="mono" style="color:var(--accent);min-width:64px">${esc(x.symbol)}</span><span style="flex:1">${esc(x.name)}</span><span class="mono">${esc(v)} ${esc(x.unit)}</span><span class="mono" style="color:var(--muted)">p${x.page}</span></div><div class="mono" style="font-size:12px;color:var(--muted)">${esc((x.test_conditions || "").slice(0, 80))}</div>`, {padding: "5px 0", borderBottom: "1px solid var(--line)", fontSize: "15px"}, right);
+    anim(r, 4700 + k * 300, "rise", 350);
+  });
+  caption([[0, `데이터시트의 표에서 특성 ${X.total_rows}줄을 뽑았습니다.`],
+           [1600, `정격, 열 특성, 권장 조건 같은 줄을 빼면 회로 성능을 나타내는 전기적 특성이 ${X.electrical_rows}줄입니다.`],
+           [4200, "한 줄마다 기호, 이름, 최소·대표·최대값, 단위, 측정 조건, 몇 쪽에서 나왔는지가 함께 기록됩니다."]]);
+}},
+{ name: "시연: 충족 기준 정리", when: () => !!X, dur: 15000, build() {
+  const box = el("abs", "", {left: px(40), top: px(84), width: px(1120)});
+  el("xrow", `<span class="label">항목</span><span class="label">데이터시트 원문</span><span></span><span class="label">목표 (판정 기준)</span>`, {}, box);
+  DATA.spec.forEach((s, k) => {
+    const x = s.extracted || {}, v = [x.min, x.typ, x.max].map(a => a == null ? "–" : a).join(" / ");
+    const r = el("xrow h", `<span>${esc(s.label)}</span><span class="src">${esc(x.symbol || "")} ${esc(v)} ${esc(x.unit || "")} · ${esc((x.test_conditions || "").slice(0, 34))}</span><span style="color:var(--accent);font-family:var(--mono)">→</span><span class="to">${esc(s.target)}</span>`, {fontSize: "14px", padding: "3px 0"}, box);
+    anim(r, 500 + k * 280, "rise", 350);
+  });
+  X.missing.forEach((m, k) => {
+    const r = el("xrow miss h", `<span>${esc(m)}</span><span class="src">데이터시트에 없음</span><span></span><span class="to">판정에서 뺌</span>`, {fontSize: "14px", padding: "3px 0"}, box);
+    anim(r, 500 + (DATA.spec.length + k) * 280, "rise", 350);
+  });
+  const tEnd = 500 + (DATA.spec.length + X.missing.length) * 280;
+  const sent = el("abs card h", `<span class="label">구조 모델에 넣을 문장</span><div class="mono" style="font-size:14px;margin-top:4px;line-height:1.5;color:var(--accent)">${esc(DATA.input)}</div>`, {left: px(40), top: px(575), width: px(1120), padding: "10px 16px", boxSizing: "border-box"});
+  anim(sent, tEnd + 2800, "rise");
+  const avd = DATA.spec.find(s => s.measure === "avd" && s.extracted);
+  const example = avd ? ` 예를 들어 개방루프 이득 ${avd.extracted.min ?? avd.extracted.typ} ${esc(avd.extracted.unit)}는 ${esc(avd.target)}로 바꿉니다.` : "";
+  caption([[0, `전기적 특성 ${X.electrical_rows}줄 중에서 시뮬레이션으로 잴 수 있는 OP-Amp 공통 항목을 찾아 목표값으로 정리합니다.`],
+           [3000, "단위와 방향도 맞춥니다." + example],
+           [tEnd, (X.missing.length ? `${X.missing.join(", ")}은(는) 데이터시트에 없어 판정에서 빼고, ` : "") + `나머지 ${X.unused_count}줄(오프셋, 잡음, 온도 범위 값 등)은 쓰지 않습니다.`],
+           [tEnd + 2800, "정리된 목표값을 한 줄 문장으로 바꿔 구조 모델에 넣습니다."]]);
+}},
+{ name: "시연: 구조 후보 만들기", dur: 10000, build() {
+  const inp = el("abs card h", `<span class="label">${PART} 목표값 → 문장</span><div class="mono" style="font-size:13px;margin-top:4px;line-height:1.5">${esc(DATA.input)}</div>`, {left: px(40), top: px(90), width: px(1120), padding: "10px 16px", boxSizing: "border-box"});
   anim(inp, 200, "rise");
   const m = el("abs model h", `<div><div class="t">FLAN-T5</div></div>`, {left: px(500), top: px(200), width: px(200), height: px(90)});
   anim(m, 1200, "pop");
@@ -263,11 +375,11 @@ const SCENES = [
   at(5600, () => tiles.slice(-dup).forEach(tl => { tl.style.animation = "drop 700ms ease forwards"; }));
   const c = el("abs h", `<span class="big" style="font-size:40px">${generated}</span> <span class="label">개 생성 →</span> <span class="big" style="font-size:40px;color:var(--pass)">${E.length}</span> <span class="label">개 서로 다른 후보</span>`, {left: px(760), top: px(200)});
   anim(c, 6200, "rise");
-  caption([[0, "이제 시험입니다. TLV271 목표값을 같은 형식의 문장으로 바꿔 모델에 넣습니다. TLV271은 학습에 한 번도 쓰지 않았습니다."],
+  caption([[0, `정리된 ${PART} 목표값 문장을 구조 모델에 넣습니다.`],
            [2400, `모델이 구조를 ${generated}번 써 냅니다. 가장 그럴듯한 답 ${DATA.generated.beam}개(빔 탐색, 파란 테두리)와 조금씩 무작위로 바꾼 답 ${DATA.generated.sample}개(보라 테두리)입니다.`],
            [5600, `같은 답 ${dup}개를 지우면 서로 다른 후보 ${E.length}개가 남습니다.`]]);
 }},
-{ name: "규칙 검사", dur: 9000, build() {
+{ name: "시연: 규칙 검사", dur: 9000, build() {
   const cols = 11, tw = 92, th = 70, gx = 100, gy = 84, x0 = 50, y0 = 110;
   const tiles = E.map((e, k) => { const tl = el(`tile h ${e.how}`, `<span class="n">후보</span><span class="r">${e.no}</span>`, {left: px(x0 + (k % cols) * gx), top: px(y0 + Math.floor(k / cols) * gy), width: px(tw), height: px(th)}); anim(tl, 100 + k * 25, "pop", 300); return tl; });
   E.forEach((e, k) => at(1600 + k * 90, () => { tiles[k].classList.add("scan"); setTimeout(() => tiles[k].classList.remove("scan"), 250); if (!e.rules.ok) tiles[k].classList.add("rule"); }));
@@ -281,7 +393,7 @@ const SCENES = [
   caption([[0, "시뮬레이션 전에 간단한 규칙부터 봅니다. 입력·출력·전원 단자가 다 있는지, 입력이 트랜지스터 게이트에 붙는지, 한 곳에만 붙어 떠 있는 노드가 없는지입니다."],
            [5200, `규칙에 걸린 ${failed.length}개를 빼고 ${rulesOk.length}개가 다음 단계로 갑니다.`]]);
 }},
-{ name: "크기 정하기와 시뮬레이션", dur: 2400 + rulesOk.length * 330 + 3500, build() {
+{ name: "시연: 크기 정하기와 시뮬레이션", dur: 2400 + rulesOk.length * 330 + 3500, build() {
   const cols = 7, tw = 120, th = 82, gx = 132, gy = 96, x0 = 40, y0 = 110;
   const tiles = rulesOk.map((e, k) => el("tile h", `<span class="n">후보 ${e.no}</span><span class="r">…</span>`, {left: px(x0 + (k % cols) * gx), top: px(y0 + Math.floor(k / cols) * gy), width: px(tw), height: px(th)}));
   tiles.forEach((tl, k) => anim(tl, 100 + k * 30, "pop", 300));
@@ -292,21 +404,21 @@ const SCENES = [
   let ok = 0, bad = 0; const tally = {};
   rulesOk.forEach((e, k) => at(2400 + k * 330, () => {
     const tl = tiles[k]; tl.classList.add("scan"); setTimeout(() => tl.classList.remove("scan"), 300);
-    if (e.best) { tl.classList.add("ok"); tl.querySelector(".r").textContent = `${e.best.passed}/15`; ok++; cOk.querySelector(".big").textContent = ok; }
+    if (e.best) { tl.classList.add("ok"); tl.querySelector(".r").textContent = `${e.best.passed}/${NJ}`; ok++; cOk.querySelector(".big").textContent = ok; }
     else { const r = shortReason(e.variants[0] && e.variants[0].reason); tl.classList.add("bad"); tl.querySelector(".r").textContent = r; bad++; cBad.querySelector(".big").textContent = bad; tally[r] = (tally[r] || 0) + 1;
       reasons.innerHTML = Object.entries(tally).sort((a, b) => b[1] - a[1]).map(([r2, n]) => `${r2} ${n}`).join("<br>"); }
   }));
   caption([[0, "남은 후보마다 트랜지스터 크기(W/L)를 자동으로 정하고 ngspice로 시뮬레이션합니다. 출력단 전류를 1배, 5배 두 가지로 해 봅니다."],
            [2400, "동작 판정: 출력이 VDD/2 근처에 있고, 모든 트랜지스터가 켜져 증폭할 수 있는 상태(포화 영역)이고, 이득이 20 dB 이상이어야 합니다."],
-           [2400 + rulesOk.length * 160, "동작하면 TLV271 15개 항목을 재서 통과 수를 적습니다. 꺼진 소자는 전류가 흐르지 않는 트랜지스터입니다."]]);
+           [2400 + rulesOk.length * 160, `동작하면 ${PART} 목표 ${NJ}개 항목을 재서 통과 수를 적습니다. 꺼진 소자는 전류가 흐르지 않는 트랜지스터입니다.`]]);
 }},
-{ name: "순위 매기기", dur: 10000, build() {
+{ name: "시연: 순위 매기기", dur: 10000, build() {
   const order = S.ranking || [];
   const chartL = 120, chartW = 960, chartH = 400, base = 675 - 110;
   const bw = Math.min(70, chartW / order.length - 14);
-  const yOf = v => chartH * v / 15;
-  for (let v = 0; v <= 15; v += 5) { el("abs", "", {left: px(chartL - 10), width: px(chartW + 20), top: px(base - yOf(v)), borderTop: "1px solid var(--line)"}); el("abs mono", String(v), {left: px(chartL - 40), top: px(base - yOf(v) - 10), fontSize: "13px", color: "var(--muted)"}); }
-  el("abs label", "통과 항목 수 (15개 중)", {left: px(chartL - 40), top: px(base - chartH - 40)});
+  const yOf = v => chartH * v / NJ;
+  for (let v = 0; v <= NJ; v += 5) { el("abs", "", {left: px(chartL - 10), width: px(chartW + 20), top: px(base - yOf(v)), borderTop: "1px solid var(--line)"}); el("abs mono", String(v), {left: px(chartL - 40), top: px(base - yOf(v) - 10), fontSize: "13px", color: "var(--muted)"}); }
+  el("abs label", `통과 항목 수 (${NJ}개 중)`, {left: px(chartL - 40), top: px(base - chartH - 40)});
   order.forEach((i, r) => {
     const e = E[i], x = chartL + r * (chartW / order.length) + 7;
     const b = el(`rank-bar h ${i === SEL ? "sel" : ""}`, "", {left: px(x), width: px(bw), height: px(yOf(e.best.passed))});
@@ -315,59 +427,29 @@ const SCENES = [
     const val = el("rank-val h", `${e.best.passed}`, {left: px(x), width: px(bw), bottom: px(110 + yOf(e.best.passed) + 6)}); anim(val, 1100 + r * 150, "fade");
   });
   const ref = el("refline h", "", {left: px(chartL - 10), width: px(chartW + 20), top: px(base - yOf(trainMax))}); anim(ref, 4200, "fade");
-  const refl = el("abs h", `학습 구조 ${DATA.training.length}개를 같은 방식으로 재면 최고 ${trainMax}/15 (${trainMaxCount}개)`, {left: px(chartL + 10), top: px(base - yOf(trainMax) - 30), color: "var(--warn)", fontSize: "16px"}); anim(refl, 4200, "rise");
+  const refl = el("abs h", `학습 구조 ${DATA.training.length}개를 같은 방식으로 재면 최고 ${trainMax}/${NJ} (${trainMaxCount}개)`, {left: px(chartL + 10), top: px(base - yOf(trainMax) - 30), color: "var(--warn)", fontSize: "16px"}); anim(refl, 4200, "rise");
   if (SEL != null) { const s = el("abs h", `선택: 후보 ${E[SEL].no}`, {left: px(chartL + 7 - 20), top: px(base - yOf(E[SEL].best.passed) - 70), color: "var(--pass)", fontSize: "22px", fontWeight: 700}); anim(s, 6200, "pop"); }
   caption([[0, "동작한 후보를 통과 항목 수로 줄 세웁니다. 통과 수가 같으면 전류를 덜 쓰는 쪽이 앞입니다."],
-           [4200, `비교 기준: 학습에 쓴 구조 ${DATA.training.length}개를 같은 방식으로 재면 최고 ${trainMax}/15입니다. 후보들은 아직 그보다 낮습니다.`],
-           [6200, SEL == null ? "동작한 후보가 없습니다." : `가장 많이 통과한 후보 ${E[SEL].no}(${E[SEL].best.passed}/15)를 고릅니다.`]]);
+           [4200, `비교 기준: 학습에 쓴 구조 ${DATA.training.length}개를 같은 방식으로 재면 최고 ${trainMax}/${NJ}입니다. 후보들은 아직 그보다 낮습니다.`],
+           [6200, SEL == null ? "동작한 후보가 없습니다." : `가장 많이 통과한 후보 ${E[SEL].no}(${E[SEL].best.passed}/${NJ})를 고릅니다.`]]);
 }},
-{ name: "고른 회로", dur: 12000, build() {
+{ name: "결과: 회로도", dur: 12000, build() {
   if (SEL == null) return;
-  const e = E[SEL], v = bestVariant(e);
-  const W = 1200, H = 590, top = 80;
-  const nodes = [], links = [], netIndex = {};
-  const cls = n => n === "VDD" || n === "VSS" ? "rail" : n === "IN1" || n === "IN2" ? "in" : n === "OUT" ? "out" : /^(VB|IB)/.test(n) ? "bias" : "";
-  const net = n => {
-    if (!(n in netIndex)) { netIndex[n] = nodes.length; const nd = {type: "net", label: n, cls: cls(n), port: ["VDD", "VSS", "IN1", "IN2", "OUT"].includes(n)};
-      if (n === "VDD") nd.fy = 30; if (n === "VSS") nd.fy = H - 30; if (n === "IN1") { nd.fx = 60; nd.fy = H * .42; } if (n === "IN2") { nd.fx = 60; nd.fy = H * .6; } if (n === "OUT") { nd.fx = W - 70; nd.fy = H / 2; }
-      nodes.push(nd); }
-    return netIndex[n];
-  };
-  const added = new Set(e.nearest.added);
-  e.rows.forEach(([name, pins]) => {
-    const di = nodes.length; const txt = [name, ...Object.entries(pins).map(([p, n]) => `${p}=${n}`)].join(" ");
-    nodes.push({type: "dev", label: name, kind: name.startsWith("PM") ? "pm" : name.startsWith("NM") ? "nm" : "rc", added: added.has(txt)});
-    Object.entries(pins).forEach(([p, n]) => { if (p === "B" && (n === "VDD" || n === "VSS")) return; links.push({source: di, target: net(n), pin: p}); });
-  });
-  if (typeof d3 !== "undefined") {
-    const sim = d3.forceSimulation(nodes).force("link", d3.forceLink(links).distance(l => l.pin === "G" ? 80 : 56).strength(.7))
-      .force("charge", d3.forceManyBody().strength(-320)).force("y", d3.forceY(d => d.type === "dev" ? (d.kind === "pm" ? H * .28 : d.kind === "nm" ? H * .72 : H / 2) : H / 2).strength(.12))
-      .force("x", d3.forceX(W / 2).strength(.03)).force("collide", d3.forceCollide(d => d.type === "dev" ? 30 : 14)).stop();
-    for (let k = 0; k < 400; k++) sim.tick();
-    nodes.forEach(d => { d.x = Math.max(40, Math.min(W - 40, d.x)); d.y = Math.max(24, Math.min(H - 24, d.y)); });
-    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-    svg.setAttribute("viewBox", `0 0 ${W} ${H}`); Object.assign(svg.style, {position: "absolute", left: 0, top: px(top), width: px(W), height: px(H)});
-    stage.appendChild(svg);
-    let html = "";
-    links.forEach((l, k) => { html += `<path class="g-link ${l.pin} draw" pathLength="1" d="M${l.source.x},${l.source.y}L${l.target.x},${l.target.y}" data-k="${k}"/>`; });
-    nodes.forEach((n, k) => {
-      if (n.type === "net") html += `<g class="g-net ${n.port || n.cls === "bias" ? "port" : ""} ${n.cls} h" data-n="${k}" transform="translate(${n.x},${n.y})"><circle r="${n.port ? 11 : n.cls === "bias" ? 7 : 5}"/>${n.port || n.cls === "bias" ? `<text x="${n.label === "OUT" ? -16 : 14}" y="${n.label === "VDD" ? -12 : n.label === "VSS" ? 24 : 5}" text-anchor="${n.label === "OUT" ? "end" : "start"}">${n.label}</text>` : ""}</g>`;
-      else html += `<g class="g-dev ${n.kind} ${n.added ? "added" : ""} h" data-n="${k}" transform="translate(${n.x},${n.y})"><rect x="-26" y="-14" width="52" height="28" rx="5"/><text text-anchor="middle" dy="5">${n.label}</text></g>`;
-    });
-    svg.innerHTML = html;
-    svg.querySelectorAll("g[data-n]").forEach(g => { const k = +g.dataset.n; const isDev = nodes[k].type === "dev";
-      at(isDev ? 400 + k * 60 : 200, () => { g.style.opacity = 1; const shape = g.querySelector(isDev ? "rect" : "circle"); shape.style.transformBox = "fill-box"; shape.style.transformOrigin = "center"; shape.style.animation = "pop 500ms ease both"; }); });
-    svg.querySelectorAll("path[data-k]").forEach((p, k) => at(1500 + k * 45, () => { p.style.animation = "drawline 700ms ease forwards"; }));
-  }
+  const e = E[SEL];
+  const sheet = el("abs paper h", "", {left: px(40), top: px(90), width: px(820), height: px(560)});
+  paper(sheet, e.schematic);
+  anim(sheet, 300, "wipe", 2200);
   const nT = e.rows.filter(r => /^[NP]M/.test(r[0])).length;
-  const tag = el("abs card h", `<div class="label">후보 ${e.no} · 트랜지스터 ${nT}개</div><div style="font-size:15px;margin-top:4px"><span style="color:var(--violet)">보라 = PMOS</span> · <span style="color:var(--accent)">파랑 = NMOS</span> · 점선 = 게이트 연결</div>`, {right: px(30), top: px(24), padding: "10px 14px"});
-  anim(tag, 600, "rise");
-  const nv = novelty(e);
-  caption([[0, `선택된 후보 ${e.no}의 연결 구조입니다. 네모가 트랜지스터, 동그라미가 연결 노드입니다.`],
-           [4000, "위가 전원(VDD), 아래가 접지(VSS), 왼쪽이 두 입력(IN1, IN2), 오른쪽이 출력(OUT)입니다. 위쪽에 PMOS, 아래쪽에 NMOS가 모입니다."],
-           [8000, nv === 0 ? "이 구조는 학습 데이터에 있던 구조와 같습니다." : `학습 데이터에서 가장 비슷한 구조와 ${nv}줄이 다릅니다. 진하게 칠한 소자가 달라진 부분입니다.`]]);
+  const side = el("abs", "", {left: px(890), top: px(100), width: px(270), display: "grid", gap: "18px"});
+  [[`후보 ${e.no}`, "선택된 구조"], [`${nT}개`, "트랜지스터"], [`${e.best.passed} / ${NJ}`, "목표 통과 항목"], ["netlistsvg", "배치·배선 자동"]].forEach(([v, l], k) => {
+    const c = el("counter h", `<span class="big" style="font-size:${k === 3 ? 26 : 40}px">${v}</span><span class="label">${l}</span>`, {}, side);
+    anim(c, 2600 + k * 500, "rise");
+  });
+  caption([[0, `선택된 후보 ${e.no}의 회로도입니다. 넷리스트를 netlistsvg에 넣어 소자 배치와 배선을 도구가 자동으로 정했습니다.`],
+           [4000, "위쪽 화살표가 전원(VDD), 아래 접지 기호가 VSS, 왼쪽 IN1·IN2가 입력, 오른쪽 OUT이 출력입니다. 소자 옆 숫자는 자동으로 정한 크기(W/L)입니다."],
+           [8000, novelty(e) === 0 ? "이 구조는 학습 데이터에 있던 구조 그대로입니다." : `학습 데이터에서 가장 비슷한 구조와 ${novelty(e)}줄이 다른 구조입니다.`]]);
 }},
-{ name: "측정 결과", dur: 13000, build() {
+{ name: "시연: 측정 결과", dur: 13000, build() {
   if (SEL == null) return;
   const e = E[SEL], v = bestVariant(e), c = e.curves;
   const by = Object.fromEntries(v.spec.map(s => [s.measure, s]));
@@ -398,27 +480,27 @@ const SCENES = [
   });
   const fails = v.spec.filter(r => r.status !== "PASS").map(r => (DATA.spec.find(s => s.measure === r.measure) || {}).label).filter(Boolean);
   caption([[0, "고른 회로를 시뮬레이션으로 잰 결과입니다. 왼쪽은 주파수에 따른 이득입니다. 선이 0 dB를 지나는 곳까지가 증폭할 수 있는 대역입니다."],
-           [3600, "오른쪽은 TLV271 15개 항목의 목표와 측정값입니다."],
-           [3600 + 15 * 220, `15개 중 ${e.best.passed}개 통과. 미달: ${fails.slice(0, 5).join(", ")}${fails.length > 5 ? " 등" : ""}.`]]);
+           [3600, `오른쪽은 ${PART} 목표 ${NJ}개 항목의 목표와 측정값입니다.`],
+           [3600 + NJ * 220, `${NJ}개 중 ${e.best.passed}개 통과. 미달: ${fails.slice(0, 5).join(", ")}${fails.length > 5 ? " 등" : ""}.`]]);
 }},
 { name: "정리", dur: 12000, build() {
-  const nums = [[E.length, "구조 후보", "var(--ink)"], [rulesOk.length, "규칙 통과", "var(--accent)"], [working.length, "동작", "var(--pass)"], [SEL == null ? 0 : E[SEL].best.passed, "선택 구조 통과 항목 / 15", "var(--warn)"]];
+  const nums = [[E.length, "구조 후보", "var(--ink)"], [rulesOk.length, "규칙 통과", "var(--accent)"], [working.length, "동작", "var(--pass)"], [SEL == null ? 0 : E[SEL].best.passed, `선택 구조 통과 항목 / ${NJ}`, "var(--warn)"]];
   nums.forEach(([n, label, color], k) => {
     const c = el("abs card h", `<div class="big" style="font-size:64px;color:${color}">${n}</div><div class="label" style="font-size:17px">${label}</div>`, {left: px(40 + k * 285), top: px(120), width: px(265), height: px(170), padding: "22px", boxSizing: "border-box"});
     anim(c, 300 + k * 400, "pop");
   });
-  const lines = [["자동으로 되는 것", "데이터시트 목표값 → 구조 후보 생성 → 규칙 검사 → 크기 정하기 → 시뮬레이션 → 선택"],
-                 ["아직 부족한 것", `지금 크기는 '동작하는' 크기일 뿐 스펙에 맞춘 크기가 아니라서, 통과 수가 학습 구조 최고(${trainMax}/15)보다 낮습니다.`],
+  const lines = [["자동으로 되는 것", "데이터시트 → 정보 추출 → 기준 정리 → 구조 후보 → 규칙 검사·크기·시뮬레이션 → 선택 → 회로도"],
+                 ["아직 부족한 것", `지금 크기는 '동작하는' 크기일 뿐 스펙에 맞춘 크기가 아니라서, 통과 수가 높지 않습니다 (학습 구조 최고 ${trainMax}/${NJ}).`],
                  ["다음 단계", "고른 구조의 크기를 스펙에 맞춰 다시 조정합니다 (기존 LLM + 수식 설계 루프)."]];
   lines.forEach(([h, text], k) => {
     const r = el("abs h", `<div class="label" style="font-size:15px">${h}</div><div style="font-size:21px;margin-top:2px">${text}</div>`, {left: px(40), top: px(340 + k * 100), width: px(1120)});
     anim(r, 2400 + k * 1500, "rise");
   });
-  caption([[0, "정리하면, 데이터시트 목표값에서 시작해 구조 후보 생성, 걸러내기, 시뮬레이션, 선택까지 사람 손 없이 이어집니다."],
+  caption([[0, "정리하면, 데이터시트를 넣으면 정보 추출, 기준 정리, 구조 후보 생성, 걸러내기, 시뮬레이션, 선택, 회로도까지 사람 손 없이 이어집니다."],
            [3900, "통과 수가 낮은 이유는 구조가 아니라 크기 때문일 수 있습니다. 지금은 모든 구조를 같은 규칙으로 '일단 동작하게'만 크기를 정합니다."],
-           [5400, "다음은 고른 구조의 트랜지스터 크기를 TLV271 목표에 맞춰 다시 조정하는 단계입니다."]]);
+           [5400, `다음은 고른 구조의 트랜지스터 크기를 ${PART} 목표에 맞춰 다시 조정하는 단계입니다.`]]);
 }},
-];
+]).filter(sc => !sc.when || sc.when());
 
 /* ---------- 재생 ---------- */
 const segs = document.getElementById("segs");
@@ -431,7 +513,7 @@ function enter(k) {
   SCENES[idx].build();
   events.sort((a, b) => a.ms - b.ms);
   if (reduce) { t = SCENES[idx].dur; flush(); }
-  document.getElementById("meta").textContent = `${idx + 1}. ${SCENES[idx].name}`;
+  document.getElementById("meta").textContent = `${PART} · ${idx + 1}. ${SCENES[idx].name}`;
   renderCaption(); paintSegs();
 }
 function flush() {

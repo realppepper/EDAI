@@ -1,23 +1,23 @@
 """
-동작한 TLV271 후보를 저장된 회로로 다시 시뮬레이션해 파형을 남긴다 (화면에 그래프를 그리기 위해).
+동작한 후보를 저장된 회로로 다시 시뮬레이션해 파형을 남긴다 (화면에 그래프를 그리기 위해).
 select_structure.py 는 측정값만 남기고 파형은 버리기 때문에 따로 돈다. 크기 정하기는 다시 하지 않는다.
 
 남기는 파형: 개방루프 주파수 응답(이득·위상), 슬루율 계단 응답, 정착시간 계단 응답
-결과: data/selection_curves.json  {후보 번호(0부터): {파형 이름: [값...]}}
+결과: data/selection_<부품>_curves.json  {후보 번호(0부터): {파형 이름: [값...]}}
 이미 있는 후보는 건너뛰므로, 선택이 진행 중일 때 돌리고 끝난 뒤 다시 돌려도 된다.
 
 사용법 (WSL, 프로젝트 폴더에서):
-    ~/.venvs/edai/bin/python selection_curves.py
+    ~/.venvs/edai/bin/python selection_curves.py lm358      (부품을 빼면 tlv271)
 """
 
 import json
+import sys
 
 import numpy as np
 
 import run_sim
 
-SELECTION_FILE = run_sim.HERE / "data" / "selection_tlv271.json"
-OUT_FILE = run_sim.HERE / "data" / "selection_curves.json"
+DEFAULT_PART = "tlv271"
 DESIGN_NAME = "opamp_curves"      # select_structure 가 쓰는 임시 이름과 겹치지 않게
 CURVES = ("freq", "mag_db", "phase", "slew_t", "slew_out", "settle_t", "settle_out")
 
@@ -40,8 +40,10 @@ def curves_of(subckt: str) -> dict:
 
 
 def main() -> None:
-    selection = json.loads(SELECTION_FILE.read_text(encoding="utf-8"))
-    saved = json.loads(OUT_FILE.read_text(encoding="utf-8")) if OUT_FILE.exists() else {}
+    part = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_PART
+    selection = json.loads((run_sim.HERE / "data" / f"selection_{part}.json").read_text(encoding="utf-8"))
+    out_file = run_sim.HERE / "data" / f"selection_{part}_curves.json"
+    saved = json.loads(out_file.read_text(encoding="utf-8")) if out_file.exists() else {}
     for index, entry in enumerate(selection["entries"]):
         if not entry.get("best") or str(index) in saved:
             continue
@@ -51,8 +53,8 @@ def main() -> None:
             print(f"  후보 {index + 1}: 파형 저장", flush=True)
         except RuntimeError as error:
             print(f"  후보 {index + 1}: 시뮬레이션 실패 {error}", flush=True)
-        OUT_FILE.write_text(json.dumps(saved), encoding="utf-8")
-    print(f"파형 {len(saved)}개 -> {OUT_FILE.name}")
+        out_file.write_text(json.dumps(saved), encoding="utf-8")
+    print(f"파형 {len(saved)}개 -> {out_file.name}")
 
 
 if __name__ == "__main__":

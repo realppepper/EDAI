@@ -1,15 +1,16 @@
 """
-TLV271 구조 선택 과정을 한 페이지(docs/selection_tlv271.html)로 만든다.
+데이터시트 -> 구조 선택 과정을 페이지로 만든다.
 
 보여주는 것
-    1. 입력      : TLV271 스펙 15개 항목
+    0. 추출      : 데이터시트 추출 결과(있으면)와 OP-Amp 공통 측정 항목으로 옮긴 결과
+    1. 입력      : 스펙 항목
     2. 구조 생성 : FLAN-T5 학습 데이터, 검증 결과, 후보 생성 방법
     3. 후보      : 후보마다 규칙 검사 -> 크기 정하기 -> 동작 판정 -> 스펙 판정 결과
     4. 선택      : 통과 항목 수 순위, 고른 구조의 소자 표와 항목별 판정
 
-사용법 (프로젝트 폴더에서, select_structure.py 를 돌린 뒤):
-    python make_selection_page.py
-결과: docs/selection_tlv271.html (자세히 보기), docs/selection_story.html (영상처럼 넘어가는 설명)
+사용법 (프로젝트 폴더에서, select_structure.py, selection_curves.py, make_schematic_svg.py 를 돌린 뒤):
+    python make_selection_page.py lm358      (부품을 빼면 tlv271)
+결과: docs/selection_<부품>.html (자세히 보기), docs/story_<부품>.html (영상처럼 넘어가는 설명)
 화면 모양은 docs/*_template.html 에서 고친다. 결과 html 은 다시 만들면 덮어써진다.
 """
 
@@ -20,16 +21,14 @@ import make_train_data
 import run_sim
 
 HERE = Path(__file__).resolve().parent
-CANDIDATE_FILE = HERE / "data" / "train" / "tlv271_candidates.json"
-SELECTION_FILE = HERE / "data" / "selection_tlv271.json"
 TRAIN_DIR = HERE / "data" / "train"
-SPEC_FILE = HERE / "spec_tlv271.json"
-CURVE_FILE = HERE / "data" / "selection_curves.json"
-# (화면 틀, 결과 파일): 자세히 보는 페이지와 영상처럼 넘어가는 설명 페이지
-PAGES = ((HERE / "docs" / "selection_page_template.html", HERE / "docs" / "selection_tlv271.html"),
-         (HERE / "docs" / "selection_story_template.html", HERE / "docs" / "selection_story.html"))
+DEFAULT_PART = "tlv271"
+# (화면 틀, 결과 파일 이름 형식): 자세히 보는 페이지와 영상처럼 넘어가는 설명 페이지
+PAGES = ((HERE / "docs" / "selection_page_template.html", "selection_{part}.html"),
+         (HERE / "docs" / "selection_story_template.html", "story_{part}.html"))
 DATA_MARK = "/*DATA*/null"
-GENERATED = {"beam": 10, "sample": 30}   # Colab 노트북 8번 셀의 CANDIDATES_BEAM, CANDIDATES_SAMPLED
+GENERATED = {"beam": 10, "sample": 30}   # 후보 파일에 generated 가 없을 때 (Colab 노트북 8번 셀 값)
+UNUSED_SHOWN = 40                         # 화면에 보여줄 '쓰지 않는 추출 줄' 수
 
 
 def read_jsonl(path: Path) -> list:
@@ -46,9 +45,8 @@ def train_stats() -> dict:
             "val_structures": len({r["target"] for r in val})}
 
 
-def spec_items() -> list:
-    """화면에 쓸 스펙 항목: 이름, 쉬운 설명, 목표 글."""
-    spec = json.loads(SPEC_FILE.read_text(encoding="utf-8"))
+def spec_items(spec: dict) -> list:
+    """화면에 쓸 스펙 항목: 이름, 쉬운 설명, 목표 글, 추출 원문."""
     items = []
     for s in spec["specs"]:
         if s.get("scope") == "excluded":
@@ -63,8 +61,33 @@ def spec_items() -> list:
         else:
             target = f"참고 {s.get('typ')} {unit}"
         items.append({"measure": s["measure"], "symbol": s.get("symbol", s["measure"]), "label": s["label"],
-                      "plain": s.get("plain", ""), "unit": unit, "target": target, "min": low, "max": high})
+                      "plain": s.get("plain", ""), "unit": unit, "target": target, "min": low, "max": high,
+                      "extracted": s.get("extracted")})
     return items
+
+
+def extraction_view(spec: dict) -> dict:
+    """데이터시트 추출 결과 요약. 추출 결과로 만든 스펙이 아니면 None."""
+    info = spec.get("extraction")
+    if not info:
+        return None
+    hkg = json.loads((HERE / "data" / "extraction" / info["file"]).read_text(encoding="utf-8"))
+    rows = hkg["electrical_parameters"]
+    categories = {}
+    for r in rows:
+        key = str(r.get("category") or "기타")
+        categories[key] = categories.get(key, 0) + 1
+    return {"file": info["file"], "device": hkg.get("ic_device", {}),
+            "pins": [{k: p.get(k) for k in ("name", "pin_number", "direction", "role", "description")} for p in hkg.get("pins", [])],
+            "total_rows": len(rows), "categories": categories, "electrical_rows": info["electrical_rows"],
+            "used_rows": info["used_rows"], "missing": [s["label"] for s in spec["specs"] if s.get("scope") == "excluded"],
+            "unused": spec.get("unused", [])[:UNUSED_SHOWN], "unused_count": len(spec.get("unused", []))}
+
+
+def schematics(part: str) -> dict:
+    """netlistsvg 로 만든 회로도 {후보 번호(0부터): svg 글}."""
+    folder = HERE / "data" / "schematics" / part
+    return {str(int(f.stem.split("_")[1]) - 1): f.read_text(encoding="utf-8") for f in sorted(folder.glob("candidate_*.svg"))}
 
 
 def parse_rows(text: str) -> list:
@@ -78,7 +101,7 @@ def parse_rows(text: str) -> list:
 
 
 def training_structures(spec: dict) -> list:
-    """학습에 쓴 구조마다: 이름, 줄 집합, TLV271 항목별 값과 통과 수 (출력단 배율 중 더 좋은 쪽)."""
+    """학습에 쓴 구조마다: 이름, 줄 집합, 이 부품 스펙 항목별 값과 통과 수 (출력단 배율 중 더 좋은 쪽)."""
     best = {}
     for row in make_train_data.load_rows():
         judged = [r for r in run_sim.judge(row["measured"], spec)
@@ -114,16 +137,22 @@ def variant_view(variant: dict) -> dict:
 
 
 def main() -> None:
-    candidates = json.loads(CANDIDATE_FILE.read_text(encoding="utf-8"))
-    selection = json.loads(SELECTION_FILE.read_text(encoding="utf-8")) if SELECTION_FILE.exists() else {}
+    import sys
+    part = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_PART
+    candidates = json.loads((TRAIN_DIR / f"{part}_candidates.json").read_text(encoding="utf-8"))
+    selection_file = HERE / "data" / f"selection_{part}.json"
+    selection = json.loads(selection_file.read_text(encoding="utf-8")) if selection_file.exists() else {}
     done = selection.get("entries", [])
-    structures = training_structures(run_sim.load_spec(SPEC_FILE))
-    curves = json.loads(CURVE_FILE.read_text(encoding="utf-8")) if CURVE_FILE.exists() else {}
+    spec = run_sim.load_spec(HERE / f"spec_{part}.json")
+    structures = training_structures(spec)
+    curve_file = HERE / "data" / f"selection_{part}_curves.json"
+    curves = json.loads(curve_file.read_text(encoding="utf-8")) if curve_file.exists() else {}
+    drawings = schematics(part)
     entries = []
     for number, candidate in enumerate(candidates["candidates"]):
         entry = {"no": number + 1, "how": candidate["how"], "in_train": candidate["in_train"],
                  "rows": parse_rows(candidate["table"]), "nearest": nearest(candidate["table"], structures),
-                 "curves": curves.get(str(number))}
+                 "curves": curves.get(str(number)), "schematic": drawings.get(str(number))}
         if number < len(done):
             result = done[number]
             entry.update(state="done", rules=result["steps"]["rules"], best=result.get("best"),
@@ -132,13 +161,15 @@ def main() -> None:
             entry.update(state="waiting", rules={"ok": not candidate["problems"], "problems": candidate["problems"]})
         entries.append(entry)
     data = {"model": candidates["model"], "epochs": candidates["epochs"], "input": candidates["input"],
-            "eval": candidates["eval"], "eval_count": candidates["eval_count"], "generated": GENERATED,
-            "train": train_stats(), "spec": spec_items(), "entries": entries,
+            "eval": candidates["eval"], "eval_count": candidates["eval_count"],
+            "generated": candidates.get("generated", GENERATED), "part": part.upper(), "source": spec.get("source"),
+            "extraction": extraction_view(spec), "train": train_stats(), "spec": spec_items(spec), "entries": entries,
             "summary": selection.get("summary"), "evaluated": len(done),
             "training": [{"name": t["name"], "source": t["source"], "passed": t["passed"], "values": t["values"]}
                          for t in structures]}
     payload = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
-    for template, out in PAGES:
+    for template, name in PAGES:
+        out = HERE / "docs" / name.format(part=part)
         if template.exists():
             out.write_text(template.read_text(encoding="utf-8").replace(DATA_MARK, payload), encoding="utf-8")
             print(f"후보 {len(entries)}개 중 {len(done)}개 평가됨 -> {out.relative_to(HERE)}")

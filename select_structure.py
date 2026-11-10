@@ -7,11 +7,11 @@ FLAN-T5 가 만든 TLV271 후보 구조를 하나씩 검사하고, 크기를 정
     3. 동작 판정   : label_dataset.judge (출력 VDD/2 근처, 포화 영역, 무부하 이득)
     4. 스펙 판정   : run_sim.judge 로 TLV271 15개 항목 PASS/FAIL
     5. 순위        : 통과 항목 수가 많은 순, 같으면 공급 전류가 작은 순
-결과: data/selection_tlv271.json  (단계별 기록. 화면이 이 파일을 읽어 과정을 보여준다)
+결과: data/selection_<부품>.json  (단계별 기록. 화면이 이 파일을 읽어 과정을 보여준다)
 
 사용법 (WSL, 프로젝트 폴더에서):
-    ~/.venvs/edai/bin/python select_structure.py                      # data/train/tlv271_candidates.json
-    ~/.venvs/edai/bin/python select_structure.py 후보파일.json
+    ~/.venvs/edai/bin/python select_structure.py            # tlv271: data/train/tlv271_candidates.json, spec_tlv271.json
+    ~/.venvs/edai/bin/python select_structure.py lm358      # data/train/lm358_candidates.json, spec_lm358.json
 """
 
 import json
@@ -25,9 +25,7 @@ import netlist_table as nt
 import run_sim
 
 HERE = Path(__file__).resolve().parent
-CANDIDATE_FILE = HERE / "data" / "train" / "tlv271_candidates.json"
-OUT_FILE = HERE / "data" / "selection_tlv271.json"
-SPEC_FILE = HERE / "spec_tlv271.json"
+DEFAULT_PART = "tlv271"
 ROW_SEP = ";"
 PORTS = ("VDD", "VSS", "IN1", "IN2", "OUT")
 
@@ -115,9 +113,11 @@ def summarize(entries: list) -> dict:
 
 
 def main() -> None:
-    source = Path(sys.argv[1]) if len(sys.argv) > 1 else CANDIDATE_FILE
+    part = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_PART
+    source = HERE / "data" / "train" / f"{part}_candidates.json"
+    out_file = HERE / "data" / f"selection_{part}.json"
     data = json.loads(source.read_text(encoding="utf-8"))
-    spec = run_sim.load_spec(SPEC_FILE)
+    spec = run_sim.load_spec(HERE / f"spec_{part}.json")
     result = {"source": source.name, "model": data.get("model"), "input": data.get("input"),
               "model_eval": data.get("eval"), "entries": []}
     started = time.time()
@@ -125,7 +125,7 @@ def main() -> None:
         entry = evaluate_candidate(candidate, spec)
         result["entries"].append(entry)
         if entry.get("best"):
-            note = f"동작, TLV271 {entry['best']['passed']}/{entry['best']['judged']} 통과"
+            note = f"동작, {part.upper()} {entry['best']['passed']}/{entry['best']['judged']} 통과"
         elif not entry["steps"]["rules"]["ok"]:
             note = "규칙 검사 탈락: " + "; ".join(entry["steps"]["rules"]["problems"])[:120]
         else:
@@ -133,13 +133,13 @@ def main() -> None:
         print(f"  후보 {number}/{len(data['candidates'])} ({candidate.get('how')}"
               f"{', 학습에 있던 구조' if candidate.get('in_train') else ''}) {note}", flush=True)
         result["summary"] = summarize(result["entries"])
-        OUT_FILE.write_text(json.dumps(result, ensure_ascii=False, indent=1), encoding="utf-8")
+        out_file.write_text(json.dumps(result, ensure_ascii=False, indent=1), encoding="utf-8")
     s = result["summary"]
     print(f"후보 {s['candidates']}개 -> 규칙 통과 {s['rules_ok']} -> 동작 {s['working']} "
           f"(학습에 없던 구조 {s['new_working']})  {time.time() - started:.0f} s")
     if s["selected"] is not None:
         best = result["entries"][s["selected"]]["best"]
-        print(f"선택: 후보 {s['selected'] + 1}, TLV271 {best['passed']}/{best['judged']} 통과 -> {OUT_FILE.name}")
+        print(f"선택: 후보 {s['selected'] + 1}, {part.upper()} {best['passed']}/{best['judged']} 통과 -> {out_file.name}")
 
 
 if __name__ == "__main__":
