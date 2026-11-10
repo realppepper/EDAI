@@ -60,7 +60,9 @@ def main() -> None:
     train_targets = {normalize(json.loads(line)["target"])
                      for line in (TRAIN_DIR / "train.jsonl").read_text(encoding="utf-8").splitlines() if line.strip()}
     tokenizer = AutoTokenizer.from_pretrained(MODEL_DIR)
-    model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_DIR).eval()
+    # Colab(transformers 5)이 저장한 설정은 tie_word_embeddings=true지만 lm_head는 따로 학습돼 있다.
+    # 4.x에서 그대로 읽으면 lm_head를 입력 임베딩으로 덮어써서 엉뚱한 글자가 나오므로 묶지 않게 한다.
+    model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_DIR, tie_word_embeddings=False).eval()
     encoded = tokenizer([sentence], return_tensors="pt", truncation=True, max_length=MAX_INPUT_TOKENS)
     started = time.time()
 

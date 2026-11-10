@@ -1,4 +1,4 @@
-<title>TLV271 구조 선택</title>
+<title>구조 선택 자세히 보기</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
@@ -149,6 +149,9 @@ tr.added td { background: var(--accent-soft); }
 .difflist .plus { color: var(--accent); } .difflist .minus { color: var(--fail); text-decoration: line-through; }
 details summary { cursor: pointer; font-size: 13px; color: var(--muted); }
 pre { font-family: var(--mono); font-size: 12px; background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 12px; overflow-x: auto; margin: 8px 0 0; }
+.schem { background: #fbfbf7; border: 1px solid var(--line); border-radius: 6px; padding: 12px; }
+.schem svg { width: 100%; height: auto; max-height: 620px; display: block; }
+.schem svg text { fill: #000; }
 .graph-wrap { border: 1px solid var(--line); border-radius: 6px; background: var(--paper); overflow: hidden; }
 .graph-wrap svg { max-height: 560px; }
 .g-link { stroke: var(--ghost); stroke-width: 1.3; fill: none; }
@@ -187,15 +190,15 @@ pre { font-family: var(--mono); font-size: 12px; background: var(--paper); borde
 <div class="wrap">
   <header>
     <div class="eyebrow">EDAI 17조 · 회로 구조 자동 결정</div>
-    <h1>TLV271 구조 선택</h1>
-    <p class="lead">FLAN-T5가 TLV271 스펙을 보고 OP-Amp 구조 후보를 만들고, 후보마다 크기를 정해 ngspice로 시뮬레이션한 뒤 스펙을 가장 많이 맞춘 구조 하나를 고릅니다. 이 페이지는 그 과정을 처음부터 끝까지 보여 줍니다.</p>
+    <h1><span class="part"></span> 구조 선택</h1>
+    <p class="lead">FLAN-T5가 <span class="part"></span> 스펙을 보고 OP-Amp 구조 후보를 만들고, 후보마다 크기를 정해 ngspice로 시뮬레이션한 뒤 스펙을 가장 많이 맞춘 구조 하나를 고릅니다. 이 페이지는 그 과정을 처음부터 끝까지 보여 줍니다.</p>
     <div class="progress" id="progress" hidden></div>
     <div class="panel funnel" id="funnel"></div>
   </header>
 
   <section>
-    <h2><span class="n">1</span>입력: TLV271 스펙 15개 항목</h2>
-    <p class="muted">데이터시트의 목표값입니다. 모델에는 아래 한 줄 문장으로 들어갑니다. TLV271은 학습에 쓰지 않았고 이 시험에만 씁니다.</p>
+    <h2><span class="n">1</span>입력: <span class="part"></span> 스펙 <span class="nj"></span>개 항목</h2>
+    <p class="muted">데이터시트의 목표값입니다. 모델에는 아래 한 줄 문장으로 들어갑니다. 이 데이터시트는 학습에 쓰지 않았습니다.</p>
     <div class="input-line" id="inputLine"></div>
     <div class="specs" id="specs"></div>
   </section>
@@ -232,13 +235,13 @@ pre { font-family: var(--mono); font-size: 12px; background: var(--paper); borde
     <div class="panel scroll" id="rank"></div>
     <div class="panel">
       <div class="panel-head"><h3>항목별 측정값: 후보와 학습 구조</h3>
-        <div class="legend"><span><i style="background:var(--ghost)"></i>학습 구조 243개</span><span><i style="background:var(--accent)"></i>동작한 후보</span><span><i style="border:2px solid var(--ink);border-radius:50%"></i>지금 보는 후보</span><span><i style="background:var(--pass-soft);border:1px solid var(--pass)"></i>합격 범위</span></div></div>
+        <div class="legend"><span><i style="background:var(--ghost)"></i>학습 구조 <span class="ntrain"></span>개</span><span><i style="background:var(--accent)"></i>동작한 후보</span><span><i style="border:2px solid var(--ink);border-radius:50%"></i>지금 보는 후보</span><span><i style="background:var(--pass-soft);border:1px solid var(--pass)"></i>합격 범위</span></div></div>
       <p class="note">한 줄이 한 항목입니다. 초록 띠 안에 들어가야 통과합니다. 대역폭·슬루율·전류처럼 범위가 넓은 항목은 로그 눈금입니다. 범위 밖 값은 양 끝에 붙입니다.</p>
       <div id="strip"></div>
     </div>
     <div class="panel">
       <h3>후보가 학습 구조보다 나은가: 통과 항목 수 분포</h3>
-      <p class="note">학습에 쓴 구조 243개도 같은 방식(자동 크기 정하기)으로 TLV271 판정을 하면 최고 11/15입니다. 회색은 학습 구조, 파란색은 동작한 후보이고 막대 높이는 각 묶음 안의 비율입니다.</p>
+      <p class="note" id="histNote"> 회색은 학습 구조, 파란색은 동작한 후보이고 막대 높이는 각 묶음 안의 비율입니다.</p>
       <div id="hist"></div>
     </div>
   </section>
@@ -250,6 +253,11 @@ pre { font-family: var(--mono); font-size: 12px; background: var(--paper); borde
     </div>
     <div class="steps" id="steps"></div>
     <div class="vtabs" id="vtabs"></div>
+    <div class="panel">
+      <h3>회로도</h3>
+      <p class="note">구조 표와 정한 크기로 netlistsvg가 자동으로 배치한 회로도입니다. 소자 옆 숫자는 W/L(µm)과 병렬 개수입니다.</p>
+      <div class="schem" id="schem"></div>
+    </div>
     <div class="panel">
       <div class="panel-head"><h3>회로 연결 그림</h3>
         <div class="legend"><span><i style="border:2px solid var(--pm)"></i>PMOS</span><span><i style="border:2px solid var(--nm)"></i>NMOS</span><span><i style="background:var(--accent-soft)"></i>학습 구조에 없던 소자</span><span><i style="border:3px solid var(--fail)"></i>꺼짐</span><span><i style="border:3px solid var(--warn)"></i>포화 영역 밖</span><span>점선: 게이트 연결</span></div></div>
@@ -277,6 +285,14 @@ const $ = id => document.getElementById(id);
 const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
 const fmt = v => v == null ? "—" : (Math.abs(v) >= 1000 || (Math.abs(v) < 0.01 && v !== 0) ? Number(v).toPrecision(3) : String(+Number(v).toPrecision(3)));
 const E = DATA.entries;
+const NJ = DATA.spec.length;
+const PART = DATA.part;
+document.title = `${PART} 구조 선택 자세히 보기`;
+document.querySelectorAll('.part').forEach(el => el.textContent = PART);
+document.querySelectorAll('.nj').forEach(el => el.textContent = NJ);
+document.querySelectorAll('.ntrain').forEach(el => el.textContent = DATA.training.length);
+{ const tm = Math.max(...DATA.training.map(t => t.passed));
+  document.getElementById('histNote').textContent = `학습에 쓴 구조 ${DATA.training.length}개도 같은 방식(자동 크기 정하기)으로 ${PART} 판정을 하면 최고 ${tm}/${NJ}입니다. 회색은 학습 구조, 파란색은 동작한 후보이고 막대 높이는 각 묶음 안의 비율입니다.`; }
 const summary = DATA.summary || {ranking: [], selected: null};
 const selectedIdx = summary.selected;
 const LOG_ITEMS = new Set(["ugbw", "sr", "ts", "idd", "io_source", "io_sink"]);
@@ -315,7 +331,7 @@ function renderHeader() {
     ["서로 다른 후보", E.length, "같은 글은 하나로"],
     ["규칙 검사 통과", rulesOk, "단자·연결이 말이 되는지"],
     ["동작", working, `그중 학습 구조와 다른 것 ${newWorking}개`],
-    ["선택", selectedIdx == null ? 0 : 1, selectedIdx == null ? "" : `후보 ${selectedIdx + 1}, ${E[selectedIdx].best.passed}/15 통과`],
+    ["선택", selectedIdx == null ? 0 : 1, selectedIdx == null ? "" : `후보 ${selectedIdx + 1}, ${E[selectedIdx].best.passed}/${NJ} 통과`],
   ];
   $("funnel").innerHTML = rows.map(([label, n, hint], i) => `
     <div class="frow"><div class="label">${label}<div class="note">${esc(hint)}</div></div>
@@ -462,21 +478,21 @@ function renderStrip(active) {
 
 function renderHist() {
   const W = 760, H = 200, L = 40, B = 34, T = 10;
-  const tr = Array(16).fill(0), ca = Array(16).fill(0);
+  const tr = Array(NJ + 1).fill(0), ca = Array(NJ + 1).fill(0);
   DATA.training.forEach(t => tr[t.passed]++);
   const working = E.filter(e => e.best); working.forEach(e => ca[e.best.passed]++);
   const pt = tr.map(n => n / DATA.training.length), pc = ca.map(n => working.length ? n / working.length : 0);
   const max = Math.max(...pt, ...pc, 0.1);
-  const bw = (W - L - 10) / 16, y = v => H - B - (H - B - T) * v / max;
+  const bw = (W - L - 10) / (NJ + 1), y = v => H - B - (H - B - T) * v / max;
   let out = "";
   [0, max / 2, max].forEach(v => out += `<line class="gridline" x1="${L}" x2="${W - 10}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${Math.round(v * 100)}%</text>`);
-  for (let k = 0; k <= 15; k++) {
+  for (let k = 0; k <= NJ; k++) {
     const x0 = L + k * bw;
-    out += `<rect class="bar-train" x="${x0 + 3}" y="${y(pt[k])}" width="${bw / 2 - 3}" height="${H - B - y(pt[k])}"><title>학습 구조 ${tr[k]}개가 ${k}/15</title></rect>`;
-    out += `<rect class="bar-cand" x="${x0 + bw / 2}" y="${y(pc[k])}" width="${bw / 2 - 3}" height="${H - B - y(pc[k])}"><title>후보 ${ca[k]}개가 ${k}/15</title></rect>`;
+    out += `<rect class="bar-train" x="${x0 + 3}" y="${y(pt[k])}" width="${bw / 2 - 3}" height="${H - B - y(pt[k])}"><title>학습 구조 ${tr[k]}개가 ${k}/${NJ}</title></rect>`;
+    out += `<rect class="bar-cand" x="${x0 + bw / 2}" y="${y(pc[k])}" width="${bw / 2 - 3}" height="${H - B - y(pc[k])}"><title>후보 ${ca[k]}개가 ${k}/${NJ}</title></rect>`;
     out += `<text x="${x0 + bw / 2}" y="${H - B + 15}" text-anchor="middle">${k}</text>`;
   }
-  out += `<text x="${(W + L) / 2}" y="${H - 2}" text-anchor="middle">TLV271 15개 항목 중 통과 수</text>`;
+  out += `<text x="${(W + L) / 2}" y="${H - 2}" text-anchor="middle">${PART} ${NJ}개 항목 중 통과 수</text>`;
   $("hist").innerHTML = `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" style="min-width:520px" role="img" aria-label="통과 항목 수 분포">${out}</svg></div>`;
 }
 
@@ -540,15 +556,27 @@ function showDetail(i, scale) {
   } else {
     $("specTable").innerHTML = `<p class="empty">${e.state === "waiting" ? "아직 시뮬레이션하지 않았습니다." : "동작하지 않아 스펙을 재지 않았습니다."}</p>`;
   }
+  drawSchematic(e);
   drawGraph(e, state, added);
   drawBode(i); drawSteps(i);
   // 비교
   const nr = e.nearest;
-  $("diff").innerHTML = `<p>가장 비슷한 학습 구조는 <b>${esc(nr.name)}</b>입니다. 줄 ${nr.same}개가 같고, 후보에만 있는 줄 ${nr.added.length}개, 학습 구조에만 있는 줄 ${nr.removed.length}개입니다. 그 학습 구조를 같은 방식으로 판정하면 TLV271 ${nr.passed}/15입니다.</p>
+  $("diff").innerHTML = `<p>가장 비슷한 학습 구조는 <b>${esc(nr.name)}</b>입니다. 줄 ${nr.same}개가 같고, 후보에만 있는 줄 ${nr.added.length}개, 학습 구조에만 있는 줄 ${nr.removed.length}개입니다. 그 학습 구조를 같은 방식으로 판정하면 ${PART} ${nr.passed}/${NJ}입니다.</p>
     ${nr.added.length + nr.removed.length ? `<div class="difflist">${nr.added.map(r => `<span class="plus">+ ${esc(r)}</span>`).join("")}${nr.removed.map(r => `<span class="minus">− ${esc(r)}</span>`).join("")}</div>` : `<p class="note">모델이 학습 구조를 그대로 썼습니다.</p>`}`;
   $("netWrap").hidden = !(v && v.subckt);
   $("netlist").textContent = (v && v.subckt) || "";
   renderTiles(i); renderRank(i); renderStrip(i);
+}
+
+/* netlistsvg 회로도를 상자 폭에 맞춰 넣는다 */
+function drawSchematic(e) {
+  const box = $("schem");
+  box.innerHTML = e.schematic || `<p class="empty">이 후보는 회로도를 만들지 않았습니다 (동작한 후보만 만듭니다).</p>`;
+  const svg = box.querySelector("svg");
+  if (!svg) return;
+  const w = svg.getAttribute("width"), h = svg.getAttribute("height");
+  if (w && h && !svg.getAttribute("viewBox")) svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  svg.removeAttribute("width"); svg.removeAttribute("height");
 }
 
 /* 회로 연결 그림: 소자와 노드를 힘 배치로 놓는다 */
