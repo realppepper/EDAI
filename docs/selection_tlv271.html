@@ -183,6 +183,14 @@ tr.added td { background: var(--accent-soft); }
 .difflist { font-family: var(--mono); font-size: 12px; display: grid; gap: 3px; }
 .difflist .plus { color: var(--accent); } .difflist .minus { color: var(--fail); text-decoration: line-through; }
 details summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+details.sizing { border: 1px solid var(--line); border-left: 4px solid var(--warn); border-radius: 6px; background: var(--card); padding: 10px 14px; }
+details.sizing > summary { font-size: 14px; font-weight: 700; color: var(--ink); }
+details.sizing[open] > summary { margin-bottom: 10px; }
+details.sizing .body { display: grid; gap: 14px; }
+details.sizing h4 { margin: 0 0 4px; font-size: 13px; }
+details.sizing ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 13px; }
+details.sizing p { font-size: 13px; }
+.sizelink { font-size: 12px; color: var(--accent); }
 pre { font-family: var(--mono); font-size: 12px; background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 12px; overflow-x: auto; margin: 8px 0 0; }
 .schem { background: #fbfbf7; border: 1px solid var(--line); border-radius: 6px; padding: 12px; }
 .schem { overflow: auto; max-height: 75vh; }
@@ -317,6 +325,46 @@ section { gap: 12px; }
       <span><i style="background:var(--warn)"></i>규칙 검사 탈락</span>
       <span><i style="background:var(--none)"></i>평가 전</span>
     </div>
+    <details class="sizing" id="sizing">
+      <summary>크기 정하기는 어떻게 했나, 그리고 한계 (눌러서 펼치기)</summary>
+      <div class="body">
+        <div><h4>방법: 역할별 gm/ID로 "동작하는 크기" 찾기 (auto_size.py)</h4>
+          <p>목표는 스펙을 맞추는 것이 아니라 모든 트랜지스터가 증폭하는 상태(포화 영역)로 동작하는 크기를 찾는 것입니다.</p>
+          <ol>
+            <li>연결만 보고 트랜지스터 역할을 정합니다: 입력쌍, 다이오드 연결, 전류원, 캐스코드, 이득단.</li>
+            <li>역할마다 gm/ID(전류 대비 증폭 효율)와 길이를 정합니다.
+              <table style="margin-top:4px"><thead><tr><th>역할</th><th>gm/ID</th><th>길이 L</th></tr></thead><tbody>
+              <tr><td>입력쌍, 캐스코드</td><td class="num">12 /V</td><td class="num">1 µm</td></tr>
+              <tr><td>이득단, 기타</td><td class="num">10 /V</td><td class="num">1 µm</td></tr>
+              <tr><td>다이오드 연결, 전류원</td><td class="num">8 /V</td><td class="num">2 µm</td></tr></tbody></table></li>
+            <li>전류원 하나당 20 µA, VB 단자에는 그 gm/ID에 맞는 게이트 전압을 넣습니다.</li>
+            <li>폭 10 µm에서 시작해 ngspice 동작점 → 실제 전류 → GF180 특성표로 폭 다시 계산을 반복합니다 (변화 5% 안 또는 8번). 100 µm가 넘으면 병렬 개수(×m)로 나눕니다.</li>
+            <li>꺼진 소자(1 nA 미만), 포화 영역 밖 소자, 버퍼 출력이 2.5 V ± 0.5 V를 벗어나는지 확인합니다.</li>
+            <li>출력(OUT)에 붙은 트랜지스터만 처음 폭을 1배·5배 두 가지로 해 보고 통과 항목이 많은 쪽을 씁니다. +/− 입력 방향도 두 가지를 다 해 보고 출력이 가운데에 서는 쪽을 고릅니다.</li>
+          </ol></div>
+        <div><h4>이번 결과에서 보이는 문제</h4><ol id="sizingIssues"></ol></div>
+        <div><h4>방법 자체의 한계</h4>
+          <ol>
+            <li>목표값을 보지 않습니다. 이득이 부족해도 길이를 늘리는 식으로 조정하지 않습니다.</li>
+            <li>저항 10 kΩ, 보상 커패시터 1 pF가 고정이라 대역폭·위상여유가 맞춰지지 않습니다.</li>
+            <li>전류원 전류가 20 µA로 고정이라 공급 전류가 목표에 맞춰지지 않습니다. 출력단은 1배·5배 두 가지만 봅니다.</li>
+            <li>VB·IB 바이어스 단자는 이상적인 전원으로 채웁니다. 실제 칩이라면 바이어스 회로까지 있어야 해서 결과가 실제보다 좋게 나옵니다.</li>
+            <li>전원 5 V, 입력 2.5 V 한 조건만 봅니다. 데이터시트는 대부분 15 V 조건이고, 입력이 0 V 근처까지 동작하는지·온도·공정 변화는 보지 않습니다.</li>
+            <li>역할 판단이 연결 모양 규칙이라 처음 보는 구조에서는 잘못 매길 수 있습니다.</li>
+          </ol>
+          <p class="note">원래 학습 데이터용 도구입니다. 구조 수백 개에 사람 손 없이 동작하는 크기를 붙여 성능을 재는 데는 충분하지만, 구조를 고르는 기준으로 쓰면 위 한계가 순위에 섞입니다.</p></div>
+        <div><h4>다른 연구는 어떻게 하나</h4>
+          <table><thead><tr><th>연구</th><th>구조</th><th>크기 정하기</th></tr></thead><tbody>
+            <tr><td><a href="https://arxiv.org/abs/2503.00205">AnalogGenie</a> (ICLR 2025)</td><td>GPT가 핀 연결 순서를 생성</td><td>구조를 만든 뒤 유전 알고리즘으로 W·L·R 최적화, FoM = GBW·C<sub>L</sub>/전력</td></tr>
+            <tr><td><a href="https://arxiv.org/html/2508.02518v1">AnalogCoder-Pro</a></td><td>멀티모달 LLM</td><td>LLM이 최적화할 변수를 골라 베이지안 최적화</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2406.18770">ADO-LLM</a></td><td>주어진 구조</td><td>베이지안 최적화 + LLM이 후보 크기 제안</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2508.05113">EasySize</a></td><td>주어진 구조</td><td>LLM이 손실 함수를 만들고 휴리스틱 탐색, gm/ID 방법과 비교</td></tr>
+            <tr><td><a href="https://research.buaa.edu.cn/en/publications/astra-automatic-sizing-of-transistors-with-reasoning-agents/">ASTRA</a></td><td>주어진 구조</td><td>gm/ID 기반 LLM 초기값 → 베이지안 최적화로 다듬기</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2604.20916">AnalogMaster</a></td><td>회로 그림 → 넷리스트</td><td>LLM 파라미터 탐색 에이전트</td></tr>
+          </tbody></table>
+          <p class="note">공통점: 구조를 정한 뒤 시뮬레이션을 수십~수백 번 돌리며 목표(FoM이나 스펙)에 맞춰 크기를 최적화합니다. 우리 방식은 그 앞 단계인 "동작하는 초기 크기"까지만 합니다. ASTRA처럼 gm/ID 초기값 위에 최적화를 얹는 것이 다음 단계로 자연스럽습니다.</p></div>
+      </div>
+    </details>
     <div class="tiles" id="tiles"></div>
     <div class="two">
       <div class="panel"><h3>떨어진 이유</h3><p class="note">후보마다 크기 정하기에서 처음 걸린 이유입니다. 꺼진 소자는 전류가 흐르지 않는 트랜지스터, 포화 영역 밖은 증폭하지 못하는 상태의 트랜지스터입니다.</p><div class="bars" id="reasons"></div></div>
@@ -516,6 +564,23 @@ function renderPdg() {
     <p class="note" style="margin-top:8px">${pol ? `+ 입력이 구조의 어느 단자인지는 크기 정하기에서 두 방향을 다 시뮬레이션해 출력이 가운데에 서는 쪽으로 정했습니다 (선택 후보 ${E[selectedIdx].no} 기준).` : "+ / − 입력이 구조의 어느 단자인지는 크기 정하기에서 정합니다."}
     전원은 시뮬레이션에서 VDD 5 V, VSS 0 V로 둡니다.</p>
     ${chk.channels.length > 1 ? `<p class="note">채널: ${chk.channels.map(c => `${esc(c.output)} ${c.ok ? "맞음" : "안 맞음 (" + esc(c.problems.join(", ")) + ")"}`).join(" · ")}. 채널 하나만 설계합니다.</p>` : ""}`;
+}
+
+function renderSizingIssues() {
+  const tried = E.filter(e => e.rules.ok && e.state === "done");
+  const working = tried.filter(e => e.best);
+  const why = {};
+  tried.filter(e => !e.best).forEach(e => { const r = shortReason((e.variants[0] || {}).reason); why[r] = (why[r] || 0) + 1; });
+  const fails = {};
+  working.forEach(e => (bestVariant(e).spec || []).forEach(r => { if (r.status !== "PASS") fails[r.measure] = (fails[r.measure] || 0) + 1; }));
+  const label = m => (DATA.spec.find(s => s.measure === m) || {}).label || m;
+  const top = Object.entries(fails).sort((a, b) => b[1] - a[1]).slice(0, 4);
+  const items = [
+    `규칙을 통과한 ${tried.length}개 중 ${tried.length - working.length}개가 크기 정하기에서 떨어졌습니다 (${Object.entries(why).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${esc(k)} ${n}`).join(", ")}). 구조가 나빠서인지, 모든 구조에 같은 규칙을 쓰는 크기 정하기가 맞지 않아서인지 구분되지 않습니다.`,
+    `동작한 ${working.length}개가 같은 항목에서 미달입니다: ${top.map(([m, n]) => `${esc(label(m))} ${n}/${working.length}`).join(", ")}. 구조가 달라도 똑같이 떨어지면 원인은 구조보다 크기 쪽입니다.`,
+    "그래서 통과 항목 수로 구조를 고르는 순위에 크기 정하기의 한계가 섞여 있습니다. 크기를 목표에 맞춰 다시 조정하면 순위가 바뀔 수 있습니다.",
+  ];
+  $("sizingIssues").innerHTML = items.map(t => `<li>${t}</li>`).join("");
 }
 
 function renderModel() {
@@ -742,7 +807,7 @@ function showDetail(i, scale) {
     st.push(e.best ? ["ok", "4 스펙 판정", `${e.best.passed} / ${e.best.judged} 통과`, `출력단 ${e.best.output_scale}배 결과 사용`] : ["skip", "4 스펙 판정", "재지 않음", ""]);
   }
   $("steps").innerHTML = st.map(([c, t, v2, why]) => `<div class="step ${c}"><span class="t">${t}</span><span class="v">${esc(v2)}</span><span class="why">${esc(why)}</span></div>`).join("");
-  $("vtabs").innerHTML = variants.length ? `<span class="muted">출력단 전류</span>` + variants.map(x => `<button data-s="${x.output_scale}" aria-pressed="${x === v}">${x.output_scale}배 · ${x.valid ? `${x.passed}/${x.judged}` : shortReason(x.reason)}</button>`).join("") : "";
+  $("vtabs").innerHTML = variants.length ? `<span class="muted">출력단 전류</span>` + `<a class="sizelink" href="#sizing" onclick="document.getElementById('sizing').open = true">크기 정하기 방법과 한계 ↑</a> ` + variants.map(x => `<button data-s="${x.output_scale}" aria-pressed="${x === v}">${x.output_scale}배 · ${x.valid ? `${x.passed}/${x.judged}` : shortReason(x.reason)}</button>`).join("") : "";
   // 소자 상태
   const state = {};
   if (v) { (v.off || []).forEach(n => state[n] = "off"); (v.triode || []).forEach(n => state[n] = state[n] || "triode"); (v.startup || []).forEach(n => state[n] = state[n] || "startup"); }
@@ -924,7 +989,7 @@ document.addEventListener("keydown", ev => {
 $("pick").innerHTML = E.map((e, i) => `<option value="${i}">${e.no} · ${esc(outcome(e).res)}${i === selectedIdx ? " (선택)" : ""}</option>`).join("");
 $("pick").addEventListener("change", ev => showDetail(+ev.target.value));
 
-renderHeader(); renderInput(); renderPdg(); renderModel(); renderGenExample();
+renderHeader(); renderInput(); renderPdg(); renderModel(); renderGenExample(); renderSizingIssues();
 $("schemZoom").addEventListener("click", ev => { const on = $("schem").classList.toggle("full"); ev.target.setAttribute("aria-pressed", on); ev.target.textContent = on ? "화면에 맞추기" : "원래 크기로 보기"; }); renderReasons(); renderNovelty(); renderHist();
 showDetail(selectedIdx ?? 0);
 </script>
