@@ -4,6 +4,15 @@ AI 기반 아날로그 회로 자동 설계 시스템
 
 목표 성능 스펙만 입력하면 AI가 넷리스트를 생성하고, 오픈소스 시뮬레이터로 자동 검증한 뒤 목표 미달 시 재설계를 반복하는 시스템입니다.
 
+## 결과 페이지: 데이터시트에서 OP-Amp 구조 자동 결정 (LM358B)
+
+데이터시트 분석 결과(HKG·측정 계획·PDG) → FLAN-T5 구조 후보 생성 → 규칙 검사·크기 정하기·ngspice 판정 → 구조 선택 → 회로도까지 한 페이지에서 볼 수 있습니다.
+
+- 온라인 페이지: https://claude.ai/artifact/GCwRvsJoGBzT2eDYdz94tB (열리지 않으면 김지윤에게 공유 요청)
+- 저장소 안 파일: [docs/selection_lm358.html](docs/selection_lm358.html) (TLV271 버전: [docs/selection_tlv271.html](docs/selection_tlv271.html))
+  - GitHub 화면에서는 HTML이 그대로 보이지 않으니, 파일을 내려받아 브라우저로 여세요.
+  - 다시 만들기: `python make_selection_page.py lm358`
+
 ## 배경
 
 디지털 회로는 HDL 기반 LLM 자동화가 상당히 진전되었지만, 아날로그 회로는 성능 지표 간 강한 비선형·상호결합 특성과 정형화되지 않은 회로도 의존성 때문에 자동화가 훨씬 어렵습니다. AI를 활용한 아날로그 회로 자동 설계는 학계·산업 양쪽에서 아직 보편적으로 자리 잡지 못한 영역입니다.
