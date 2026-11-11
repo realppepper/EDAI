@@ -225,10 +225,10 @@ pre { font-family: var(--mono); font-size: 12px; background: var(--paper); borde
 }
 @media (prefers-reduced-motion: no-preference) { .frow .bar span { transition: width .4s ease; } }
 
-/* ---------- 한 화면에 들어오게: 크기 줄이기 ---------- */
+/* 크기 줄이기 (구성은 그대로) */
 body { font-size: 14px; line-height: 1.5; }
-.wrap { max-width: 1360px; gap: 18px; padding-block: 20px 60px; }
-h1 { font-size: 24px; } h2 { font-size: 17px; } h3 { font-size: 14px; }
+.wrap { max-width: 1360px; gap: 36px; padding-block: 24px 60px; }
+h1 { font-size: 26px; } h2 { font-size: 18px; } h3 { font-size: 14px; }
 .lead { font-size: 14px; }
 section { gap: 12px; }
 .panel { padding: 12px 14px; gap: 8px; }
@@ -237,47 +237,21 @@ section { gap: 12px; }
 .specs { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
 .spec { padding: 7px 9px; }
 .two { gap: 12px; } .cols3 { gap: 10px; }
-
-/* 한눈에 보기 */
-.chain { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
-.ch { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; display: grid; gap: 1px; position: relative; }
-.ch .k { font-size: 11px; color: var(--muted); }
-.ch .v { font-family: var(--mono); font-size: 20px; font-weight: 500; line-height: 1.2; }
-.ch .d { font-size: 11px; color: var(--muted); line-height: 1.35; }
-.ch.final { border-color: var(--pass); background: var(--pass-soft); } .ch.final .v { color: var(--pass); }
-.ch.bad .v { color: var(--fail); }
-.ov2 { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 12px; }
-@media (max-width: 900px) { .ov2 { grid-template-columns: 1fr; } }
-.schem.small { max-height: 380px; padding: 6px; }
-.schem.small svg { max-width: none; max-height: 360px; }
-.ovspec td, .ovspec th { padding: 3px 6px; font-size: 12px; }
-.ovlink { font-size: 13px; color: var(--accent); }
-
-/* 접는 섹션 */
-details.sec { display: grid; border-top: 1px solid var(--line); padding-top: 10px; }
-details.sec > summary { list-style: none; cursor: pointer; }
-details.sec > summary::-webkit-details-marker { display: none; }
-details.sec > summary h2::before { content: "▸"; color: var(--accent); font-size: 13px; transition: transform .15s; display: inline-block; }
-details.sec[open] > summary h2::before { transform: rotate(90deg); }
-details.sec > summary .sum { font-size: 13px; font-weight: 400; color: var(--muted); }
-details.sec[open] > section { margin-top: 12px; }
+.frow .bar { height: 16px; } .frow .count { font-size: 15px; } .frow .label { font-size: 13px; }
+.funnel { gap: 6px; }
 </style>
 
 <div class="wrap">
   <header>
     <div class="eyebrow">EDAI 17조 · 회로 구조 자동 결정</div>
     <h1><span class="part"></span> 구조 선택</h1>
-    <p class="lead">FLAN-T5가 <span class="part"></span> 스펙을 보고 OP-Amp 구조 후보를 만들고, 후보마다 크기를 정해 ngspice로 시뮬레이션한 뒤 스펙을 가장 많이 맞춘 구조 하나를 고릅니다. 아래 1~4번 제목을 누르면 단계별 자세한 내용이 펼쳐집니다.</p>
+    <p class="lead">FLAN-T5가 <span class="part"></span> 스펙을 보고 OP-Amp 구조 후보를 만들고, 후보마다 크기를 정해 ngspice로 시뮬레이션한 뒤 스펙을 가장 많이 맞춘 구조 하나를 고릅니다. 이 페이지는 그 과정을 처음부터 끝까지 보여 줍니다.</p>
     <div class="progress" id="progress" hidden></div>
-    <div class="panel funnel" id="funnel" hidden></div>
-    <div class="chain" id="chain"></div>
-    <div class="ov2">
-      <div class="panel"><div class="panel-head"><h3 id="ovSchemTitle">선택된 구조</h3><a class="ovlink" href="#detail">자세히 (5번) ↓</a></div><div class="schem small" id="ovSchem"></div></div>
-      <div class="panel"><h3 id="ovSpecTitle">목표 판정</h3><div id="ovSpec"></div></div>
-    </div>
+    <div class="panel funnel" id="funnel"></div>
   </header>
 
-  <details class="sec"><summary><h2><span class="n">1</span>입력: <span class="part"></span> 스펙 <span class="nj"></span>개 항목 <span class="sum" id="sum1"></span></h2></summary><section>
+  <section>
+    <h2><span class="n">1</span>입력: <span class="part"></span> 스펙 <span class="nj"></span>개 항목</h2>
     <div class="srcbox" id="srcbox" hidden></div>
     <div class="panel" id="pdgPanel" hidden>
       <h3>핀 확인: 포트 의존성 그래프(PDG)</h3>
@@ -287,18 +261,20 @@ details.sec[open] > section { margin-top: 12px; }
     <p class="muted">데이터시트의 목표값입니다. 모델에는 아래 한 줄 문장으로 들어갑니다. 이 데이터시트는 학습에 쓰지 않았습니다.</p>
     <div class="input-line" id="inputLine"></div>
     <div class="specs" id="specs"></div>
-  </section></details>
+  </section>
 
-  <details class="sec"><summary><h2><span class="n">2</span>구조 만들기: FLAN-T5 <span class="sum" id="sum2"></span></h2></summary><section>
+  <section>
+    <h2><span class="n">2</span>구조 만들기: FLAN-T5</h2>
     <p class="muted">스펙 문장을 넣으면 소자 연결 표(구조)를 글로 써 내는 모델입니다. 모든 OP-Amp 데이터로 학습했습니다.</p>
     <div class="panel"><h3>학습 데이터가 만들어진 길</h3><div class="flow" id="flow"></div></div>
     <div class="cols3" id="model"></div>
     <div class="panel"><h3>모델이 실제로 쓴 결과: <span id="genTitle"></span></h3>
       <p class="note">모델은 구조를 글 한 줄로 씁니다. 세미콜론(;)으로 나뉜 조각 하나가 소자 하나이고, 각 조각은 소자 이름과 단자별 연결 노드입니다. 이 글을 조각별로 펼친 것이 아래 구조 표입니다. 표의 줄이나 글 조각에 마우스를 올리면 서로 짝이 표시됩니다.</p>
       <div id="genExample"></div></div>
-  </section></details>
+  </section>
 
-  <details class="sec"><summary><h2><span class="n">3</span>후보 <span id="candCount"></span>개를 하나씩 확인 <span class="sum" id="sum3"></span></h2></summary><section>
+  <section>
+    <h2><span class="n">3</span>후보 <span id="candCount"></span>개를 하나씩 확인</h2>
     <p class="muted">후보마다 1 규칙 검사, 2 크기 정하기(출력단 전류 1배와 5배), 3 동작 판정, 4 스펙 판정을 거칩니다. 타일을 누르면 아래 5번에 그 후보의 과정이 나옵니다.</p>
     <div class="legend">
       <span><i style="background:var(--pass)"></i>동작 (숫자는 <span class="nj"></span>개 중 통과 수)</span>
@@ -311,9 +287,10 @@ details.sec[open] > section { margin-top: 12px; }
       <div class="panel"><h3>떨어진 이유</h3><p class="note">후보마다 크기 정하기에서 처음 걸린 이유입니다. 꺼진 소자는 전류가 흐르지 않는 트랜지스터, 포화 영역 밖은 증폭하지 못하는 상태의 트랜지스터입니다.</p><div class="bars" id="reasons"></div></div>
       <div class="panel"><h3>학습 데이터와 얼마나 다른가</h3><p class="note">후보마다 연결 줄이 가장 많이 겹치는 학습 구조를 찾아, 후보에만 있는 줄과 학습 구조에만 있는 줄을 셉니다. 0이면 학습 구조를 그대로 낸 것입니다.</p><div id="novelty"></div></div>
     </div>
-  </section></details>
+  </section>
 
-  <details class="sec"><summary><h2><span class="n">4</span>고르기: 통과 항목 수 순위 <span class="sum" id="sum4"></span></h2></summary><section>
+  <section>
+    <h2><span class="n">4</span>고르기: 통과 항목 수 순위</h2>
     <p class="muted">동작한 후보만 줄 세웁니다. 통과 항목이 많은 순, 같으면 공급 전류(idd)가 작은 순입니다. 칸 색은 항목별 판정이고, 줄을 누르면 5번 상세가 그 후보로 바뀝니다.</p>
     <div class="legend">
       <span><i class="s-PASS"></i>통과</span><span><i class="s-FAIL"></i>미달</span><span><i class="s-미측정"></i>재지 못함 (예: 이득이 낮아 대역폭이 없음)</span>
@@ -330,7 +307,7 @@ details.sec[open] > section { margin-top: 12px; }
       <p class="note" id="histNote"> 회색은 학습 구조, 파란색은 동작한 후보이고 막대 높이는 각 묶음 안의 비율입니다.</p>
       <div id="hist"></div>
     </div>
-  </section></details>
+  </section>
 
   <section id="detail">
     <div class="detail-head">
@@ -504,43 +481,6 @@ function renderPdg() {
     <p class="note" style="margin-top:8px">${pol ? `+ 입력이 구조의 어느 단자인지는 크기 정하기에서 두 방향을 다 시뮬레이션해 출력이 가운데에 서는 쪽으로 정했습니다 (선택 후보 ${E[selectedIdx].no} 기준).` : "+ / − 입력이 구조의 어느 단자인지는 크기 정하기에서 정합니다."}
     전원은 시뮬레이션에서 VDD 5 V, VSS 0 V로 둡니다.</p>
     ${chk.channels.length > 1 ? `<p class="note">채널: ${chk.channels.map(c => `${esc(c.output)} ${c.ok ? "맞음" : "안 맞음 (" + esc(c.problems.join(", ")) + ")"}`).join(" · ")}. 채널 하나만 설계합니다.</p>` : ""}`;
-}
-
-function fitSvg(box, text) {
-  box.innerHTML = text || `<p class="empty">회로도가 없습니다.</p>`;
-  const svg = box.querySelector("svg"); if (!svg) return;
-  const w = svg.getAttribute("width"), h = svg.getAttribute("height");
-  if (w && h && !svg.getAttribute("viewBox")) svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
-  svg.removeAttribute("width"); svg.removeAttribute("height");
-}
-function renderOverview() {
-  const working = E.filter(e => e.best), rulesOk = E.filter(e => e.rules.ok).length;
-  const newWorking = working.filter(e => novelty(e) > 0).length;
-  const total = DATA.generated.beam + DATA.generated.sample;
-  const X = DATA.extraction, P = DATA.pdg, sel = selectedIdx != null ? E[selectedIdx] : null;
-  const steps = [];
-  if (X) steps.push(["", "데이터시트 분석 결과 (팀원)", X.electrical_rows, "전기 특성 줄"]);
-  steps.push(["", "목표값", NJ, "판정할 항목"]);
-  if (P) steps.push([P.check.ok ? "" : "bad", "PDG 핀 확인", P.check.ok ? "통과" : "탈락", "OP-Amp 5단자와 맞는지"]);
-  steps.push(["", "모델이 쓴 후보", E.length, `글 ${total}개 중 서로 다른 것`]);
-  steps.push(["", "규칙 통과", rulesOk, "단자·연결 검사"]);
-  steps.push(["", "동작", working.length, `학습에 없던 구조 ${newWorking}`]);
-  if (sel) steps.push(["final", "선택", `후보 ${sel.no}`, `${sel.best.passed}/${NJ} 통과${sel.in_train ? " · 학습에 있던 구조" : ""}`]);
-  $("chain").innerHTML = steps.map(([c, k, v, d]) => `<div class="ch ${c}"><span class="k">${esc(k)}</span><span class="v">${esc(v)}</span><span class="d">${esc(d)}</span></div>`).join("");
-  if (!sel) return;
-  $("ovSchemTitle").textContent = `선택된 구조: 후보 ${sel.no} 회로도`;
-  fitSvg($("ovSchem"), sel.schematic);
-  const v = bestVariant(sel), by = Object.fromEntries((v.spec || []).map(r => [r.measure, r]));
-  $("ovSpecTitle").textContent = `목표 판정: ${sel.best.passed} / ${NJ} 통과`;
-  $("ovSpec").innerHTML = `<table class="ovspec"><thead><tr><th>항목</th><th>목표</th><th>측정</th><th></th></tr></thead><tbody>${DATA.spec.map(s => {
-    const c = by[s.measure];
-    return `<tr><td>${esc(s.label)}</td><td class="num">${esc(s.target)}</td><td class="num">${c ? fmt(c.value) : "—"}</td><td class="st ${c ? c.status : "미측정"}">${c ? (c.status === "PASS" ? "통과" : c.status === "FAIL" ? "미달" : "재지 못함") : "—"}</td></tr>`;
-  }).join("")}</tbody></table>`;
-  const best = working.length ? Math.max(...working.map(e => e.best.passed)) : 0;
-  $("sum1").textContent = `${NJ}개 항목${P ? ` · PDG 핀 확인 ${P.check.ok ? "통과" : "탈락"}` : ""}`;
-  $("sum2").textContent = `학습 ${DATA.train.train.toLocaleString()}문장 · 모델이 쓴 글 → 구조 표 예시`;
-  $("sum3").textContent = `${E.length}개 중 규칙 통과 ${rulesOk}, 동작 ${working.length}`;
-  $("sum4").textContent = `최고 ${best}/${NJ} · 선택 후보 ${sel.no}`;
 }
 
 function renderModel() {
@@ -949,7 +889,7 @@ document.addEventListener("keydown", ev => {
 $("pick").innerHTML = E.map((e, i) => `<option value="${i}">${e.no} · ${esc(outcome(e).res)}${i === selectedIdx ? " (선택)" : ""}</option>`).join("");
 $("pick").addEventListener("change", ev => showDetail(+ev.target.value));
 
-renderHeader(); renderInput(); renderPdg(); renderModel(); renderGenExample(); renderOverview();
+renderHeader(); renderInput(); renderPdg(); renderModel(); renderGenExample();
 $("schemZoom").addEventListener("click", ev => { const on = $("schem").classList.toggle("full"); ev.target.setAttribute("aria-pressed", on); ev.target.textContent = on ? "화면에 맞추기" : "원래 크기로 보기"; }); renderReasons(); renderNovelty(); renderHist();
 showDetail(selectedIdx ?? 0);
 </script>
