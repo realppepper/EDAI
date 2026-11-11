@@ -367,12 +367,12 @@ function renderInput() {
   const X = DATA.extraction;
   if (X) {
     $("srcbox").hidden = false;
-    $("srcbox").innerHTML = `<span class="badge">출처: 데이터시트 분석 시스템 결과물 (팀원)</span>
+    $("srcbox").innerHTML = `<span class="badge">출처: 데이터시트 분석 시스템 결과물 (팀원) · 특성 표(HKG)</span>
       <div>${esc((X.device || {}).name || DATA.part)} 데이터시트를 데이터시트 분석 시스템이 읽어 만든 특성 표에서 목표값을 가져왔습니다. 아래 카드마다 그 결과물의 원래 값과 데이터시트 쪽 번호를 적었습니다.</div>
       <div class="kv2"><span>결과물 파일 <b>${esc(X.file)}</b></span><span>추출된 줄 <b>${X.total_rows}</b></span>
         <span>그중 전기 특성 <b>${X.electrical_rows}</b></span><span>목표값으로 쓴 줄 <b>${X.used_rows}</b></span>
         ${X.missing && X.missing.length ? `<span>데이터시트에 없어 뺀 항목 <b>${esc(X.missing.join(", "))}</b></span>` : ""}</div>
-      <p class="note">단위 바꾸기(예: V/mV → dB)와 출력 전압 계산(전원 5 V에서 떨어지는 폭을 뺌)은 이쪽 변환 스크립트(spec_from_hkg.py)가 했습니다.</p>`;
+      <p class="note">단위 바꾸기(예: V/mV → dB)와 출력 전압 계산(전원 5 V에서 떨어지는 폭을 뺌)은 이쪽 변환 스크립트(spec_from_hkg.py)가 했습니다. 그 시스템의 포트 의존성 그래프(PDG)는 핀 관계와 검증 순서를 담는 것이라 목표값에는 쓰지 않았습니다.</p>`;
   }
   const fromText = x => {
     if (!x) return "";
