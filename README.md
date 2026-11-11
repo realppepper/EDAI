@@ -22,6 +22,7 @@ LM358B 결과: 후보 34개 → 규칙 통과 28 → 동작 12 (학습에 없던
 
 | 문서 | 내용 |
 | --- | --- |
+| [docs/구조결정_모델.md](docs/구조결정_모델.md) | FLAN-T5 구조 생성 모델: 모델 파일 받기(드라이브), 입출력, 학습 데이터, 학습 설정, 검증 결과, 실행 주의점, 한계 |
 | [docs/박준석_시스템_연결.md](docs/박준석_시스템_연결.md) | analogverifier 결과를 어떻게 가져와 쓰는지, 발견한 문제, 같이 정할 것 |
 | [docs/selection_lm358.html](docs/selection_lm358.html) | LM358B 구조 선택 전 과정 (내려받아 브라우저로 열기). 온라인: https://claude.ai/artifact/GCwRvsJoGBzT2eDYdz94tB (공유 요청 필요) |
 | [docs/selection_tlv271.html](docs/selection_tlv271.html) | 같은 페이지, TLV271 (사람이 옮긴 스펙) |
@@ -33,7 +34,7 @@ LM358B 결과: 후보 34개 → 규칙 통과 28 → 동작 12 (학습에 없던
 python spec_from_plan.py data/extraction/LM358B_SPEC_EVALUATION.json data/extraction/LM358B_knowledge_graph.json LM358B lm358
 python pdg_check.py data/extraction/LM358B_knowledge_graph.json lm358
 # 아래 넷은 WSL에서 ~/.venvs/edai/bin/python (ngspice 43, GF180 PDK, torch CPU)
-python generate_candidates.py lm358     # 학습된 모델 models/flan_t5_structure 필요 (Drive 2026_2/flan_t5_structure, git 제외)
+python generate_candidates.py lm358     # 학습된 모델 models/flan_t5_structure 필요 (docs/구조결정_모델.md 1절의 드라이브 링크, git 제외)
 python select_structure.py lm358        # 출력단 1·5·20·50배, 수 시간
 python selection_curves.py lm358
 python make_schematic_svg.py lm358      # netlistsvg (WSL ~/netlistsvg)
