@@ -14,6 +14,7 @@
 화면 모양은 docs/*_template.html 에서 고친다. 결과 html 은 다시 만들면 덮어써진다.
 """
 
+import base64
 import json
 from pathlib import Path
 
@@ -81,7 +82,8 @@ def extraction_view(spec: dict) -> dict:
             "pins": [{k: p.get(k) for k in ("name", "pin_number", "direction", "role", "description")} for p in hkg.get("pins", [])],
             "total_rows": len(rows), "categories": categories, "electrical_rows": info["electrical_rows"],
             "used_rows": info["used_rows"], "missing": [s["label"] for s in spec["specs"] if s.get("scope") == "excluded"],
-            "unused": spec.get("unused", [])[:UNUSED_SHOWN], "unused_count": len(spec.get("unused", []))}
+            "unused": spec.get("unused", [])[:UNUSED_SHOWN], "unused_count": len(spec.get("unused", [])),
+            "plan": spec.get("plan")}
 
 
 def pdg_view(part: str):
@@ -106,6 +108,32 @@ def parse_rows(text: str) -> list:
     return rows
 
 
+GENIE_DIR = HERE / "external" / "AnalogGenie" / "Dataset"
+# AnalogGenie data_categorization.md 의 OP-Amp 번호 범위 -> (묶음, 책 또는 출처)
+GENIE_SOURCES = [
+    ((281, 336), "교과서", "Razavi, Design of Analog CMOS Integrated Circuits 2판"),
+    ((628, 639), "교과서", "Camenzind, Designing Analog Chips"),
+    ((705, 725), "교과서", "Johns & Martin (Carusone), Analog Integrated Circuit Design 2판"),
+    ((884, 932), "교과서", "Gray, Hurst, Lewis, Meyer, Analysis and Design of Analog ICs 5판"),
+    ((978, 1029), "교과서", "Allen & Holberg, CMOS Analog Circuit Design 3판"),
+    ((1781, 2180), "논문 묶음", "AnalogGenie 'opamp papers' 묶음 (논문 이름·쪽 표시 없음)"),
+]
+
+
+def structure_origin(name: str) -> dict:
+    """학습 구조 이름 -> 출처 묶음, 책, 쪽, 원본 그림(교과서만, base64)."""
+    if not name.startswith("AnalogGenie"):
+        return {"group": "직접 만든 블록", "book": "팀이 블록을 조립해 만든 구조", "page": None, "image": None}
+    number = int(name.split()[1])
+    group, book = next(((g, b) for (lo, hi), g, b in GENIE_SOURCES if lo <= number <= hi), ("기타", "AnalogGenie"))
+    folder = GENIE_DIR / str(number)
+    page_file = folder / f"Pagenumber{number}.txt"
+    image_file = folder / f"Book{number}.png"
+    return {"group": group, "book": book, "number": number,
+            "page": page_file.read_text(encoding="utf-8").strip() if page_file.exists() else None,
+            "image": base64.b64encode(image_file.read_bytes()).decode() if image_file.exists() else None}
+
+
 def training_structures(spec: dict) -> list:
     """학습에 쓴 구조마다: 이름, 줄 집합, 이 부품 스펙 항목별 값과 통과 수 (출력단 배율 중 더 좋은 쪽)."""
     best = {}
@@ -121,6 +149,14 @@ def training_structures(spec: dict) -> list:
 
 def row_texts(text: str) -> list:
     return [" ".join(part.split()) for part in text.split(";") if part.strip()]
+
+
+def row_order(row: str):
+    """PM1, PM2 ... NM1 ... R1, C1 순서."""
+    name = row.split()[0]
+    kind = {"PM": 0, "NM": 1, "R": 2, "C": 3}.get(name.rstrip("0123456789"), 4)
+    digits = name.lstrip("PMNRC")
+    return kind, int(digits) if digits.isdigit() else 0
 
 
 def nearest(text: str, structures: list) -> dict:
@@ -171,7 +207,8 @@ def main() -> None:
             "generated": candidates.get("generated", GENERATED), "part": part.upper(), "source": spec.get("source"),
             "extraction": extraction_view(spec), "pdg": pdg_view(part), "train": train_stats(), "spec": spec_items(spec), "entries": entries,
             "summary": selection.get("summary"), "evaluated": len(done),
-            "training": [{"name": t["name"], "source": t["source"], "passed": t["passed"], "values": t["values"]}
+            "training": [dict({"name": t["name"], "source": t["source"], "passed": t["passed"], "values": t["values"],
+                               "rows": sorted(t["rows"], key=row_order)}, **structure_origin(t["name"]))
                          for t in structures]}
     payload = json.dumps(data, ensure_ascii=False).replace("</", "<\\/")
     for template, name in PAGES:

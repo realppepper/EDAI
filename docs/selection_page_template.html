@@ -183,6 +183,21 @@ tr.added td { background: var(--accent-soft); }
 .difflist { font-family: var(--mono); font-size: 12px; display: grid; gap: 3px; }
 .difflist .plus { color: var(--accent); } .difflist .minus { color: var(--fail); text-decoration: line-through; }
 details summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+.libbar { display: flex; height: 26px; border-radius: 5px; overflow: hidden; font-size: 12px; }
+.libbar span { display: flex; align-items: center; justify-content: center; color: #fff; white-space: nowrap; overflow: hidden; }
+.libgroups { display: grid; gap: 10px; }
+.libgroup h4 { margin: 0 0 4px; font-size: 13px; }
+.libgroup h4 .muted { font-weight: 400; }
+.libtiles { display: flex; flex-wrap: wrap; gap: 3px; }
+.lt { width: 16px; height: 16px; border-radius: 3px; border: 0; padding: 0; cursor: pointer; background: var(--ghost); opacity: .55; }
+.lt.near { background: var(--accent); opacity: .5; }
+.lt.same { background: var(--accent); opacity: 1; box-shadow: 0 0 0 2px var(--card), 0 0 0 3px var(--accent); }
+.lt.on { outline: 2px solid var(--ink); outline-offset: 1px; opacity: 1; }
+.libwrap { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 860px) { .libwrap { grid-template-columns: 1fr; } }
+.libdetail { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; display: grid; gap: 8px; font-size: 13px; background: var(--paper); }
+.libdetail img { max-width: 100%; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
+.libdetail .rowsbox { font-family: var(--mono); font-size: 12px; line-height: 1.7; }
 details.sizing { border: 1px solid var(--line); border-left: 4px solid var(--warn); border-radius: 6px; background: var(--card); padding: 10px 14px; }
 details.sizing > summary { font-size: 14px; font-weight: 700; color: var(--ink); }
 details.sizing[open] > summary { margin-bottom: 10px; }
@@ -309,8 +324,24 @@ section { gap: 12px; }
   <section id="s2" class="stage">
     <h2><span class="n">2</span>구조 만들기: FLAN-T5</h2>
     <p class="muted">스펙 문장을 넣으면 소자 연결 표(구조)를 글로 써 내는 모델입니다. 모든 OP-Amp 데이터로 학습했습니다.</p>
+    <div class="srcbox">
+      <span class="badge">학습 데이터 출처: AnalogGenie 공개 데이터셋 (ICLR 2025)</span>
+      <div>J. Gao, W. Cao, J. Yang, X. Zhang, "AnalogGenie: A Generative Engine for Automatic Discovery of Analog Circuit Topologies," <i>International Conference on Learning Representations (ICLR)</i>, 2025.
+        <a href="https://proceedings.iclr.cc/paper_files/paper/2025/hash/f0552f14388d95b19740dee809f5cad1-Abstract-Conference.html">논문</a> ·
+        <a href="https://github.com/xz-group/AnalogGenie">데이터셋 (GitHub, MIT 라이선스)</a></div>
+      <div>교과서와 논문에 실린 아날로그 회로 3,350개를 넷리스트로 옮긴 데이터셋입니다. 교과서: Razavi, Gray·Hurst·Lewis·Meyer, Allen·Holberg, Johns·Martin, Camenzind. AnalogFed, AnalogToBi 등 후속 연구도 기준 데이터로 씁니다.</div>
+      <div class="kv2" id="libSummary"></div>
+      <p class="note">학습 구조마다 어느 책·묶음에서 왔는지는 아래 "학습에 쓴 구조" 지도에서 볼 수 있습니다.</p>
+    </div>
     <div class="panel"><h3>학습 데이터가 만들어진 길</h3><div class="flow" id="flow"></div></div>
     <div class="cols3" id="model"></div>
+    <div class="panel" id="libPanel">
+      <h3>학습에 쓴 구조 <span id="libCount"></span>개: 어디서 왔고, 모델이 무엇을 다시 썼나</h3>
+      <p class="note">네모 하나가 학습 구조 하나입니다. 진한 파랑은 이번 후보가 그대로 쓴 구조, 옅은 파랑은 이번 후보가 고쳐 쓴(가장 비슷한) 구조입니다. 네모를 누르면 출처와 구조 표가 나오고, 교과서 회로는 책 원본 그림도 나옵니다.</p>
+      <div class="libbar" id="libBar"></div>
+      <div class="libwrap"><div class="libgroups" id="libGroups"></div><div class="libdetail" id="libDetail"></div></div>
+      <details class="sizing"><summary>이 데이터셋은 믿을 만한가 (눌러서 펼치기)</summary><div class="body" id="libTrust"></div></details>
+    </div>
     <div class="panel"><h3>모델이 실제로 쓴 결과: <span id="genTitle"></span></h3>
       <p class="note">모델은 구조를 글 한 줄로 씁니다. 세미콜론(;)으로 나뉜 조각 하나가 소자 하나이고, 각 조각은 소자 이름과 단자별 연결 노드입니다. 이 글을 조각별로 펼친 것이 아래 구조 표입니다. 표의 줄이나 글 조각에 마우스를 올리면 서로 짝이 표시됩니다.</p>
       <div id="genExample"></div></div>
@@ -318,7 +349,7 @@ section { gap: 12px; }
 
   <section id="s3" class="stage">
     <h2><span class="n">3</span>후보 <span id="candCount"></span>개를 하나씩 확인</h2>
-    <p class="muted">후보마다 1 규칙 검사, 2 크기 정하기(출력단 전류 1배와 5배), 3 동작 판정, 4 스펙 판정을 거칩니다. 타일을 누르면 아래 5번에 그 후보의 과정이 나옵니다.</p>
+    <p class="muted">후보마다 1 규칙 검사, 2 크기 정하기(출력단 전류 1·5·20·50배), 3 동작 판정, 4 스펙 판정을 거칩니다. 타일을 누르면 아래 5번에 그 후보의 과정이 나옵니다.</p>
     <div class="legend">
       <span><i style="background:var(--pass)"></i>동작 (숫자는 <span class="nj"></span>개 중 통과 수)</span>
       <span><i style="background:var(--fail)"></i>크기 정하기·동작 판정 탈락</span>
@@ -340,14 +371,14 @@ section { gap: 12px; }
             <li>전류원 하나당 20 µA, VB 단자에는 그 gm/ID에 맞는 게이트 전압을 넣습니다.</li>
             <li>폭 10 µm에서 시작해 ngspice 동작점 → 실제 전류 → GF180 특성표로 폭 다시 계산을 반복합니다 (변화 5% 안 또는 8번). 100 µm가 넘으면 병렬 개수(×m)로 나눕니다.</li>
             <li>꺼진 소자(1 nA 미만), 포화 영역 밖 소자, 버퍼 출력이 2.5 V ± 0.5 V를 벗어나는지 확인합니다.</li>
-            <li>출력(OUT)에 붙은 트랜지스터만 처음 폭을 1배·5배 두 가지로 해 보고 통과 항목이 많은 쪽을 씁니다. +/− 입력 방향도 두 가지를 다 해 보고 출력이 가운데에 서는 쪽을 고릅니다.</li>
+            <li>출력(OUT)에 붙은 트랜지스터만 처음 폭을 1배·5배·20배·50배로 해 보고 통과 항목이 많은 쪽을 씁니다 (학습 데이터는 1배·5배만 씀. mA 단위 출력 전류를 내려면 출력단이 커야 해서 선택할 때는 20배·50배도 봅니다). +/− 입력 방향도 두 가지를 다 해 보고 출력이 가운데에 서는 쪽을 고릅니다.</li>
           </ol></div>
         <div><h4>이번 결과에서 보이는 문제</h4><ol id="sizingIssues"></ol></div>
         <div><h4>방법 자체의 한계</h4>
           <ol>
             <li>목표값을 보지 않습니다. 이득이 부족해도 길이를 늘리는 식으로 조정하지 않습니다.</li>
             <li>저항 10 kΩ, 보상 커패시터 1 pF가 고정이라 대역폭·위상여유가 맞춰지지 않습니다.</li>
-            <li>전류원 전류가 20 µA로 고정이라 공급 전류가 목표에 맞춰지지 않습니다. 출력단은 1배·5배 두 가지만 봅니다.</li>
+            <li>전류원 전류가 20 µA로 고정이라 공급 전류가 목표에 맞춰지지 않습니다. 출력단은 1·5·20·50배 네 가지만 봅니다.</li>
             <li>VB·IB 바이어스 단자는 이상적인 전원으로 채웁니다. 실제 칩이라면 바이어스 회로까지 있어야 해서 결과가 실제보다 좋게 나옵니다.</li>
             <li>전원 5 V, 입력 2.5 V 한 조건만 봅니다. 데이터시트는 대부분 15 V 조건이고, 입력이 0 V 근처까지 동작하는지·온도·공정 변화는 보지 않습니다.</li>
             <li>역할 판단이 연결 모양 규칙이라 처음 보는 구조에서는 잘못 매길 수 있습니다.</li>
@@ -489,12 +520,19 @@ function renderInput() {
   const X = DATA.extraction;
   if (X) {
     $("srcbox").hidden = false;
-    $("srcbox").innerHTML = `<span class="badge">출처: 데이터시트 분석 시스템 결과물 (팀원) · 특성 표(HKG)</span>
+    $("srcbox").innerHTML = `<span class="badge">출처: 데이터시트 분석 시스템 결과물 (팀원) · ${X.plan ? "측정 계획(spec_planner) + 특성 표(HKG)" : "특성 표(HKG)"}</span>
       <div>${esc((X.device || {}).name || DATA.part)} 데이터시트를 데이터시트 분석 시스템이 읽어 만든 특성 표에서 목표값을 가져왔습니다. 아래 카드마다 그 결과물의 원래 값과 데이터시트 쪽 번호를 적었습니다.</div>
       <div class="kv2"><span>결과물 파일 <b>${esc(X.file)}</b></span><span>추출된 줄 <b>${X.total_rows}</b></span>
         <span>그중 전기 특성 <b>${X.electrical_rows}</b></span><span>목표값으로 쓴 줄 <b>${X.used_rows}</b></span>
         ${X.missing && X.missing.length ? `<span>데이터시트에 없어 뺀 항목 <b>${esc(X.missing.join(", "))}</b></span>` : ""}</div>
-      <p class="note">단위 바꾸기(예: V/mV → dB)와 출력 전압 계산(전원 5 V에서 떨어지는 폭을 뺌)은 이쪽 변환 스크립트(spec_from_hkg.py)가 했습니다. 그 시스템의 포트 의존성 그래프(PDG)는 핀 관계와 검증 순서를 담는 것이라 목표값에는 쓰지 않았습니다.</p>`;
+      ${X.plan ? `<div class="kv2"><span>판정 항목 출처 <b>측정 계획(spec_planner) 결과물 (팀원)</b></span><span>파일 <b>${esc(X.plan.file)}</b></span>
+        <span>계획된 줄 <b>${X.plan.planned_rows}</b></span><span>그중 ${esc((X.device || {}).name || DATA.part)} 구간 <b>${X.plan.part_planned}</b></span><span>판정 항목 <b>${X.plan.used}</b></span></div>
+      <details><summary>계획에는 있지만 판정하지 않는 항목 ${X.plan.not_measured.length + X.plan.not_planned.length}개</summary>
+        <table style="margin-top:6px"><thead><tr><th>항목</th><th>계획 목표</th><th>이유</th></tr></thead><tbody>
+        ${X.plan.not_measured.map(m => `<tr><td class="mono">${esc(m.symbol)} <span class="muted">${esc(m.kind)}</span></td><td class="num">${[m.min, m.typ, m.max].map(v => v == null ? "—" : fmt(v)).join(" / ")} ${esc(m.unit)}</td><td>${esc(m.reason)}</td></tr>`).join("")}
+        ${X.plan.not_planned.map(m => `<tr><td>${esc(m.label)}</td><td>—</td><td>${esc(m.reason)}</td></tr>`).join("")}
+        </tbody></table></details>` : ""}
+      <p class="note">${X.plan ? "어떤 항목을 잴지와 dB 등 단위 정리는 측정 계획이 했고, 우리 단위(µA, MHz, mA)로 바꾸기와 출력 전압 계산(전원 5 V에서 떨어지는 폭을 뺌)은 이쪽 변환 스크립트(spec_from_plan.py)가 했습니다. 계획의 측정 전원(예: 이득·출력 전류는 15 V)과 달리 시뮬레이션은 5 V에서 합니다." : "단위 바꾸기(예: V/mV → dB)와 출력 전압 계산(전원 5 V에서 떨어지는 폭을 뺌)은 이쪽 변환 스크립트(spec_from_hkg.py)가 했습니다."} 포트 의존성 그래프(PDG)는 아래 핀 확인에 씁니다.</p>`;
   }
   const fromText = x => {
     if (!x) return "";
@@ -583,10 +621,50 @@ function renderSizingIssues() {
   $("sizingIssues").innerHTML = items.map(t => `<li>${t}</li>`).join("");
 }
 
+/* 학습 구조 지도: 출처별 묶음, 이번 후보가 그대로 쓴 것/고쳐 쓴 것 */
+function renderLibrary() {
+  const T = DATA.training;
+  $("libCount").textContent = T.length;
+  { const n = g => T.filter(t => t.group === g).length;
+    $("libSummary").innerHTML = `<span>학습 구조 <b>${T.length}</b></span><span>교과서 회로 <b>${n("교과서")}</b> (책 쪽·원본 그림 있음)</span><span>논문 묶음 <b>${n("논문 묶음")}</b> (논문 이름 표시 없음)</span><span>직접 만든 블록 <b>${n("직접 만든 블록")}</b></span>`; }
+  const same = {}, near = {};
+  E.forEach(e => { const n = e.nearest.name, m = (e.in_train && !e.nearest.added.length && !e.nearest.removed.length) ? same : near; m[n] = [...(m[n] || []), e.no]; });
+  const groups = [["논문 묶음", "#8a6fc9"], ["교과서", "#2e8b57"], ["직접 만든 블록", "#c9822e"], ["기타", "#888"]].filter(([g]) => T.some(t => t.group === g));
+  $("libBar").innerHTML = groups.map(([g, c]) => { const n = T.filter(t => t.group === g).length; return `<span style="width:${100 * n / T.length}%;background:${c}" title="${g} ${n}개">${g} ${n}</span>`; }).join("");
+  $("libGroups").innerHTML = groups.map(([g]) => {
+    const list = T.map((t, i) => [t, i]).filter(([t]) => t.group === g);
+    const books = [...new Set(list.map(([t]) => t.book))];
+    return `<div class="libgroup"><h4>${g} <span class="muted">${list.length}개${g === "교과서" ? " · " + books.length + "권" : ""}</span></h4><div class="libtiles">${list.map(([t, i]) =>
+      `<button class="lt ${same[t.name] ? "same" : near[t.name] ? "near" : ""}" data-i="${i}" title="${esc(t.name)} · 트랜지스터 ${t.rows.filter(r => /^[NP]M/.test(r)).length}개${same[t.name] ? " · 후보 " + same[t.name].join(", ") + "가 그대로 씀" : ""}" aria-label="${esc(t.name)}"></button>`).join("")}</div></div>`;
+  }).join("");
+  const show = i => {
+    const t = T[i];
+    $("libGroups").querySelectorAll(".lt").forEach(b => b.classList.toggle("on", +b.dataset.i === i));
+    const used = same[t.name], nearBy = near[t.name];
+    $("libDetail").innerHTML = `<div><b>${esc(t.name)}</b> <span class="muted">· ${esc(t.group)}</span></div>
+      <div>${esc(t.book)}${t.page ? ` · ${esc(t.page)}쪽` : ""}</div>
+      <div>트랜지스터 ${t.rows.filter(r => /^[NP]M/.test(r)).length}개 · 소자 ${t.rows.length}개 · 자동 크기로 잰 ${PART} 판정 ${t.passed}/${NJ}</div>
+      ${used ? `<div style="color:var(--accent)"><b>이번 후보 ${used.join(", ")}가 이 구조를 그대로 썼습니다.</b></div>` : ""}
+      ${nearBy ? `<div style="color:var(--accent)">이번 후보 ${nearBy.join(", ")}가 이 구조를 고쳐 썼습니다 (가장 비슷한 학습 구조).</div>` : ""}
+      ${t.image ? `<img alt="책 원본 그림" src="data:image/png;base64,${t.image}">` : `<p class="note">${t.group === "논문 묶음" ? "이 묶음은 원본 그림·논문 이름이 데이터셋에 없습니다." : "원본 그림 없음"}</p>`}
+      <div class="rowsbox">${t.rows.map(r => esc(r)).join("<br>")}</div>`;
+  };
+  $("libGroups").addEventListener("click", ev => { const b = ev.target.closest(".lt"); if (b) show(+b.dataset.i); });
+  const first = T.findIndex(t => same[t.name]); show(first >= 0 ? first : 0);
+  const n = g => T.filter(t => t.group === g).length;
+  $("libTrust").innerHTML = `<ol>
+    <li><b>출처</b>: AnalogGenie (ICLR 2025, Northeastern·George Washington 대학). 교과서와 논문에 실린 아날로그 회로 3,350개를 넷리스트로 옮긴 공개 데이터셋입니다 (MIT 라이선스).</li>
+    <li><b>교과서 회로</b>: 회로마다 책 쪽 번호와 원본 그림 캡처가 같이 있어 확인할 수 있습니다. 우리 학습 구조 중 ${n("교과서")}개입니다.</li>
+    <li><b>논문 묶음</b>: "opamp papers" 400개는 논문 이름·쪽·그림이 데이터셋에 없어 어느 논문인지 확인할 수 없습니다. 우리 학습 구조 중 ${n("논문 묶음")}개가 여기서 왔습니다.</li>
+    <li><b>우리가 거른 것</b>: OP-Amp 범위 568개 중 출력 하나·트랜지스터·R·C만 있는 435개를 남기고, 자동 크기 정하기로 "동작"한 것만 썼습니다. 교과서 회로가 적게 남은 이유는 완전 차동, 이상 전류원 같은 그림용 회로가 많기 때문입니다.</li>
+    <li><b>"자주 쓰는 구조"를 고른 것은 아닙니다</b>: 걸러진 구조를 모두 같은 비중으로 넣었습니다. 모델이 "그대로 쓴" 구조는 많이 쓰이는 구조라서가 아니라 이 학습 세트에 있던 구조입니다.</li>
+    <li><b>정리</b>: 회로 모양 자체는 사람이 그린 실제 회로라 믿을 만하지만, 논문 묶음은 출처를 따라가 확인할 수 없다는 한계가 있습니다. 발표에서 이 점을 같이 말하는 것이 안전합니다.</li></ol>`;
+}
+
 function renderModel() {
   const t = DATA.train, n = DATA.eval_count;
   $("flow").innerHTML = [
-    ["AnalogGenie 회로", "568개 중 OP-Amp 435개"], ["직접 만든 블록", "15개 구조"],
+    ["AnalogGenie 회로 (ICLR 2025)", "568개 중 OP-Amp 435개"], ["직접 만든 블록", "15개 구조"],
     ["구조 표로 변환", "NM1 D=OUT G=IN1 S=N6 B=VSS"], ["자동 크기 정하기", "gm/ID, 출력단 1배·5배"],
     ["ngspice 측정", "15개 항목"], ["동작한 것만", `${t.structures}개 구조`], ["학습 문장", `${t.train.toLocaleString()} + 검증 ${t.val}`],
   ].map(([b, c], i) => `${i ? '<span class="arrow">→</span>' : ""}<div class="box"><b>${b}</b><code>${esc(c)}</code></div>`).join("");
@@ -819,7 +897,7 @@ function showDetail(i, scale) {
     const by = Object.fromEntries(v.spec.map(s => [s.measure, s]));
     $("specTable").innerHTML = `<table><thead><tr><th>항목</th><th>목표</th><th>측정</th><th>판정</th></tr></thead><tbody>${DATA.spec.map(s => {
       const c = by[s.measure];
-      return `<tr><td>${esc(s.label)}</td><td class="num">${esc(s.target)}</td><td class="num">${c ? fmt(c.value) + " " + esc(s.unit) : "—"}</td><td class="st ${c ? c.status : "미측정"}">${c ? (c.status === "PASS" ? "통과" : c.status === "FAIL" ? "미달" : "재지 못함") : "—"}</td></tr>`;
+      return `<tr><td>${esc(s.label)}</td><td class="num">${esc(s.target)}</td><td class="num">${c ? fmt(c.value) + " " + esc(s.unit) + (/^voh/.test(s.measure) && c.value < 0 ? ' <span class="note">(부하 전류를 못 내 출력이 올라가지 못함)</span>' : "") : "—"}</td><td class="st ${c ? c.status : "미측정"}">${c ? (c.status === "PASS" ? "통과" : c.status === "FAIL" ? "미달" : "재지 못함") : "—"}</td></tr>`;
     }).join("")}</tbody></table>`;
   } else {
     $("specTable").innerHTML = `<p class="empty">${e.state === "waiting" ? "아직 시뮬레이션하지 않았습니다." : "동작하지 않아 스펙을 재지 않았습니다."}</p>`;
@@ -989,7 +1067,7 @@ document.addEventListener("keydown", ev => {
 $("pick").innerHTML = E.map((e, i) => `<option value="${i}">${e.no} · ${esc(outcome(e).res)}${i === selectedIdx ? " (선택)" : ""}</option>`).join("");
 $("pick").addEventListener("change", ev => showDetail(+ev.target.value));
 
-renderHeader(); renderInput(); renderPdg(); renderModel(); renderGenExample(); renderSizingIssues();
+renderHeader(); renderInput(); renderPdg(); renderModel(); renderLibrary(); renderGenExample(); renderSizingIssues();
 $("schemZoom").addEventListener("click", ev => { const on = $("schem").classList.toggle("full"); ev.target.setAttribute("aria-pressed", on); ev.target.textContent = on ? "화면에 맞추기" : "원래 크기로 보기"; }); renderReasons(); renderNovelty(); renderHist();
 showDetail(selectedIdx ?? 0);
 </script>

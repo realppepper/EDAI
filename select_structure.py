@@ -60,6 +60,39 @@ def spec_rows(measured: dict, spec: dict) -> list:
             for r in rows if r["status"] in kept]
 
 
+# 구조 선택에서 해 보는 (전류원 전류, 출력단 배율). 학습 데이터(label_dataset.VARIANTS)는 1배·5배만 썼지만,
+# 데이터시트 부품은 출력 전류가 mA 단위라 선택할 때는 출력단을 더 크게도 해 본다.
+EXTRA_SCALES = (20.0, 50.0)
+SELECT_VARIANTS = tuple(label_dataset.VARIANTS) + tuple((label_dataset.VARIANTS[0][0], s) for s in EXTRA_SCALES)
+
+
+def evaluate_variant(table: dict, unit_current: float, output_scale: float, spec: dict) -> dict:
+    """크기 정하기 한 번과 스펙 판정."""
+    record = label_dataset.label(table, None, unit_current, output_scale)
+    variant = {"output_scale": output_scale, "op_ok": record["op_ok"], "valid": record["valid"],
+               "reason": record["reason"], "off": record.get("off"), "triode": record.get("triode"),
+               "startup": record.get("startup"), "sizes": record.get("sizes"), "subckt": record.get("subckt"),
+               "seconds": record["seconds"]}
+    if record["valid"]:
+        rows = spec_rows(record["measured"], spec)
+        variant.update(measured=record["measured"], spec=rows,
+                       passed=sum(r["status"] == run_sim.STATUS_PASS for r in rows), judged=len(rows))
+    return variant
+
+
+def finish_entry(entry: dict) -> dict:
+    """변형들 중 가장 좋은 것을 best 로."""
+    working = [v for v in entry["variants"] if v["valid"]]
+    entry["steps"]["sizing"] = {"ok": bool(working),
+                                "reasons": [v["reason"] for v in entry["variants"] if not v["valid"]]}
+    entry.pop("best", None)
+    if working:
+        best = max(working, key=rank_key)
+        entry["best"] = {"output_scale": best["output_scale"], "passed": best["passed"], "judged": best["judged"],
+                         "idd": best["measured"].get("idd")}
+    return entry
+
+
 def evaluate_candidate(candidate: dict, spec: dict) -> dict:
     """후보 하나를 1~4단계로 평가한 기록."""
     entry = {"how": candidate.get("how"), "in_train": candidate.get("in_train"), "table": candidate["table"],
@@ -74,25 +107,35 @@ def evaluate_candidate(candidate: dict, spec: dict) -> dict:
                                "transistors": sum(r["kind"] in ("nmos", "pmos") for r in table["rows"])}
     if problems:
         return entry
-    for unit_current, output_scale in label_dataset.VARIANTS:
-        record = label_dataset.label(table, None, unit_current, output_scale)
-        variant = {"output_scale": output_scale, "op_ok": record["op_ok"], "valid": record["valid"],
-                   "reason": record["reason"], "off": record.get("off"), "triode": record.get("triode"),
-                   "startup": record.get("startup"), "sizes": record.get("sizes"), "subckt": record.get("subckt"),
-                   "seconds": record["seconds"]}
-        if record["valid"]:
-            rows = spec_rows(record["measured"], spec)
-            variant.update(measured=record["measured"], spec=rows,
-                           passed=sum(r["status"] == run_sim.STATUS_PASS for r in rows), judged=len(rows))
-        entry["variants"].append(variant)
-    working = [v for v in entry["variants"] if v["valid"]]
-    entry["steps"]["sizing"] = {"ok": bool(working),
-                                "reasons": [v["reason"] for v in entry["variants"] if not v["valid"]]}
-    if working:
-        best = max(working, key=rank_key)
-        entry["best"] = {"output_scale": best["output_scale"], "passed": best["passed"], "judged": best["judged"],
-                         "idd": best["measured"].get("idd")}
-    return entry
+    for unit_current, output_scale in SELECT_VARIANTS:
+        entry["variants"].append(evaluate_variant(table, unit_current, output_scale, spec))
+    return finish_entry(entry)
+
+
+def add_scales(part: str) -> None:
+    """이미 판정한 결과에 빠진 출력단 배율만 더 돌려 합친다 (처음부터 다시 돌리지 않음)."""
+    out_file = HERE / "data" / f"selection_{part}.json"
+    result = json.loads(out_file.read_text(encoding="utf-8"))
+    spec = run_sim.load_spec(HERE / f"spec_{part}.json")
+    started = time.time()
+    for number, entry in enumerate(result["entries"], 1):
+        if not entry["steps"]["rules"]["ok"]:
+            continue
+        table = to_table(entry["table"])
+        have = {v["output_scale"] for v in entry["variants"]}
+        for unit_current, output_scale in SELECT_VARIANTS:
+            if output_scale not in have:
+                entry["variants"].append(evaluate_variant(table, unit_current, output_scale, spec))
+        finish_entry(entry)
+        b = entry.get("best")
+        print(f"  후보 {number}: " + (f"{b['passed']}/{b['judged']} (출력단 {b['output_scale']:g}배)" if b else "동작 안 함"), flush=True)
+        result["summary"] = summarize(result["entries"])
+        out_file.write_text(json.dumps(result, ensure_ascii=False, indent=1), encoding="utf-8")
+    s = result["summary"]
+    print(f"동작 {s['working']} (학습에 없던 구조 {s['new_working']})  {time.time() - started:.0f} s")
+    if s["selected"] is not None:
+        e = result["entries"][s["selected"]]
+        print(f"선택: 후보 {s['selected'] + 1}, {e['best']['passed']}/{e['best']['judged']} 통과 (출력단 {e['best']['output_scale']:g}배)")
 
 
 def rank_key(variant: dict) -> tuple:
@@ -114,6 +157,9 @@ def summarize(entries: list) -> dict:
 
 def main() -> None:
     part = sys.argv[1] if len(sys.argv) > 1 else DEFAULT_PART
+    if "--add-scales" in sys.argv:
+        add_scales(part)
+        return
     source = HERE / "data" / "train" / f"{part}_candidates.json"
     out_file = HERE / "data" / f"selection_{part}.json"
     data = json.loads(source.read_text(encoding="utf-8"))

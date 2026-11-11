@@ -1,9 +1,9 @@
 {
- "description": "LM358B 데이터시트 추출 결과(analogverifier)를 OP-Amp 공통 측정 항목으로 옮긴 것 (spec_from_hkg.py 가 만듦)",
+ "description": "LM358B 측정 계획(팀원 spec_planner 결과)에서 판정 항목과 목표값을 가져온 것 (spec_from_plan.py 가 만듦)",
  "circuit": "opamp",
  "source": "LM358B",
  "category": "Operational Amplifier",
- "conditions": "VDD = 5 V 단일 전원 (공통 측정 조건). 데이터시트 조건과 다를 수 있음",
+ "conditions": "VDD = 5 V 단일 전원 (공통 측정 조건). 계획의 측정 전원(예: 15 V)과 다를 수 있음",
  "typ_rule": {
   "min_ratio": 0.8,
   "max_ratio": 1.2,
@@ -30,6 +30,11 @@
     "test_conditions": "VS = 15 V; VO = 1 V to 11 V; RL >= 10 kOhm connected to (V-)",
     "page": 6,
     "evidence": "AOL | Open-loop voltage gain | VS = 15 V; VO = 1 V to 11 V; RL ≥ 10 kΩ, connected to (V–)"
+   },
+   "plan": {
+    "kind": "aol_db",
+    "fixture": "aol_db_90f6b5",
+    "row": 85
    }
   },
   {
@@ -51,6 +56,11 @@
     "test_conditions": "(V-) <= VCM <= (V+) - 1.5 V, VS = 3 V to 36 V",
     "page": 6,
     "evidence": "(V–) ≤ VCM ≤ (V+) – 1.5 V VS = 3 V to 36 V | 20{TYP} | 100{MAX}"
+   },
+   "plan": {
+    "kind": "cmrr_db",
+    "fixture": "cmrr_db_29810e",
+    "row": 74
    }
   },
   {
@@ -72,6 +82,11 @@
     "test_conditions": "VS = 5 V to 36 V, TA = 25C",
     "page": 6,
     "evidence": "PSRR Power supply rejection ratio | ±2{TYP} | 15{MAX} µV/V"
+   },
+   "plan": {
+    "kind": "psrr_db",
+    "fixture": "psrr_db_768c7d",
+    "row": 70
    }
   },
   {
@@ -95,6 +110,11 @@
     "test_conditions": "LM358B, LM358BA, VS = 5 V, IO = 0 A, VCM = VOUT = VS / 2, RL = 10k connected to VS / 2, TA = 25°C",
     "page": 7,
     "evidence": "IQ | Quiescent current per amplifier | VS = 5 V; IO = 0 A | 300{TYP} | 460{MAX} | µA"
+   },
+   "plan": {
+    "kind": "iq",
+    "fixture": "iq_e82773",
+    "row": 107
    }
   },
   {
@@ -118,6 +138,11 @@
     "test_conditions": "VS = 5 V to 36 V, TA = 25C",
     "page": 6,
     "evidence": "GBW | Gain bandwidth product | 1.2{TYP} | MHz"
+   },
+   "plan": {
+    "kind": "gbw",
+    "fixture": "gbw_705c1b",
+    "row": 87
    }
   },
   {
@@ -141,6 +166,11 @@
     "test_conditions": "G = +1",
     "page": 6,
     "evidence": "SR | Slew rate | G = + 1 | 0.5{TYP} | V/µs"
+   },
+   "plan": {
+    "kind": "sr",
+    "fixture": "sr_44dacc",
+    "row": 88
    }
   },
   {
@@ -162,36 +192,11 @@
     "test_conditions": "G = +1, RL = 10 kOhm, CL = 20 pF",
     "page": 6,
     "evidence": "Θm | Phase margin | G = + 1, RL = 10kΩ, CL = 20 pF | 56{TYP} | °"
-   }
-  },
-  {
-   "measure": "gm",
-   "label": "이득여유",
-   "unit": "dB",
-   "plain": "안정성에 여유가 얼마나 있나",
-   "scope": "excluded",
-   "reason": "데이터시트(추출 결과)에 이 항목이 없음"
-  },
-  {
-   "measure": "ts",
-   "label": "정착시간 (0.1%)",
-   "unit": "µs",
-   "scale": 1000000.0,
-   "plain": "출력이 얼마나 빨리 자리 잡나",
-   "typ": 4.0,
-   "typ_rule": "lower",
-   "symbol": "ts",
-   "condition": "To 0.1%, VS = 5 V, 2-V step, G = +1, CL = 100 pF",
-   "extracted": {
-    "symbol": "ts",
-    "name": "Settling time",
-    "min": null,
-    "typ": 4,
-    "max": null,
-    "unit": "us",
-    "test_conditions": "To 0.1%, VS = 5 V, 2-V step, G = +1, CL = 100 pF",
-    "page": 6,
-    "evidence": "ts | Settling time | To 0.1%, VS = 5 V, 2-V step , G = +1, CL = 100 pF | 4{TYP} | µs"
+   },
+   "plan": {
+    "kind": "pm",
+    "fixture": "pm_4f5b8e",
+    "row": 89
    }
   },
   {
@@ -213,6 +218,11 @@
     "test_conditions": "IOUT = 1 mA",
     "page": 6,
     "evidence": "IOUT = 1 mA | 1.4{TYP} | 1.48{MAX} | V"
+   },
+   "plan": {
+    "kind": "vswing",
+    "fixture": "vswing_9b65ae",
+    "row": 94
    }
   },
   {
@@ -234,6 +244,11 @@
     "test_conditions": "IOUT = 5 mA",
     "page": 6,
     "evidence": "IOUT = 5 mA(1) | 1.5{TYP} | 1.61{MAX} | V"
+   },
+   "plan": {
+    "kind": "vswing",
+    "fixture": "vswing_404cf6",
+    "row": 95
    }
   },
   {
@@ -255,15 +270,12 @@
     "test_conditions": "IOUT = 1 mA",
     "page": 6,
     "evidence": "IOUT = 1 mA | 0.75{TYP} | 1{MAX} | V"
+   },
+   "plan": {
+    "kind": "vswing",
+    "fixture": "vswing_9b65ae",
+    "row": 97
    }
-  },
-  {
-   "measure": "vol_5ma",
-   "label": "Low 출력 전압 (IOL = 5 mA)",
-   "unit": "V",
-   "plain": "무거운 부하에서 출력을 얼마나 낮게 내리나",
-   "scope": "excluded",
-   "reason": "데이터시트(추출 결과)에 이 항목이 없음"
   },
   {
    "measure": "io_source",
@@ -286,6 +298,11 @@
     "test_conditions": "VS = 15 V; VO = V-; VID = 1 V",
     "page": 6,
     "evidence": "VS = 15 V; VO = V–; | -20{MIN} | -30{TYP} Source(1) VID = 1 V"
+   },
+   "plan": {
+    "kind": "iout",
+    "fixture": "iout_a18135",
+    "row": 99
    }
   },
   {
@@ -308,1842 +325,145 @@
     "test_conditions": "VS = 15 V; VO = V+; VID = -1 V",
     "page": 6,
     "evidence": "VS = 15 V; VO = V+; | 10{MIN} | 20{TYP} Sink(1) VID = –1 V"
+   },
+   "plan": {
+    "kind": "iout",
+    "fixture": "iout_2d9693",
+    "row": 101
    }
   }
  ],
  "extraction": {
   "total_rows": 260,
   "electrical_rows": 179,
-  "used_rows": 13,
+  "used_rows": 12,
   "pins": 8,
   "file": "LM358B_knowledge_graph.json"
  },
- "unused": [
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": 0.3,
-   "max": 3.0,
-   "unit": "mV",
-   "test_conditions": "LM358B, VS = 5 V to 36 V, TA = 25C",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": null,
-   "max": 4,
-   "unit": "mV",
-   "test_conditions": "LM358B, TA = -40C to +85C",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": null,
-   "max": 2.0,
-   "unit": "mV",
-   "test_conditions": "LM358BA, VS = 5 V to 36 V, TA = 25C",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": null,
-   "max": 2.5,
-   "unit": "mV",
-   "test_conditions": "LM358BA, TA = -40C to +85C",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "dVOS/dT",
-   "name": "Input offset voltage drift",
-   "min": null,
-   "typ": 3.5,
-   "max": 11,
-   "unit": "uV/C",
-   "test_conditions": "TA = -40C to +85C",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "Channel separation, dc",
-   "name": "Channel separation, dc",
-   "min": null,
-   "typ": 1,
-   "max": null,
-   "unit": "uV/V",
-   "test_conditions": "f = 1 kHz to 20 kHz",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "CMRR",
-   "name": "Common-mode rejection ratio",
-   "min": null,
-   "typ": 25,
-   "max": 316,
-   "unit": "uV/V",
-   "test_conditions": "(V-) <= VCM <= (V+) - 2.0 V, VS = 5 V to 36 V, TA = -40C to +85C",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IB",
-   "name": "Input bias current",
-   "min": null,
-   "typ": -10,
-   "max": -35,
-   "unit": "nA",
-   "test_conditions": "VS = 5 V to 36 V, TA = 25C",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IB",
-   "name": "Input bias current",
-   "min": null,
-   "typ": null,
-   "max": -50,
-   "unit": "nA",
-   "test_conditions": "TA = -40C to +85C",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IOS",
-   "name": "Input offset current",
-   "min": null,
-   "typ": 0.5,
-   "max": 4,
-   "unit": "nA",
-   "test_conditions": "VS = 5 V to 36 V, TA = 25C",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IOS",
-   "name": "Input offset current",
-   "min": null,
-   "typ": null,
-   "max": 5,
-   "unit": "nA",
-   "test_conditions": "TA = -40C to +85C",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "dIOS/dT",
-   "name": "Input offset current drift",
-   "min": null,
-   "typ": 10,
-   "max": null,
-   "unit": "pA/C",
-   "test_conditions": "TA = -40C to +85C",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "En",
-   "name": "Input voltage noise",
-   "min": null,
-   "typ": 3,
-   "max": null,
-   "unit": "uVPP",
-   "test_conditions": "f = 0.1 to 10 Hz",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "en",
-   "name": "Input voltage noise density",
-   "min": null,
-   "typ": 40,
-   "max": null,
-   "unit": "nV/sqrt(Hz)",
-   "test_conditions": "f = 1 kHz",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "ZID",
-   "name": "Differential input impedance",
-   "min": null,
-   "typ": 10,
-   "max": null,
-   "unit": "MOhm || pF",
-   "test_conditions": "VS = 5 V to 36 V, TA = 25C",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "ZIC",
-   "name": "Common-mode input impedance",
-   "min": null,
-   "typ": 4,
-   "max": null,
-   "unit": "GOhm || pF",
-   "test_conditions": "VS = 5 V to 36 V, TA = 25C",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "AOL",
-   "name": "Open-loop voltage gain",
-   "min": 35,
-   "typ": null,
-   "max": null,
-   "unit": "V/mV",
-   "test_conditions": "VS = 15 V; VO = 1 V to 11 V; RL >= 10 kOhm connected to (V-), TA = -40C to +85C",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "tOR",
-   "name": "Overload recovery time",
-   "min": null,
-   "typ": 10,
-   "max": null,
-   "unit": "us",
-   "test_conditions": "VIN x gain > VS",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "THD+N",
-   "name": "Total harmonic distortion + noise",
-   "min": null,
-   "typ": 0.001,
-   "max": null,
-   "unit": "%",
-   "test_conditions": "G = +1, f = 1 kHz, VO = 3.53 VRMS, VS = 36 V, RL = 100k, IOUT <= +/-50 uA, BW = 80 kHz",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail (Positive rail (V+))",
-   "min": null,
-   "typ": 1.35,
-   "max": 1.42,
-   "unit": "V",
-   "test_conditions": "IOUT = 50 uA",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail (Negative rail (V-))",
-   "min": null,
-   "typ": 100,
-   "max": 150,
-   "unit": "mV",
-   "test_conditions": "IOUT = 50 uA",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail",
-   "min": null,
-   "typ": 5,
-   "max": 20,
-   "unit": "mV",
-   "test_conditions": "VS = 5 V, RL <= 10 kOhm connected to (V-), TA = -40C to +85C",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current (Source)",
-   "min": -10,
-   "typ": null,
-   "max": null,
-   "unit": "mA",
-   "test_conditions": "VS = 15 V; VO = V-; VID = 1 V, TA = -40C to +85C",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current (Sink)",
-   "min": 5,
-   "typ": null,
-   "max": null,
-   "unit": "mA",
-   "test_conditions": "VS = 15 V; VO = V+; VID = -1 V, TA = -40C to +85C",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current (Sink)",
-   "min": 60,
-   "typ": 100,
-   "max": null,
-   "unit": "uA",
-   "test_conditions": "VID = -1 V; VO = (V-) + 200 mV",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "ISC",
-   "name": "Short-circuit current",
-   "min": null,
-   "typ": 40,
-   "max": 60,
-   "unit": "mA",
-   "test_conditions": "VS = 20 V, (V+) = 10 V, (V-) = -10 V, VO = 0 V",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "CLOAD",
-   "name": "Capacitive load drive",
-   "min": null,
-   "typ": 100,
-   "max": null,
-   "unit": "pF",
-   "test_conditions": "VS = 5 V to 36 V, TA = 25C",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "RO",
-   "name": "Open-loop output resistance",
-   "min": null,
-   "typ": 300,
-   "max": null,
-   "unit": "Ohm",
-   "test_conditions": "f = 1 MHz, IO = 0 A",
-   "page": 6,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IQ",
-   "name": "Quiescent current per amplifier",
-   "min": null,
-   "typ": null,
-   "max": 800,
-   "unit": "µA",
-   "test_conditions": "LM358B, LM358BA, VS = 36 V, IO = 0 A, VCM = VOUT = VS / 2, RL = 10k connected to VS / 2, TA = -40°C to +85°C",
-   "page": 7,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": 0.3,
-   "max": 3.0,
-   "unit": "mV",
-   "test_conditions": "LM2904B, VS = (V+) – (V–) = 5 V - 36 V (±2.5 V - ±18 V), TA = 25°C, VCM = VOUT = VS/2, RL = 10k connected to VS/2",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": null,
-   "max": 4,
-   "unit": "mV",
-   "test_conditions": "LM2904B, TA = –40°C to +125°C",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": null,
-   "max": 2.0,
-   "unit": "mV",
-   "test_conditions": "LM2904BA, VS = (V+) – (V–) = 5 V - 36 V (±2.5 V - ±18 V), TA = 25°C, VCM = VOUT = VS/2, RL = 10k connected to VS/2",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": null,
-   "max": 3.0,
-   "unit": "mV",
-   "test_conditions": "LM2904BA, TA = –40°C to +125°C",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "dVOS/dT",
-   "name": "Input offset voltage drift",
-   "min": null,
-   "typ": 3.5,
-   "max": 12,
-   "unit": "µV/°C",
-   "test_conditions": "TA = –40°C to +125°C",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "PSRR",
-   "name": "Power Supply Rejection Ratio",
-   "min": null,
-   "typ": 2,
-   "max": 15,
-   "unit": "µV/V",
-   "test_conditions": "VS = (V+) – (V–) = 5 V - 36 V (±2.5 V - ±18 V), TA = 25°C, VCM = VOUT = VS/2, RL = 10k connected to VS/2",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "CMRR",
-   "name": "Common-mode rejection ratio",
-   "min": null,
-   "typ": 20,
-   "max": 100,
-   "unit": "µV/V",
-   "test_conditions": "(V–) ≤ VCM ≤ (V+) – 1.5 V, VS = 3 V to 36 V",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "CMRR",
-   "name": "Common-mode rejection ratio",
-   "min": null,
-   "typ": 25,
-   "max": 316,
-   "unit": "µV/V",
-   "test_conditions": "(V–) ≤ VCM ≤ (V+) – 2.0 V, VS = 5 V to 36 V, TA = –40°C to +125°C",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IB",
-   "name": "Input bias current",
-   "min": null,
-   "typ": -10,
-   "max": -35,
-   "unit": "nA",
-   "test_conditions": "VS = (V+) – (V–) = 5 V - 36 V (±2.5 V - ±18 V), TA = 25°C, VCM = VOUT = VS/2, RL = 10k connected to VS/2",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IB",
-   "name": "Input bias current",
-   "min": null,
-   "typ": null,
-   "max": -50,
-   "unit": "nA",
-   "test_conditions": "TA = –40°C to +125°C",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IOS",
-   "name": "Input offset current",
-   "min": null,
-   "typ": 0.5,
-   "max": 4,
-   "unit": "nA",
-   "test_conditions": "VS = (V+) – (V–) = 5 V - 36 V (±2.5 V - ±18 V), TA = 25°C, VCM = VOUT = VS/2, RL = 10k connected to VS/2",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IOS",
-   "name": "Input offset current",
-   "min": null,
-   "typ": null,
-   "max": 5,
-   "unit": "nA",
-   "test_conditions": "TA = –40°C to +125°C",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "dIOS/dT",
-   "name": "Input offset current drift",
-   "min": null,
-   "typ": 10,
-   "max": null,
-   "unit": "pA/℃",
-   "test_conditions": "TA = –40°C to +125°C",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "ZID",
-   "name": "Differential",
-   "min": null,
-   "typ": 10,
-   "max": null,
-   "unit": "MΩ|| pF",
-   "test_conditions": "VS = (V+) – (V–) = 5 V - 36 V (±2.5 V - ±18 V), TA = 25°C, VCM = VOUT = VS/2, RL = 10k connected to VS/2",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "ZIC",
-   "name": "Common-mode",
-   "min": null,
-   "typ": 4,
-   "max": null,
-   "unit": "GΩ|| pF",
-   "test_conditions": "VS = (V+) – (V–) = 5 V - 36 V (±2.5 V - ±18 V), TA = 25°C, VCM = VOUT = VS/2, RL = 10k connected to VS/2",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "AOL",
-   "name": "Open-loop voltage gain",
-   "min": 70,
-   "typ": 140,
-   "max": null,
-   "unit": "V/mV",
-   "test_conditions": "VS = 15 V; VO = 1 V to 11 V; RL ≥ 10 kΩ, connected to (V-)",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "AOL",
-   "name": "Open-loop voltage gain",
-   "min": 35,
-   "typ": null,
-   "max": null,
-   "unit": "V/mV",
-   "test_conditions": "TA = –40°C to +125°C",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "GBW",
-   "name": "Gain bandwidth product",
-   "min": null,
-   "typ": 1.2,
-   "max": null,
-   "unit": "MHz",
-   "test_conditions": "VS = (V+) – (V–) = 5 V - 36 V (±2.5 V - ±18 V), TA = 25°C, VCM = VOUT = VS/2, RL = 10k connected to VS/2",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "SR",
-   "name": "Slew rate",
-   "min": null,
-   "typ": 0.5,
-   "max": null,
-   "unit": "V/µs",
-   "test_conditions": "G = + 1",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "Θm",
-   "name": "Phase margin",
-   "min": null,
-   "typ": 56,
-   "max": null,
-   "unit": "°",
-   "test_conditions": "G = + 1, RL = 10kΩ, CL = 20 pF",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "tOR",
-   "name": "Overload recovery time",
-   "min": null,
-   "typ": 10,
-   "max": null,
-   "unit": "µs",
-   "test_conditions": "VIN × gain > VS",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "ts",
-   "name": "Settling time",
-   "min": null,
-   "typ": 4,
-   "max": null,
-   "unit": "µs",
-   "test_conditions": "To 0.1%, VS = 5 V, 2-V Step , G = +1, CL = 100 pF",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "THD+N",
-   "name": "Total harmonic distortion + noise",
-   "min": null,
-   "typ": 0.001,
-   "max": null,
-   "unit": "%",
-   "test_conditions": "G = + 1, f = 1 kHz, VO = 3.53 VRMS, VS = 36V, RL = 100k, IOUT ≤ ±50µA, BW = 80 kHz",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail",
-   "min": null,
-   "typ": 1.35,
-   "max": 1.42,
-   "unit": "V",
-   "test_conditions": "Positive Rail (V+), IOUT = 50 µA",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail",
-   "min": null,
-   "typ": 1.4,
-   "max": 1.48,
-   "unit": "V",
-   "test_conditions": "Positive Rail (V+), IOUT = 1 mA",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail",
-   "min": null,
-   "typ": 1.5,
-   "max": 1.61,
-   "unit": "V",
-   "test_conditions": "Positive Rail (V+), IOUT = 5 mA",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail",
-   "min": null,
-   "typ": 100,
-   "max": 150,
-   "unit": "mV",
-   "test_conditions": "Negative Rail (V-), IOUT = 50 µA",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail",
-   "min": null,
-   "typ": 0.75,
-   "max": 1,
-   "unit": "V",
-   "test_conditions": "Negative Rail (V-), IOUT = 1 mA",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail",
-   "min": null,
-   "typ": 5,
-   "max": 20,
-   "unit": "mV",
-   "test_conditions": "VS = 5 V, RL ≤ 10 kΩ connected to (V–), TA = –40°C to +125°C",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current",
-   "min": -20,
-   "typ": -30,
-   "max": null,
-   "unit": "mA",
-   "test_conditions": "Source, VS = 15 V; VO = V-; VID = 1 V",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current",
-   "min": -10,
-   "typ": null,
-   "max": null,
-   "unit": "mA",
-   "test_conditions": "Source, TA = –40°C to +125°C",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current",
-   "min": 10,
-   "typ": 20,
-   "max": null,
-   "unit": "mA",
-   "test_conditions": "Sink, VS = 15 V; VO = V+; VID = -1 V",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current",
-   "min": 5,
-   "typ": null,
-   "max": null,
-   "unit": "mA",
-   "test_conditions": "Sink, TA = –40°C to +125°C",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "CLOAD",
-   "name": "Capacitive load drive",
-   "min": null,
-   "typ": 100,
-   "max": null,
-   "unit": "pF",
-   "test_conditions": "VS = (V+) – (V–) = 5 V - 36 V (±2.5 V - ±18 V), TA = 25°C, VCM = VOUT = VS/2, RL = 10k connected to VS/2",
-   "page": 8,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IQ",
-   "name": "Quiescent current per amplifier",
-   "min": 300,
-   "typ": null,
-   "max": 460,
-   "unit": "µA",
-   "test_conditions": "VS = 5 V; IO = 0 A, TA = –40°C to +125°C, VCM = VOUT = VS/2, RL = 10k connected to VS/2",
-   "page": 9,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IQ",
-   "name": "Quiescent current per amplifier",
-   "min": null,
-   "typ": 800,
-   "max": null,
-   "unit": "µA",
-   "test_conditions": "VS = 36 V; IO = 0 A, TA = 25°C, VCM = VOUT = VS/2, RL = 10k connected to VS/2",
-   "page": 9,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": 3,
-   "max": 7,
-   "unit": "mV",
-   "test_conditions": "VS = 5 V to 30 V; VC = 0 V; VO = 1.4 V, LM358",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": null,
-   "max": 9,
-   "unit": "mV",
-   "test_conditions": "VS = 5 V to 30 V; VC = 0 V; VO = 1.4 V, TA = 0°C to 70°C, LM358",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": 2,
-   "max": 3,
-   "unit": "mV",
-   "test_conditions": "VS = 5 V to 30 V; VC = 0 V; VO = 1.4 V, LM358A",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": null,
-   "max": 5,
-   "unit": "mV",
-   "test_conditions": "VS = 5 V to 30 V; VC = 0 V; VO = 1.4 V, TA = 0°C to 70°C, LM358A",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": 7,
-   "max": null,
-   "unit": "mV",
-   "test_conditions": "TA = 0°C to 70°C, LM358",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "dVOS/dT",
-   "name": "Input offset voltage drift",
-   "min": null,
-   "typ": 7,
-   "max": 20,
-   "unit": "µV/°C",
-   "test_conditions": "TA = 0°C to 70°C, LM358A",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "PSRR",
-   "name": "Input offset voltage vs power supply (ΔVIO/ΔVS)",
-   "min": 65,
-   "typ": 100,
-   "max": null,
-   "unit": "dB",
-   "test_conditions": "VS = 5 V to 30 V",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO1/VO2",
-   "name": "Channel separation",
-   "min": null,
-   "typ": 120,
-   "max": null,
-   "unit": "dB",
-   "test_conditions": "f = 1 kHz to 20 kHz",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "CMRR",
-   "name": "Common-mode rejection ratio",
-   "min": 65,
-   "typ": 80,
-   "max": null,
-   "unit": "dB",
-   "test_conditions": "VS = 5 V to 30 V; VCM = 0 V",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IB",
-   "name": "Input bias current",
-   "min": null,
-   "typ": -20,
-   "max": -250,
-   "unit": "nA",
-   "test_conditions": "VO = 1.4 V, LM358",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IB",
-   "name": "Input bias current",
-   "min": null,
-   "typ": null,
-   "max": -500,
-   "unit": "nA",
-   "test_conditions": "VO = 1.4 V, TA = 0°C to 70°C, LM358",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IB",
-   "name": "Input bias current",
-   "min": null,
-   "typ": -15,
-   "max": -100,
-   "unit": "nA",
-   "test_conditions": "VO = 1.4 V, LM358A",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IB",
-   "name": "Input bias current",
-   "min": null,
-   "typ": null,
-   "max": -200,
-   "unit": "nA",
-   "test_conditions": "VO = 1.4 V, TA = 0°C to 70°C, LM358A",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IOS",
-   "name": "Input offset current",
-   "min": null,
-   "typ": 2,
-   "max": 50,
-   "unit": "nA",
-   "test_conditions": "VO = 1.4 V, LM358",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IOS",
-   "name": "Input offset current",
-   "min": null,
-   "typ": null,
-   "max": 150,
-   "unit": "nA",
-   "test_conditions": "VO = 1.4 V, TA = 0°C to 70°C, LM358",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IOS",
-   "name": "Input offset current",
-   "min": null,
-   "typ": 2,
-   "max": 30,
-   "unit": "nA",
-   "test_conditions": "VO = 1.4 V, LM358A",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IOS",
-   "name": "Input offset current",
-   "min": null,
-   "typ": null,
-   "max": 75,
-   "unit": "nA",
-   "test_conditions": "VO = 1.4 V, TA = 0°C to 70°C, LM358A",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "dIOS/dT",
-   "name": "Input offset current drift",
-   "min": null,
-   "typ": 10,
-   "max": 300,
-   "unit": "pA/°C",
-   "test_conditions": "TA = 0°C to 70°C, LM358A",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "AOL",
-   "name": "Open-loop voltage gain",
-   "min": 25,
-   "typ": 100,
-   "max": null,
-   "unit": "V/mV",
-   "test_conditions": "VS = 15 V; VO = 1 V to 11 V; RL ≥ 2 kΩ",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "AOL",
-   "name": "Open-loop voltage gain",
-   "min": 15,
-   "typ": null,
-   "max": null,
-   "unit": "V/mV",
-   "test_conditions": "VS = 15 V; VO = 1 V to 11 V; RL ≥ 2 kΩ, TA = 0°C to 70°C",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "GBW",
-   "name": "Gain bandwidth product",
-   "min": null,
-   "typ": 0.7,
-   "max": null,
-   "unit": "MHz",
-   "test_conditions": "",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "SR",
-   "name": "Slew rate",
-   "min": null,
-   "typ": 0.3,
-   "max": null,
-   "unit": "V/µs",
-   "test_conditions": "G = +1",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail (Positive rail)",
-   "min": null,
-   "typ": null,
-   "max": 4,
-   "unit": "V",
-   "test_conditions": "VS = 30 V; RL = 2 kΩ, TA = 0°C to 70°C",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail (Positive rail)",
-   "min": null,
-   "typ": 2,
-   "max": 3,
-   "unit": "V",
-   "test_conditions": "VS = 30 V; RL ≥ 10 kΩ",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail (Positive rail)",
-   "min": null,
-   "typ": null,
-   "max": 1.5,
-   "unit": "V",
-   "test_conditions": "VS = 5 V; RL ≥ 2 kΩ",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail (Negative rail)",
-   "min": null,
-   "typ": 5,
-   "max": 20,
-   "unit": "mV",
-   "test_conditions": "VS = 5 V; RL ≤ 10 kΩ, TA = 0°C to 70°C",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current (Source)",
-   "min": -20,
-   "typ": -30,
-   "max": null,
-   "unit": "mA",
-   "test_conditions": "VS = 15 V; VO = 0 V; VID = 1 V, LM358A",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current (Source)",
-   "min": -10,
-   "typ": null,
-   "max": null,
-   "unit": "mA",
-   "test_conditions": "VS = 15 V; VO = 0 V; VID = 1 V, TA = 0°C to 70°C",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current (Sink)",
-   "min": 10,
-   "typ": 20,
-   "max": null,
-   "unit": "mA",
-   "test_conditions": "VS = 15 V; VO = 15 V; VID = –1 V",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current (Sink)",
-   "min": 5,
-   "typ": null,
-   "max": null,
-   "unit": "mA",
-   "test_conditions": "VS = 15 V; VO = 15 V; VID = –1 V, TA = 0°C to 70°C",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current (Sink)",
-   "min": 12,
-   "typ": 30,
-   "max": null,
-   "unit": "µA",
-   "test_conditions": "VID = –1 V; VO = 200 mV",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "ISC",
-   "name": "Short-circuit current",
-   "min": -40,
-   "typ": null,
-   "max": 60,
-   "unit": "mA",
-   "test_conditions": "VS = 10 V; VO = VS / 2",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IQ",
-   "name": "Quiescent current per amplifier",
-   "min": null,
-   "typ": 350,
-   "max": 600,
-   "unit": "µA",
-   "test_conditions": "VO = 2.5 V; IO = 0 A",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IQ",
-   "name": "Quiescent current per amplifier",
-   "min": null,
-   "typ": 500,
-   "max": 1000,
-   "unit": "µA",
-   "test_conditions": "VS = 30 V; VO = 15 V; IO = 0 A",
-   "page": 10,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": 3,
-   "max": 7,
-   "unit": "mV",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, VS = 5 V to maximum; VCM = 0 V; VO = 1.4 V, Non-A suffix devices",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": null,
-   "max": 10,
-   "unit": "mV",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = -40°C to 125°C, VS = 5 V to maximum; VCM = 0 V; VO = 1.4 V, Non-A suffix devices",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": 1,
-   "max": 2,
-   "unit": "mV",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, VS = 5 V to maximum; VCM = 0 V; VO = 1.4 V, A-suffix devices",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": null,
-   "max": 4,
-   "unit": "mV",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = -40°C to 125°C, VS = 5 V to maximum; VCM = 0 V; VO = 1.4 V, A-suffix devices",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "dVOS/dT",
-   "name": "Input offset voltage drift",
-   "min": null,
-   "typ": 7,
-   "max": null,
-   "unit": "µV/°C",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = -40°C to 125°C",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "PSRR",
-   "name": "Input offset voltage vs power supply (ΔVIO/ΔVS)",
-   "min": 65,
-   "typ": 100,
-   "max": null,
-   "unit": "dB",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, VS = 5 V to 30 V",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO1/VO2",
-   "name": "Channel separation",
-   "min": null,
-   "typ": 120,
-   "max": null,
-   "unit": "dB",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, f = 1 kHz to 20 kHz",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "CMRR",
-   "name": "Common-mode rejection ratio",
-   "min": 65,
-   "typ": 80,
-   "max": null,
-   "unit": "dB",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, VS = 5 V to maximum; VCM = 0 V",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IB",
-   "name": "Input bias current",
-   "min": null,
-   "typ": -20,
-   "max": -250,
-   "unit": "nA",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, VO = 1.4 V",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IB",
-   "name": "Input bias current",
-   "min": null,
-   "typ": null,
-   "max": -500,
-   "unit": "nA",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = -40°C to 125°C, VO = 1.4 V",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IOS",
-   "name": "Input offset current",
-   "min": null,
-   "typ": 2,
-   "max": 50,
-   "unit": "nA",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, VO = 1.4 V, Non-V suffix device",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IOS",
-   "name": "Input offset current",
-   "min": null,
-   "typ": null,
-   "max": 300,
-   "unit": "nA",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = -40°C to 125°C, VO = 1.4 V, Non-V suffix device",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IOS",
-   "name": "Input offset current",
-   "min": null,
-   "typ": null,
-   "max": 150,
-   "unit": "nA",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = -40°C to 125°C, VO = 1.4 V, V-suffix device",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "dIOS/dT",
-   "name": "Input offset current drift",
-   "min": null,
-   "typ": 10,
-   "max": null,
-   "unit": "pA/°C",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = -40°C to 125°C",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "en",
-   "name": "Input voltage noise density",
-   "min": null,
-   "typ": 40,
-   "max": null,
-   "unit": "nV/√Hz",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, f = 1 kHz",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "AOL",
-   "name": "Open-loop voltage gain",
-   "min": 25,
-   "typ": 100,
-   "max": null,
-   "unit": "V/mV",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, VS = 15 V; VO = 1 V to 11 V; RL ≥ 2 kΩ",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "AOL",
-   "name": "Open-loop voltage gain",
-   "min": 15,
-   "typ": null,
-   "max": null,
-   "unit": "V/mV",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = -40°C to 125°C, VS = 15 V; VO = 1 V to 11 V; RL ≥ 2 kΩ",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "GBW",
-   "name": "Gain bandwidth product",
-   "min": null,
-   "typ": 0.7,
-   "max": null,
-   "unit": "MHz",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "SR",
-   "name": "Slew rate",
-   "min": null,
-   "typ": 0.3,
-   "max": null,
-   "unit": "V/µs",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, G = +1",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail (Positive rail)",
-   "min": null,
-   "typ": null,
-   "max": 1.5,
-   "unit": "V",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, VS = maximum; RL ≥ 10 kΩ, Non-V suffix device",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail (Positive rail)",
-   "min": null,
-   "typ": 2,
-   "max": 3,
-   "unit": "V",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, VS = maximum; RL = 2 kΩ, Non-V suffix device",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail (Positive rail)",
-   "min": null,
-   "typ": null,
-   "max": 6,
-   "unit": "V",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, VS = maximum; RL = 2 kΩ, V-suffix device",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail (Positive rail)",
-   "min": null,
-   "typ": 4,
-   "max": 5,
-   "unit": "V",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, VS = maximum; RL ≥ 10 kΩ, V-suffix device",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail (Negative rail)",
-   "min": null,
-   "typ": 5,
-   "max": 20,
-   "unit": "mV",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, VS = 5 V; RL ≤ 10 kΩ",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current (Source)",
-   "min": -20,
-   "typ": -30,
-   "max": null,
-   "unit": "mA",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, VS = 15 V; VO = 0 V; VID = 1 V",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current (Source)",
-   "min": -10,
-   "typ": null,
-   "max": null,
-   "unit": "mA",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = -40°C to 125°C, VS = 15 V; VO = 0 V; VID = 1 V",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current (Sink)",
-   "min": 10,
-   "typ": 20,
-   "max": null,
-   "unit": "mA",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, VS = 15 V; VO = 15 V; VID = –1 V",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current (Sink)",
-   "min": 5,
-   "typ": null,
-   "max": null,
-   "unit": "mA",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = -40°C to 125°C, VS = 15 V; VO = 15 V; VID = –1 V",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current (Sink)",
-   "min": null,
-   "typ": 30,
-   "max": null,
-   "unit": "µA",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, VID = -1 V; VO = 200 mV, Non-V suffix device",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current (Sink)",
-   "min": 12,
-   "typ": 40,
-   "max": null,
-   "unit": "µA",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, VID = -1 V; VO = 200 mV, V-suffix device",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "ISC",
-   "name": "Short-circuit current",
-   "min": null,
-   "typ": 40,
-   "max": 60,
-   "unit": "mA",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, VS = 10 V; VO = VS / 2",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IQ",
-   "name": "Quiescent current per amplifier",
-   "min": null,
-   "typ": 350,
-   "max": 600,
-   "unit": "µA",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, VO = 2.5 V; IO = 0 A",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IQ",
-   "name": "Quiescent current per amplifier",
-   "min": null,
-   "typ": 500,
-   "max": 1000,
-   "unit": "µA",
-   "test_conditions": "LM2904, LM2904V, VS = 5 V, TA = 25°C, VS = maximum; VO = maximum / 2; IO = 0 A",
-   "page": 11,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": 3,
-   "max": 5,
-   "unit": "mV",
-   "test_conditions": "LM158, VS = 5 V to 30 V; VCM = 0 V; VO = 1.4 V, TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": null,
-   "max": 7,
-   "unit": "mV",
-   "test_conditions": "LM158, TA = –55°C to 125°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": null,
-   "max": 2,
-   "unit": "mV",
-   "test_conditions": "LM158A, VS = 5 V to 30 V; VCM = 0 V; VO = 1.4 V, TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VOS",
-   "name": "Input offset voltage",
-   "min": null,
-   "typ": null,
-   "max": 4,
-   "unit": "mV",
-   "test_conditions": "LM158A, TA = –55°C to 125°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "dVOS/dT",
-   "name": "Input offset voltage drift",
-   "min": null,
-   "typ": null,
-   "max": 7,
-   "unit": "µV/°C",
-   "test_conditions": "LM158, TA = –55°C to 125°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "dVOS/dT",
-   "name": "Input offset voltage drift",
-   "min": null,
-   "typ": 7,
-   "max": 15,
-   "unit": "µV/°C",
-   "test_conditions": "LM158A, TA = –55°C to 125°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "PSRR",
-   "name": "Input offset voltage vs power supply (ΔVIO/ΔVS)",
-   "min": 65,
-   "typ": 100,
-   "max": null,
-   "unit": "dB",
-   "test_conditions": "VS = 5 V to 30 V, TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO1/VO2",
-   "name": "Channel separation",
-   "min": null,
-   "typ": 120,
-   "max": null,
-   "unit": "dB",
-   "test_conditions": "f = 1 kHz to 20 kHz, TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "CMRR",
-   "name": "Common-mode rejection ratio",
-   "min": 70,
-   "typ": 80,
-   "max": null,
-   "unit": "dB",
-   "test_conditions": "VS = 5 V to 30 V; VCM = 0 V, TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IB",
-   "name": "Input bias current",
-   "min": -20,
-   "typ": null,
-   "max": -150,
-   "unit": "nA",
-   "test_conditions": "LM158, VO = 1.4 V, TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IB",
-   "name": "Input bias current",
-   "min": null,
-   "typ": null,
-   "max": -300,
-   "unit": "nA",
-   "test_conditions": "LM158, TA = –55°C to 125°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IB",
-   "name": "Input bias current",
-   "min": -15,
-   "typ": null,
-   "max": -50,
-   "unit": "nA",
-   "test_conditions": "LM158A, VO = 1.4 V, TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IB",
-   "name": "Input bias current",
-   "min": null,
-   "typ": null,
-   "max": -100,
-   "unit": "nA",
-   "test_conditions": "LM158A, TA = –55°C to 125°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IOS",
-   "name": "Input offset current",
-   "min": 2,
-   "typ": null,
-   "max": 30,
-   "unit": "nA",
-   "test_conditions": "LM158, VO = 1.4 V, TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IOS",
-   "name": "Input offset current",
-   "min": null,
-   "typ": null,
-   "max": 100,
-   "unit": "nA",
-   "test_conditions": "LM158, TA = –55°C to 125°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IOS",
-   "name": "Input offset current",
-   "min": 2,
-   "typ": null,
-   "max": 10,
-   "unit": "nA",
-   "test_conditions": "LM158A, VO = 1.4 V, TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IOS",
-   "name": "Input offset current",
-   "min": null,
-   "typ": null,
-   "max": 30,
-   "unit": "nA",
-   "test_conditions": "LM158A, TA = –55°C to 125°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "dIOS/dT",
-   "name": "Input offset current drift",
-   "min": null,
-   "typ": 10,
-   "max": null,
-   "unit": "pA/°C",
-   "test_conditions": "TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "dIOS/dT",
-   "name": "Input offset current drift",
-   "min": null,
-   "typ": null,
-   "max": 200,
-   "unit": "pA/°C",
-   "test_conditions": "LM158A, TA = –55°C to 125°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "en",
-   "name": "Input voltage noise density",
-   "min": null,
-   "typ": 40,
-   "max": null,
-   "unit": "nV/√Hz",
-   "test_conditions": "f = 1 kHz, TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "AOL",
-   "name": "Open-loop voltage gain",
-   "min": 50,
-   "typ": 100,
-   "max": null,
-   "unit": "V/mV",
-   "test_conditions": "VS = 15 V; VO = 1 V to 11 V; RL ≥ 2 kΩ, TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "AOL",
-   "name": "Open-loop voltage gain",
-   "min": 25,
-   "typ": null,
-   "max": null,
-   "unit": "V/mV",
-   "test_conditions": "VS = 15 V; VO = 1 V to 11 V; RL ≥ 2 kΩ, TA = –55°C to 125°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "GBW",
-   "name": "Gain bandwidth product",
-   "min": null,
-   "typ": 0.7,
-   "max": null,
-   "unit": "MHz",
-   "test_conditions": "TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "SR",
-   "name": "Slew rate",
-   "min": null,
-   "typ": 0.3,
-   "max": null,
-   "unit": "V/µs",
-   "test_conditions": "G = +1, TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail (Positive rail)",
-   "min": null,
-   "typ": null,
-   "max": 4,
-   "unit": "V",
-   "test_conditions": "VS = 30 V; RL = 2 kΩ, TA = –55°C to 125°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail (Positive rail)",
-   "min": null,
-   "typ": 2,
-   "max": 3,
-   "unit": "V",
-   "test_conditions": "VS = 30 V; RL ≥ 10 kΩ, TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail (Positive rail)",
-   "min": null,
-   "typ": null,
-   "max": 1.5,
-   "unit": "V",
-   "test_conditions": "VS = 5 V; RL ≥ 2 kΩ, TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "VO",
-   "name": "Voltage output swing from rail (Negative rail)",
-   "min": null,
-   "typ": 5,
-   "max": 20,
-   "unit": "mV",
-   "test_conditions": "VS = 5 V; RL ≤ 10 kΩ, TA = –55°C to 125°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current (Source)",
-   "min": -20,
-   "typ": -30,
-   "max": null,
-   "unit": "mA",
-   "test_conditions": "VS = 15 V; VO = 0 V; VID = 1 V, TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current (Source)",
-   "min": null,
-   "typ": null,
-   "max": -60,
-   "unit": "mA",
-   "test_conditions": "LM158A, VS = 15 V; VO = 0 V; VID = 1 V, TA = –55°C to 125°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current (Sink)",
-   "min": 10,
-   "typ": 20,
-   "max": null,
-   "unit": "mA",
-   "test_conditions": "VS = 15 V; VO = 15 V; VID = –1 V, TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current (Sink)",
-   "min": 5,
-   "typ": null,
-   "max": null,
-   "unit": "mA",
-   "test_conditions": "VS = 15 V; VO = 15 V; VID = –1 V, TA = –55°C to 125°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "IO",
-   "name": "Output current (Sink)",
-   "min": 12,
-   "typ": 30,
-   "max": null,
-   "unit": "µA",
-   "test_conditions": "VID = –1 V; VO = 200 mV, TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  },
-  {
-   "symbol": "ISC",
-   "name": "Short-circuit current",
-   "min": null,
-   "typ": 40,
-   "max": 60,
-   "unit": "mA",
-   "test_conditions": "VS = 10 V; VO = VS / 2, TA = 25°C",
-   "page": 12,
-   "reason": "OP-Amp 공통 측정 항목 15개에 없어 모델 입력에 쓰지 않음"
-  }
- ]
+ "plan": {
+  "file": "LM358B_SPEC_EVALUATION.json",
+  "planned_rows": 152,
+  "part_rows": [
+   65,
+   109
+  ],
+  "part_planned": 31,
+  "used": 12,
+  "not_measured": [
+   {
+    "kind": "vos",
+    "symbol": "VOS",
+    "name": "Input offset voltage",
+    "condition": "LM358B, VS = 5 V to 36 V, TA = 25C",
+    "min": null,
+    "typ": 0.0003,
+    "max": 0.003,
+    "unit": "V",
+    "page": 6,
+    "reason": "입력 오프셋 전압: 소자 편차 통계 해석이 필요해 아직 재지 않음"
+   },
+   {
+    "kind": "ib",
+    "symbol": "IB",
+    "name": "Input bias current",
+    "condition": "VS = 5 V to 36 V, TA = 25C",
+    "min": null,
+    "typ": -1e-08,
+    "max": -3.5e-08,
+    "unit": "A",
+    "page": 6,
+    "reason": "입력 바이어스 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ios",
+    "symbol": "IOS",
+    "name": "Input offset current",
+    "condition": "VS = 5 V to 36 V, TA = 25C",
+    "min": null,
+    "typ": 5e-10,
+    "max": 4e-09,
+    "unit": "A",
+    "page": 6,
+    "reason": "입력 오프셋 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "en",
+    "symbol": "en",
+    "name": "Input voltage noise density",
+    "condition": "f = 1 kHz",
+    "min": null,
+    "typ": 40.0,
+    "max": null,
+    "unit": "nV/rtHz",
+    "page": 6,
+    "reason": "입력 잡음 밀도: 잡음 해석(.noise) 측정을 아직 만들지 않음"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Voltage output swing from rail (Positive rail (V+))",
+    "condition": "IOUT = 50 uA",
+    "min": null,
+    "typ": 1.35,
+    "max": 1.42,
+    "unit": "V",
+    "page": 6,
+    "reason": "출력 스윙 (IOUT = 50 uA): 우리는 1 mA, 5 mA 부하만 잼"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Voltage output swing from rail (Negative rail (V-))",
+    "condition": "IOUT = 50 uA",
+    "min": null,
+    "typ": 0.1,
+    "max": 0.15,
+    "unit": "V",
+    "page": 6,
+    "reason": "출력 스윙 (IOUT = 50 uA): 우리는 1 mA, 5 mA 부하만 잼"
+   },
+   {
+    "kind": "iout",
+    "symbol": "IO",
+    "name": "Output current (Sink)",
+    "condition": "VID = -1 V; VO = (V-) + 200 mV",
+    "min": 5.9999999999999995e-05,
+    "typ": 9.999999999999999e-05,
+    "max": null,
+    "unit": "A",
+    "page": 6,
+    "reason": "출력 전류 (출력 200 mV): 우리 측정 조건과 다름"
+   },
+   {
+    "kind": "isc",
+    "symbol": "ISC",
+    "name": "Short-circuit current",
+    "condition": "VS = 20 V, (V+) = 10 V, (V-) = -10 V, VO = 0 V",
+    "min": null,
+    "typ": 0.04,
+    "max": 0.06,
+    "unit": "A",
+    "page": 6,
+    "reason": "단락 전류: ±10 V 전원 조건이라 6 V 소자로 잴 수 없음"
+   }
+  ],
+  "not_planned": [
+   {
+    "measure": "ts",
+    "label": "정착시간 (0.1%)",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   },
+   {
+    "measure": "gm",
+    "label": "이득여유",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   },
+   {
+    "measure": "vol_5ma",
+    "label": "Low 출력 전압 (IOL = 5 mA)",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   }
+  ]
+ },
+ "unused": []
 }
