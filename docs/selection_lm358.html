@@ -225,9 +225,37 @@ pre { font-family: var(--mono); font-size: 12px; background: var(--paper); borde
 }
 @media (prefers-reduced-motion: no-preference) { .frow .bar span { transition: width .4s ease; } }
 
+/* 표는 내용 길이만큼만 (칸 폭에 꽉 채우지 않음) */
+table { width: auto; max-width: 100%; }
+th, td { padding: 5px 14px 5px 0; }
+.genarrow { font-size: 13px !important; }
+
+/* 단계 강조: 맨 위 바로가기 줄 */
+.stepnav { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--card); }
+.stepnav a { flex: 1 1 150px; display: grid; gap: 2px; padding: 10px 14px; text-decoration: none; color: var(--ink); border-right: 1px solid var(--line); position: relative; }
+.stepnav a:last-child { border-right: 0; }
+.stepnav a:hover { background: var(--accent-soft); }
+.stepnav .no { font-family: var(--mono); font-size: 11px; color: var(--accent); font-weight: 700; letter-spacing: .06em; }
+.stepnav .t { font-size: 14px; font-weight: 700; }
+.stepnav .d { font-size: 12px; color: var(--muted); }
+
+/* 단계 강조: 섹션 제목을 번호 띠로 */
+section.stage > h2, #detail .detail-head h2 { background: var(--accent-soft); border-left: 5px solid var(--accent); border-radius: 6px; padding: 10px 14px; align-items: center; }
+section.stage > h2 { margin-bottom: 2px; }
+h2 .n { display: inline-grid; place-items: center; min-width: 58px; height: 26px; padding: 0 8px; border-radius: 13px; background: var(--accent); color: var(--card); font-size: 12px; font-weight: 700; letter-spacing: .05em; }
+h2 .n::before { content: "STEP "; }
+
+/* 단계 강조: 후보 상세의 검사 단계를 화살표로 잇기 */
+.steps { gap: 22px; }
+.step { border-width: 2px; position: relative; padding: 10px 12px; }
+.step .t { font-size: 12px; font-weight: 700; color: var(--ink); }
+.step .v { font-size: 16px; }
+.step + .step::before { content: "→"; position: absolute; left: -18px; top: 50%; transform: translateY(-50%); color: var(--accent); font-weight: 700; font-size: 16px; }
+@media (max-width: 700px) { .steps { grid-template-columns: 1fr 1fr; } .step:nth-child(3)::before { display: none; } }
+
 /* 크기 줄이기 (구성은 그대로) */
 body { font-size: 14px; line-height: 1.5; }
-.wrap { max-width: 1360px; gap: 36px; padding-block: 24px 60px; }
+.wrap { max-width: 1080px; gap: 40px; padding-block: 24px 60px; }
 h1 { font-size: 26px; } h2 { font-size: 18px; } h3 { font-size: 14px; }
 .lead { font-size: 14px; }
 section { gap: 12px; }
@@ -247,10 +275,17 @@ section { gap: 12px; }
     <h1><span class="part"></span> 구조 선택</h1>
     <p class="lead">FLAN-T5가 <span class="part"></span> 스펙을 보고 OP-Amp 구조 후보를 만들고, 후보마다 크기를 정해 ngspice로 시뮬레이션한 뒤 스펙을 가장 많이 맞춘 구조 하나를 고릅니다. 이 페이지는 그 과정을 처음부터 끝까지 보여 줍니다.</p>
     <div class="progress" id="progress" hidden></div>
+    <nav class="stepnav" aria-label="단계">
+      <a href="#s1"><span class="no">STEP 1</span><span class="t">입력</span><span class="d">데이터시트 목표값 · PDG 핀 확인</span></a>
+      <a href="#s2"><span class="no">STEP 2</span><span class="t">구조 만들기</span><span class="d">FLAN-T5가 구조 표를 씀</span></a>
+      <a href="#s3"><span class="no">STEP 3</span><span class="t">후보 확인</span><span class="d">규칙 · 크기 · 동작 · 스펙</span></a>
+      <a href="#s4"><span class="no">STEP 4</span><span class="t">고르기</span><span class="d">통과 항목 수 순위</span></a>
+      <a href="#detail"><span class="no">STEP 5</span><span class="t">선택 구조</span><span class="d">회로도 · 측정 결과</span></a>
+    </nav>
     <div class="panel funnel" id="funnel"></div>
   </header>
 
-  <section>
+  <section id="s1" class="stage">
     <h2><span class="n">1</span>입력: <span class="part"></span> 스펙 <span class="nj"></span>개 항목</h2>
     <div class="srcbox" id="srcbox" hidden></div>
     <div class="panel" id="pdgPanel" hidden>
@@ -263,7 +298,7 @@ section { gap: 12px; }
     <div class="specs" id="specs"></div>
   </section>
 
-  <section>
+  <section id="s2" class="stage">
     <h2><span class="n">2</span>구조 만들기: FLAN-T5</h2>
     <p class="muted">스펙 문장을 넣으면 소자 연결 표(구조)를 글로 써 내는 모델입니다. 모든 OP-Amp 데이터로 학습했습니다.</p>
     <div class="panel"><h3>학습 데이터가 만들어진 길</h3><div class="flow" id="flow"></div></div>
@@ -273,7 +308,7 @@ section { gap: 12px; }
       <div id="genExample"></div></div>
   </section>
 
-  <section>
+  <section id="s3" class="stage">
     <h2><span class="n">3</span>후보 <span id="candCount"></span>개를 하나씩 확인</h2>
     <p class="muted">후보마다 1 규칙 검사, 2 크기 정하기(출력단 전류 1배와 5배), 3 동작 판정, 4 스펙 판정을 거칩니다. 타일을 누르면 아래 5번에 그 후보의 과정이 나옵니다.</p>
     <div class="legend">
@@ -289,7 +324,7 @@ section { gap: 12px; }
     </div>
   </section>
 
-  <section>
+  <section id="s4" class="stage">
     <h2><span class="n">4</span>고르기: 통과 항목 수 순위</h2>
     <p class="muted">동작한 후보만 줄 세웁니다. 통과 항목이 많은 순, 같으면 공급 전류(idd)가 작은 순입니다. 칸 색은 항목별 판정이고, 줄을 누르면 5번 상세가 그 후보로 바뀝니다.</p>
     <div class="legend">
@@ -662,7 +697,7 @@ function genView(e, opts = {}) {
   return `<div class="gen">
     ${opts.input ? `<div><div class="stage-lab">입력 문장 (데이터시트 목표값)</div><div class="input-line">${esc(opts.input)}</div></div><div class="arrowdown">↓ FLAN-T5</div>` : ""}
     <div><div class="stage-lab">모델이 쓴 글 그대로 (${e.how === "beam" ? "빔 탐색" : "무작위 생성"}${e.in_train ? ", 학습 데이터에 있던 구조" : ", 학습 데이터에 없던 구조"})</div><div class="rawout">${raw}</div></div>
-    <div class="arrowdown">↓ 조각마다 한 줄로 펼침</div>
+    <div class="arrowdown genarrow">↓ 조각마다 한 줄로 펼침</div>
     <div class="scroll"><table class="stab"><thead><tr><th></th><th>소자</th><th>종류</th><th>D (드레인) · P</th><th>G (게이트)</th><th>S (소스) · N</th><th>B (바디)</th>${hasSize ? "<th>W / L × 개수</th>" : ""}<th></th></tr></thead><tbody>${body}</tbody></table></div>
     <p class="note"><span class="net rail">VDD VSS</span> 전원 · <span class="net in">IN1 IN2</span> 입력 · <span class="net out">OUT</span> 출력 · <span class="net bias">VB IB</span> 바이어스 · N# 내부 노드. 저항·커패시터는 양 끝을 P, N으로 씁니다.</p>
   </div>`;
