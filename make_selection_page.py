@@ -84,6 +84,12 @@ def extraction_view(spec: dict) -> dict:
             "unused": spec.get("unused", [])[:UNUSED_SHOWN], "unused_count": len(spec.get("unused", []))}
 
 
+def pdg_view(part: str):
+    """pdg_check.py 결과 (핀 그래프와 OP-Amp 5단자 확인). 없으면 None."""
+    path = HERE / "data" / f"pdg_{part}.json"
+    return json.loads(path.read_text(encoding="utf-8")) if path.exists() else None
+
+
 def schematics(part: str) -> dict:
     """netlistsvg 로 만든 회로도 {후보 번호(0부터): svg 글}."""
     folder = HERE / "data" / "schematics" / part
@@ -163,7 +169,7 @@ def main() -> None:
     data = {"model": candidates["model"], "epochs": candidates["epochs"], "input": candidates["input"],
             "eval": candidates["eval"], "eval_count": candidates["eval_count"],
             "generated": candidates.get("generated", GENERATED), "part": part.upper(), "source": spec.get("source"),
-            "extraction": extraction_view(spec), "train": train_stats(), "spec": spec_items(spec), "entries": entries,
+            "extraction": extraction_view(spec), "pdg": pdg_view(part), "train": train_stats(), "spec": spec_items(spec), "entries": entries,
             "summary": selection.get("summary"), "evaluated": len(done),
             "training": [{"name": t["name"], "source": t["source"], "passed": t["passed"], "values": t["values"]}
                          for t in structures]}

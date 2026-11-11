@@ -2,6 +2,8 @@
 학습된 FLAN-T5 로 구조 후보를 만든다 (이 컴퓨터 CPU 에서. 학습은 Colab 에서 한 번만 한다).
 
 입력: data/train/<부품>.json 의 입력 문장 (spec_from_hkg.py 가 만듦)
+먼저 data/pdg_<부품>.json (pdg_check.py 가 만듦) 이 있으면 핀 확인이 통과했는지 본다.
+    OP-Amp 5단자와 맞지 않는 부품이면 후보를 만들지 않고 멈춘다.
 결과: data/train/<부품>_candidates.json  (select_structure.py 가 읽는다)
 
 후보 만드는 법은 Colab 노트북(colab/flan_t5_structure.ipynb) 8번 셀과 같다.
@@ -55,6 +57,12 @@ def problems(text: str) -> list:
 
 def main() -> None:
     part = sys.argv[1]
+    pdg_file = HERE / "data" / f"pdg_{part}.json"
+    if pdg_file.exists():
+        pin_check = json.loads(pdg_file.read_text(encoding="utf-8"))["check"]
+        print("PDG 핀 확인:", pin_check["summary"])
+        if not pin_check["ok"]:
+            sys.exit("핀 구성이 우리 OP-Amp 구조(IN1, IN2, OUT, VDD, VSS)와 맞지 않아 후보를 만들지 않습니다.")
     torch.manual_seed(SEED)
     sentence = json.loads((TRAIN_DIR / f"{part}.json").read_text(encoding="utf-8"))["input"]
     train_targets = {normalize(json.loads(line)["target"])

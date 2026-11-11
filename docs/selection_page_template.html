@@ -131,7 +131,8 @@ th { font-weight: 500; color: var(--muted); font-size: 12px; }
 .step.bad { border-color: var(--fail); } .step.bad .v { color: var(--fail); }
 .step.skip { opacity: 0.5; }
 .step .why { font-size: 12px; overflow-wrap: anywhere; line-height: 1.45; }
-.gen { display: grid; gap: 14px; }
+.gen { display: grid; gap: 14px; min-width: 0; }
+.gen > *, .panel, section, .two > * { min-width: 0; }
 .gen .stage-lab { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
 .gen .arrowdown { text-align: center; color: var(--accent); font-size: 20px; line-height: 1; }
 .rawout { font-family: var(--mono); font-size: 13px; line-height: 1.9; background: var(--card); border: 1px solid var(--line);
@@ -145,6 +146,19 @@ th { font-weight: 500; color: var(--muted); font-size: 12px; }
 .stab td.kind { color: var(--muted); font-size: 12px; }
 .stab td.pin { font-family: var(--mono); }
 .stab td.pin .p { color: var(--muted); font-size: 11px; margin-right: 4px; }
+.pdgwrap { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 860px) { .pdgwrap { grid-template-columns: 1fr; } }
+.pdg-node rect { fill: var(--card); stroke: var(--line); stroke-width: 1.5; }
+.pdg-node.on rect { stroke: var(--accent); stroke-width: 2.5; }
+.pdg-node text { fill: var(--ink); font-family: var(--mono); font-size: 13px; }
+.pdg-node text.sub { fill: var(--muted); font-size: 11px; }
+.pdg-node.off { opacity: .45; }
+.pdg-edge { fill: none; stroke: var(--ghost); stroke-width: 1.5; }
+.pdg-edge.on { stroke: var(--accent); stroke-width: 2; }
+.pdg-edge.rule { stroke-dasharray: 5 4; }
+.pdg-col { fill: var(--muted); font-size: 12px; }
+.verdict { display: inline-block; font-weight: 700; font-size: 13px; padding: 3px 10px; border-radius: 4px; }
+.verdict.ok { background: var(--pass-soft); color: var(--pass); } .verdict.bad { background: var(--fail-soft, #f6dcd8); color: var(--fail); }
 .srcbox { border: 2px solid var(--accent); border-radius: 8px; padding: 12px 14px; background: var(--card); display: grid; gap: 6px; }
 .srcbox .badge { display: inline-block; font-size: 12px; font-weight: 700; color: var(--card); background: var(--accent); border-radius: 4px; padding: 2px 8px; justify-self: start; }
 .srcbox .kv2 { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 13px; }
@@ -171,7 +185,11 @@ tr.added td { background: var(--accent-soft); }
 details summary { cursor: pointer; font-size: 13px; color: var(--muted); }
 pre { font-family: var(--mono); font-size: 12px; background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 12px; overflow-x: auto; margin: 8px 0 0; }
 .schem { background: #fbfbf7; border: 1px solid var(--line); border-radius: 6px; padding: 12px; }
-.schem svg { width: 100%; height: auto; max-height: 620px; display: block; }
+.schem { overflow: auto; max-height: 75vh; }
+.schem svg { display: block; margin: 0 auto; width: 100%; max-width: 820px; height: auto; }
+.schem.full svg { width: var(--w, 1000px); max-width: none; }
+.schem-tools { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 13px; }
+.schem-tools button { font: inherit; font-size: 13px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
 .schem svg text { fill: #000; }
 .graph-wrap { border: 1px solid var(--line); border-radius: 6px; background: var(--paper); overflow: hidden; }
 .graph-wrap svg { max-height: 560px; }
@@ -220,6 +238,11 @@ pre { font-family: var(--mono); font-size: 12px; background: var(--paper); borde
   <section>
     <h2><span class="n">1</span>입력: <span class="part"></span> 스펙 <span class="nj"></span>개 항목</h2>
     <div class="srcbox" id="srcbox" hidden></div>
+    <div class="panel" id="pdgPanel" hidden>
+      <h3>핀 확인: 포트 의존성 그래프(PDG)</h3>
+      <p class="note">데이터시트 분석 시스템 결과물(팀원)의 핀 목록과 핀 연결로 PDG를 만들고, 구조를 만들기 전에 이 부품이 우리 모델이 만드는 OP-Amp 단자 5개(입력 2, 출력 1, 전원 2)와 맞는지 확인합니다. 맞지 않으면(예: 끄기 핀이 더 있음) 후보를 만들지 않고 멈춥니다.</p>
+      <div class="pdgwrap"><div id="pdgGraph"></div><div id="pdgMap"></div></div>
+    </div>
     <p class="muted">데이터시트의 목표값입니다. 모델에는 아래 한 줄 문장으로 들어갑니다. 이 데이터시트는 학습에 쓰지 않았습니다.</p>
     <div class="input-line" id="inputLine"></div>
     <div class="specs" id="specs"></div>
@@ -282,6 +305,7 @@ pre { font-family: var(--mono); font-size: 12px; background: var(--paper); borde
     <div class="panel">
       <h3>회로도</h3>
       <p class="note">구조 표와 정한 크기로 netlistsvg가 자동으로 배치한 회로도입니다. 소자 옆 숫자는 W/L(µm)과 병렬 개수입니다.</p>
+      <div class="schem-tools"><button type="button" id="schemZoom" aria-pressed="false">원래 크기로 보기</button><span class="note">원래 크기에서는 상자 안에서 위아래·좌우로 움직여 봅니다.</span></div>
       <div class="schem" id="schem"></div>
     </div>
     <details class="panel"><summary>노드 연결 그림 보기 (소자를 끌어 옮길 수 있음)</summary>
@@ -381,6 +405,67 @@ function renderInput() {
   };
   $("specs").innerHTML = DATA.spec.map(s => `<div class="spec${s.scope === "excluded" ? " none" : ""}"><span class="sym">${esc(s.symbol)}</span>
     <span class="lab">${esc(s.label)}</span><span class="plain">${esc(s.plain)}</span><span class="tgt">${esc(s.target)}</span>${fromText(s.extracted)}</div>`).join("");
+}
+
+/* 선택 후보에서 IN1 이 + 입력인지: 시뮬레이션 넷리스트에서 IN1 자리에 INP 가 들어갔는지 본다 */
+function inputPolarity(e) {
+  const v = e && bestVariant(e);
+  if (!v || !v.subckt) return null;
+  const order = {D: 0, G: 1, S: 2, B: 3, P: 0, N: 1};
+  for (const [name, pins] of e.rows) {
+    const pin = Object.keys(pins).find(k => pins[k] === "IN1");
+    if (!pin) continue;
+    const line = v.subckt.split("\n").find(l => l.split(/\s+/)[0].replace(/^X/, "") === name);
+    if (!line) continue;
+    const net = line.split(/\s+/)[1 + order[pin]];
+    if (net === "INP") return {"+": "IN1", "−": "IN2"};
+    if (net === "INN") return {"+": "IN2", "−": "IN1"};
+  }
+  return null;
+}
+
+function renderPdg() {
+  const R = DATA.pdg;
+  if (!R) return;
+  $("pdgPanel").hidden = false;
+  const pdg = R.pdg, chk = R.check;
+  const lv = r => ({GROUND: 0, POWER: 0, BIAS: 1, REFERENCE: 1, ENABLE: 2, CONTROL: 2, SIGNAL: 3, INPUT: 3, FEEDBACK: 4, OUTPUT: 4})[r] ?? 3;
+  const chosen = chk.channels.find(c => c.output === chk.chosen);
+  const onPins = new Set(chosen ? [chosen.output, ...chosen.inputs, ...pdg.pins.filter(p => lv(p.role) === 0).map(p => p.name)] : []);
+  const cols = [...new Set(pdg.pins.filter(p => p.role !== "NC").map(p => lv(p.role)))].sort();
+  const W = 640, NW = 150, NH = 40, GAP = 16, TOP = 34;
+  const colX = k => 10 + cols.indexOf(k) * ((W - 20 - NW) / Math.max(1, cols.length - 1));
+  const pos = {}; let H = 0;
+  cols.forEach(k => {
+    const list = pdg.pins.filter(p => p.role !== "NC" && lv(p.role) === k);
+    list.forEach((p, i) => { pos[p.name] = {x: colX(k), y: TOP + i * (NH + GAP), p}; H = Math.max(H, TOP + (i + 1) * (NH + GAP)); });
+  });
+  let out = cols.map(k => `<text class="pdg-col" x="${colX(k) + NW / 2}" y="16" text-anchor="middle">${esc(pdg.levels[k])}</text>`).join("");
+  out += `<defs><marker id="pa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ghost)"/></marker>
+    <marker id="pa2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker></defs>`;
+  const edges = pdg.edges.filter(e => pos[e.source] && pos[e.target]);
+  edges.sort((a, b) => (onPins.has(a.target) && onPins.has(a.source)) - (onPins.has(b.target) && onPins.has(b.source)));
+  edges.forEach(e => {
+    const a = pos[e.source], b = pos[e.target];
+    const on = onPins.has(e.source) && onPins.has(e.target);
+    const x1 = a.x + NW, y1 = a.y + NH / 2, x2 = b.x, y2 = b.y + NH / 2, mx = (x1 + x2) / 2;
+    out += `<path class="pdg-edge${on ? " on" : ""}${e.origin === "rule" ? " rule" : ""}" d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}" marker-end="url(#${on ? "pa2" : "pa"})"><title>${esc(e.source)} → ${esc(e.target)} (${esc(e.type)}, ${e.origin === "rule" ? "순서 규칙으로 채움" : "데이터시트"})</title></path>`;
+  });
+  Object.values(pos).forEach(({x, y, p}) => {
+    out += `<g class="pdg-node ${onPins.has(p.name) ? "on" : "off"}"><rect x="${x}" y="${y}" width="${NW}" height="${NH}" rx="6"/>
+      <text x="${x + 10}" y="${y + 17}">${esc(p.name)}</text><text class="sub" x="${x + 10}" y="${y + 32}">${p.number ? p.number + "번 · " : ""}${esc(p.role)}</text><title>${esc(p.description)}</title></g>`;
+  });
+  $("pdgGraph").innerHTML = `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" style="min-width:480px" role="img" aria-label="포트 의존성 그래프">${out}</svg></div>
+    <p class="note">실선: 데이터시트에서 뽑은 핀 연결 · 점선: 빠진 연결을 전원 → 바이어스 → 제어 → 신호 → 출력 순서 규칙으로 채운 것. 파란 테두리가 쓰는 채널입니다.</p>`;
+  const pol = selectedIdx != null ? inputPolarity(E[selectedIdx]) : null;
+  const ours = m => m.ours !== "IN1 / IN2" ? m.ours : (pol ? `${pol[m.note[0]]}` : "IN1 / IN2");
+  $("pdgMap").innerHTML = `<p><span class="verdict ${chk.ok ? "ok" : "bad"}">${chk.ok ? "통과" : "탈락"}</span> ${esc(chk.summary.replace(/^(통과|탈락): /, ""))}</p>
+    <table><thead><tr><th>데이터시트 핀</th><th>역할</th><th>우리 구조 단자</th></tr></thead><tbody>
+    ${chk.mapping.map(m => `<tr><td class="mono">${esc(m.pin)}${m.number ? ` <span class="muted">(${m.number}번)</span>` : ""}</td><td>${esc(m.note)}</td><td><span class="net ${netClass(ours(m).split(" ")[0])}">${esc(ours(m))}</span></td></tr>`).join("")}
+    </tbody></table>
+    <p class="note" style="margin-top:8px">${pol ? `+ 입력이 구조의 어느 단자인지는 크기 정하기에서 두 방향을 다 시뮬레이션해 출력이 가운데에 서는 쪽으로 정했습니다 (선택 후보 ${E[selectedIdx].no} 기준).` : "+ / − 입력이 구조의 어느 단자인지는 크기 정하기에서 정합니다."}
+    전원은 시뮬레이션에서 VDD 5 V, VSS 0 V로 둡니다.</p>
+    ${chk.channels.length > 1 ? `<p class="note">채널: ${chk.channels.map(c => `${esc(c.output)} ${c.ok ? "맞음" : "안 맞음 (" + esc(c.problems.join(", ")) + ")"}`).join(" · ")}. 채널 하나만 설계합니다.</p>` : ""}`;
 }
 
 function renderModel() {
@@ -644,6 +729,7 @@ function drawSchematic(e) {
   if (!svg) return;
   const w = svg.getAttribute("width"), h = svg.getAttribute("height");
   if (w && h && !svg.getAttribute("viewBox")) svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  if (w) svg.style.setProperty("--w", parseFloat(w) * 1.3 + "px");
   svg.removeAttribute("width"); svg.removeAttribute("height");
 }
 
@@ -788,6 +874,7 @@ document.addEventListener("keydown", ev => {
 $("pick").innerHTML = E.map((e, i) => `<option value="${i}">${e.no} · ${esc(outcome(e).res)}${i === selectedIdx ? " (선택)" : ""}</option>`).join("");
 $("pick").addEventListener("change", ev => showDetail(+ev.target.value));
 
-renderHeader(); renderInput(); renderModel(); renderGenExample(); renderReasons(); renderNovelty(); renderHist();
+renderHeader(); renderInput(); renderPdg(); renderModel(); renderGenExample();
+$("schemZoom").addEventListener("click", ev => { const on = $("schem").classList.toggle("full"); ev.target.setAttribute("aria-pressed", on); ev.target.textContent = on ? "화면에 맞추기" : "원래 크기로 보기"; }); renderReasons(); renderNovelty(); renderHist();
 showDetail(selectedIdx ?? 0);
 </script>

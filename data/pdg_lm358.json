@@ -1,0 +1,248 @@
+{
+ "file": "LM358B_knowledge_graph.json",
+ "pdg": {
+  "pins": [
+   {
+    "name": "OUT1",
+    "number": "1",
+    "role": "OUTPUT",
+    "description": "Output of amplifier 1"
+   },
+   {
+    "name": "IN1",
+    "number": "2",
+    "role": "SIGNAL",
+    "description": "Negative input of amplifier 1"
+   },
+   {
+    "name": "IN1_P",
+    "number": "3",
+    "role": "SIGNAL",
+    "description": "Positive input of amplifier 1"
+   },
+   {
+    "name": "V",
+    "number": "4",
+    "role": "GROUND",
+    "description": "Negative (lowest) supply or ground (for single-supply operation)"
+   },
+   {
+    "name": "IN2_P",
+    "number": "5",
+    "role": "SIGNAL",
+    "description": "Positive input of amplifier 2"
+   },
+   {
+    "name": "IN2",
+    "number": "6",
+    "role": "SIGNAL",
+    "description": "Negative input of amplifier 2"
+   },
+   {
+    "name": "OUT2",
+    "number": "7",
+    "role": "OUTPUT",
+    "description": "Output of amplifier 2"
+   },
+   {
+    "name": "V_P",
+    "number": "8",
+    "role": "POWER",
+    "description": "Positive (highest) supply"
+   }
+  ],
+  "edges": [
+   {
+    "source": "V_P",
+    "target": "OUT1",
+    "type": "POWER_FEED",
+    "condition": "Supply voltage 3V to 36V",
+    "origin": "datasheet"
+   },
+   {
+    "source": "V",
+    "target": "OUT1",
+    "type": "POWER_FEED",
+    "condition": "Negative supply or ground reference",
+    "origin": "datasheet"
+   },
+   {
+    "source": "V_P",
+    "target": "OUT2",
+    "type": "POWER_FEED",
+    "condition": "Supply voltage 3V to 36V",
+    "origin": "datasheet"
+   },
+   {
+    "source": "V",
+    "target": "OUT2",
+    "type": "POWER_FEED",
+    "condition": "Negative supply or ground reference",
+    "origin": "datasheet"
+   },
+   {
+    "source": "IN1_P",
+    "target": "OUT1",
+    "type": "SIGNAL_PATH",
+    "condition": "Common-mode input range includes ground",
+    "origin": "datasheet"
+   },
+   {
+    "source": "IN1",
+    "target": "OUT1",
+    "type": "SIGNAL_PATH",
+    "condition": "Common-mode input range includes ground",
+    "origin": "datasheet"
+   },
+   {
+    "source": "IN2_P",
+    "target": "OUT2",
+    "type": "SIGNAL_PATH",
+    "condition": "Common-mode input range includes ground",
+    "origin": "datasheet"
+   },
+   {
+    "source": "IN2",
+    "target": "OUT2",
+    "type": "SIGNAL_PATH",
+    "condition": "Common-mode input range includes ground",
+    "origin": "datasheet"
+   },
+   {
+    "source": "V",
+    "target": "IN1",
+    "type": "TO_SIGNAL",
+    "condition": "동작점 안정",
+    "origin": "rule"
+   },
+   {
+    "source": "V_P",
+    "target": "IN1",
+    "type": "TO_SIGNAL",
+    "condition": "동작점 안정",
+    "origin": "rule"
+   },
+   {
+    "source": "V",
+    "target": "IN1_P",
+    "type": "TO_SIGNAL",
+    "condition": "동작점 안정",
+    "origin": "rule"
+   },
+   {
+    "source": "V_P",
+    "target": "IN1_P",
+    "type": "TO_SIGNAL",
+    "condition": "동작점 안정",
+    "origin": "rule"
+   },
+   {
+    "source": "V",
+    "target": "IN2_P",
+    "type": "TO_SIGNAL",
+    "condition": "동작점 안정",
+    "origin": "rule"
+   },
+   {
+    "source": "V_P",
+    "target": "IN2_P",
+    "type": "TO_SIGNAL",
+    "condition": "동작점 안정",
+    "origin": "rule"
+   },
+   {
+    "source": "V",
+    "target": "IN2",
+    "type": "TO_SIGNAL",
+    "condition": "동작점 안정",
+    "origin": "rule"
+   },
+   {
+    "source": "V_P",
+    "target": "IN2",
+    "type": "TO_SIGNAL",
+    "condition": "동작점 안정",
+    "origin": "rule"
+   }
+  ],
+  "levels": [
+   "전원",
+   "바이어스",
+   "제어",
+   "신호 입력",
+   "출력"
+  ]
+ },
+ "check": {
+  "ok": true,
+  "channels": [
+   {
+    "output": "OUT1",
+    "inputs": [
+     "IN1_P",
+     "IN1"
+    ],
+    "signs": {
+     "IN1_P": "+",
+     "IN1": "−"
+    },
+    "others": [],
+    "ok": true,
+    "problems": []
+   },
+   {
+    "output": "OUT2",
+    "inputs": [
+     "IN2_P",
+     "IN2"
+    ],
+    "signs": {
+     "IN2_P": "+",
+     "IN2": "−"
+    },
+    "others": [],
+    "ok": true,
+    "problems": []
+   }
+  ],
+  "chosen": "OUT1",
+  "mapping": [
+   {
+    "pin": "IN1_P",
+    "number": "3",
+    "role": "SIGNAL",
+    "ours": "IN1 / IN2",
+    "note": "+ 입력"
+   },
+   {
+    "pin": "IN1",
+    "number": "2",
+    "role": "SIGNAL",
+    "ours": "IN1 / IN2",
+    "note": "− 입력"
+   },
+   {
+    "pin": "OUT1",
+    "number": "1",
+    "role": "OUTPUT",
+    "ours": "OUT",
+    "note": "출력"
+   },
+   {
+    "pin": "V_P",
+    "number": "8",
+    "role": "POWER",
+    "ours": "VDD",
+    "note": "양 전원"
+   },
+   {
+    "pin": "V",
+    "number": "4",
+    "role": "GROUND",
+    "ours": "VSS",
+    "note": "음 전원·접지"
+   }
+  ],
+  "summary": "통과: 채널 2개 중 2개가 OP-Amp 5단자와 맞음, 출력 OUT1 채널 사용"
+ }
+}
