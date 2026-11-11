@@ -131,6 +131,20 @@ th { font-weight: 500; color: var(--muted); font-size: 12px; }
 .step.bad { border-color: var(--fail); } .step.bad .v { color: var(--fail); }
 .step.skip { opacity: 0.5; }
 .step .why { font-size: 12px; overflow-wrap: anywhere; line-height: 1.45; }
+.gen { display: grid; gap: 14px; }
+.gen .stage-lab { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.gen .arrowdown { text-align: center; color: var(--accent); font-size: 20px; line-height: 1; }
+.rawout { font-family: var(--mono); font-size: 13px; line-height: 1.9; background: var(--card); border: 1px solid var(--line);
+  border-radius: 6px; padding: 10px 12px; word-break: break-word; }
+.rawout .seg { padding: 1px 3px; border-radius: 3px; cursor: default; }
+.rawout .seg sup { color: var(--muted); font-size: 10px; margin-right: 2px; }
+.rawout .sep { color: var(--muted); margin: 0 4px; }
+.rawout .seg.hl, .stab tr.hl td { background: var(--accent-soft); }
+.stab td, .stab th { white-space: nowrap; }
+.stab td.ln { color: var(--muted); font-family: var(--mono); font-size: 11px; width: 24px; }
+.stab td.kind { color: var(--muted); font-size: 12px; }
+.stab td.pin { font-family: var(--mono); }
+.stab td.pin .p { color: var(--muted); font-size: 11px; margin-right: 4px; }
 .net { font-family: var(--mono); font-size: 12px; padding: 1px 6px; border-radius: 3px; background: var(--wait); }
 .net.rail { color: var(--pm); font-weight: 500; } .net.in { color: var(--accent); font-weight: 500; }
 .net.out { color: var(--warn); font-weight: 500; } .net.bias { color: var(--pass); }
@@ -208,13 +222,16 @@ pre { font-family: var(--mono); font-size: 12px; background: var(--paper); borde
     <p class="muted">스펙 문장을 넣으면 소자 연결 표(구조)를 글로 써 내는 모델입니다. 모든 OP-Amp 데이터로 학습했습니다.</p>
     <div class="panel"><h3>학습 데이터가 만들어진 길</h3><div class="flow" id="flow"></div></div>
     <div class="cols3" id="model"></div>
+    <div class="panel"><h3>모델이 실제로 쓴 결과: <span id="genTitle"></span></h3>
+      <p class="note">모델은 구조를 글 한 줄로 씁니다. 세미콜론(;)으로 나뉜 조각 하나가 소자 하나이고, 각 조각은 소자 이름과 단자별 연결 노드입니다. 이 글을 조각별로 펼친 것이 아래 구조 표입니다. 표의 줄이나 글 조각에 마우스를 올리면 서로 짝이 표시됩니다.</p>
+      <div id="genExample"></div></div>
   </section>
 
   <section>
     <h2><span class="n">3</span>후보 <span id="candCount"></span>개를 하나씩 확인</h2>
     <p class="muted">후보마다 1 규칙 검사, 2 크기 정하기(출력단 전류 1배와 5배), 3 동작 판정, 4 스펙 판정을 거칩니다. 타일을 누르면 아래 5번에 그 후보의 과정이 나옵니다.</p>
     <div class="legend">
-      <span><i style="background:var(--pass)"></i>동작 (숫자는 15개 중 통과 수)</span>
+      <span><i style="background:var(--pass)"></i>동작 (숫자는 <span class="nj"></span>개 중 통과 수)</span>
       <span><i style="background:var(--fail)"></i>크기 정하기·동작 판정 탈락</span>
       <span><i style="background:var(--warn)"></i>규칙 검사 탈락</span>
       <span><i style="background:var(--none)"></i>평가 전</span>
@@ -253,21 +270,19 @@ pre { font-family: var(--mono); font-size: 12px; background: var(--paper); borde
     </div>
     <div class="steps" id="steps"></div>
     <div class="vtabs" id="vtabs"></div>
+    <div class="panel"><h3>모델이 쓴 글과 구조 표</h3><div id="genDetail"></div></div>
     <div class="panel">
       <h3>회로도</h3>
       <p class="note">구조 표와 정한 크기로 netlistsvg가 자동으로 배치한 회로도입니다. 소자 옆 숫자는 W/L(µm)과 병렬 개수입니다.</p>
       <div class="schem" id="schem"></div>
     </div>
-    <div class="panel">
+    <details class="panel"><summary>노드 연결 그림 보기 (소자를 끌어 옮길 수 있음)</summary>
       <div class="panel-head"><h3>회로 연결 그림</h3>
         <div class="legend"><span><i style="border:2px solid var(--pm)"></i>PMOS</span><span><i style="border:2px solid var(--nm)"></i>NMOS</span><span><i style="background:var(--accent-soft)"></i>학습 구조에 없던 소자</span><span><i style="border:3px solid var(--fail)"></i>꺼짐</span><span><i style="border:3px solid var(--warn)"></i>포화 영역 밖</span><span>점선: 게이트 연결</span></div></div>
       <p class="note">네모는 소자, 동그라미는 노드입니다. VDD는 위, VSS는 아래, 입력은 왼쪽, 출력은 오른쪽에 둡니다. 소자를 끌어 옮길 수 있습니다.</p>
       <div class="graph-wrap" id="graph"></div>
-    </div>
-    <div class="two">
-      <div class="panel scroll"><h3>구조 표와 정한 크기</h3><div id="devices"></div></div>
-      <div class="panel scroll"><h3>스펙 판정</h3><div id="specTable"></div></div>
-    </div>
+    </details>
+    <div class="panel scroll"><h3>스펙 판정</h3><div id="specTable"></div></div>
     <div class="two">
       <div class="panel"><div class="panel-head"><h3>개방루프 주파수 응답</h3><span class="note" id="bodeNote"></span></div>
         <p class="note">파란 선이 지금 후보, 회색은 다른 동작 후보입니다. 이득이 0 dB를 지나는 곳이 단위이득 대역폭, 그때 위상이 −180°에서 떨어진 정도가 위상 여유입니다.</p><div id="bode"></div></div>
@@ -504,6 +519,45 @@ function netClass(n) {
   if (/^(VB|IB)/.test(n)) return "bias";
   return "";
 }
+/* 모델이 쓴 글(조각마다 번호)과 그 글을 펼친 구조 표 */
+const KIND = {PM: "PMOS", NM: "NMOS", R: "저항", C: "커패시터"};
+function genView(e, opts = {}) {
+  const sizes = opts.sizes || {}, state = opts.state || {}, added = opts.added || new Set();
+  const stateText = {off: "꺼짐", triode: "포화 밖", startup: "시동 회로"};
+  const raw = e.rows.map(([name, pins], k) => `<span class="seg" data-k="${k}"><sup>${k + 1}</sup>${esc(rowText(name, pins))}</span>`).join('<span class="sep">;</span>');
+  const hasSize = Object.keys(sizes).length > 0;
+  const body = e.rows.map(([name, pins], k) => {
+    const kind = KIND[name.replace(/\d+$/, "")] || "";
+    const cls = name.startsWith("PM") ? "pm" : name.startsWith("NM") ? "nm" : "";
+    const cols = cls ? ["D", "G", "S", "B"] : ["P", null, "N", null];
+    const cells = cols.map(c => c && pins[c] ? `<td class="pin"><span class="p">${c}</span><span class="net ${netClass(pins[c])}">${esc(pins[c])}</span></td>` : "<td></td>").join("");
+    const sz = sizes[name]; const size = sz ? `${sz.w} / ${sz.l}${sz.m ? " ×" + sz.m : ""}` : "";
+    const isNew = added.has(rowText(name, pins));
+    const note = (state[name] ? `<span class="state ${state[name]}">${stateText[state[name]]}</span> ` : "") + (isNew ? '<span class="tag new">학습에 없던 줄</span>' : "");
+    return `<tr data-k="${k}"><td class="ln">${k + 1}</td><td class="dev ${cls}">${esc(name)}</td><td class="kind">${kind}</td>${cells}${hasSize ? `<td class="num">${esc(size)}</td>` : ""}<td>${note}</td></tr>`;
+  }).join("");
+  return `<div class="gen">
+    ${opts.input ? `<div><div class="stage-lab">입력 문장 (데이터시트 목표값)</div><div class="input-line">${esc(opts.input)}</div></div><div class="arrowdown">↓ FLAN-T5</div>` : ""}
+    <div><div class="stage-lab">모델이 쓴 글 그대로 (${e.how === "beam" ? "빔 탐색" : "무작위 생성"}${e.in_train ? ", 학습 데이터에 있던 구조" : ", 학습 데이터에 없던 구조"})</div><div class="rawout">${raw}</div></div>
+    <div class="arrowdown">↓ 조각마다 한 줄로 펼침</div>
+    <div class="scroll"><table class="stab"><thead><tr><th></th><th>소자</th><th>종류</th><th>D (드레인) · P</th><th>G (게이트)</th><th>S (소스) · N</th><th>B (바디)</th>${hasSize ? "<th>W / L × 개수</th>" : ""}<th></th></tr></thead><tbody>${body}</tbody></table></div>
+    <p class="note"><span class="net rail">VDD VSS</span> 전원 · <span class="net in">IN1 IN2</span> 입력 · <span class="net out">OUT</span> 출력 · <span class="net bias">VB IB</span> 바이어스 · N# 내부 노드. 저항·커패시터는 양 끝을 P, N으로 씁니다.</p>
+  </div>`;
+}
+/* 글 조각과 표 줄을 서로 짚어 준다 */
+function linkGen(box) {
+  box.querySelectorAll("[data-k]").forEach(el => {
+    const on = v => box.querySelectorAll(`[data-k="${el.dataset.k}"]`).forEach(x => x.classList.toggle("hl", v));
+    el.addEventListener("mouseenter", () => on(true)); el.addEventListener("mouseleave", () => on(false));
+  });
+}
+function renderGenExample() {
+  const i = selectedIdx != null ? selectedIdx : 0, e = E[i];
+  $("genTitle").textContent = `후보 ${e.no}${i === selectedIdx ? " (선택된 구조)" : ""}`;
+  $("genExample").innerHTML = genView(e, {input: DATA.input});
+  linkGen($("genExample"));
+}
+
 function rowText(name, pins) { return [name, ...Object.entries(pins).map(([p, n]) => `${p}=${n}`)].join(" "); }
 
 let current = null;
@@ -534,18 +588,9 @@ function showDetail(i, scale) {
   // 소자 상태
   const state = {};
   if (v) { (v.off || []).forEach(n => state[n] = "off"); (v.triode || []).forEach(n => state[n] = state[n] || "triode"); (v.startup || []).forEach(n => state[n] = state[n] || "startup"); }
-  const stateText = {off: "꺼짐", triode: "포화 밖", startup: "시동 회로"};
-  // 표
-  const sizes = (v && v.sizes) || {};
-  const rows = e.rows.map(([name, pins]) => {
-    const kind = name.startsWith("PM") ? "pm" : name.startsWith("NM") ? "nm" : "";
-    const nets = Object.entries(pins).map(([p, n]) => `<td>${p} <span class="net ${netClass(n)}">${esc(n)}</span></td>`).join("");
-    const s = sizes[name]; const size = s ? `${s.w} / ${s.l}${s.m ? " ×" + s.m : ""}` : "";
-    const isNew = added.has(rowText(name, pins));
-    return `<tr class="${isNew ? "added" : ""}"><td class="dev ${kind}">${esc(name)}</td>${nets}${"<td></td>".repeat(Math.max(0, 4 - Object.keys(pins).length))}<td class="num">${esc(size)}</td><td>${state[name] ? `<span class="state ${state[name]}">${stateText[state[name]]}</span>` : ""}${isNew ? ' <span class="tag new">새 줄</span>' : ""}</td></tr>`;
-  }).join("");
-  $("devices").innerHTML = `<table><thead><tr><th>소자</th><th colspan="4">단자와 연결 노드</th><th>W / L × 개수</th><th>상태</th></tr></thead><tbody>${rows}</tbody></table>
-    <p class="note" style="margin-top:8px"><span class="net rail">VDD VSS</span> 전원 · <span class="net in">IN1 IN2</span> 입력 · <span class="net out">OUT</span> 출력 · <span class="net bias">VB IB</span> 바이어스 · N# 내부 노드</p>`;
+  // 글과 표
+  $("genDetail").innerHTML = genView(e, {sizes: (v && v.sizes) || {}, state, added});
+  linkGen($("genDetail"));
   // 스펙
   if (v && v.spec && v.spec.length) {
     const by = Object.fromEntries(v.spec.map(s => [s.measure, s]));
@@ -720,6 +765,6 @@ document.addEventListener("keydown", ev => {
 $("pick").innerHTML = E.map((e, i) => `<option value="${i}">${e.no} · ${esc(outcome(e).res)}${i === selectedIdx ? " (선택)" : ""}</option>`).join("");
 $("pick").addEventListener("change", ev => showDetail(+ev.target.value));
 
-renderHeader(); renderInput(); renderModel(); renderReasons(); renderNovelty(); renderHist();
+renderHeader(); renderInput(); renderModel(); renderGenExample(); renderReasons(); renderNovelty(); renderHist();
 showDetail(selectedIdx ?? 0);
 </script>
