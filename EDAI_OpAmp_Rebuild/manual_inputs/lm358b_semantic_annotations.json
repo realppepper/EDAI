@@ -1,0 +1,1126 @@
+{
+  "schema_version": "1.0",
+  "source_document_fingerprint": "6cc14fde14b66ae4eff5b867008d443f66d33b3b937581b0c2e0bd602865918f",
+  "authorship": {
+    "mode": "migrated_existing_chat_assistant_semantics",
+    "external_llm_calls": 0,
+    "previous_authorship": {
+      "mode": "assistant_manual_extraction",
+      "external_llm_api_calls": 0,
+      "description": "The chat assistant interpreted saved Nemotron text and inspected original page images; this is not an autonomous extraction algorithm."
+    }
+  },
+  "row_annotations": [
+    {
+      "row_id": "ROW-cb4f680c5e8b10e7788b",
+      "fields": {
+        "symbol": "VOS",
+        "name": "Input offset voltage",
+        "unit": "mV",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {}
+        },
+        "printed_notation": {
+          "typ": "±0.3",
+          "max": "±3.0"
+        },
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-9cb909840644f9c9b78d",
+      "fields": {
+        "symbol": "VOS",
+        "name": "Input offset voltage",
+        "unit": "mV",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "ambient_temperature_C": {
+              "min": -40,
+              "max": 85
+            }
+          }
+        },
+        "printed_notation": {
+          "max": "±4"
+        },
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-400f45f9c7d2fa90edd5",
+      "fields": {
+        "symbol": "dVOS/dT",
+        "name": "Input offset voltage drift",
+        "unit": "uV/degC",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "ambient_temperature_C": {
+              "min": -40,
+              "max": 85
+            }
+          }
+        },
+        "printed_notation": {
+          "typ": "±3.5"
+        },
+        "notes": [
+          "Specified by characterization only: footnote (1) on page 7."
+        ]
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-c9a1c715d1ff2e8cc63d",
+      "fields": {
+        "symbol": "PSRR",
+        "name": "Power supply rejection ratio (input-referred supply sensitivity)",
+        "unit": "uV/V",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {}
+        },
+        "printed_notation": {
+          "typ": "±2"
+        },
+        "notes": [
+          "Retain printed uV/V representation; do not treat these numbers as dB."
+        ]
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-6f756e80da40387ba9b0",
+      "fields": {
+        "symbol": "Channel separation, dc",
+        "name": "Channel separation",
+        "unit": "uV/V",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "frequency_Hz": {
+              "min": 1000,
+              "max": 20000
+            }
+          }
+        },
+        "printed_notation": {
+          "typ": "±1"
+        },
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-3c4be3d3a4b5045fe78c",
+      "fields": {
+        "symbol": "VCM",
+        "name": "Common-mode voltage range",
+        "unit": "V",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "supply_voltage_V": {
+              "min": 3,
+              "max": 36
+            }
+          }
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {
+        "min": {
+          "expression": "V_minus"
+        },
+        "max": {
+          "expression": "V_plus - 1.5 V"
+        }
+      },
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-6f297f8cd6e7d69fda95",
+      "fields": {
+        "symbol": "VCM",
+        "name": "Common-mode voltage range",
+        "unit": "V",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "ambient_temperature_C": {
+              "min": -40,
+              "max": 85
+            },
+            "supply_voltage_V": {
+              "min": 5,
+              "max": 36
+            }
+          }
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {
+        "min": {
+          "expression": "V_minus"
+        },
+        "max": {
+          "expression": "V_plus - 2 V"
+        }
+      },
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-68074d139bb64e0bb6ba",
+      "fields": {
+        "symbol": "CMRR",
+        "name": "Common-mode rejection ratio (input-referred sensitivity)",
+        "unit": "uV/V",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "supply_voltage_V": {
+              "min": 3,
+              "max": 36
+            },
+            "input_common_mode_V": {
+              "min_expression": "V_minus",
+              "max_expression": "V_plus - 1.5 V"
+            }
+          },
+          "inheritance_replacements": {
+            "input_common_mode_expression": "input_common_mode_V"
+          },
+          "quantity_roles": {
+            "input_common_mode_V": "sweep_range"
+          }
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-473525997036057b9b9c",
+      "fields": {
+        "symbol": "CMRR",
+        "name": "Common-mode rejection ratio (input-referred sensitivity)",
+        "unit": "uV/V",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "ambient_temperature_C": {
+              "min": -40,
+              "max": 85
+            },
+            "input_common_mode_V": {
+              "min_expression": "V_minus",
+              "max_expression": "V_plus - 2 V"
+            }
+          },
+          "inheritance_replacements": {
+            "input_common_mode_expression": "input_common_mode_V"
+          },
+          "quantity_roles": {
+            "input_common_mode_V": "sweep_range"
+          }
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-3bcf1aa4fd33b77c4163",
+      "fields": {
+        "symbol": "IB",
+        "name": "Input bias current",
+        "unit": "nA",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {}
+        },
+        "printed_notation": {},
+        "notes": [
+          "Negative sign indicates current direction. Limit comparison must use the datasheet convention, not a naive signed <= comparison."
+        ]
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-d657da67fb91f54240af",
+      "fields": {
+        "symbol": "IB",
+        "name": "Input bias current",
+        "unit": "nA",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "ambient_temperature_C": {
+              "min": -40,
+              "max": 85
+            }
+          }
+        },
+        "printed_notation": {},
+        "notes": [
+          "Characterization-only footnote (1); signed-current limit convention requires explicit test policy."
+        ]
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-f743aacb3131e1b4bba6",
+      "fields": {
+        "symbol": "IOS",
+        "name": "Input offset current",
+        "unit": "nA",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {}
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-a2d8938fb340ecd767ee",
+      "fields": {
+        "symbol": "IOS",
+        "name": "Input offset current",
+        "unit": "nA",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "ambient_temperature_C": {
+              "min": -40,
+              "max": 85
+            }
+          }
+        },
+        "printed_notation": {},
+        "notes": [
+          "Specified by characterization only."
+        ]
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-81f9bbe81ad9e70b95ba",
+      "fields": {
+        "symbol": "dIOS/dT",
+        "name": "Input offset current drift",
+        "unit": "pA/degC",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "ambient_temperature_C": {
+              "min": -40,
+              "max": 85
+            }
+          }
+        },
+        "printed_notation": {},
+        "notes": [
+          "Original PDF puts 10 in TYP, not MAX; corrects an earlier chat interpretation."
+        ]
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-b47d9f5a6b1c3baa6a7a",
+      "fields": {
+        "symbol": "En",
+        "name": "Input voltage noise (peak-to-peak)",
+        "unit": "uVpp",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "frequency_band_Hz": {
+              "min": 0.1,
+              "max": 10
+            }
+          }
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-6883c47a9886db2265de",
+      "fields": {
+        "symbol": "en",
+        "name": "Input voltage noise density",
+        "unit": "nV/sqrt(Hz)",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "frequency_Hz": 1000
+          }
+        },
+        "printed_notation": {},
+        "notes": [
+          "Normalized from visually printed noise-density unit; extracted slash placement is unreliable."
+        ]
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-ca416af342777faf3802",
+      "fields": {
+        "symbol": "ZID",
+        "name": "Differential input impedance",
+        "unit": "composite",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {}
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {
+        "typ": {
+          "connection": "parallel",
+          "resistance": {
+            "value": 10,
+            "unit": "MOhm"
+          },
+          "capacitance": {
+            "value": 0.1,
+            "unit": "pF"
+          }
+        }
+      },
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-93ef3ba2f3546f9b8bd0",
+      "fields": {
+        "symbol": "ZIC",
+        "name": "Common-mode input impedance",
+        "unit": "composite",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {}
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {
+        "typ": {
+          "connection": "parallel",
+          "resistance": {
+            "value": 4,
+            "unit": "GOhm"
+          },
+          "capacitance": {
+            "value": 1.5,
+            "unit": "pF"
+          }
+        }
+      },
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-f0cd4004581348aa826d",
+      "fields": {
+        "symbol": "AOL",
+        "name": "Open-loop voltage gain",
+        "unit": "V/mV",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "supply_voltage_V": 15,
+            "output_voltage_V": {
+              "min": 1,
+              "max": 11
+            },
+            "load_resistance_Ohm": {
+              "min": 10000,
+              "connected_to": "V_minus"
+            },
+            "load_connected_to": "V_minus"
+          },
+          "inheritance_replacements": {
+            "output_voltage_expression": "output_voltage_V"
+          },
+          "quantity_roles": {
+            "output_voltage_V": "sweep_range"
+          }
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-707b7b4d53034059a649",
+      "fields": {
+        "symbol": "AOL",
+        "name": "Open-loop voltage gain",
+        "unit": "V/mV",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "supply_voltage_V": 15,
+            "output_voltage_V": {
+              "min": 1,
+              "max": 11
+            },
+            "load_resistance_Ohm": {
+              "min": 10000,
+              "connected_to": "V_minus"
+            },
+            "ambient_temperature_C": {
+              "min": -40,
+              "max": 85
+            },
+            "load_connected_to": "V_minus"
+          },
+          "inheritance_replacements": {
+            "output_voltage_expression": "output_voltage_V"
+          },
+          "quantity_roles": {
+            "output_voltage_V": "sweep_range"
+          }
+        },
+        "printed_notation": {},
+        "notes": [
+          "Inherits 15V/output/load conditions from the preceding row, not the generic 5V fixture default."
+        ]
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-39e26162f438017d337e",
+      "fields": {
+        "symbol": "GBW",
+        "name": "Gain bandwidth product",
+        "unit": "MHz",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {}
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-fedbf293a4eb59ad3752",
+      "fields": {
+        "symbol": "SR",
+        "name": "Slew rate",
+        "unit": "V/us",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "closed_loop_gain": 1
+          }
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-a76d6ac21c69433f3d41",
+      "fields": {
+        "symbol": "PM",
+        "name": "Phase margin",
+        "unit": "deg",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "closed_loop_gain": 1,
+            "load_resistance_Ohm": 10000,
+            "load_capacitance_pF": 20
+          }
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-4212d674ce80ec35323f",
+      "fields": {
+        "symbol": "tOR",
+        "name": "Overload recovery time",
+        "unit": "us",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "overload_condition": "VIN * gain > VS"
+          }
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-310e881e039ac454c931",
+      "fields": {
+        "symbol": "ts",
+        "name": "Settling time",
+        "unit": "us",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "settling_error_percent": 0.1,
+            "supply_voltage_V": 5,
+            "input_step_V": 2,
+            "closed_loop_gain": 1,
+            "load_capacitance_pF": 100
+          }
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-77fa5f397a70591c603d",
+      "fields": {
+        "symbol": "THD+N",
+        "name": "Total harmonic distortion plus noise",
+        "unit": "percent",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "closed_loop_gain": 1,
+            "frequency_Hz": 1000,
+            "output_voltage_Vrms": 3.53,
+            "supply_voltage_V": 36,
+            "load_resistance_Ohm": 100000,
+            "output_current_uA": {
+              "min": -50,
+              "max": 50
+            },
+            "measurement_bandwidth_Hz": 80000
+          },
+          "quantity_roles": {
+            "output_voltage_expression": "dc_bias",
+            "output_voltage_Vrms": "ac_rms_amplitude"
+          }
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-4349fc044986bab693b0",
+      "fields": {
+        "symbol": "VO",
+        "name": "Output voltage distance from positive rail",
+        "unit": "V",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "output_rail": "V_plus",
+            "output_current_uA": 50
+          }
+        },
+        "printed_notation": {},
+        "notes": [
+          "Distance from rail, not absolute output voltage."
+        ]
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-c73771aa1fb5927101db",
+      "fields": {
+        "symbol": "VO",
+        "name": "Output voltage distance from positive rail",
+        "unit": "V",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "output_rail": "V_plus",
+            "output_current_uA": 1000
+          }
+        },
+        "printed_notation": {},
+        "notes": [
+          "Distance from rail, not absolute output voltage."
+        ]
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-8e9fb42dd051c1379f25",
+      "fields": {
+        "symbol": "VO",
+        "name": "Output voltage distance from positive rail",
+        "unit": "V",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "output_rail": "V_plus",
+            "output_current_uA": 5000
+          }
+        },
+        "printed_notation": {},
+        "notes": [
+          "Distance from rail, not absolute output voltage.",
+          "Specified by characterization only."
+        ]
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-43eb20240ad2855b18ac",
+      "fields": {
+        "symbol": "VO",
+        "name": "Output voltage distance from negative rail",
+        "unit": "mV",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "output_rail": "V_minus",
+            "output_current_uA": 50
+          }
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-5f0925bb6f3326c878ed",
+      "fields": {
+        "symbol": "VO",
+        "name": "Output voltage distance from negative rail",
+        "unit": "V",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "output_rail": "V_minus",
+            "output_current_uA": 1000
+          }
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-3c1ff72ec3eaff62575d",
+      "fields": {
+        "symbol": "VO",
+        "name": "Output voltage distance from negative rail",
+        "unit": "mV",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "ambient_temperature_C": {
+              "min": -40,
+              "max": 85
+            },
+            "output_rail": "V_minus",
+            "supply_voltage_V": 5,
+            "load_resistance_Ohm": {
+              "max": 10000,
+              "connected_to": "V_minus"
+            },
+            "load_connected_to": "V_minus"
+          }
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-fd1b96c7b5d6bfcd0ba4",
+      "fields": {
+        "symbol": "IO",
+        "name": "Output source current",
+        "unit": "mA",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "supply_voltage_V": 15,
+            "output_voltage_expression": "V_minus",
+            "differential_input_voltage_V": 1,
+            "current_direction": "source"
+          }
+        },
+        "printed_notation": {},
+        "notes": [
+          "Characterization-only; negative current sign and MIN label preserved as printed."
+        ]
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-865b4236fcf008a67d73",
+      "fields": {
+        "symbol": "IO",
+        "name": "Output source current",
+        "unit": "mA",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "ambient_temperature_C": {
+              "min": -40,
+              "max": 85
+            },
+            "supply_voltage_V": 15,
+            "output_voltage_expression": "V_minus",
+            "differential_input_voltage_V": 1,
+            "current_direction": "source"
+          }
+        },
+        "printed_notation": {},
+        "notes": [
+          "Specified by characterization only: inherited Source(1), footnote (1) on page 7."
+        ]
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-1cce85f58f6b4fe47911",
+      "fields": {
+        "symbol": "IO",
+        "name": "Output sink current",
+        "unit": "mA",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "supply_voltage_V": 15,
+            "output_voltage_expression": "V_plus",
+            "differential_input_voltage_V": -1,
+            "current_direction": "sink"
+          }
+        },
+        "printed_notation": {},
+        "notes": [
+          "Specified by characterization only."
+        ]
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-338e343c2c39066ccb0a",
+      "fields": {
+        "symbol": "IO",
+        "name": "Output sink current",
+        "unit": "mA",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "ambient_temperature_C": {
+              "min": -40,
+              "max": 85
+            },
+            "supply_voltage_V": 15,
+            "output_voltage_expression": "V_plus",
+            "differential_input_voltage_V": -1,
+            "current_direction": "sink"
+          }
+        },
+        "printed_notation": {},
+        "notes": [
+          "Specified by characterization only: inherited Sink(1), footnote (1) on page 7."
+        ]
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-eed18685a1634c728ff1",
+      "fields": {
+        "symbol": "IO",
+        "name": "Output current near negative rail",
+        "unit": "uA",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "differential_input_voltage_V": -1,
+            "output_voltage_expression": "V_minus + 200 mV"
+          }
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-16f7ec39d04f8cee8a0f",
+      "fields": {
+        "symbol": "ISC",
+        "name": "Short-circuit current",
+        "unit": "mA",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "supply_voltage_V": 20,
+            "V_plus_V": 10,
+            "V_minus_V": -10,
+            "output_voltage_V": 0
+          },
+          "inheritance_replacements": {
+            "output_voltage_expression": "output_voltage_V"
+          },
+          "quantity_roles": {
+            "output_voltage_V": "explicit_dc_voltage"
+          }
+        },
+        "printed_notation": {
+          "typ": "±40",
+          "max": "±60"
+        },
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-13da7b4dafdeda0b327a",
+      "fields": {
+        "symbol": "CLOAD",
+        "name": "Capacitive load drive",
+        "unit": "pF",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {}
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-54f6536832c6157368f2",
+      "fields": {
+        "symbol": "RO",
+        "name": "Open-loop output resistance",
+        "unit": "Ohm",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "frequency_Hz": 1000000,
+            "output_current_A": 0
+          }
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-85a26aa0e951e2b09af5",
+      "fields": {
+        "symbol": "IQ",
+        "name": "Quiescent current per amplifier",
+        "unit": "uA",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "ambient_temperature_C": {
+              "min": -40,
+              "max": 85
+            },
+            "supply_voltage_V": 5,
+            "output_current_A": 0
+          }
+        },
+        "printed_notation": {},
+        "notes": []
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    },
+    {
+      "row_id": "ROW-285dd5104ba2fb14a3c6",
+      "fields": {
+        "symbol": "IQ",
+        "name": "Quiescent current per amplifier",
+        "unit": "uA",
+        "conditions": {
+          "inherits": "ec_default",
+          "overrides": {
+            "ambient_temperature_C": {
+              "min": -40,
+              "max": 85
+            },
+            "supply_voltage_V": 36,
+            "output_current_A": 0
+          }
+        },
+        "printed_notation": {},
+        "notes": [
+          "Original PDF puts 800 in MAX, not TYP; no typical number printed. Corrects earlier chat and old baseline extraction."
+        ]
+      },
+      "interpreted_limits": {},
+      "proposed_corrections": []
+    }
+  ],
+  "document_annotations": {
+    "condition_sets": {
+      "ec_default": {
+        "source_pages": [
+          6,
+          7
+        ],
+        "applies_unless_overridden": true,
+        "supply_voltage_V": {
+          "min": 5,
+          "max": 36
+        },
+        "ambient_temperature_C": 25,
+        "input_common_mode_expression": "VS/2",
+        "output_voltage_expression": "VS/2",
+        "load_resistance_Ohm": 10000,
+        "load_connected_to": "VS/2"
+      }
+    },
+    "operating_conditions": [
+      {
+        "id": "OP-01",
+        "parameter": "supply_voltage",
+        "min": 3,
+        "max": 36,
+        "unit": "V",
+        "source_page": 5
+      },
+      {
+        "id": "OP-02",
+        "parameter": "input_common_mode_voltage",
+        "min_expression": "V_minus",
+        "max_expression": "V_plus - 2 V",
+        "unit": "V",
+        "source_page": 5
+      },
+      {
+        "id": "OP-03",
+        "parameter": "ambient_temperature",
+        "min": -40,
+        "max": 85,
+        "unit": "degC",
+        "source_page": 5
+      }
+    ],
+    "behavior_constraints": [
+      {
+        "id": "BEH-01",
+        "statement": "Valid common-mode input range is ground to VS - 1.5V, or VS - 2V across temperature.",
+        "source_page": 26
+      },
+      {
+        "id": "BEH-02",
+        "statement": "At least one input must be in valid common-mode range for correct output phase.",
+        "source_page": 26
+      },
+      {
+        "id": "BEH-03",
+        "statement": "If both inputs exceed valid range, output phase is undefined.",
+        "source_page": 26
+      },
+      {
+        "id": "BEH-04",
+        "statement": "If an input is more than 0.3V below V_minus, limit input current to 1mA; output phase is undefined.",
+        "source_page": 26
+      },
+      {
+        "id": "BEH-05",
+        "statement": "Powered on when supply connected; single-supply or split-supply operation is supported.",
+        "source_page": 26
+      }
+    ],
+    "deferred_information": [
+      {
+        "source_pages": [
+          4
+        ],
+        "type": "absolute_maximum_and_ESD",
+        "status": "raw_source_preserved_not_yet_structured"
+      },
+      {
+        "source_pages": [
+          5
+        ],
+        "type": "package_specific_thermal_data",
+        "status": "raw_source_preserved_not_yet_structured"
+      },
+      {
+        "source_pages": [
+          3
+        ],
+        "type": "pin_interface",
+        "status": "raw_source_preserved_not_yet_structured"
+      },
+      {
+        "source_pages": [
+          1,
+          15,
+          16,
+          17,
+          18,
+          19,
+          20,
+          21,
+          24,
+          25,
+          27,
+          28,
+          29
+        ],
+        "type": "overview_graphs_measurement_circuit_and_application_references",
+        "status": "raw_source_preserved_not_yet_structured"
+      }
+    ],
+    "policy_notes": [
+      "Typical values are not guaranteed limits. No arbitrary tolerance or acceptance criterion is added here.",
+      "Expressions, composite values, signed-current conventions and +/- notation are preserved instead of silently discarded.",
+      "The format importer checks JSON shape and source identity only, not numeric/source accuracy."
+    ]
+  }
+}

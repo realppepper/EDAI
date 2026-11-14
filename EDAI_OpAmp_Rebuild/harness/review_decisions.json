@@ -1,0 +1,117 @@
+[
+  {
+    "source_rule": "C1 production-quality/all specifications",
+    "decision": "수정",
+    "reason": "일반 MOS·1채널·25C 및 실제 검증 범위로 제한. 원문 전체 제조 보장은 근거가 없음."
+  },
+  {
+    "source_rule": "C1 PDG physical startup",
+    "decision": "수정",
+    "reason": "논리 의존성과 프로젝트의 시간 정책을 구분. 미확인 지연을 사실로 주지 않음."
+  },
+  {
+    "source_rule": "C2 subckt/pin order",
+    "decision": "채택·구체화",
+    "reason": "FIRSTAMP P N VP VM OUT 고정. LM358 패키지8핀을 그대로 옮기지 않음."
+  },
+  {
+    "source_rule": "C2 ground isolation",
+    "decision": "채택·코드강제",
+    "reason": "DUT 내부0 대신VM/VP. 양전원·PSRR 시험과 일관되게 유지."
+  },
+  {
+    "source_rule": "C2 freely define MOS/BJT/diode models",
+    "decision": "교체",
+    "reason": "GNM/GPM 계수 고정 및M/R/C만 허용. 새 모델 정의·이상적 소스로 목표 우회 금지."
+  },
+  {
+    "source_rule": "C2 physical-only mandate",
+    "decision": "범위수정",
+    "reason": "설계 DUT에 적용. 외부 측정 회로의 B/E/V/I와 기준 회로는 허용."
+  },
+  {
+    "source_rule": "C2 structural/device syntax",
+    "decision": "선별채택",
+    "reason": "중복 이름·단자수·숫자 형식·분석 명령 금지. 현재 인터페이스에 없는 BJT/JFET/인덕터/중첩X는 제외."
+  },
+  {
+    "source_rule": "C2 dual-channel instruction",
+    "decision": "보류",
+    "reason": "현재는1채널. 독립 복사2개로 채널 결합을 검증했다고 주장하지 않음."
+  },
+  {
+    "source_rule": "C3 mandatory100Meg leakage path",
+    "decision": "조건부수정",
+    "reason": "저항은 고이득 노드를 부하로 만들 수 있음. DC경로·이득·기동 교환관계를 확인."
+  },
+  {
+    "source_rule": "C3 ClassAB diodes/Vbe multiplier",
+    "decision": "조건부수정",
+    "reason": "항상 이 구조를 강제하지 않고 출력단 방식에 맞게 교차왜곡·대기전류·단락전류를 확인."
+  },
+  {
+    "source_rule": "C3 bandgap PTAT recipe",
+    "decision": "범위축소",
+    "reason": "밴드갭 레시피는 제외, 자기 바이어스 회로의 기동 확인 원칙만 유지."
+  },
+  {
+    "source_rule": "C3 fixed Cc5-30p/Rz1-5k",
+    "decision": "수치제외",
+    "reason": "단일 숫자 범위는 근거 부족. 실제 바이어스·부하의 검증 결과로 결정. 현재680Ohm Rz도 검증된 사용례."
+  },
+  {
+    "source_rule": "C4 all .meas aligned to PDG",
+    "decision": "교체",
+    "reason": "현재 op/dc/ac/tran 파형·Tian·노이즈 등 각 측정 정의를 사용. 모든 측정이 PDG의 특정 시각 .meas는 아님."
+  },
+  {
+    "source_rule": "C4 startup20us/50us examples",
+    "decision": "제외",
+    "reason": "예시를 제조사 요구로 사용하지 않음. 검사 코드의 현재 시작·관측 창을 전달."
+  },
+  {
+    "source_rule": "C4 XML output",
+    "decision": "교체",
+    "reason": "요청 ID에 결합된 엄격한 JSON+완전한 넷리스트. 부분 XML 자동 보정은 사용하지 않음."
+  },
+  {
+    "source_rule": "LM358 learned Rz=1/gm, sizing ranges",
+    "decision": "조건부·수치제외",
+    "reason": "특정 토폴로지 근사와 경험 숫자. 현재 회로에서 별도 확인 없이 강제하지 않음."
+  },
+  {
+    "source_rule": "LM358 learned curly-brace claim",
+    "decision": "수정",
+    "reason": "LTspice 일반 문법을 단정하지 않음. 현재 검증기는 숫자 값만 허용한다는 인터페이스 제약으로 표현."
+  },
+  {
+    "source_rule": "LM358 blueprint Cc/Rz syntax",
+    "decision": "제외",
+    "reason": "같은 이름 Cc 재사용과 세미콜론 뒤 명령 예시가 모호함. 고정 W/L/전류·Iref·모델 범위 검증 근거도 부족."
+  },
+  {
+    "source_rule": "Other six experience families",
+    "decision": "제외",
+    "reason": "비교기·555·밴드갭·오디오전력 회로 경험을 opamp 고정 지침에 자동 주입하지 않음. 과거 통과율을 재사용하지 않음."
+  },
+  {
+    "source_rule": "Legacy architect omit noise/temp",
+    "decision": "제외",
+    "reason": "현재 미검증 잡음을 생략·통과로 바꾸는 근거가 될 수 없음.25C 범위와 모델 한계를 명시."
+  },
+  {
+    "source_rule": "C5 default",
+    "decision": "선별작성",
+    "reason": "빈 기본값과 특정 LM358 예제는 그대로 가져오지 않고 현재 후보와 조건부 설계 지식만 사용."
+  },
+  {
+    "source_rule": "C6-C8 declarations",
+    "decision": "명시적구현/보류",
+    "reason": "C6은 계산의 근사성 안내, C7은 비활성, C8은 자체 검증기로 강제. 조원 코드에서 이미 모두 작동한다고 가정하지 않음."
+  },
+  {
+    "source_rule": "Harness library bootstrapping",
+    "decision": "비활성",
+    "reason": "이번 루프에서 파일 해시로 지침을 고정. 경험 자동학습과 Harness²는 이후 별도 단계."
+  }
+]

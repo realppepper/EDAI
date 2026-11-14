@@ -1,0 +1,175 @@
+{
+  "schema_version": 1,
+  "id": "opamp_fixed_v1",
+  "mode": "fixed",
+  "harness2_enabled": false,
+  "external_designer_api_enabled": false,
+  "effectiveness": "Plausible operational rules; not yet established by an ablation experiment.",
+  "components": [
+    {
+      "id": "C1",
+      "title": "Scope and evidence",
+      "enabled": true,
+      "rules": [
+        {
+          "id": "C1-1",
+          "text": "Design and revise one generic MOS op-amp at25C under the supplied immutable measurement plan. Report success only for executed, qualified cases."
+        },
+        {
+          "id": "C1-2",
+          "text": "Unknown/model-limited cases remain unknown. A passing numerical subcheck does not certify a whole unsupported specification. Do not promise production silicon or full datasheet compliance."
+        },
+        {
+          "id": "C1-3",
+          "text": "Separate evidence from causal hypotheses. Give concise engineering justifications and predicted tradeoffs; physical causes need targeted probes for confirmation."
+        }
+      ]
+    },
+    {
+      "id": "C2",
+      "title": "DUT syntax and immutable boundaries",
+      "enabled": true,
+      "rules": [
+        {
+          "id": "C2-1",
+          "text": "Return the complete netlist, preserving the exact frozen GNM/GPM model prefix and .subckt FIRSTAMP P N VP VM OUT interface."
+        },
+        {
+          "id": "C2-2",
+          "text": "Inside the DUT use only explicit M/R/C elements, four MOS terminals, GNM/GPM, positive finite W/L and capacitance, nonnegative finite resistance, and unique instance names. Use ASCII netlist text and numeric values supported by the validator."
+        },
+        {
+          "id": "C2-3",
+          "text": "Reference supply pins VM and VP; do not use external node0 inside the DUT. Keep BIAS as an observable bias node for the existing startup contract."
+        },
+        {
+          "id": "C2-4",
+          "text": "Do not add sources, behavioral devices, nested subcircuits, .include/.param, analysis directives or external files to the DUT. Deterministic external testbenches may use ideal sources and calibration models."
+        },
+        {
+          "id": "C2-5",
+          "text": "Do not modify model coefficients, targets, fixtures, temperatures, measurement code, test limits or unknown statuses to obtain a pass."
+        }
+      ]
+    },
+    {
+      "id": "C3",
+      "title": "Conditional design checks, not parameter recipes",
+      "enabled": true,
+      "rules": [
+        {
+          "id": "C3-1",
+          "text": "Check DC bias, headroom, negative-feedback sign and cold startup before interpreting AC or transient failures. Execution errors and missing measurements are different from measured specification failures."
+        },
+        {
+          "id": "C3-2",
+          "text": "For apparently floating internal nodes, investigate a physical DC path. Evaluate loading, leakage, gain and startup effects before adding or resizing any resistor; there is no universal100Meg remedy."
+        },
+        {
+          "id": "C3-3",
+          "text": "For output stages check standing current, crossover/shoot-through, source/sink drive and saturation recovery. Bias choices depend on topology and supply; do not force a universal Class-AB implementation."
+        },
+        {
+          "id": "C3-4",
+          "text": "For multi-stage feedback amplifiers evaluate compensation at actual bias/load and all relevant unity crossings. Do not force canned capacitor/resistor ranges or claim one formula proves stability."
+        },
+        {
+          "id": "C3-5",
+          "text": "Evaluate self-biased references for startup traps and output saturation for stored-charge/node-excursion delays. Treat each as a hypothesis; avoid copying a task-specific known successful netlist as hidden memory."
+        }
+      ]
+    },
+    {
+      "id": "C4",
+      "title": "Execution contract and feedback",
+      "enabled": true,
+      "rules": [
+        {
+          "id": "C4-1",
+          "text": "The host program owns LTspice execution, testbenches, measurement algorithms, qualification, retry policy and final pass/fail. Supply only a candidate netlist and a structured design justification."
+        },
+        {
+          "id": "C4-2",
+          "text": "Use each supplied case supply, load, waveform and error band. PDG describes documented dependencies; scheduled delays are explicit project policy, not automatically manufacturer timing facts."
+        },
+        {
+          "id": "C4-3",
+          "text": "The interface is one channel even when the reference product is dual. Do not invent package-pin mappings or declare channel isolation without a qualified multi-channel coupling test."
+        },
+        {
+          "id": "C4-4",
+          "text": "Return the required complete JSON response with the exact request_id. Do not return XML, markdown fences, truncated netlists or claimed simulator results."
+        }
+      ]
+    },
+    {
+      "id": "C5",
+      "title": "Topology knowledge",
+      "enabled": true,
+      "rules": [
+        {
+          "id": "C5-1",
+          "text": "Use the provided current candidate and first-principles circuit knowledge. Topology changes are allowed within the validator interface, but must retain all test cases and startup observers."
+        },
+        {
+          "id": "C5-2",
+          "text": "No upstream blueprint values are assumed valid for this frozen model, voltage range or target set. Literature or previous lessons require declared provenance and simulation verification."
+        }
+      ]
+    },
+    {
+      "id": "C6",
+      "title": "Calculations",
+      "enabled": true,
+      "rules": [
+        {
+          "id": "C6-1",
+          "text": "Use bias-dependent estimates for gm, headroom, compensation and slew as hypotheses to guide sizing. The external simulator determines measured performance; estimates are not substituted for measurements."
+        }
+      ]
+    },
+    {
+      "id": "C7",
+      "title": "Additional agents",
+      "enabled": false,
+      "rules": []
+    },
+    {
+      "id": "C8",
+      "title": "Host validation",
+      "enabled": true,
+      "rules": [
+        {
+          "id": "C8-1",
+          "text": "The host enforces frozen models, pin order, legal elements, ground isolation, request binding and immutable case coverage. Invalid responses are rejected with feedback, never silently sanitized into another design."
+        },
+        {
+          "id": "C8-2",
+          "text": "Keep raw logs, response/netlist hashes, interrupted runs and the best measured candidate. Unavailable token/cost information is null, not zero."
+        }
+      ]
+    }
+  ],
+  "upstream_source_sha256": "5a8ee81230f66dbb504d0f99a0b3094c4e06f8db5c64d2791e1b766509a3cb56",
+  "instruction_evolution_enabled": false,
+  "automatic_provider_switching_enabled": false,
+  "qualified_measurement_families": [
+    "vos",
+    "iq",
+    "gbw",
+    "pm",
+    "settling",
+    "vcm",
+    "vswing",
+    "aol",
+    "iout",
+    "isc",
+    "sr",
+    "cmrr",
+    "psrr",
+    "ro",
+    "capacitive_drive",
+    "overload_recovery"
+  ],
+  "scope_origin": "Frozen qualified-adapter registry, not whichever tests happened to run on the initial circuit."
+}

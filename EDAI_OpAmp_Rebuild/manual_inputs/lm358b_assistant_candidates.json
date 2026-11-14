@@ -1,0 +1,1833 @@
+{
+  "schema_version": "0.1",
+  "target_product": "LM358B",
+  "source_sha256": "95fd2cc9c87014b32c2939009266e2c5938fc3c11a61d52015fa53fdeef5ab70",
+  "authorship": {
+    "mode": "assistant_manual_extraction",
+    "external_llm_api_calls": 0,
+    "description": "The chat assistant interpreted saved Nemotron text and inspected original page images; this is not an autonomous extraction algorithm."
+  },
+  "verification_status": "candidate_pending_independent_source_verification",
+  "condition_sets": {
+    "ec_default": {
+      "source_pages": [
+        6,
+        7
+      ],
+      "applies_unless_overridden": true,
+      "supply_voltage_V": {
+        "min": 5,
+        "max": 36
+      },
+      "ambient_temperature_C": 25,
+      "input_common_mode_expression": "VS/2",
+      "output_voltage_expression": "VS/2",
+      "load_resistance_Ohm": 10000,
+      "load_connected_to": "VS/2"
+    }
+  },
+  "electrical_specs": [
+    {
+      "id": "LM358B-EC-001",
+      "symbol": "VOS",
+      "name": "Input offset voltage",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 0.3,
+        "max": 3
+      },
+      "unit": "mV",
+      "printed_notation": {
+        "typ": "±0.3",
+        "max": "±3.0"
+      },
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {}
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "VOS Input offset voltage: ±0.3 ±3.0 mV",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 148.5,
+        "value_region_bbox_points": [
+          447,
+          143.5,
+          530,
+          153.5
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-002",
+      "symbol": "VOS",
+      "name": "Input offset voltage",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": null,
+        "max": 4
+      },
+      "unit": "mV",
+      "printed_notation": {
+        "max": "±4"
+      },
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "ambient_temperature_C": {
+            "min": -40,
+            "max": 85
+          }
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "VOS Input offset voltage: ±4 mV",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 160,
+        "value_region_bbox_points": [
+          447,
+          155,
+          530,
+          165
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-003",
+      "symbol": "dVOS/dT",
+      "name": "Input offset voltage drift",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 3.5,
+        "max": 11
+      },
+      "unit": "uV/degC",
+      "printed_notation": {
+        "typ": "±3.5"
+      },
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "ambient_temperature_C": {
+            "min": -40,
+            "max": 85
+          }
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "dVOS/dT Input offset voltage drift: ±3.5 11 µV/°C",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 194.7,
+        "value_region_bbox_points": [
+          447,
+          189.7,
+          530,
+          199.7
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": [
+        "Specified by characterization only: footnote (1) on page 7."
+      ]
+    },
+    {
+      "id": "LM358B-EC-004",
+      "symbol": "PSRR",
+      "name": "Power supply rejection ratio (input-referred supply sensitivity)",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 2,
+        "max": 15
+      },
+      "unit": "uV/V",
+      "printed_notation": {
+        "typ": "±2"
+      },
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {}
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "PSRR Power supply rejection ratio (input-referred supply sensitivity): ±2 15 µV/V",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 206.2,
+        "value_region_bbox_points": [
+          447,
+          201.2,
+          530,
+          211.2
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": [
+        "Retain printed uV/V representation; do not treat these numbers as dB."
+      ]
+    },
+    {
+      "id": "LM358B-EC-005",
+      "symbol": "Channel separation, dc",
+      "name": "Channel separation",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 1,
+        "max": null
+      },
+      "unit": "uV/V",
+      "printed_notation": {
+        "typ": "±1"
+      },
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "frequency_Hz": {
+            "min": 1000,
+            "max": 20000
+          }
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "Channel separation, dc Channel separation: ±1 µV/V",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 217.8,
+        "value_region_bbox_points": [
+          447,
+          212.8,
+          530,
+          222.8
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-006",
+      "symbol": "VCM",
+      "name": "Common-mode voltage range",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": {
+          "expression": "V_minus"
+        },
+        "typ": null,
+        "max": {
+          "expression": "V_plus - 1.5 V"
+        }
+      },
+      "unit": "V",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "supply_voltage_V": {
+            "min": 3,
+            "max": 36
+          }
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "VCM Common-mode voltage range: (V–) (V+) – 1.5 V",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 240.9,
+        "value_region_bbox_points": [
+          447,
+          235.9,
+          530,
+          245.9
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-007",
+      "symbol": "VCM",
+      "name": "Common-mode voltage range",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": {
+          "expression": "V_minus"
+        },
+        "typ": null,
+        "max": {
+          "expression": "V_plus - 2 V"
+        }
+      },
+      "unit": "V",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "ambient_temperature_C": {
+            "min": -40,
+            "max": 85
+          },
+          "supply_voltage_V": {
+            "min": 5,
+            "max": 36
+          }
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "VCM Common-mode voltage range: (V–) (V+) – 2 V",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 252.4,
+        "value_region_bbox_points": [
+          447,
+          247.4,
+          530,
+          257.4
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-008",
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio (input-referred sensitivity)",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 20,
+        "max": 100
+      },
+      "unit": "uV/V",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "supply_voltage_V": {
+            "min": 3,
+            "max": 36
+          },
+          "input_common_mode_V": {
+            "min_expression": "V_minus",
+            "max_expression": "V_plus - 1.5 V"
+          }
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "CMRR Common-mode rejection ratio (input-referred sensitivity): 20 100",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 264,
+        "value_region_bbox_points": [
+          447,
+          259,
+          530,
+          269
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-009",
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio (input-referred sensitivity)",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 25,
+        "max": 316
+      },
+      "unit": "uV/V",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "ambient_temperature_C": {
+            "min": -40,
+            "max": 85
+          },
+          "input_common_mode_V": {
+            "min_expression": "V_minus",
+            "max_expression": "V_plus - 2 V"
+          }
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "CMRR Common-mode rejection ratio (input-referred sensitivity): 25 316",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 275.5,
+        "value_region_bbox_points": [
+          447,
+          270.5,
+          530,
+          280.5
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-010",
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": -10,
+        "max": -35
+      },
+      "unit": "nA",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {}
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "IB Input bias current: –10 –35 nA",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 298.6,
+        "value_region_bbox_points": [
+          447,
+          293.6,
+          530,
+          303.6
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": [
+        "Negative sign indicates current direction. Limit comparison must use the datasheet convention, not a naive signed <= comparison."
+      ]
+    },
+    {
+      "id": "LM358B-EC-011",
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": null,
+        "max": -50
+      },
+      "unit": "nA",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "ambient_temperature_C": {
+            "min": -40,
+            "max": 85
+          }
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "IB Input bias current: –50 nA",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 310.2,
+        "value_region_bbox_points": [
+          447,
+          305.2,
+          530,
+          315.2
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": [
+        "Characterization-only footnote (1); signed-current limit convention requires explicit test policy."
+      ]
+    },
+    {
+      "id": "LM358B-EC-012",
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 0.5,
+        "max": 4
+      },
+      "unit": "nA",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {}
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "IOS Input offset current: 0.5 4 nA",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 321.7,
+        "value_region_bbox_points": [
+          447,
+          316.7,
+          530,
+          326.7
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-013",
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": null,
+        "max": 5
+      },
+      "unit": "nA",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "ambient_temperature_C": {
+            "min": -40,
+            "max": 85
+          }
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "IOS Input offset current: 5 nA",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 333.3,
+        "value_region_bbox_points": [
+          447,
+          328.3,
+          530,
+          338.3
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": [
+        "Specified by characterization only."
+      ]
+    },
+    {
+      "id": "LM358B-EC-014",
+      "symbol": "dIOS/dT",
+      "name": "Input offset current drift",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 10,
+        "max": null
+      },
+      "unit": "pA/degC",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "ambient_temperature_C": {
+            "min": -40,
+            "max": 85
+          }
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "dIOS/dT Input offset current drift: 10 pA/℃",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 344.8,
+        "value_region_bbox_points": [
+          447,
+          339.8,
+          530,
+          349.8
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": [
+        "Original PDF puts 10 in TYP, not MAX; corrects an earlier chat interpretation."
+      ]
+    },
+    {
+      "id": "LM358B-EC-015",
+      "symbol": "En",
+      "name": "Input voltage noise (peak-to-peak)",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 3,
+        "max": null
+      },
+      "unit": "uVpp",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "frequency_band_Hz": {
+            "min": 0.1,
+            "max": 10
+          }
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "En Input voltage noise (peak-to-peak): 3 µVPP",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 367.9,
+        "value_region_bbox_points": [
+          447,
+          362.9,
+          530,
+          372.9
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-016",
+      "symbol": "en",
+      "name": "Input voltage noise density",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 40,
+        "max": null
+      },
+      "unit": "nV/sqrt(Hz)",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "frequency_Hz": 1000
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "en Input voltage noise density: 40 nV/√/Hz",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 379.5,
+        "value_region_bbox_points": [
+          447,
+          374.5,
+          530,
+          384.5
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": [
+        "Normalized from visually printed noise-density unit; extracted slash placement is unreliable."
+      ]
+    },
+    {
+      "id": "LM358B-EC-017",
+      "symbol": "ZID",
+      "name": "Differential input impedance",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": {
+          "connection": "parallel",
+          "resistance": {
+            "value": 10,
+            "unit": "MOhm"
+          },
+          "capacitance": {
+            "value": 0.1,
+            "unit": "pF"
+          }
+        },
+        "max": null
+      },
+      "unit": "composite",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {}
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "ZID Differential input impedance: 10 || 0.1 MΩ|| pF",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 402.6,
+        "value_region_bbox_points": [
+          447,
+          397.6,
+          530,
+          407.6
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-018",
+      "symbol": "ZIC",
+      "name": "Common-mode input impedance",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": {
+          "connection": "parallel",
+          "resistance": {
+            "value": 4,
+            "unit": "GOhm"
+          },
+          "capacitance": {
+            "value": 1.5,
+            "unit": "pF"
+          }
+        },
+        "max": null
+      },
+      "unit": "composite",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {}
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "ZIC Common-mode input impedance: 4 || 1.5 GΩ|| pF",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 414.1,
+        "value_region_bbox_points": [
+          447,
+          409.1,
+          530,
+          419.1
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-019",
+      "symbol": "AOL",
+      "name": "Open-loop voltage gain",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": 70,
+        "typ": 140,
+        "max": null
+      },
+      "unit": "V/mV",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "supply_voltage_V": 15,
+          "output_voltage_V": {
+            "min": 1,
+            "max": 11
+          },
+          "load_resistance_Ohm": {
+            "min": 10000,
+            "connected_to": "V_minus"
+          }
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "AOL Open-loop voltage gain: 70 140 V/mV",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 437.2,
+        "value_region_bbox_points": [
+          447,
+          432.2,
+          530,
+          442.2
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-020",
+      "symbol": "AOL",
+      "name": "Open-loop voltage gain",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": 35,
+        "typ": null,
+        "max": null
+      },
+      "unit": "V/mV",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "supply_voltage_V": 15,
+          "output_voltage_V": {
+            "min": 1,
+            "max": 11
+          },
+          "load_resistance_Ohm": {
+            "min": 10000,
+            "connected_to": "V_minus"
+          },
+          "ambient_temperature_C": {
+            "min": -40,
+            "max": 85
+          }
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "AOL Open-loop voltage gain: 35 V/mV",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 448.8,
+        "value_region_bbox_points": [
+          447,
+          443.8,
+          530,
+          453.8
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": [
+        "Inherits 15V/output/load conditions from the preceding row, not the generic 5V fixture default."
+      ]
+    },
+    {
+      "id": "LM358B-EC-021",
+      "symbol": "GBW",
+      "name": "Gain bandwidth product",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 1.2,
+        "max": null
+      },
+      "unit": "MHz",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {}
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "GBW Gain bandwidth product: 1.2 MHz",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 471.9,
+        "value_region_bbox_points": [
+          447,
+          466.9,
+          530,
+          476.9
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-022",
+      "symbol": "SR",
+      "name": "Slew rate",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 0.5,
+        "max": null
+      },
+      "unit": "V/us",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "closed_loop_gain": 1
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "SR Slew rate: 0.5 V/µs",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 483.4,
+        "value_region_bbox_points": [
+          447,
+          478.4,
+          530,
+          488.4
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-023",
+      "symbol": "PM",
+      "name": "Phase margin",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 56,
+        "max": null
+      },
+      "unit": "deg",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "closed_loop_gain": 1,
+          "load_resistance_Ohm": 10000,
+          "load_capacitance_pF": 20
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "PM Phase margin: 56 °",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 495,
+        "value_region_bbox_points": [
+          447,
+          490,
+          530,
+          500
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-024",
+      "symbol": "tOR",
+      "name": "Overload recovery time",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 10,
+        "max": null
+      },
+      "unit": "us",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "overload_condition": "VIN * gain > VS"
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "tOR Overload recovery time: 10 µs",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 506.5,
+        "value_region_bbox_points": [
+          447,
+          501.5,
+          530,
+          511.5
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-025",
+      "symbol": "ts",
+      "name": "Settling time",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 4,
+        "max": null
+      },
+      "unit": "us",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "settling_error_percent": 0.1,
+          "supply_voltage_V": 5,
+          "input_step_V": 2,
+          "closed_loop_gain": 1,
+          "load_capacitance_pF": 100
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "ts Settling time: 4 µs",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 518.1,
+        "value_region_bbox_points": [
+          447,
+          513.1,
+          530,
+          523.1
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-026",
+      "symbol": "THD+N",
+      "name": "Total harmonic distortion plus noise",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 0.001,
+        "max": null
+      },
+      "unit": "percent",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "closed_loop_gain": 1,
+          "frequency_Hz": 1000,
+          "output_voltage_Vrms": 3.53,
+          "supply_voltage_V": 36,
+          "load_resistance_Ohm": 100000,
+          "output_current_uA": {
+            "min": -50,
+            "max": 50
+          },
+          "measurement_bandwidth_Hz": 80000
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "THD+N Total harmonic distortion plus noise: 0.001 %",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 529.6,
+        "value_region_bbox_points": [
+          447,
+          524.6,
+          530,
+          534.6
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-027",
+      "symbol": "VO",
+      "name": "Output voltage distance from positive rail",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 1.35,
+        "max": 1.42
+      },
+      "unit": "V",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "output_rail": "V_plus",
+          "output_current_uA": 50
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "VO Output voltage distance from positive rail: 1.35 1.42 V",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 552.7,
+        "value_region_bbox_points": [
+          447,
+          547.7,
+          530,
+          557.7
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": [
+        "Distance from rail, not absolute output voltage."
+      ]
+    },
+    {
+      "id": "LM358B-EC-028",
+      "symbol": "VO",
+      "name": "Output voltage distance from positive rail",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 1.4,
+        "max": 1.48
+      },
+      "unit": "V",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "output_rail": "V_plus",
+          "output_current_uA": 1000
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "VO Output voltage distance from positive rail: 1.4 1.48 V",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 564.3,
+        "value_region_bbox_points": [
+          447,
+          559.3,
+          530,
+          569.3
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": [
+        "Distance from rail, not absolute output voltage."
+      ]
+    },
+    {
+      "id": "LM358B-EC-029",
+      "symbol": "VO",
+      "name": "Output voltage distance from positive rail",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 1.5,
+        "max": 1.61
+      },
+      "unit": "V",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "output_rail": "V_plus",
+          "output_current_uA": 5000
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "VO Output voltage distance from positive rail: 1.5 1.61 V",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 575.8,
+        "value_region_bbox_points": [
+          447,
+          570.8,
+          530,
+          580.8
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": [
+        "Distance from rail, not absolute output voltage.",
+        "Specified by characterization only."
+      ]
+    },
+    {
+      "id": "LM358B-EC-030",
+      "symbol": "VO",
+      "name": "Output voltage distance from negative rail",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 100,
+        "max": 150
+      },
+      "unit": "mV",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "output_rail": "V_minus",
+          "output_current_uA": 50
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "VO Output voltage distance from negative rail: 100 150 mV",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 587.4,
+        "value_region_bbox_points": [
+          447,
+          582.4,
+          530,
+          592.4
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-031",
+      "symbol": "VO",
+      "name": "Output voltage distance from negative rail",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 0.75,
+        "max": 1
+      },
+      "unit": "V",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "output_rail": "V_minus",
+          "output_current_uA": 1000
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "VO Output voltage distance from negative rail: 0.75 1 V",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 598.9,
+        "value_region_bbox_points": [
+          447,
+          593.9,
+          530,
+          603.9
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-032",
+      "symbol": "VO",
+      "name": "Output voltage distance from negative rail",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 5,
+        "max": 20
+      },
+      "unit": "mV",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "ambient_temperature_C": {
+            "min": -40,
+            "max": 85
+          },
+          "output_rail": "V_minus",
+          "supply_voltage_V": 5,
+          "load_resistance_Ohm": {
+            "max": 10000,
+            "connected_to": "V_minus"
+          }
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "VO Output voltage distance from negative rail: 5 20 mV",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 610.5,
+        "value_region_bbox_points": [
+          447,
+          605.5,
+          530,
+          615.5
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-033",
+      "symbol": "IO",
+      "name": "Output source current",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": -20,
+        "typ": -30,
+        "max": null
+      },
+      "unit": "mA",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "supply_voltage_V": 15,
+          "output_voltage_expression": "V_minus",
+          "differential_input_voltage_V": 1,
+          "current_direction": "source"
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "IO Output source current: -20 -30",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 622,
+        "value_region_bbox_points": [
+          447,
+          617,
+          530,
+          627
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": [
+        "Characterization-only; negative current sign and MIN label preserved as printed."
+      ]
+    },
+    {
+      "id": "LM358B-EC-034",
+      "symbol": "IO",
+      "name": "Output source current",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": -10,
+        "typ": null,
+        "max": null
+      },
+      "unit": "mA",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "ambient_temperature_C": {
+            "min": -40,
+            "max": 85
+          },
+          "supply_voltage_V": 15,
+          "output_voltage_expression": "V_minus",
+          "differential_input_voltage_V": 1,
+          "current_direction": "source"
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "IO Output source current: -10",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 633.6,
+        "value_region_bbox_points": [
+          447,
+          628.6,
+          530,
+          638.6
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-035",
+      "symbol": "IO",
+      "name": "Output sink current",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": 10,
+        "typ": 20,
+        "max": null
+      },
+      "unit": "mA",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "supply_voltage_V": 15,
+          "output_voltage_expression": "V_plus",
+          "differential_input_voltage_V": -1,
+          "current_direction": "sink"
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "IO Output sink current: 10 20",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 645.1,
+        "value_region_bbox_points": [
+          447,
+          640.1,
+          530,
+          650.1
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": [
+        "Specified by characterization only."
+      ]
+    },
+    {
+      "id": "LM358B-EC-036",
+      "symbol": "IO",
+      "name": "Output sink current",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": 5,
+        "typ": null,
+        "max": null
+      },
+      "unit": "mA",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "ambient_temperature_C": {
+            "min": -40,
+            "max": 85
+          },
+          "supply_voltage_V": 15,
+          "output_voltage_expression": "V_plus",
+          "differential_input_voltage_V": -1,
+          "current_direction": "sink"
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "IO Output sink current: 5",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 656.7,
+        "value_region_bbox_points": [
+          447,
+          651.7,
+          530,
+          661.7
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-037",
+      "symbol": "IO",
+      "name": "Output current near negative rail",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": 60,
+        "typ": 100,
+        "max": null
+      },
+      "unit": "uA",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "differential_input_voltage_V": -1,
+          "output_voltage_expression": "V_minus + 200 mV"
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "IO Output current near negative rail: 60 100 μA",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 668.2,
+        "value_region_bbox_points": [
+          447,
+          663.2,
+          530,
+          673.2
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-038",
+      "symbol": "ISC",
+      "name": "Short-circuit current",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 40,
+        "max": 60
+      },
+      "unit": "mA",
+      "printed_notation": {
+        "typ": "±40",
+        "max": "±60"
+      },
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "supply_voltage_V": 20,
+          "V_plus_V": 10,
+          "V_minus_V": -10,
+          "output_voltage_V": 0
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "ISC Short-circuit current: ±40 ±60 mA",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 679.8,
+        "value_region_bbox_points": [
+          447,
+          674.8,
+          530,
+          684.8
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-039",
+      "symbol": "CLOAD",
+      "name": "Capacitive load drive",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 100,
+        "max": null
+      },
+      "unit": "pF",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {}
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "CLOAD Capacitive load drive: 100 pF",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 691.3,
+        "value_region_bbox_points": [
+          447,
+          686.3,
+          530,
+          696.3
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-040",
+      "symbol": "RO",
+      "name": "Open-loop output resistance",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 300,
+        "max": null
+      },
+      "unit": "Ohm",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "frequency_Hz": 1000000,
+          "output_current_A": 0
+        }
+      },
+      "source": {
+        "pdf_page": 6,
+        "section": "5.5",
+        "evidence": "RO Open-loop output resistance: 300 Ω",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 702.9,
+        "value_region_bbox_points": [
+          447,
+          697.9,
+          530,
+          707.9
+        ],
+        "column_header_y_points": 125.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-041",
+      "symbol": "IQ",
+      "name": "Quiescent current per amplifier",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": 300,
+        "max": 460
+      },
+      "unit": "uA",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "ambient_temperature_C": {
+            "min": -40,
+            "max": 85
+          },
+          "supply_voltage_V": 5,
+          "output_current_A": 0
+        }
+      },
+      "source": {
+        "pdf_page": 7,
+        "section": "5.5",
+        "evidence": "IQ Quiescent current per amplifier: 300 460 µA",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 139.5,
+        "value_region_bbox_points": [
+          447,
+          134.5,
+          530,
+          144.5
+        ],
+        "column_header_y_points": 116.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": []
+    },
+    {
+      "id": "LM358B-EC-042",
+      "symbol": "IQ",
+      "name": "Quiescent current per amplifier",
+      "category": "electrical_characteristic",
+      "target_product": "LM358B",
+      "limits": {
+        "min": null,
+        "typ": null,
+        "max": 800
+      },
+      "unit": "uA",
+      "printed_notation": {},
+      "conditions": {
+        "inherits": "ec_default",
+        "overrides": {
+          "ambient_temperature_C": {
+            "min": -40,
+            "max": 85
+          },
+          "supply_voltage_V": 36,
+          "output_current_A": 0
+        }
+      },
+      "source": {
+        "pdf_page": 7,
+        "section": "5.5",
+        "evidence": "IQ Quiescent current per amplifier: 800 µA",
+        "evidence_kind": "native_value_row_with_assistant_label",
+        "value_row_y_points": 151,
+        "value_region_bbox_points": [
+          447,
+          146,
+          530,
+          156
+        ],
+        "column_header_y_points": 116.4
+      },
+      "review_status": "assistant_reviewed_candidate",
+      "notes": [
+        "Original PDF puts 800 in MAX, not TYP; no typical number printed. Corrects earlier chat and old baseline extraction."
+      ]
+    }
+  ],
+  "operating_conditions": [
+    {
+      "id": "OP-01",
+      "parameter": "supply_voltage",
+      "min": 3,
+      "max": 36,
+      "unit": "V",
+      "source_page": 5
+    },
+    {
+      "id": "OP-02",
+      "parameter": "input_common_mode_voltage",
+      "min_expression": "V_minus",
+      "max_expression": "V_plus - 2 V",
+      "unit": "V",
+      "source_page": 5
+    },
+    {
+      "id": "OP-03",
+      "parameter": "ambient_temperature",
+      "min": -40,
+      "max": 85,
+      "unit": "degC",
+      "source_page": 5
+    }
+  ],
+  "behavior_constraints": [
+    {
+      "id": "BEH-01",
+      "statement": "Valid common-mode input range is ground to VS - 1.5V, or VS - 2V across temperature.",
+      "source_page": 26
+    },
+    {
+      "id": "BEH-02",
+      "statement": "At least one input must be in valid common-mode range for correct output phase.",
+      "source_page": 26
+    },
+    {
+      "id": "BEH-03",
+      "statement": "If both inputs exceed valid range, output phase is undefined.",
+      "source_page": 26
+    },
+    {
+      "id": "BEH-04",
+      "statement": "If an input is more than 0.3V below V_minus, limit input current to 1mA; output phase is undefined.",
+      "source_page": 26
+    },
+    {
+      "id": "BEH-05",
+      "statement": "Powered on when supply connected; single-supply or split-supply operation is supported.",
+      "source_page": 26
+    }
+  ],
+  "policy_notes": [
+    "Typical values are not guaranteed limits. No arbitrary tolerance or acceptance criterion is added here.",
+    "Expressions, composite values, signed-current conventions and +/- notation are preserved instead of silently discarded.",
+    "The format importer checks JSON shape and source identity only, not numeric/source accuracy."
+  ],
+  "deferred_information": [
+    {
+      "source_pages": [
+        4
+      ],
+      "type": "absolute_maximum_and_ESD",
+      "status": "raw_source_preserved_not_yet_structured"
+    },
+    {
+      "source_pages": [
+        5
+      ],
+      "type": "package_specific_thermal_data",
+      "status": "raw_source_preserved_not_yet_structured"
+    },
+    {
+      "source_pages": [
+        3
+      ],
+      "type": "pin_interface",
+      "status": "raw_source_preserved_not_yet_structured"
+    },
+    {
+      "source_pages": [
+        1,
+        15,
+        16,
+        17,
+        18,
+        19,
+        20,
+        21,
+        24,
+        25,
+        27,
+        28,
+        29
+      ],
+      "type": "overview_graphs_measurement_circuit_and_application_references",
+      "status": "raw_source_preserved_not_yet_structured"
+    }
+  ],
+  "input_pages": [
+    5,
+    6,
+    7,
+    26
+  ]
+}

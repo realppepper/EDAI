@@ -1,0 +1,107 @@
+{
+  "export_kind": "read_only_summary_not_checkpoint",
+  "date": "2026-11-15",
+  "proposal_budget_each": 1,
+  "initial_counts": {
+    "execution_error": 1,
+    "failed_in_model": 6,
+    "passed_sampled_model_case": 50,
+    "unverified_adapter": 8,
+    "unverified_model": 15
+  },
+  "conditions": [
+    {
+      "condition": "basic_feedback",
+      "proposal_count": 1,
+      "counts": {
+        "failed_in_model": 1,
+        "passed_sampled_model_case": 57,
+        "unverified_adapter": 7,
+        "unverified_model": 15
+      },
+      "scope_success": false,
+      "regressions": [],
+      "remaining_misses": [
+        {
+          "case_id": "CASE-795b1f61285290aab15c",
+          "symbol": "tOR",
+          "supply_V": 36.0,
+          "status": "failed_in_model",
+          "tests": [
+            {
+              "metric": "overload_recovery",
+              "variant": "high",
+              "value": 1.3121616497463697e-05,
+              "operator": "<=",
+              "limit": 9.999999999999999e-06,
+              "unit": "s",
+              "passed": false
+            },
+            {
+              "metric": "overload_recovery",
+              "variant": "low",
+              "value": 1.1942137750216709e-05,
+              "operator": "<=",
+              "limit": 9.999999999999999e-06,
+              "unit": "s",
+              "passed": false
+            }
+          ],
+          "error": null
+        }
+      ],
+      "proposal_changes": [
+        "Change Ccomp COMP OUT from 8e-11 F to 3.2e-11 F. Preserve Rzero at 680 ohm, every MOS dimension, bias circuit, clamp, model statement and interface."
+      ],
+      "infrastructure_restarts": 0
+    },
+    {
+      "condition": "fixed_guidelines",
+      "proposal_count": 1,
+      "counts": {
+        "failed_in_model": 1,
+        "passed_sampled_model_case": 57,
+        "unverified_adapter": 7,
+        "unverified_model": 15
+      },
+      "scope_success": false,
+      "regressions": [],
+      "remaining_misses": [
+        {
+          "case_id": "CASE-795b1f61285290aab15c",
+          "symbol": "tOR",
+          "supply_V": 36.0,
+          "status": "failed_in_model",
+          "tests": [
+            {
+              "metric": "overload_recovery",
+              "variant": "high",
+              "value": 1.455240175074264e-05,
+              "operator": "<=",
+              "limit": 9.999999999999999e-06,
+              "unit": "s",
+              "passed": false
+            },
+            {
+              "metric": "overload_recovery",
+              "variant": "low",
+              "value": 1.3118143884026779e-05,
+              "operator": "<=",
+              "limit": 9.999999999999999e-06,
+              "unit": "s",
+              "passed": false
+            }
+          ],
+          "error": null
+        }
+      ],
+      "proposal_changes": [
+        "Reduce Ccomp COMP OUT from 8e-11 F to 3.5e-11 F to target bandwidth, slew-limited settling and overload charge removal without increasing the reference current.",
+        "Increase M5 width from 2400u to 3600u at unchanged 2u length to increase second-stage gm at the sink-defined operating current and provide additional output-pole/output-resistance margin as compensation is reduced."
+      ],
+      "infrastructure_restarts": 1
+    }
+  ],
+  "protocol_deviation": "Guideline arm required one same-candidate infrastructure resume after WinError5; original failure record preserved, no extra design proposal.",
+  "conclusion": "One paired task; added fixed text did not improve pass count. Not a statistical result."
+}
