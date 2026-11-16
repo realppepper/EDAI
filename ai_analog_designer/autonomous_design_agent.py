@@ -238,6 +238,43 @@ Return ONLY valid JSON.
         max_iterations: int | None = None,
         use_hermes: bool | None = None
     ) -> dict[str, Any]:
+        """Executes the entire end-to-end pipeline under a single root OpenInference trace span."""
+        from .tracing.phoenix_tracer import flush_traces, set_span_output, trace_span
+
+        target_name = os.path.basename(datasheet_pdf_path) if datasheet_pdf_path else "CUSTOM_CIRCUIT"
+        with trace_span(
+            f"analogverifier.run:{target_name}",
+            span_kind="CHAIN",
+            attributes={
+                "datasheet_pdf_path": datasheet_pdf_path,
+                "max_pages": max_pages,
+                "max_iterations": max_iterations,
+            },
+            input_data={"datasheet_pdf_path": datasheet_pdf_path, "user_prompt": user_prompt},
+        ) as root_span:
+            try:
+                report = self._run_impl(
+                    datasheet_pdf_path=datasheet_pdf_path,
+                    user_prompt=user_prompt,
+                    max_pages=max_pages,
+                    progress_callback=progress_callback,
+                    max_iterations=max_iterations,
+                    use_hermes=use_hermes,
+                )
+                set_span_output(root_span, report.get("summary"))
+                return report
+            finally:
+                flush_traces()
+
+    def _run_impl(
+        self,
+        datasheet_pdf_path: str | None = None,
+        user_prompt: str | None = None,
+        max_pages: int = 12,
+        progress_callback: Any | None = None,
+        max_iterations: int | None = None,
+        use_hermes: bool | None = None
+    ) -> dict[str, Any]:
         """
         Executes the entire end-to-end pipeline:
         Supports:

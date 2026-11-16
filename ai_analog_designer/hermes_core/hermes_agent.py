@@ -455,7 +455,22 @@ CRITICAL: NEVER use ellipses, placeholders, or undefined X-subcircuit stubs in t
                     args["netlist"] = current_nl
 
                 logger.info(f"Hermes invoking tool: '{name}'")
-                output = self.tools.dispatch(name, args)
+                from ..tracing.phoenix_tracer import debug_breakpoint, set_span_output, trace_span
+
+                with trace_span(
+                    f"tool.{name}",
+                    span_kind="TOOL",
+                    attributes={"tool.name": name, "tool.parameters": args},
+                    input_data=args,
+                ) as tool_span:
+                    output = self.tools.dispatch(name, args)
+                    set_span_output(tool_span, output)
+                debug_breakpoint("tool", name, {
+                    "turn": turn_idx,
+                    "tool": name,
+                    "args": args,
+                    "output": output,
+                })
                 tool_outputs.append({"tool": name, "output": output})
 
                 # Check if netlist validation or verification was run
@@ -571,6 +586,23 @@ CRITICAL: NEVER use ellipses, placeholders, or undefined X-subcircuit stubs in t
                 turn_result.tool_outputs.append({"tool": "auto_verify_circuit_pdg_gate", "output": eval_out})
 
         self.trajectory.append(turn_result)
+        from ..tracing.phoenix_tracer import debug_breakpoint
+        debug_breakpoint(
+            "turn",
+            f"turn_{turn_idx}",
+            {
+                "turn_index": turn_idx,
+                "pass_rate": turn_result.pass_rate,
+                "passed_specs": turn_result.passed_specs,
+                "total_specs": turn_result.total_specs,
+                "state_decision": state_decision,
+                "tool_calls": turn_result.tool_calls,
+                "tool_outputs": turn_result.tool_outputs,
+                "netlist_extracted": turn_result.netlist_extracted,
+                "messages": self.messages,
+            },
+            snapshot_dir=os.path.join(self.workspace_dir, "debug_snapshots"),
+        )
         return turn_result
 
     def run_autonomous_loop(
@@ -597,7 +629,20 @@ CRITICAL: NEVER use ellipses, placeholders, or undefined X-subcircuit stubs in t
             if progress_callback:
                 progress_callback(3, f"Hermes Agent Loop (Turn {turn}/{max_turns})", "Agent reasoning, tool dispatching & verifying...")
 
-            turn_res = self.run_turn(turn)
+            from ..tracing.phoenix_tracer import set_span_output, trace_span
+            with trace_span(
+                f"hermes.turn_{turn}",
+                span_kind="AGENT",
+                attributes={"turn": turn, "max_turns": max_turns},
+                input_data=self.messages[-1] if self.messages else None,
+            ) as turn_span:
+                turn_res = self.run_turn(turn)
+                set_span_output(turn_span, {
+                    "pass_rate": turn_res.pass_rate,
+                    "passed_specs": turn_res.passed_specs,
+                    "total_specs": turn_res.total_specs,
+                    "tool_calls": [c.get("name") for c in turn_res.tool_calls],
+                })
 
             if turn_res.netlist_extracted and (turn_res.pass_rate > best_pass_rate or not best_netlist):
                 best_pass_rate = turn_res.pass_rate

@@ -93,6 +93,17 @@ PROVIDERS = {
         "frontier_model": lambda: os.environ.get("LLM_FRONTIER_MODEL", "openai/gpt-oss-120b"),
         "supports_json_mode": True,
     },
+    "wusrouter": {
+        "base_url": lambda: os.environ.get("WUSROUTER_BASE_URL", "https://wusrouter.com/v1").rstrip("/") + "/chat/completions",
+        "key_env": "WUSROUTER_API_KEY",
+        "default_model": lambda: os.environ.get("LLM_MODEL", "mimo-v2.5:free"),
+        "fallback_models": lambda: [m for m in os.environ.get(
+            "LLM_FALLBACK_MODELS", "mimo-v2.5:free,ws/gpt-5.6-terra:free,zai/glm-5.3-flash:free,cohere/north-mini-code:free,ws/gpt-5.6-luna:free").split(",") if m],
+        "fast_model": lambda: os.environ.get("LLM_FAST_MODEL", "zai/glm-5.3-flash:free"),
+        "capable_model": lambda: os.environ.get("LLM_CAPABLE_MODEL", "mimo-v2.5:free"),
+        "frontier_model": lambda: os.environ.get("LLM_FRONTIER_MODEL", "ws/gpt-5.6-terra:free"),
+        "supports_json_mode": True,
+    },
 }
 
 
@@ -203,7 +214,12 @@ class LLMClient:
         self.provider = (provider or os.environ.get("LLM_PROVIDER") or
                          ("nim" if os.environ.get("NVIDIA_API_KEY") else "openrouter")).lower()
         cfg = PROVIDERS[self.provider]
-        self.api_key = api_key or os.environ.get(cfg["key_env"], "")
+        self.api_key = (api_key or os.environ.get(cfg["key_env"], "")).strip()
+        if not self.api_key:
+            raise RuntimeError(
+                f"Missing required API key '{cfg['key_env']}' for LLM provider '{self.provider}'. "
+                f"Set {cfg['key_env']} in your environment or .env."
+            )
         self.base_url = base_url or cfg["base_url"]()
         self.scheduler_mode = os.environ.get("LLM_SCHEDULER", "adaptive").strip().lower()
         if self.scheduler_mode not in {"adaptive", "legacy"}:
@@ -465,63 +481,89 @@ class LLMClient:
         chain = self._dedupe_models(model_chain) if model_chain is not None else self.model_chain_for(tag, model)
         if not chain:
             raise RuntimeError("LLM model chain is empty")
-        last_err = None
-        for m in chain:
-            for attempt in range(1, retries + 1):
-                payload: dict[str, Any] = {"model": m, "messages": messages_payload,
-                                           "temperature": temperature, "max_tokens": max_tokens}
-                payload.update(model_extra_body(self.provider, m))
-                if response_format and self.supports_json_mode:
-                    payload["response_format"] = response_format
-                t0 = time.perf_counter()
-                _acquire_slot(self.min_interval_s)
-                try:
-                    request_timeout, first_token_timeout = self._timeouts_for_model(m, timeout_profile)
-                    res = self._stream_call(
-                        payload,
-                        request_timeout=request_timeout,
-                        first_token_timeout=first_token_timeout,
-                    )
-                    text = _strip_think(res["text"])
-                    if not text.strip():
-                        raise RuntimeError("empty completion")
-                    self._log(tag, m, attempt, "ok", res)
-                    return text
-                except urllib.error.HTTPError as e:
-                    body = e.read().decode("utf-8", errors="ignore")[:300]
-                    last_err = f"HTTP {e.code}: {body}"
-                    self._log(tag, m, attempt, f"http_{e.code}", {"total_s": round(time.perf_counter() - t0, 2)}, last_err)
-                    if e.code == 400 and "response_format" in payload and response_format:
-                        # some models reject json mode; retry without it
-                        response_format = None
-                        continue
-                    if e.code == 413:
-                        # Request too large (TPM limit exceeded due to prompt + max_tokens upfront reservation)
-                        if payload.get("max_tokens", 0) > 1024:
-                            payload["max_tokens"] = 1024
+        from .tracing.phoenix_tracer import debug_breakpoint, set_span_output, trace_span
+
+        with trace_span(
+            f"llm.{tag or 'complete'}",
+            span_kind="LLM",
+            attributes={
+                "llm.provider": self.provider,
+                "llm.model_name": chain[0],
+                "llm.invocation_parameters": {"temperature": temperature, "max_tokens": max_tokens},
+                "llm.input_messages": messages_payload,
+            },
+            input_data=messages_payload,
+        ) as otel_span:
+            last_err = None
+            for m in chain:
+                for attempt in range(1, retries + 1):
+                    payload: dict[str, Any] = {"model": m, "messages": messages_payload,
+                                               "temperature": temperature, "max_tokens": max_tokens}
+                    payload.update(model_extra_body(self.provider, m))
+                    if response_format and self.supports_json_mode:
+                        payload["response_format"] = response_format
+                    t0 = time.perf_counter()
+                    _acquire_slot(self.min_interval_s)
+                    try:
+                        request_timeout, first_token_timeout = self._timeouts_for_model(m, timeout_profile)
+                        res = self._stream_call(
+                            payload,
+                            request_timeout=request_timeout,
+                            first_token_timeout=first_token_timeout,
+                        )
+                        text = _strip_think(res["text"])
+                        if not text.strip():
+                            raise RuntimeError("empty completion")
+                        self._log(tag, m, attempt, "ok", res)
+                        usage = res.get("usage") or {}
+                        set_span_output(otel_span, text, {
+                            "llm.model_name": m,
+                            "llm.token_count.prompt": usage.get("prompt_tokens"),
+                            "llm.token_count.completion": usage.get("completion_tokens"),
+                        })
+                        debug_breakpoint("llm", tag or m, {
+                            "provider": self.provider,
+                            "model": m,
+                            "tag": tag,
+                            "messages": messages_payload,
+                            "response": text,
+                        })
+                        return text
+                    except urllib.error.HTTPError as e:
+                        body = e.read().decode("utf-8", errors="ignore")[:300]
+                        last_err = f"HTTP {e.code}: {body}"
+                        self._log(tag, m, attempt, f"http_{e.code}", {"total_s": round(time.perf_counter() - t0, 2)}, last_err)
+                        if e.code == 400 and "response_format" in payload and response_format:
+                            # some models reject json mode; retry without it
+                            response_format = None
                             continue
-                    if e.code in (401, 403, 404):
-                        break  # model unavailable for this key -> next model
-                    wait_s = 2 * attempt
-                    if e.code == 429:
-                        m_wait = re.search(r"try again in ([0-9.]+)s", body)
-                        if m_wait:
-                            wait_s = min(float(m_wait.group(1)) + 0.5, 20.0)
-                        else:
-                            wait_s = min(8.0 * attempt, 20.0)
-                    time.sleep(wait_s)
-                except LLMBudgetExceeded:
-                    raise
-                except Exception as e:
-                    last_err = f"{type(e).__name__}: {e}"
-                    self._log(tag, m, attempt, "timeout" if "timed out" in str(e).lower() or isinstance(e, LLMTimeout) else "error",
-                              {"total_s": round(time.perf_counter() - t0, 2)}, last_err)
-                    if isinstance(e, LLMTimeout) or "timed out" in str(e).lower():
-                        break  # stalled model -> fall back immediately instead of retrying
-                    time.sleep(2 * attempt)
-                finally:
-                    _GLOBAL_SEM.release()
-        raise RuntimeError(f"LLM call failed on all models {chain}: {last_err}")
+                        if e.code == 413:
+                            # Request too large (TPM limit exceeded due to prompt + max_tokens upfront reservation)
+                            if payload.get("max_tokens", 0) > 1024:
+                                payload["max_tokens"] = 1024
+                                continue
+                        if e.code in (401, 403, 404):
+                            break  # model unavailable for this key -> next model
+                        wait_s = 2 * attempt
+                        if e.code == 429:
+                            m_wait = re.search(r"try again in ([0-9.]+)s", body)
+                            if m_wait:
+                                wait_s = min(float(m_wait.group(1)) + 0.5, 20.0)
+                            else:
+                                wait_s = min(8.0 * attempt, 20.0)
+                        time.sleep(wait_s)
+                    except LLMBudgetExceeded:
+                        raise
+                    except Exception as e:
+                        last_err = f"{type(e).__name__}: {e}"
+                        self._log(tag, m, attempt, "timeout" if "timed out" in str(e).lower() or isinstance(e, LLMTimeout) else "error",
+                                  {"total_s": round(time.perf_counter() - t0, 2)}, last_err)
+                        if isinstance(e, LLMTimeout) or "timed out" in str(e).lower():
+                            break  # stalled model -> fall back immediately instead of retrying
+                        time.sleep(2 * attempt)
+                    finally:
+                        _GLOBAL_SEM.release()
+            raise RuntimeError(f"LLM call failed on all models {chain}: {last_err}")
 
     def _log(self, tag, model, attempt, status, res, error=None):
         entry = {"ts": time.time(), "tag": tag, "provider": self.provider, "model": model, "attempt": attempt,

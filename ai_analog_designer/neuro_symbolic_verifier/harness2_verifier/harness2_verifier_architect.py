@@ -132,7 +132,7 @@ Design an automated LTspice physical measurement fixture for an unsupported spec
    - Must instantiate DUT with subcircuit pins: `XDUT <nodes...> DUT`
 3. Measurement Directives:
    - Must generate one or more `.meas` lines computing the target parameter.
-   - Output measurement name should be '{sym.lower()}'.
+   - Output measurement name should be '{str(sym).lower()}'.
 
 ## OUTPUT FORMAT:
 Respond with:

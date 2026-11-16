@@ -118,6 +118,11 @@ class HardwareKnowledgeGraphBuilder:
             self.spec_max_tokens,
             int(os.environ.get("HKG_RETRY_SPEC_MAX_TOKENS", "5000")),
         )
+        single_shot_env = os.environ.get("HKG_SINGLE_SHOT_SPECS")
+        if single_shot_env is None:
+            self.single_shot_specs = getattr(self.llm, "provider", "") == "groq"
+        else:
+            self.single_shot_specs = single_shot_env.strip().lower() in {"1", "true", "yes"}
 
     def extract_raw(
         self,
@@ -132,7 +137,8 @@ class HardwareKnowledgeGraphBuilder:
         pin_pages = P.select_pages(parsed_data, "pins")
         func_pages = P.select_pages(parsed_data, "functional")[:2]
         spec_pages = [] if pins_only else P.select_pages(parsed_data, "specs")[: self.max_spec_pages]
-        pin_text = P.page_tagged_text(parsed_data, sorted(set(pin_pages + func_pages)), 30000)
+        pin_text_limit = int(os.environ.get("HKG_PIN_TEXT_CHARS", "12000"))
+        pin_text = P.page_tagged_text(parsed_data, sorted(set(pin_pages + func_pages)), pin_text_limit)
         ic_guess = re.sub(r'\.pdf$', '', parsed_data.get("source_file", "IC"), flags=re.IGNORECASE).upper()
 
         # Spec tables are extracted ONE PAGE PER CALL in parallel: a single call over all spec pages emits
@@ -161,6 +167,55 @@ class HardwareKnowledgeGraphBuilder:
                     row["page"] = page_num
             return rows
 
+        # Single-shot specification extraction for large-context/high-output models (e.g. Groq openai/gpt-oss-120b)
+        if self.single_shot_specs and spec_pages:
+            logger.info(
+                f"Single-shot specification extraction across pages {spec_pages} "
+                f"using {self.llm.model_tiers.get('capable', self.llm.default_model)}..."
+            )
+            combined_spec_text = P.page_tagged_text(parsed_data, spec_pages, 60000, layout=True)
+            try:
+                pins_json = self.llm.complete_json(
+                    PINS_PROMPT.format(text=pin_text, roles="|".join(ROLES)),
+                    system_prompt=sys_p,
+                    max_tokens=3000,
+                    tag="hkg_pins",
+                    timeout_profile="extraction",
+                )
+                single_res = self.llm.complete_json(
+                    SPECS_PROMPT.format(text=combined_spec_text, ic=ic_guess),
+                    system_prompt=sys_p,
+                    model=self.llm.model_tiers.get("capable"),
+                    max_tokens=16384,
+                    tag="hkg_specs_single_shot",
+                    timeout_profile="extraction",
+                )
+                rows = [r for r in (single_res.get("electrical_parameters") or []) if isinstance(r, dict)]
+                if rows:
+                    for idx, pn in enumerate(spec_pages):
+                        if progress_callback:
+                            progress_callback(idx + 1, len(spec_pages), pn, None)
+                    specs_json = {"electrical_parameters": rows}
+                    raw_pins = pins_json.get("pins") or pins_json.get("pin_interface") or []
+                    cleaned_pins = []
+                    for p in raw_pins:
+                        if isinstance(p, dict):
+                            p_copy = dict(p)
+                            if not p_copy.get("name") and p_copy.get("pin_name"):
+                                p_copy["name"] = p_copy["pin_name"]
+                            cleaned_pins.append(p_copy)
+                    return {
+                        "ic_info": pins_json.get("ic_info", {}),
+                        "pins": cleaned_pins,
+                        "port_dependencies": pins_json.get("port_dependencies", []),
+                        "functional_blocks": pins_json.get("functional_blocks", []),
+                        "electrical_parameters": specs_json["electrical_parameters"],
+                        "failed_spec_pages": [],
+                    }
+                logger.warning("Single-shot spec extraction returned 0 rows; falling back to per-page extraction.")
+            except Exception as e:
+                logger.warning(f"Single-shot spec extraction failed ({e}); falling back to per-page extraction.")
+
         if self.parallel_spec_calls <= 1:
             pins_json = self.llm.complete_json(
                 PINS_PROMPT.format(text=pin_text, roles="|".join(ROLES)),
@@ -183,11 +238,34 @@ class HardwareKnowledgeGraphBuilder:
                     if progress_callback:
                         progress_callback(completed_pages, len(spec_pages), pn, failure["error"])
         else:
+            try:
+                from opentelemetry import context as otel_context
+                parent_ctx = otel_context.get_current()
+            except Exception:
+                otel_context = None
+                parent_ctx = None
+
+            def _with_ctx(fn, *args, **kwargs):
+                if otel_context is not None and parent_ctx is not None:
+                    tok = otel_context.attach(parent_ctx)
+                    try:
+                        return fn(*args, **kwargs)
+                    finally:
+                        otel_context.detach(tok)
+                return fn(*args, **kwargs)
+
             with cf.ThreadPoolExecutor(max_workers=1 + self.parallel_spec_calls) as ex:
-                f_pins = ex.submit(self.llm.complete_json, PINS_PROMPT.format(text=pin_text, roles="|".join(ROLES)),
-                                   system_prompt=sys_p, max_tokens=min(3000, self.spec_max_tokens), tag="hkg_pins", timeout_profile="extraction")
+                f_pins = ex.submit(
+                    _with_ctx,
+                    self.llm.complete_json,
+                    PINS_PROMPT.format(text=pin_text, roles="|".join(ROLES)),
+                    system_prompt=sys_p,
+                    max_tokens=min(3000, self.spec_max_tokens),
+                    tag="hkg_pins",
+                    timeout_profile="extraction",
+                )
                 for pn in spec_pages:
-                    spec_jobs[ex.submit(extract_spec_page, pn)] = pn
+                    spec_jobs[ex.submit(_with_ctx, extract_spec_page, pn)] = pn
                 completed_pages = 0
                 for f in cf.as_completed(spec_jobs):
                     pn = spec_jobs[f]

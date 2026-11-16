@@ -70,6 +70,14 @@ Governed by Google Research Harness² Architecture (arXiv:2603.22472).
 ## Strict Physical Analog Invariants & Guardrails (C2 Guardrails)
 {tree.c2_guardrails.strip()}
 
+### LTspice SPICE Syntax Cheat Sheet (Mandatory)
+- **BJT (`Q`)**: `Qxxx C B E <NPN_MODEL|PNP_MODEL>` — strictly **3 pins** + BJT `.model`; NEVER attach `NMOS`/`PMOS` or `W=`/`L=`.
+- **MOSFET (`M`)**: `Mxxx D G S B <NMOS_MODEL|PMOS_MODEL> W=<val> L=<val>` — strictly **4 pins** + MOSFET `.model`.
+- **Diode (`D`) / Passives (`R`, `C`, `L`)**: `Dxxx anode cathode <DIODE_MODEL>`, `Rxxx n1 n2 <val>`, `Cxxx n1 n2 <val>`.
+- **No inline `.model` params**: NEVER write `(VTO=0.7 ...)` on `Q`/`M` instance lines; define `.model <NAME> <TYPE>(...)` on its own line.
+- **Unique internal nodes**: Keep internal nodes (`N_TAIL`, `N_DIFF1`, `N_GAIN`, `N_BIAS`) distinct from external `.subckt` pins; never short output/input/supply pins together.
+- **Template-first tuning**: Start from a retrieved blueprint skeleton (`retrieve_subcircuit_blueprint`) and tune `W/L`, bias `R`, and compensation `C` values rather than inventing ad-hoc syntax.
+
 ## Tool Guidance & Simulation Alignment (C4 Tool Guidance)
 {tree.c4_tool_guidance.strip()}
 """

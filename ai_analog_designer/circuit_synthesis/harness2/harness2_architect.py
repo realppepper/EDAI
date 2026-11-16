@@ -52,16 +52,21 @@ class Harness2CircuitArchitect:
         self.groq_client = (
             llm_client if selected_provider == "groq" else (LLMClient(provider="groq") if os.environ.get("GROQ_API_KEY") else None)
         )
+        self.wusrouter_client = (
+            llm_client if selected_provider == "wusrouter" else (LLMClient(provider="wusrouter") if os.environ.get("WUSROUTER_API_KEY") else None)
+        )
         improver_provider = (improver_provider or os.environ.get("HARNESS2_IMPROVER_PROVIDER") or selected_provider).lower()
         synthesizer_provider = (synthesizer_provider or os.environ.get("HARNESS2_SYNTHESIZER_PROVIDER") or selected_provider).lower()
-        if improver_provider not in {"nim", "openrouter", "groq"} or synthesizer_provider not in {"nim", "openrouter", "groq"}:
-            raise ValueError("Harness² providers must be 'nim', 'openrouter', or 'groq'")
+        allowed_providers = {"nim", "openrouter", "groq", "wusrouter"}
+        if improver_provider not in allowed_providers or synthesizer_provider not in allowed_providers:
+            raise ValueError("Harness² providers must be 'nim', 'openrouter', 'groq', or 'wusrouter'")
 
         self.library = HarnessLibrary(root_dir=library_root)
         self.proposer = Harness2Proposer(
             nim_client=self.nim_client,
             openrouter_client=self.openrouter_client,
             groq_client=self.groq_client,
+            wusrouter_client=self.wusrouter_client,
             improver_provider=improver_provider,
             synthesizer_provider=synthesizer_provider
         )

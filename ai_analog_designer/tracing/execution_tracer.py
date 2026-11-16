@@ -92,6 +92,12 @@ class ExecutionTracer:
         if self.active_span:
             self.active_span.finish(outputs=outputs, status=status)
             logger.info(f"[Trace:Phase {self.active_span.phase}] END: {self.active_span.name} ({self.active_span.duration_ms:.1f}ms - {status})")
+            from .phoenix_tracer import debug_breakpoint
+            debug_breakpoint(
+                "phase",
+                f"phase_{self.active_span.phase}_{self.active_span.name}",
+                self.active_span.to_dict(),
+            )
             self.active_span = None
 
     def record_error(self, exc: Exception, remediation: str = ""):

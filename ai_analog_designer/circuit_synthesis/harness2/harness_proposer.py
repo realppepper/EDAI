@@ -26,30 +26,36 @@ class Harness2Proposer:
         nim_client: LLMClient | None = None,
         openrouter_client: LLMClient | None = None,
         groq_client: LLMClient | None = None,
+        wusrouter_client: LLMClient | None = None,
         improver_provider: str = "nim",
         synthesizer_provider: str = "openrouter"
     ):
-        # Improver (proposer/composer): Can use Groq, NVIDIA NIM, or OpenRouter
+        # Improver (proposer/composer): Can use Groq, NVIDIA NIM, OpenRouter, or WusRouter
         self.nim_client = nim_client or (LLMClient(provider="nim") if os.environ.get("NVIDIA_API_KEY") else None)
         self.openrouter_client = openrouter_client or (LLMClient(provider="openrouter") if os.environ.get("OPENROUTER_API_KEY") else None)
         self.groq_client = groq_client or (LLMClient(provider="groq") if os.environ.get("GROQ_API_KEY") else None)
+        self.wusrouter_client = wusrouter_client or (LLMClient(provider="wusrouter") if os.environ.get("WUSROUTER_API_KEY") else None)
 
         self.improver_provider = improver_provider.lower()
         self.synthesizer_provider = synthesizer_provider.lower()
 
     def get_improver_client(self) -> LLMClient:
+        if self.improver_provider == "wusrouter" and self.wusrouter_client:
+            return self.wusrouter_client
         if self.improver_provider == "groq" and self.groq_client:
             return self.groq_client
         if self.improver_provider == "nim" and self.nim_client:
             return self.nim_client
-        return self.openrouter_client or self.groq_client or self.nim_client
+        return self.wusrouter_client or self.openrouter_client or self.groq_client or self.nim_client
 
     def get_synthesizer_client(self) -> LLMClient:
+        if self.synthesizer_provider == "wusrouter" and self.wusrouter_client:
+            return self.wusrouter_client
         if self.synthesizer_provider == "groq" and self.groq_client:
             return self.groq_client
         if self.synthesizer_provider == "openrouter" and self.openrouter_client:
             return self.openrouter_client
-        return self.nim_client or self.groq_client or self.openrouter_client
+        return self.wusrouter_client or self.nim_client or self.groq_client or self.openrouter_client
 
     def propose_edits(
         self,

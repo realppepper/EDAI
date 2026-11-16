@@ -17,7 +17,6 @@ import re
 import urllib.error
 import urllib.parse
 import urllib.request
-from concurrent.futures import ThreadPoolExecutor
 from typing import Any
 
 from ai_analog_designer.llm_client import _load_env
@@ -26,17 +25,14 @@ _load_env()
 
 logger = logging.getLogger("WebCircuitReferenceSearch")
 
-DEFAULT_EXA_API_KEY = "b7469f29-80ac-4134-9ad8-b7fbb77f1968"
-DEFAULT_TAVILY_API_KEY = "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"
+IEEE_XPLORE_API_URL = "https://ieeexploreapi.ieee.org/api/v1/search/articles"
 IEEE_OPENALEX_HOST_ORG = "https://openalex.org/P4310319808"  # IEEE Organization ID in OpenAlex
 
 
 class WebCircuitReferenceSearcher:
     """
-    Triple-engine reference retriever combining:
-      1. IEEE Academic Literature (OpenAlex + IEEE Xplore API)
-      2. Tavily Search API (synthesized answers & technical web snippets)
-      3. Exa Neural Search API (datasheets, SPICE repositories, manufacturer app notes)
+    IEEE Academic Literature retriever (IEEE Xplore API + OpenAlex).
+    Tavily and Exa are intentionally excluded; IEEE_API_KEY is strictly required.
     """
 
     def __init__(
@@ -47,21 +43,16 @@ class WebCircuitReferenceSearcher:
         timeout_s: float = 12.0,
     ):
         _load_env()
-        self.tavily_api_key = (
-            tavily_api_key
-            or os.environ.get("TAVILY_API_KEY")
-            or DEFAULT_TAVILY_API_KEY
-        ).strip()
-        self.exa_api_key = (
-            exa_api_key
-            or os.environ.get("EXA_API_KEY")
-            or DEFAULT_EXA_API_KEY
-        ).strip()
         self.ieee_api_key = (
             ieee_api_key
             or os.environ.get("IEEE_API_KEY")
             or ""
         ).strip()
+        if not self.ieee_api_key:
+            raise RuntimeError(
+                "Missing required API key 'IEEE_API_KEY' for WebCircuitReferenceSearcher. "
+                "Set IEEE_API_KEY in your environment or .env."
+            )
         self.timeout_s = timeout_s
         self._cache: dict[str, dict[str, Any]] = {}
 
@@ -83,7 +74,46 @@ class WebCircuitReferenceSearcher:
         encoded_q = urllib.parse.quote(clean_q)
         papers: list[dict[str, Any]] = []
 
-        # 1. Primary Query: Filter specifically by IEEE host organization
+        # 1. Primary Query: Official IEEE Xplore API using IEEE_API_KEY
+        url_ieee_api = (
+            f"{IEEE_XPLORE_API_URL}?apikey={urllib.parse.quote(self.ieee_api_key)}"
+            f"&querytext={encoded_q}&max_records={max_results}"
+        )
+        req_ieee = urllib.request.Request(
+            url_ieee_api,
+            headers={"Accept": "application/json", "User-Agent": "AnalogVerifier/2.0"}
+        )
+        try:
+            with urllib.request.urlopen(req_ieee, timeout=self.timeout_s) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+                for art in (data.get("articles") or [])[:max_results]:
+                    authors_list = [
+                        a.get("full_name", "")
+                        for a in (art.get("authors") or {}).get("authors", [])[:3]
+                        if a.get("full_name")
+                    ]
+                    doi = art.get("doi") or ""
+                    papers.append({
+                        "title": art.get("title") or "Untitled IEEE Paper",
+                        "venue": art.get("publication_title") or "IEEE Xplore",
+                        "year": str(art.get("publication_year") or ""),
+                        "authors": authors_list,
+                        "doi": doi,
+                        "url": art.get("html_url") or (f"https://doi.org/{doi}" if doi else ""),
+                        "abstract": (art.get("abstract") or "").strip()[:1600],
+                    })
+        except Exception as e:
+            logger.warning(f"IEEE Xplore API search error for '{clean_q}': {e}")
+
+        if papers:
+            return {
+                "provider": "ieee_xplore",
+                "ok": True,
+                "count": len(papers),
+                "papers": papers,
+            }
+
+        # 2. Fallback: OpenAlex IEEE-filtered works if IEEE Xplore returned 0 articles
         url_ieee = (
             f"https://api.openalex.org/works?search={encoded_q}"
             f"&per-page={max_results}&filter=primary_location.source.host_organization:{IEEE_OPENALEX_HOST_ORG}"
@@ -317,35 +347,15 @@ class WebCircuitReferenceSearcher:
         Formats a structured engineering context with peer-reviewed literature,
         circuit design rationale, and physical SPICE models.
         """
-        q_tavily = query.strip()
-        q_exa = (exa_query or query).strip()
         q_ieee = (ieee_query or query).strip()
 
-        cache_key = f"{q_tavily.lower()}||{q_exa.lower()}||{q_ieee.lower()}"
+        cache_key = f"ieee||{q_ieee.lower()}"
         if cache_key in self._cache:
             return self._cache[cache_key]
 
+        ieee_res = self.search_ieee_academic(q_ieee, max_results_per_engine)
         tavily_res: dict[str, Any] = {"ok": False, "answer": "", "results": []}
         exa_res: dict[str, Any] = {"ok": False, "results": []}
-        ieee_res: dict[str, Any] = {"ok": False, "papers": []}
-
-        with ThreadPoolExecutor(max_workers=3) as pool:
-            f_ieee = pool.submit(self.search_ieee_academic, q_ieee, max_results_per_engine)
-            f_tav = pool.submit(self.search_tavily, q_tavily, max_results_per_engine)
-            f_exa = pool.submit(self.search_exa, q_exa, max_results_per_engine)
-
-            try:
-                ieee_res = f_ieee.result(timeout=self.timeout_s + 2.0)
-            except Exception as e:
-                logger.warning(f"IEEE future timed out: {e}")
-            try:
-                tavily_res = f_tav.result(timeout=self.timeout_s + 2.0)
-            except Exception as e:
-                logger.warning(f"Tavily future timed out: {e}")
-            try:
-                exa_res = f_exa.result(timeout=self.timeout_s + 2.0)
-            except Exception as e:
-                logger.warning(f"Exa future timed out: {e}")
 
         seen_urls = set()
         combined_results: list[dict[str, Any]] = []
@@ -410,8 +420,8 @@ class WebCircuitReferenceSearcher:
         formatted_markdown = "\n".join(md_lines)
 
         out = {
-            "status": "SUCCESS" if (ieee_res.get("ok") or tavily_res.get("ok") or exa_res.get("ok")) else "PARTIAL_OR_FAILED",
-            "query": q_tavily,
+            "status": "SUCCESS" if ieee_res.get("ok") else "PARTIAL_OR_FAILED",
+            "query": q_ieee,
             "ieee_ok": bool(ieee_res.get("ok")),
             "tavily_ok": bool(tavily_res.get("ok")),
             "exa_ok": bool(exa_res.get("ok")),
