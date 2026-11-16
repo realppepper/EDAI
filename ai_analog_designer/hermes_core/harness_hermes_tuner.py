@@ -5,14 +5,14 @@ and synchronizes newly evolved skills and memories back into Harness² persisten
 """
 from __future__ import annotations
 
+import logging
 import os
 import re
-import json
-import logging
-from typing import Dict, Any, List, Optional
+from typing import Any
 
-from ai_analog_designer.circuit_synthesis.harness2.harness_tree import HarnessTree
 from ai_analog_designer.circuit_synthesis.harness2.harness_library import HarnessLibrary
+from ai_analog_designer.circuit_synthesis.harness2.harness_tree import HarnessTree
+
 from .hermes_agent import HermesAgent
 
 logger = logging.getLogger("HarnessHermesTuner")
@@ -26,7 +26,7 @@ class HarnessHermesTuner:
     def __init__(self, library_root: str = "harness2_library"):
         self.library = HarnessLibrary(root_dir=library_root)
 
-    def bootstrap_tree(self, category: str, part_name: str, base_tree: Optional[HarnessTree] = None) -> HarnessTree:
+    def bootstrap_tree(self, category: str, part_name: str, base_tree: HarnessTree | None = None) -> HarnessTree:
         """Bootstraps a HarnessTree from cross-task experience library."""
         tree = self.library.bootstrap_harness(category=category, base_tree=base_tree)
 
@@ -90,7 +90,7 @@ Accumulated design heuristics, convergence traps, and proven physical rules.
 
         logger.info(f"Hermes Agent successfully tuned! Workspace ready at: {agent.workspace_dir}")
 
-    def _populate_blueprint_skills(self, agent: HermesAgent, c5_skills: Dict[str, Any], default_category: str):
+    def _populate_blueprint_skills(self, agent: HermesAgent, c5_skills: dict[str, Any], default_category: str):
         """Converts C5 skills dictionary into individual Hermes SKILL.md documents."""
         for skill_name, skill_data in c5_skills.items():
             safe_name = re.sub(r'[^a-zA-Z0-9_-]', '_', skill_name).lower()

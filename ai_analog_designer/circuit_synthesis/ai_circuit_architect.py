@@ -1,7 +1,8 @@
-import os
 import re
-from typing import Dict, Any, List, Optional
+from typing import Any
+
 from ..openrouter_client import OpenRouterClient
+
 
 class AICircuitArchitect:
     """
@@ -11,7 +12,7 @@ class AICircuitArchitect:
     """
     def __init__(
         self,
-        llm_client: Optional[Any] = None,
+        llm_client: Any | None = None,
         use_harness2: bool = True,
         improver_provider: str = "nim",
         synthesizer_provider: str = "openrouter"
@@ -30,15 +31,15 @@ class AICircuitArchitect:
 
     def synthesize_netlist(
         self,
-        ic_info: Dict[str, Any],
-        pins: List[Dict[str, Any]],
-        specifications: List[Dict[str, Any]],
-        pdg_schedule: Dict[str, float],
+        ic_info: dict[str, Any],
+        pins: list[dict[str, Any]],
+        specifications: list[dict[str, Any]],
+        pdg_schedule: dict[str, float],
         iteration: int = 1,
-        prior_feedback: Optional[str] = None,
-        user_prompt: Optional[str] = None,
-        measurement_plan: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        prior_feedback: str | None = None,
+        user_prompt: str | None = None,
+        measurement_plan: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """
         Synthesizes complete SPICE netlist from datasheet specifications.
         Leverages Harness² recursive engine when enabled.

@@ -5,22 +5,29 @@ Wraps spec_planner + deterministic_testbench into a result object that the agent
 Reports coverage (measured / testable) separately from the pass rate among measured specs, so a design that
 simply "is not measured" can no longer look like a 100 % pass.
 """
-import os
 import json
+import os
 import shutil
-from typing import Dict, Any, List, Optional
+from typing import Any
 
+from .deterministic_testbench import (
+    FixtureContext,
+    build_decks,
+    compile_check,
+    evaluate,
+    feedback_text,
+    run_all,
+)
 from .spec_planner import build_plan
-from .deterministic_testbench import FixtureContext, build_decks, run_all, evaluate, feedback_text, compile_check
 from .units import fmt
 
 
-def plan_for(ic_info: Dict[str, Any], pins: List[Dict[str, Any]], specs: List[Dict[str, Any]]) -> Dict[str, Any]:
+def plan_for(ic_info: dict[str, Any], pins: list[dict[str, Any]], specs: list[dict[str, Any]]) -> dict[str, Any]:
     return build_plan(ic_info, pins, specs)
 
 
-def verify(netlist: str, plan: Dict[str, Any], schedule_us: Dict[str, float], out_dir: str,
-           dut_name: Optional[str] = None, workers: int = 4, label: str = "") -> Dict[str, Any]:
+def verify(netlist: str, plan: dict[str, Any], schedule_us: dict[str, float], out_dir: str,
+           dut_name: str | None = None, workers: int = 4, label: str = "") -> dict[str, Any]:
     """Runs all fixtures for this netlist and returns a legacy-compatible evaluation dict."""
     run_dir = os.path.join(out_dir, "testbenches", label or "run")
     if os.path.isdir(run_dir):
@@ -94,7 +101,7 @@ def verify(netlist: str, plan: Dict[str, Any], schedule_us: Dict[str, float], ou
     }
 
 
-def write_artifacts(ev: Dict[str, Any], out_dir: str, prefix: str) -> Dict[str, str]:
+def write_artifacts(ev: dict[str, Any], out_dir: str, prefix: str) -> dict[str, str]:
     os.makedirs(out_dir, exist_ok=True)
     paths = {"evaluation": os.path.join(out_dir, f"{prefix}_SPEC_EVALUATION.json"),
              "coverage": os.path.join(out_dir, f"{prefix}_SPEC_COVERAGE.md")}

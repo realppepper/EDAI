@@ -1,7 +1,9 @@
 """
 Test suite for IEEE Academic Literature & Triple-Engine Searcher.
 """
-from ai_analog_designer.hermes_core.web_reference_search import WebCircuitReferenceSearcher
+from ai_analog_designer.hermes_core.web_reference_search import (
+    WebCircuitReferenceSearcher,
+)
 
 
 def test_ieee_academic_search_live():

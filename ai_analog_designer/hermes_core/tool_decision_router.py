@@ -6,10 +6,10 @@ Inspired by TypeSafe AI's Jev model for deterministic agent routing.
 """
 from __future__ import annotations
 
-import os
 import json
 import logging
-from typing import Dict, Any, List, Optional, Tuple
+import os
+from typing import Any
 
 logger = logging.getLogger("ToolDecisionRouter")
 
@@ -38,8 +38,8 @@ class ToolDecisionRouter:
     def __init__(
         self,
         dut_name: str = "DUT",
-        jev_endpoint: Optional[str] = None,
-        jev_api_key: Optional[str] = None
+        jev_endpoint: str | None = None,
+        jev_api_key: str | None = None
     ):
         self.dut_name = dut_name
         self.jev_endpoint = jev_endpoint or os.environ.get("JEV_ENDPOINT")
@@ -51,9 +51,9 @@ class ToolDecisionRouter:
         pass_rate: float,
         has_netlist: bool,
         syntax_valid: bool,
-        history_tool_names: List[str],
+        history_tool_names: list[str],
         unmet_specs_count: int = 0
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Computes a calibrated probability distribution over tools
         based on the physical circuit synthesis state.
@@ -90,7 +90,7 @@ class ToolDecisionRouter:
                 logger.debug(f"Jev remote call skipped ({e}), falling back to System-1 local router.")
 
         # System-1 Calibrated Decision Logic
-        probs: Dict[str, float] = {t: 0.05 for t in self.SUPPORTED_TOOLS}
+        probs: dict[str, float] = {t: 0.05 for t in self.SUPPORTED_TOOLS}
 
         # Rule 1: Goal achieved (pass_rate >= 100%) -> save blueprint immediately
         if pass_rate >= 100.0:
@@ -165,7 +165,7 @@ class ToolDecisionRouter:
         best_tool = max(probs, key=probs.get)
         return self._format_decision(best_tool, probs, reason)
 
-    def _format_decision(self, selected_tool: str, probs: Dict[str, float], reason: str) -> Dict[str, Any]:
+    def _format_decision(self, selected_tool: str, probs: dict[str, float], reason: str) -> dict[str, Any]:
         # Normalize probabilities
         total = sum(probs.values()) or 1.0
         norm_probs = {k: round(v / total, 3) for k, v in probs.items()}
@@ -178,11 +178,11 @@ class ToolDecisionRouter:
 
     def intercept_and_guardrail(
         self,
-        proposed_calls: List[Dict[str, Any]],
-        state_decision: Dict[str, Any],
+        proposed_calls: list[dict[str, Any]],
+        state_decision: dict[str, Any],
         has_extracted_netlist: bool,
-        current_netlist: Optional[str] = None
-    ) -> List[Dict[str, Any]]:
+        current_netlist: str | None = None
+    ) -> list[dict[str, Any]]:
         """
         Guards against invalid actions:
           - If the agent calls 'manage_memory' while a valid netlist is waiting to be simulated,
@@ -201,7 +201,7 @@ class ToolDecisionRouter:
                 }]
             return proposed_calls
 
-        filtered: List[Dict[str, Any]] = []
+        filtered: list[dict[str, Any]] = []
         for call in proposed_calls:
             name = call.get("name")
             # If Jev decided repetition trap breaker, suppress redundant manage_memory

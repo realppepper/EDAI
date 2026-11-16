@@ -6,13 +6,14 @@ the Golden Oracle Gatekeeper.
 """
 from __future__ import annotations
 
-import os
-import re
 import json
 import logging
-from typing import Dict, Any, List, Optional, Tuple
+import os
+import re
+from typing import Any
 
 from ai_analog_designer.llm_client import LLMClient
+
 from .golden_oracle_anchor import GoldenOracleAnchor
 from .harness2_verifier_tree import Harness2VerifierTree
 
@@ -28,7 +29,7 @@ class Harness2VerifierArchitect:
 
     def __init__(
         self,
-        llm_client: Optional[LLMClient] = None,
+        llm_client: LLMClient | None = None,
         experience_dir: str = "harness2_library/verifier_experience"
     ):
         self.llm_client = llm_client or LLMClient()
@@ -62,9 +63,9 @@ class Harness2VerifierArchitect:
 
     def identify_unsupported_specs(
         self,
-        specifications: List[Dict[str, Any]],
-        spec_plan: Dict[str, Any]
-    ) -> List[Dict[str, Any]]:
+        specifications: list[dict[str, Any]],
+        spec_plan: dict[str, Any]
+    ) -> list[dict[str, Any]]:
         """Identifies specs marked as unsupported or lacking physical fixtures."""
         unsupported = []
         items = spec_plan.get("items") or spec_plan.get("rows") or []
@@ -85,10 +86,10 @@ class Harness2VerifierArchitect:
 
     def evolve_verifier_for_specs(
         self,
-        ic_info: Dict[str, Any],
-        pins: List[Dict[str, Any]],
-        unsupported_specs: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        ic_info: dict[str, Any],
+        pins: list[dict[str, Any]],
+        unsupported_specs: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         """
         Executes Propose-Probe-Compose cycle for the Verifier:
           1. Propose: LLM synthesizes new classification regex & pure physical analog fixture deck
@@ -148,9 +149,9 @@ Respond with:
             resp = self.llm_client.complete(prompt, max_tokens=2048, tag="verifier_propose")
 
             # Parse proposal
-            m_kind = re.search(r'<kind_name>(.*?)</kind_name>', resp, re.I)
-            m_sym = re.search(r'<symbol_regex>(.*?)</symbol_regex>', resp, re.I)
-            m_deck = re.search(r'<fixture_deck>(.*?)</fixture_deck>', resp, re.S | re.I)
+            m_kind = re.search(r'<kind_name>(.*?)</kind_name>', resp, re.IGNORECASE)
+            m_sym = re.search(r'<symbol_regex>(.*?)</symbol_regex>', resp, re.IGNORECASE)
+            m_deck = re.search(r'<fixture_deck>(.*?)</fixture_deck>', resp, re.DOTALL | re.IGNORECASE)
 
             if not (m_kind and m_sym and m_deck):
                 logger.warning(f"Could not parse verifier proposal for spec '{sym}'.")

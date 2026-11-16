@@ -1,8 +1,9 @@
 import os
-import re
-from typing import Dict, Any, List, Optional
+from typing import Any
+
 from .ltspice_runner import LTspiceRunner
 from .sympy_oracle_engine import SymPyOracleEngine
+
 
 class ClosedLoopEvaluator:
     """
@@ -11,7 +12,7 @@ class ClosedLoopEvaluator:
     for iterative LLM circuit refinement.
     """
 
-    def __init__(self, simulator_path: Optional[str] = None):
+    def __init__(self, simulator_path: str | None = None):
         self.runner = LTspiceRunner(simulator_path=simulator_path) if simulator_path else LTspiceRunner()
         self.oracle_engine = SymPyOracleEngine()
 
@@ -19,9 +20,9 @@ class ClosedLoopEvaluator:
         self,
         output_dir: str,
         netlist_filename: str,
-        testbenches: List[Dict[str, Any]],
-        specifications: List[Dict[str, Any]]
-    ) -> Dict[str, Any]:
+        testbenches: list[dict[str, Any]],
+        specifications: list[dict[str, Any]]
+    ) -> dict[str, Any]:
         """
         Executes all testbenches, collects measurements, and evaluates all specifications.
         """
@@ -118,7 +119,7 @@ class ClosedLoopEvaluator:
             "diagnostic_feedback": diagnostic_text
         }
 
-    def _extract_log_errors(self, log_path: str) -> List[str]:
+    def _extract_log_errors(self, log_path: str) -> list[str]:
         """Extracts syntax, fatal, or convergence errors from LTspice log with code context."""
         if not os.path.exists(log_path):
             return []
@@ -145,7 +146,7 @@ class ClosedLoopEvaluator:
                             errors.append(f"  --> {nxt}")
         return errors[:12]
 
-    def _find_measurement(self, clean_sym: str, raw_sym: str, measurements: Dict[str, float]) -> Optional[float]:
+    def _find_measurement(self, clean_sym: str, raw_sym: str, measurements: dict[str, float]) -> float | None:
         """Finds measurement corresponding to specification symbol."""
         c_lower = clean_sym.lower()
         r_lower = raw_sym.lower()
@@ -175,7 +176,7 @@ class ClosedLoopEvaluator:
 
         return None
 
-    def _generate_diagnostic_feedback(self, evaluations: List[Dict[str, Any]], sim_errors: List[str]) -> str:
+    def _generate_diagnostic_feedback(self, evaluations: list[dict[str, Any]], sim_errors: list[str]) -> str:
         """Constructs physical guidance feedback for AI circuit re-synthesis."""
         lines = []
 

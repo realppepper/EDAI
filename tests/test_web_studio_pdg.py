@@ -12,15 +12,15 @@ Usage:
   python tests/test_web_studio_pdg.py                  # PDG flow + sandbox
   python tests/test_web_studio_pdg.py --generate 1     # also start a 1-iteration synthesis
 """
+import argparse
 import os
+import subprocess
 import sys
 import time
-import argparse
-import subprocess
-import urllib.request
 import urllib.parse
+import urllib.request
 
-from playwright.sync_api import sync_playwright, expect
+from playwright.sync_api import expect, sync_playwright
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 SHOTS = os.path.join(ROOT, "benchmark_results", "web_studio")

@@ -9,25 +9,24 @@ Verifies:
   6. Bidirectional synchronization back to HarnessTree & HarnessLibrary
 """
 import os
-import sys
 import shutil
-import pytest
+import sys
 import tempfile
+
+import pytest
 
 # Ensure repository root in path
 repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if repo_root not in sys.path:
     sys.path.insert(0, repo_root)
 
+from ai_analog_designer.autonomous_design_agent import AutonomousAnalogDesignAgent
 from ai_analog_designer.circuit_synthesis.harness2.harness_tree import HarnessTree
-from ai_analog_designer.circuit_synthesis.harness2.harness_library import HarnessLibrary
 from ai_analog_designer.hermes_core import (
+    HarnessHermesTuner,
     HermesAgent,
     HermesAnalogTools,
-    HarnessHermesTuner,
-    HermesAnalogWorkflowRunner
 )
-from ai_analog_designer.autonomous_design_agent import AutonomousAnalogDesignAgent
 
 
 @pytest.fixture

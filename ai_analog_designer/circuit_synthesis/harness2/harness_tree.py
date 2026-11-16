@@ -12,16 +12,7 @@ Exposes the 8 editable harness components around the LLM:
   C7: Subagents          - Specialized personas (Topology Proposer, Sizing Optimizer, SPICE Critic).
   C8: Plugins            - Automated syntax validation and node sanitizer rules.
 """
-from __future__ import annotations
-
-import os
-import json
-import copy
-from typing import Dict, Any, List, Optional
-from dataclasses import dataclass, field
-
-
-DEFAULT_C1_SYSTEM_PROMPT = """You are a World-Class Principal Analog & Mixed-Signal IC Design Engineer.
+from __future__ import annotationsimport copyfrom dataclasses import dataclass, fieldfrom typing import AnyDEFAULT_C1_SYSTEM_PROMPT = """You are a World-Class Principal Analog & Mixed-Signal IC Design Engineer.
 Synthesize production-quality, convergent SPICE netlists from first physical principles.
 Every circuit must reach a stable DC operating point, satisfy the startup sequencing dictated by the Port Dependency Graph (PDG), and strictly satisfy all datasheet specifications without hardcoding or superficial behavioral bypasses.
 """
@@ -91,15 +82,15 @@ class HarnessTree:
     c2_guardrails: str = DEFAULT_C2_GUARDRAILS
     c3_memory: str = DEFAULT_C3_MEMORY
     c4_tool_guidance: str = DEFAULT_C4_TOOL_GUIDANCE
-    c5_skills: Dict[str, str] = field(default_factory=dict)
-    c6_scripts: Dict[str, str] = field(default_factory=dict)
-    c7_subagents: Dict[str, str] = field(default_factory=dict)
-    c8_plugins: Dict[str, str] = field(default_factory=dict)
+    c5_skills: dict[str, str] = field(default_factory=dict)
+    c6_scripts: dict[str, str] = field(default_factory=dict)
+    c7_subagents: dict[str, str] = field(default_factory=dict)
+    c8_plugins: dict[str, str] = field(default_factory=dict)
 
     def clone(self) -> HarnessTree:
         return copy.deepcopy(self)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "c1_system_prompt": self.c1_system_prompt,
             "c2_guardrails": self.c2_guardrails,
@@ -112,7 +103,7 @@ class HarnessTree:
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> HarnessTree:
+    def from_dict(cls, data: dict[str, Any]) -> HarnessTree:
         return cls(
             c1_system_prompt=data.get("c1_system_prompt", DEFAULT_C1_SYSTEM_PROMPT),
             c2_guardrails=data.get("c2_guardrails", DEFAULT_C2_GUARDRAILS),
@@ -133,7 +124,7 @@ class HarnessTree:
         measurement_section: str = "",
         user_prompt_section: str = "",
         feedback_section: str = "",
-        skills_to_include: Optional[List[str]] = None
+        skills_to_include: list[str] | None = None
     ) -> str:
         """Combines harness components into an optimized, structured prompt."""
         skills_text = ""

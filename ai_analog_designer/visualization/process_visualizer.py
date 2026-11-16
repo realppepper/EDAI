@@ -1,9 +1,9 @@
-import os
-import json
-import re
 import glob
+import json
 import logging
-from typing import Dict, Any, List, Optional
+import os
+import re
+from typing import Any
 
 logger = logging.getLogger("ProcessVisualizer")
 
@@ -14,7 +14,7 @@ class ProcessVisualizer:
     """
 
     @classmethod
-    def load_ic_data_from_directory(cls, dir_path: str) -> Optional[Dict[str, Any]]:
+    def load_ic_data_from_directory(cls, dir_path: str) -> dict[str, Any] | None:
         """Extracts complete design, PDG, simulation, and verification data from a run directory."""
         if not os.path.isdir(dir_path):
             return None
@@ -55,7 +55,7 @@ class ProcessVisualizer:
             try:
                 with open(rep_files[0], "r", encoding="utf-8") as f:
                     data["report_md"] = f.read()
-            except Exception as e:
+            except Exception:
                 pass
 
         # Load netlists (*_iter1.cir, *_iter2.cir, etc.)
@@ -90,7 +90,7 @@ class ProcessVisualizer:
         return data
 
     @classmethod
-    def load_benchmark_suite(cls, benchmark_dir: str) -> List[Dict[str, Any]]:
+    def load_benchmark_suite(cls, benchmark_dir: str) -> list[dict[str, Any]]:
         """Loads all completed IC directories from a benchmark suite directory."""
         results = []
         if not os.path.isdir(benchmark_dir):
@@ -105,7 +105,7 @@ class ProcessVisualizer:
         return results
 
     @classmethod
-    def generate_html(cls, ic_records: List[Dict[str, Any]], title: str = "Autonomous Analog Circuit Design & Verification Visualizer") -> str:
+    def generate_html(cls, ic_records: list[dict[str, Any]], title: str = "Autonomous Analog Circuit Design & Verification Visualizer") -> str:
         """
         Builds a self-contained, interactive HTML dashboard with Tailwind styling,
         interactive DAG rendering, dynamic timeline slider, and code viewers.
@@ -1054,7 +1054,7 @@ class ProcessVisualizer:
         return html
 
     @classmethod
-    def export_dashboard(cls, ic_records: List[Dict[str, Any]], output_path: str) -> str:
+    def export_dashboard(cls, ic_records: list[dict[str, Any]], output_path: str) -> str:
         """Writes the generated HTML dashboard to disk."""
         html = cls.generate_html(ic_records)
         os.makedirs(os.path.dirname(os.path.abspath(output_path)), exist_ok=True)

@@ -1,10 +1,9 @@
 """Offline coverage for timeout recovery in per-page HKG extraction."""
 
 import pytest
-
 from ai_analog_designer.pdf_to_graph.hardware_kg_builder import (
-    HKGExtractionError,
     HardwareKnowledgeGraphBuilder,
+    HKGExtractionError,
 )
 
 

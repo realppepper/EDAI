@@ -4,18 +4,21 @@ Integrates Google Research's Harness² framework (arXiv:2603.22472) with OpenRou
 """
 from __future__ import annotations
 
+import logging
 import os
 import re
-import json
-import logging
-from typing import Dict, Any, List, Optional, Tuple, Callable
+from collections.abc import Callable
+from typing import Any
 
-from ai_analog_designer.llm_client import LLMClient
 from ai_analog_designer.circuit_synthesis.netlist_validator import NetlistValidator
-from ai_analog_designer.hermes_core.web_reference_search import WebCircuitReferenceSearcher
-from .harness_tree import HarnessTree
+from ai_analog_designer.hermes_core.web_reference_search import (
+    WebCircuitReferenceSearcher,
+)
+from ai_analog_designer.llm_client import LLMClient
+
 from .harness_library import HarnessLibrary
 from .harness_proposer import Harness2Proposer
+from .harness_tree import HarnessTree
 
 logger = logging.getLogger("Harness2CircuitArchitect")
 
@@ -29,12 +32,12 @@ class Harness2CircuitArchitect:
 
     def __init__(
         self,
-        llm_client: Optional[LLMClient] = None,
-        nim_client: Optional[LLMClient] = None,
-        openrouter_client: Optional[LLMClient] = None,
+        llm_client: LLMClient | None = None,
+        nim_client: LLMClient | None = None,
+        openrouter_client: LLMClient | None = None,
         library_root: str = "harness2_library",
-        improver_provider: Optional[str] = None,
-        synthesizer_provider: Optional[str] = None,
+        improver_provider: str | None = None,
+        synthesizer_provider: str | None = None,
     ):
         # Preserve the application's selected provider.  The old defaults could
         # silently route synthesis to OpenRouter even when the web server was
@@ -77,14 +80,14 @@ class Harness2CircuitArchitect:
     def synthesize_candidate(
         self,
         tree: HarnessTree,
-        ic_info: Dict[str, Any],
-        pins: List[Dict[str, Any]],
-        specifications: List[Dict[str, Any]],
-        pdg_schedule: Dict[str, float],
-        measurement_plan: Optional[Dict[str, Any]] = None,
-        user_prompt: Optional[str] = None,
-        prior_feedback: Optional[str] = None
-    ) -> Dict[str, Any]:
+        ic_info: dict[str, Any],
+        pins: list[dict[str, Any]],
+        specifications: list[dict[str, Any]],
+        pdg_schedule: dict[str, float],
+        measurement_plan: dict[str, Any] | None = None,
+        user_prompt: str | None = None,
+        prior_feedback: str | None = None
+    ) -> dict[str, Any]:
         """Synthesizes a SPICE netlist under a specific harness tree."""
         part_name = ic_info.get("part_name") or ic_info.get("name") or "ANALOG_IC"
         subckt_name = re.sub(r'[^a-zA-Z0-9_]', '_', part_name).upper()
@@ -107,7 +110,9 @@ class Harness2CircuitArchitect:
         measurement_section = ""
         if measurement_plan:
             try:
-                from ai_analog_designer.neuro_symbolic_verifier.spec_planner import fixture_brief
+                from ai_analog_designer.neuro_symbolic_verifier.spec_planner import (
+                    fixture_brief,
+                )
                 measurement_section = f"""
 ## HOW THIS CIRCUIT WILL BE MEASURED (DUT is instantiated with V- = ground, V+ = VS):
 {fixture_brief(measurement_plan)}
@@ -188,17 +193,17 @@ The subcircuit must work with its negative supply pin tied to 0 V (single supply
 
     def execute_contrastive_iteration(
         self,
-        ic_info: Dict[str, Any],
-        pins: List[Dict[str, Any]],
-        specifications: List[Dict[str, Any]],
-        pdg_schedule: Dict[str, float],
-        base_eval: Dict[str, Any],
-        eval_probe_fn: Callable[[str, str], Dict[str, Any]],
-        measurement_plan: Optional[Dict[str, Any]] = None,
-        user_prompt: Optional[str] = None,
-        base_synth: Optional[Dict[str, Any]] = None,
+        ic_info: dict[str, Any],
+        pins: list[dict[str, Any]],
+        specifications: list[dict[str, Any]],
+        pdg_schedule: dict[str, float],
+        base_eval: dict[str, Any],
+        eval_probe_fn: Callable[[str, str], dict[str, Any]],
+        measurement_plan: dict[str, Any] | None = None,
+        user_prompt: str | None = None,
+        base_synth: dict[str, Any] | None = None,
         iteration_index: int = 2
-    ) -> Tuple[Dict[str, Any], Dict[str, Any], HarnessTree, str]:
+    ) -> tuple[dict[str, Any], dict[str, Any], HarnessTree, str]:
         """
         Executes a full Harness² Propose–Probe–Compose step:
           1. Proposes Candidate A (Invariant) and Candidate B (Domain)
@@ -318,15 +323,15 @@ The subcircuit must work with its negative supply pin tied to 0 V (single supply
 
     def synthesize_netlist(
         self,
-        ic_info: Dict[str, Any],
-        pins: List[Dict[str, Any]],
-        specifications: List[Dict[str, Any]],
-        pdg_schedule: Dict[str, float],
+        ic_info: dict[str, Any],
+        pins: list[dict[str, Any]],
+        specifications: list[dict[str, Any]],
+        pdg_schedule: dict[str, float],
         iteration: int = 1,
-        prior_feedback: Optional[str] = None,
-        user_prompt: Optional[str] = None,
-        measurement_plan: Optional[Dict[str, Any]] = None
-    ) -> Dict[str, Any]:
+        prior_feedback: str | None = None,
+        user_prompt: str | None = None,
+        measurement_plan: dict[str, Any] | None = None
+    ) -> dict[str, Any]:
         """
         Backward-compatible interface with AICircuitArchitect.
         Bootstraps on iteration 1 and synthesizes under the active Harness² tree.

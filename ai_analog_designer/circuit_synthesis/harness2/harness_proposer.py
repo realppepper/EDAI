@@ -4,13 +4,12 @@ Supports dual-LLM backend routing (NVIDIA NIM API and OpenRouter).
 """
 from __future__ import annotations
 
-import os
-import re
-import json
 import logging
-from typing import Dict, Any, List, Optional, Tuple
+import os
+from typing import Any
 
 from ai_analog_designer.llm_client import LLMClient
+
 from .harness_tree import HarnessTree
 
 logger = logging.getLogger("Harness2Proposer")
@@ -24,9 +23,9 @@ class Harness2Proposer:
 
     def __init__(
         self,
-        nim_client: Optional[LLMClient] = None,
-        openrouter_client: Optional[LLMClient] = None,
-        groq_client: Optional[LLMClient] = None,
+        nim_client: LLMClient | None = None,
+        openrouter_client: LLMClient | None = None,
+        groq_client: LLMClient | None = None,
         improver_provider: str = "nim",
         synthesizer_provider: str = "openrouter"
     ):
@@ -56,11 +55,11 @@ class Harness2Proposer:
         self,
         current_tree: HarnessTree,
         part_name: str,
-        specifications: List[Dict[str, Any]],
+        specifications: list[dict[str, Any]],
         simulation_feedback: str,
-        failed_specs: List[Dict[str, Any]],
-        compiler_errors: List[str]
-    ) -> Tuple[HarnessTree, HarnessTree]:
+        failed_specs: list[dict[str, Any]],
+        compiler_errors: list[str]
+    ) -> tuple[HarnessTree, HarnessTree]:
         """
         Generates two contrastive candidate harness trees:
           Candidate A: Invariant Edit (INV) - SPICE syntax, convergence, guardrails, ground isolation.
@@ -156,10 +155,10 @@ Return JSON format:
         base_tree: HarnessTree,
         tree_a: HarnessTree,
         tree_b: HarnessTree,
-        eval_base: Dict[str, Any],
-        eval_a: Dict[str, Any],
-        eval_b: Dict[str, Any]
-    ) -> Tuple[HarnessTree, str, str]:
+        eval_base: dict[str, Any],
+        eval_a: dict[str, Any],
+        eval_b: dict[str, Any]
+    ) -> tuple[HarnessTree, str, str]:
         """
         Contrasts the behavioral results of the candidate probes and composes
         the optimal unified harness tree.

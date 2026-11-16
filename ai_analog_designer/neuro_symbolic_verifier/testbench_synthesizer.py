@@ -1,7 +1,9 @@
 import os
 import re
-from typing import Dict, Any, List, Optional
+from typing import Any
+
 from ..openrouter_client import OpenRouterClient
+
 
 class TestbenchSynthesizer:
     """
@@ -11,17 +13,17 @@ class TestbenchSynthesizer:
     and generates precise .meas directives to verify 100% of datasheet specifications.
     """
 
-    def __init__(self, llm_client: Optional[OpenRouterClient] = None):
+    def __init__(self, llm_client: OpenRouterClient | None = None):
         self.llm = llm_client or OpenRouterClient()
 
     def synthesize_testbenches(
         self,
         netlist_path: str,
         subckt_name: str,
-        pins: List[Dict[str, Any]],
-        specifications: List[Dict[str, Any]],
-        pdg_schedule: Dict[str, float]
-    ) -> List[Dict[str, Any]]:
+        pins: list[dict[str, Any]],
+        specifications: list[dict[str, Any]],
+        pdg_schedule: dict[str, float]
+    ) -> list[dict[str, Any]]:
         """
         Generates analysis testbenches (.cir) targeting the specifications.
         Returns a list of testbench specs: [{'name': ..., 'content': ..., 'target_params': [...]}]
@@ -93,14 +95,14 @@ class TestbenchSynthesizer:
         self,
         tb_id: str,
         title: str,
-        cat_specs: List[Dict[str, Any]],
+        cat_specs: list[dict[str, Any]],
         sim_type: str,
         netlist_path: str,
         subckt_name: str,
         pin_names_str: str,
-        pins: List[Dict[str, Any]],
+        pins: list[dict[str, Any]],
         schedule_str: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Uses OpenRouter LLM to generate a compliant LTspice testbench deck.
         """
@@ -190,7 +192,7 @@ XDUT {pin_names_str} {subckt_name}
                 "target_symbols": [s.get("symbol") for s in cat_specs],
                 "content": deck.strip() + "\n"
             }
-        except Exception as e:
+        except Exception:
             # Fallback basic testbench
             fallback_deck = self._build_fallback_deck(tb_id, subckt_name, pin_names_str, pins, netlist_filename, cat_specs)
             return {
@@ -269,7 +271,7 @@ XDUT {pin_names_str} {subckt_name}
         subckt_name: str,
         pin_names_str: str,
         netlist_filename: str,
-        pins: Optional[List[Dict[str, Any]]] = None,
+        pins: list[dict[str, Any]] | None = None,
         sim_type: str = ".tran 0 100u 0 10n"
     ) -> str:
         """Sanitizes testbench for LTspice execution, stripping invalid HSPICE syntax, fixing PWL, and deduplicating."""
@@ -281,9 +283,9 @@ XDUT {pin_names_str} {subckt_name}
         seen_meas_names = set()
         seen_sim_directive = False
         # Check measurement types in raw deck
-        has_meas_tran = any(re.search(r'^\s*\.meas\s+tran', l, re.IGNORECASE) for l in lines)
-        has_meas_ac = any(re.search(r'^\s*\.meas\s+ac', l, re.IGNORECASE) for l in lines)
-        has_meas_op = any(re.search(r'^\s*\.meas\s+op', l, re.IGNORECASE) for l in lines)
+        has_meas_tran = any(re.search(r'^\s*\.meas\s+tran\b', l, re.IGNORECASE) for l in lines)
+        has_meas_ac = any(re.search(r'^\s*\.meas\s+ac\b', l, re.IGNORECASE) for l in lines)
+        has_meas_op = any(re.search(r'^\s*\.meas\s+op\b', l, re.IGNORECASE) for l in lines)
 
         # Auto-align sim command if LLM wrote tran measurements for dc_op or ac_sweep
         if has_meas_tran and not has_meas_ac and not has_meas_op:
@@ -491,9 +493,9 @@ XDUT {pin_names_str} {subckt_name}
         tb_id: str,
         subckt_name: str,
         pin_names_str: str,
-        pins: List[Dict[str, Any]],
+        pins: list[dict[str, Any]],
         netlist_filename: str,
-        specs: List[Dict[str, Any]]
+        specs: list[dict[str, Any]]
     ) -> str:
         """Constructs an operational fallback testbench if LLM query encounters issue."""
         deck = [

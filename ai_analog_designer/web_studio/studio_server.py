@@ -1,19 +1,18 @@
-import os
-import sys
-import json
-import time
-import uuid
 import glob
+import json
+import logging
+import os
 import re
 import threading
-import logging
-from urllib.parse import urlparse, parse_qs
-from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
-from typing import Dict, Any, List, Optional
+import time
+import uuid
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+from typing import Any
+from urllib.parse import parse_qs, urlparse
 
 from ..autonomous_design_agent import AutonomousAnalogDesignAgent
-from ..visualization import ProcessVisualizer
 from ..pdf_to_graph import PDGVisualizer
+from ..visualization import ProcessVisualizer
 
 logger = logging.getLogger("StudioServer")
 
@@ -28,7 +27,7 @@ ALLOWED_PDF_ROOTS = [
 ]
 
 
-def safe_pdf_path(pdf_path: str) -> Optional[str]:
+def safe_pdf_path(pdf_path: str) -> str | None:
     """Returns the absolute path only if it resolves inside testcases/ or uploads/ (prevents arbitrary file reads)."""
     if not pdf_path:
         return None
@@ -378,7 +377,7 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
             self.send_json({"error": str(e)}, status=500)
 
     @classmethod
-    def execute_design_task(cls, task_id: str, output_dir: str, pdf_path: Optional[str], user_prompt: Optional[str], max_iterations: int):
+    def execute_design_task(cls, task_id: str, output_dir: str, pdf_path: str | None, user_prompt: str | None, max_iterations: int):
         """Background worker thread running AutonomousAnalogDesignAgent."""
         def progress_cb(phase_num: int, phase_title: str, msg: str):
             with TASKS_LOCK:
@@ -475,7 +474,7 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
         self.end_headers()
         self.wfile.write(content)
 
-    def send_json(self, data: Dict[str, Any], status: int = 200):
+    def send_json(self, data: dict[str, Any], status: int = 200):
         try:
             content = json.dumps(data).encode("utf-8")
             self.send_response(status)

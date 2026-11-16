@@ -5,18 +5,19 @@ using the Harness²-tuned Hermes Agent.
 """
 from __future__ import annotations
 
+import logging
 import os
 import re
-import json
 import time
-import logging
-from typing import Dict, Any, List, Optional, Callable, Tuple
+from collections.abc import Callable
+from typing import Any
 
-from ai_analog_designer.llm_client import LLMClient
 from ai_analog_designer.circuit_synthesis.harness2.harness_tree import HarnessTree
-from .hermes_tools import HermesAnalogTools
-from .hermes_agent import HermesAgent
+from ai_analog_designer.llm_client import LLMClient
+
 from .harness_hermes_tuner import HarnessHermesTuner
+from .hermes_agent import HermesAgent
+from .hermes_tools import HermesAnalogTools
 
 logger = logging.getLogger("HermesAnalogWorkflowRunner")
 
@@ -29,7 +30,7 @@ class HermesAnalogWorkflowRunner:
     def __init__(
         self,
         output_dir: str = "output_design",
-        llm_client: Optional[LLMClient] = None,
+        llm_client: LLMClient | None = None,
         library_root: str = "harness2_library",
         max_turns: int = 5,
         target_pass_rate: float = 100.0,
@@ -44,16 +45,16 @@ class HermesAnalogWorkflowRunner:
 
     def run_design_flow(
         self,
-        ic_info: Dict[str, Any],
-        pins: List[Dict[str, Any]],
-        specifications: List[Dict[str, Any]],
-        pdg_schedule: Dict[str, float],
-        measurement_plan: Optional[Dict[str, Any]] = None,
-        user_prompt: Optional[str] = None,
-        verify_fn: Optional[Callable[..., Dict[str, Any]]] = None,
-        progress_callback: Optional[Callable[[int, str, str], None]] = None,
-        base_harness_tree: Optional[HarnessTree] = None,
-    ) -> Dict[str, Any]:
+        ic_info: dict[str, Any],
+        pins: list[dict[str, Any]],
+        specifications: list[dict[str, Any]],
+        pdg_schedule: dict[str, float],
+        measurement_plan: dict[str, Any] | None = None,
+        user_prompt: str | None = None,
+        verify_fn: Callable[..., dict[str, Any]] | None = None,
+        progress_callback: Callable[[int, str, str], None] | None = None,
+        base_harness_tree: HarnessTree | None = None,
+    ) -> dict[str, Any]:
         """
         Executes the Hermes Agent circuit synthesis workflow:
           1. Bootstrap HarnessTree for device category.
@@ -122,7 +123,9 @@ class HermesAnalogWorkflowRunner:
         measurement_section = ""
         if measurement_plan:
             try:
-                from ai_analog_designer.neuro_symbolic_verifier.spec_planner import fixture_brief
+                from ai_analog_designer.neuro_symbolic_verifier.spec_planner import (
+                    fixture_brief,
+                )
                 measurement_section = f"""
 ## HOW THIS CIRCUIT WILL BE MEASURED (LTspice Deterministic Testbench):
 {fixture_brief(measurement_plan)}
@@ -228,11 +231,11 @@ The subcircuit must operate with its negative supply pin tied to 0 V (single sup
                         seen_bps.add(bp_id)
                         all_blueprints.append(bp)
 
-            candidates: List[str] = []
+            candidates: list[str] = []
             for bp in all_blueprints:
                 raw_code = bp.get("content", "")
                 # Extract all fenced SPICE/cir code blocks preserving models
-                blocks = re.findall(r'```(?:spice|cir)?\s*([\s\S]*?)```', raw_code, re.I)
+                blocks = re.findall(r'```(?:spice|cir)?\s*([\s\S]*?)```', raw_code, re.IGNORECASE)
                 for blk in blocks:
                     if ".subckt" in blk.lower() and ".ends" in blk.lower():
                         candidates.append(blk.strip())

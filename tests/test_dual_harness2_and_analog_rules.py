@@ -1,7 +1,6 @@
 """
 Unit Tests for Dual-Harness² Architecture and Strict Physical Analog Rules.
 """
-import pytest
 import os
 import sys
 
@@ -10,10 +9,8 @@ sys.path.insert(0, os.path.abspath("."))
 
 from ai_analog_designer.circuit_synthesis.netlist_validator import NetlistValidator
 from ai_analog_designer.neuro_symbolic_verifier.harness2_verifier import (
+    DualHarness2Coordinator,
     GoldenOracleAnchor,
-    Harness2VerifierTree,
-    Harness2VerifierArchitect,
-    DualHarness2Coordinator
 )
 
 

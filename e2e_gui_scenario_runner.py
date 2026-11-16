@@ -13,19 +13,19 @@ Outputs timestamped visual artifacts (screenshots) and a comprehensive Markdown 
 """
 from __future__ import annotations
 
+import argparse
+import json
+import logging
 import os
+import subprocess
 import sys
 import time
-import json
-import argparse
-import logging
-import subprocess
-import urllib.request
 import urllib.parse
+import urllib.request
 from datetime import datetime
-from typing import Dict, Any, List, Optional
+from typing import Any
 
-from playwright.sync_api import sync_playwright, expect, Page, Browser
+from playwright.sync_api import Browser, Page, expect, sync_playwright
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("E2E_GUI_Scenario")
@@ -63,7 +63,7 @@ class WebStudioGUIScenarioRunner:
         port: int = 8080,
         ic_name: str = "LM393",
         headless: bool = True,
-        output_dir: Optional[str] = None,
+        output_dir: str | None = None,
         generate_iters: int = 0,
         timeout_s: int = 480,
     ):
@@ -78,12 +78,12 @@ class WebStudioGUIScenarioRunner:
         self.output_dir = output_dir or os.path.join(DEFAULT_REPORT_DIR, run_id)
         os.makedirs(self.output_dir, exist_ok=True)
 
-        self.server_proc: Optional[subprocess.Popen] = None
+        self.server_proc: subprocess.Popen | None = None
         self.server_spawned_by_runner = False
         self.server_log_file = None
 
-        self.test_results: List[Dict[str, Any]] = []
-        self.screenshots: List[Dict[str, str]] = []
+        self.test_results: list[dict[str, Any]] = []
+        self.screenshots: list[dict[str, str]] = []
 
     def start_server_if_needed(self) -> None:
         """Starts the Web Studio process if not already running."""
@@ -150,12 +150,12 @@ class WebStudioGUIScenarioRunner:
     # SCENARIOS
     # =========================================================================
 
-    def run_all_scenarios(self) -> Dict[str, Any]:
+    def run_all_scenarios(self) -> dict[str, Any]:
         """Executes the complete suite of E2E GUI user scenarios."""
         t_start = time.time()
         self.start_server_if_needed()
 
-        console_errors: List[str] = []
+        console_errors: list[str] = []
 
         with sync_playwright() as p:
             browser: Browser = p.chromium.launch(headless=self.headless)
@@ -163,7 +163,7 @@ class WebStudioGUIScenarioRunner:
             page: Page = context.new_page()
 
             page.on("console", lambda m: console_errors.append(f"[{m.type}] {m.text}") if m.type in ("error", "warning") else None)
-            page.on("pageerror", lambda e: console_errors.append(f"[pageerror] {str(e)}"))
+            page.on("pageerror", lambda e: console_errors.append(f"[pageerror] {e!s}"))
 
             try:
                 # -------------------------------------------------------------
@@ -290,7 +290,7 @@ class WebStudioGUIScenarioRunner:
         self._write_reports(summary)
         return summary
 
-    def _write_reports(self, summary: Dict[str, Any]) -> None:
+    def _write_reports(self, summary: dict[str, Any]) -> None:
         """Writes both JSON and human-readable Markdown verification reports."""
         json_path = os.path.join(self.output_dir, "e2e_gui_scenario_report.json")
         with open(json_path, "w", encoding="utf-8") as f:
@@ -298,23 +298,23 @@ class WebStudioGUIScenarioRunner:
 
         md_path = os.path.join(self.output_dir, "WEB_STUDIO_E2E_VERIFICATION_REPORT.md")
         lines = [
-            f"# 🖥️ Web Studio GUI End-to-End User Scenario Verification Report",
+            "# 🖥️ Web Studio GUI End-to-End User Scenario Verification Report",
             f"**Execution Timestamp**: `{summary['timestamp']}` | **Target IC**: `{summary['ic_name']}` | **Status**: `{'✅ ALL PASSED' if summary['all_passed'] else '❌ FAILED'}`\n",
             f"- **Server URL**: `{self.base_url}`",
             f"- **Total Duration**: `{summary['total_elapsed_s']} seconds`",
             f"- **Artifacts Directory**: `{self.output_dir}`\n",
-            f"---",
-            f"## 📋 User Journey Step-by-Step Results\n",
-            f"| Step | Status | Duration | Observation / Assertion Details |",
-            f"| :--- | :---: | :---: | :--- |",
+            "---",
+            "## 📋 User Journey Step-by-Step Results\n",
+            "| Step | Status | Duration | Observation / Assertion Details |",
+            "| :--- | :---: | :---: | :--- |",
         ]
         for s in summary["steps"]:
             badge = "✅ PASS" if s["status"] == "PASS" else ("⏭️ SKIPPED" if s["status"] == "SKIPPED" else "❌ FAIL")
             lines.append(f"| **{s['step']}** | {badge} | {s['duration_s']}s | {s['details']} |")
 
         lines.extend([
-            f"\n---",
-            f"## 📸 Visual Artifacts (Playwright Captured Screenshots)\n",
+            "\n---",
+            "## 📸 Visual Artifacts (Playwright Captured Screenshots)\n",
         ])
         for sc in summary["screenshots"]:
             lines.append(f"### {sc['caption']}")

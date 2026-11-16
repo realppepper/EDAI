@@ -1,7 +1,7 @@
-import os
-import subprocess
 import glob
+import os
 import re
+import subprocess
 
 _CANDIDATES = [
     os.environ.get("LTSPICE_PATH", ""),

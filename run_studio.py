@@ -4,8 +4,9 @@ Starts the local HTTP server and opens the interactive web studio in your browse
 """
 
 import argparse
-import webbrowser
 import logging
+import webbrowser
+
 from ai_analog_designer.web_studio import StudioServer
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")

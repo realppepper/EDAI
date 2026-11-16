@@ -4,11 +4,11 @@ Maintains cross-task accumulated experiences, failure modes, and adopted harness
 """
 from __future__ import annotations
 
-import os
 import json
+import os
 import re
-from pathlib import Path
-from typing import Dict, Any, List, Optional
+from typing import Any
+
 from .harness_tree import HarnessTree
 
 
@@ -104,7 +104,7 @@ class HarnessLibrary:
         with open(self.index_file, "w", encoding="utf-8") as f:
             json.dump(idx, f, indent=2, ensure_ascii=False)
 
-    def retrieve_relevant_experiences(self, category: str) -> List[Dict[str, Any]]:
+    def retrieve_relevant_experiences(self, category: str) -> list[dict[str, Any]]:
         """Retrieves past lessons and skills for this category."""
         norm_cat = self._normalize_category(category)
         cat_dir = os.path.join(self.root_dir, norm_cat)
@@ -122,7 +122,7 @@ class HarnessLibrary:
                     pass
         return sorted(results, key=lambda x: x.get("delta_score", 0), reverse=True)
 
-    def bootstrap_harness(self, category: str, base_tree: Optional[HarnessTree] = None) -> HarnessTree:
+    def bootstrap_harness(self, category: str, base_tree: HarnessTree | None = None) -> HarnessTree:
         """Bootstraps a fresh harness tree with relevant past lessons from the library."""
         tree = (base_tree or HarnessTree()).clone()
         exps = self.retrieve_relevant_experiences(category)

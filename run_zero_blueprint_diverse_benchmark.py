@@ -10,12 +10,12 @@ diverse analog IC classes with ZERO blueprint contamination:
 All runs strictly verify 0 existing blueprints in harness2_library prior to execution.
 """
 
+import json
+import logging
 import os
 import sys
-import json
 import time
-import logging
-from typing import Dict, Any, List
+from typing import Any
 
 # Ensure analogverifier is in sys.path
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
@@ -62,7 +62,7 @@ def check_zero_blueprint_contamination(library_dir: str, ic_key: str) -> bool:
                 return False
     return True
 
-def run_single_ic_benchmark(ic_cfg: Dict[str, Any], max_turns: int = 15, base_out_dir: str = "benchmark_results/zero_blueprint_diverse") -> Dict[str, Any]:
+def run_single_ic_benchmark(ic_cfg: dict[str, Any], max_turns: int = 15, base_out_dir: str = "benchmark_results/zero_blueprint_diverse") -> dict[str, Any]:
     ic_name = ic_cfg["name"]
     pdf_path = ic_cfg["pdf"]
     out_dir = os.path.abspath(os.path.join(base_out_dir, f"eval_{ic_name.lower()}"))

@@ -1,15 +1,15 @@
-import os
 import json
+import logging
+import os
 import time
 import traceback
-import logging
-from typing import Dict, Any, List, Optional
+from typing import Any
 
 logger = logging.getLogger("ExecutionTracer")
 
 class TraceSpan:
     """Represents a fine-grained execution span for a specific sub-process phase."""
-    def __init__(self, phase: int, name: str, inputs: Optional[Dict[str, Any]] = None):
+    def __init__(self, phase: int, name: str, inputs: dict[str, Any] | None = None):
         self.phase = phase
         self.name = name
         self.start_time = time.time()
@@ -21,7 +21,7 @@ class TraceSpan:
         self.events = []
         self.error = None
 
-    def log_event(self, event_type: str, message: str, data: Optional[Any] = None):
+    def log_event(self, event_type: str, message: str, data: Any | None = None):
         self.events.append({
             "timestamp": time.time(),
             "time_str": time.strftime("%H:%M:%S"),
@@ -30,7 +30,7 @@ class TraceSpan:
             "data": data
         })
 
-    def finish(self, outputs: Optional[Dict[str, Any]] = None, status: str = "SUCCESS"):
+    def finish(self, outputs: dict[str, Any] | None = None, status: str = "SUCCESS"):
         self.end_time = time.time()
         self.duration_ms = (self.end_time - self.start_time) * 1000.0
         self.status = status
@@ -48,7 +48,7 @@ class TraceSpan:
             "remediation_hint": remediation_hint
         }
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "phase": self.phase,
             "name": self.name,
@@ -70,10 +70,10 @@ class ExecutionTracer:
     def __init__(self, target_name: str = "ANALOG_CIRCUIT"):
         self.target_name = target_name
         self.start_time = time.time()
-        self.spans: List[TraceSpan] = []
-        self.active_span: Optional[TraceSpan] = None
+        self.spans: list[TraceSpan] = []
+        self.active_span: TraceSpan | None = None
 
-    def start_span(self, phase: int, name: str, inputs: Optional[Dict[str, Any]] = None) -> TraceSpan:
+    def start_span(self, phase: int, name: str, inputs: dict[str, Any] | None = None) -> TraceSpan:
         if self.active_span and self.active_span.status == "RUNNING":
             self.active_span.finish()
 
@@ -83,12 +83,12 @@ class ExecutionTracer:
         logger.info(f"[Trace:Phase {phase}] START: {name}")
         return span
 
-    def log(self, event_type: str, message: str, data: Optional[Any] = None):
+    def log(self, event_type: str, message: str, data: Any | None = None):
         if self.active_span:
             self.active_span.log_event(event_type, message, data)
         logger.info(f"[Trace:{event_type}] {message}")
 
-    def end_span(self, outputs: Optional[Dict[str, Any]] = None, status: str = "SUCCESS"):
+    def end_span(self, outputs: dict[str, Any] | None = None, status: str = "SUCCESS"):
         if self.active_span:
             self.active_span.finish(outputs=outputs, status=status)
             logger.info(f"[Trace:Phase {self.active_span.phase}] END: {self.active_span.name} ({self.active_span.duration_ms:.1f}ms - {status})")
@@ -103,7 +103,7 @@ class ExecutionTracer:
             span.fail(exc, remediation_hint=remediation)
             self.spans.append(span)
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         total_duration_ms = (time.time() - self.start_time) * 1000.0
         has_error = any(s.status == "ERROR" for s in self.spans)
         return {

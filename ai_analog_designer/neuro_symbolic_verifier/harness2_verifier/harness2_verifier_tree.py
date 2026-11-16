@@ -7,11 +7,8 @@ Holds evolutionary rules for:
 """
 from __future__ import annotations
 
-import os
-import re
-import json
 import logging
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any
 
 logger = logging.getLogger("Harness2VerifierTree")
 
@@ -23,7 +20,7 @@ class Harness2VerifierTree:
 
     def __init__(self):
         # V1: Classifier rules (classes, symbol_regex, name_regex, kind, canonical_unit, magnitude_compare)
-        self.v1_kind_rules: List[Dict[str, Any]] = [
+        self.v1_kind_rules: list[dict[str, Any]] = [
             {
                 "classes": ["audio_amp", "amplifier"],
                 "symbol_regex": r"^THD\+?N?$|^D\b",
@@ -83,7 +80,7 @@ class Harness2VerifierTree:
         ]
 
         # V2: Fixture Circuit Templates (Pure Physical Analog Only - strictly no B-sources)
-        self.v2_fixture_templates: Dict[str, str] = {
+        self.v2_fixture_templates: dict[str, str] = {
             "thd_n": """* Pure Physical Analog Audio Fixture for THD / THD+N
 .include "{dut_netlist_path}"
 XDUT {dut_pins} {dut_name}
@@ -127,7 +124,7 @@ RLOAD {vout_pin} 0 {r_load}
         }
 
         # V3: Physical Unit Conversions
-        self.v3_unit_conversions: Dict[str, Dict[str, Any]] = {
+        self.v3_unit_conversions: dict[str, dict[str, Any]] = {
             "nV/rtHz": {"canonical": "V/rtHz", "factor": 1e-9},
             "uV/rtHz": {"canonical": "V/rtHz", "factor": 1e-6},
             "%/V": {"canonical": "percent_per_volt", "factor": 1.0},
@@ -141,7 +138,7 @@ RLOAD {vout_pin} 0 {r_load}
             "dBm": {"canonical": "dBm", "factor": 1.0}
         }
 
-    def register_classifier_rule(self, rule: Dict[str, Any]):
+    def register_classifier_rule(self, rule: dict[str, Any]):
         """Registers a newly evolved spec classifier rule."""
         self.v1_kind_rules.append(rule)
         logger.info(f"[Harness² Verifier V1] Registered new classifier rule for kind '{rule.get('kind')}'.")
@@ -156,7 +153,7 @@ RLOAD {vout_pin} 0 {r_load}
         self.v3_unit_conversions[unit_str] = {"canonical": canonical, "factor": factor}
         logger.info(f"[Harness² Verifier V3] Registered unit scaling for '{unit_str}' -> {factor} * {canonical}.")
 
-    def to_dict(self) -> Dict[str, Any]:
+    def to_dict(self) -> dict[str, Any]:
         return {
             "v1_kind_rules": self.v1_kind_rules,
             "v2_fixture_templates": self.v2_fixture_templates,
@@ -164,7 +161,7 @@ RLOAD {vout_pin} 0 {r_load}
         }
 
     @classmethod
-    def from_dict(cls, data: Dict[str, Any]) -> Harness2VerifierTree:
+    def from_dict(cls, data: dict[str, Any]) -> Harness2VerifierTree:
         tree = cls()
         tree.v1_kind_rules = data.get("v1_kind_rules", tree.v1_kind_rules)
         tree.v2_fixture_templates = data.get("v2_fixture_templates", tree.v2_fixture_templates)

@@ -1,19 +1,25 @@
+import json
+import logging
 import os
 import re
-import json
 import shutil
-import logging
-from typing import Dict, Any, List, Optional
+from typing import Any
 
-from .openrouter_client import OpenRouterClient
-from .pdf_to_graph import PDFDatasheetParser, HardwareKnowledgeGraphBuilder, PortDependencyGraphExtractor
 from .circuit_synthesis import AICircuitArchitect, NetlistValidator
-from .circuit_synthesis.harness2 import Harness2CircuitArchitect, HarnessTree
-from .neuro_symbolic_verifier import TestbenchSynthesizer, ClosedLoopEvaluator
-from .neuro_symbolic_verifier.dynamic_testbench_harness import DynamicTestbenchHarness, MathPostProcessor
+from .circuit_synthesis.harness2 import Harness2CircuitArchitect
+from .neuro_symbolic_verifier import ClosedLoopEvaluator, TestbenchSynthesizer
+from .neuro_symbolic_verifier.dynamic_testbench_harness import (
+    DynamicTestbenchHarness,
+)
 from .neuro_symbolic_verifier.verification_flow import plan_for, verify, write_artifacts
-from .visualization import ProcessVisualizer
+from .openrouter_client import OpenRouterClient
+from .pdf_to_graph import (
+    HardwareKnowledgeGraphBuilder,
+    PDFDatasheetParser,
+    PortDependencyGraphExtractor,
+)
 from .tracing import ExecutionTracer
+from .visualization import ProcessVisualizer
 
 logger = logging.getLogger("AutonomousAnalogDesignAgent")
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
@@ -32,12 +38,12 @@ class AutonomousAnalogDesignAgent:
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        model: Optional[str] = None,
+        api_key: str | None = None,
+        model: str | None = None,
         output_dir: str = "output_design",
-        simulator_path: Optional[str] = None,
+        simulator_path: str | None = None,
         max_iterations: int = 10,
-        reuse_hkg_path: Optional[str] = None,
+        reuse_hkg_path: str | None = None,
         use_hermes: bool = True
     ):
         self.output_dir = os.path.abspath(output_dir)
@@ -65,8 +71,8 @@ class AutonomousAnalogDesignAgent:
 
         # Dual-Harness² Verifier & Co-Evolution Coordinator
         from ai_analog_designer.neuro_symbolic_verifier.harness2_verifier import (
+            DualHarness2Coordinator,
             Harness2VerifierArchitect,
-            DualHarness2Coordinator
         )
         self.verifier_architect = Harness2VerifierArchitect(llm_client=self.llm)
         self.dual_coordinator = DualHarness2Coordinator(
@@ -76,7 +82,7 @@ class AutonomousAnalogDesignAgent:
         self.testbench_synthesizer = TestbenchSynthesizer(llm_client=self.llm)
         self.evaluator = ClosedLoopEvaluator(simulator_path=simulator_path)
 
-    def extract_specs_from_prompt(self, user_prompt: str) -> Dict[str, Any]:
+    def extract_specs_from_prompt(self, user_prompt: str) -> dict[str, Any]:
         """
         Uses LLM to parse natural language circuit design requests into structured HKG elements
         (IC metadata, pins with roles, electrical parameters with SymPy intervals).
@@ -140,11 +146,11 @@ Return ONLY valid JSON.
         self,
         netlist_code: str,
         subckt_name: str,
-        pins: List[Dict[str, Any]],
-        specifications: List[Dict[str, Any]],
-        pdg_schedule: Dict[str, float],
+        pins: list[dict[str, Any]],
+        specifications: list[dict[str, Any]],
+        pdg_schedule: dict[str, float],
         tag: str
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Unified evaluation pipeline combining deterministic fixtures (DC/AC small-signal)
         with LLM-driven dynamic testbenches and mathematical post-processing (Fourier THD+N, power, frequency).
@@ -225,13 +231,13 @@ Return ONLY valid JSON.
 
     def run(
         self,
-        datasheet_pdf_path: Optional[str] = None,
-        user_prompt: Optional[str] = None,
+        datasheet_pdf_path: str | None = None,
+        user_prompt: str | None = None,
         max_pages: int = 12,
-        progress_callback: Optional[Any] = None,
-        max_iterations: Optional[int] = None,
-        use_hermes: Optional[bool] = None
-    ) -> Dict[str, Any]:
+        progress_callback: Any | None = None,
+        max_iterations: int | None = None,
+        use_hermes: bool | None = None
+    ) -> dict[str, Any]:
         """
         Executes the entire end-to-end pipeline:
         Supports:
@@ -256,7 +262,7 @@ Return ONLY valid JSON.
         if datasheet_pdf_path and os.path.exists(datasheet_pdf_path):
             logger.info(f"Phase 1: Parsing PDF layout, tables, and text sections from: {datasheet_pdf_path}")
             self.pdf_parser.max_pages = max_pages
-            def on_pdf_page_parsed(done: int, total: int, page_num: int, page_error: Optional[str]):
+            def on_pdf_page_parsed(done: int, total: int, page_num: int, page_error: str | None):
                 if not progress_callback:
                     return
                 suffix = " (using local text fallback)" if page_error else ""
@@ -284,7 +290,7 @@ Return ONLY valid JSON.
                 hkg.graph["parsed_pages"] = PDFDatasheetParser.audit_pages(parsed_doc)
             else:
                 logger.info("Constructing Hardware Knowledge Graph (HKG) from parsed document...")
-                def on_spec_page_extracted(done: int, total: int, page_num: int, page_error: Optional[str]):
+                def on_spec_page_extracted(done: int, total: int, page_num: int, page_error: str | None):
                     if not progress_callback:
                         return
                     if page_error:
@@ -432,7 +438,7 @@ Return ONLY valid JSON.
                 "turns_budget": total_loop_budget
             })
 
-            def eval_probe(p_netlist: str, p_tag: str) -> Dict[str, Any]:
+            def eval_probe(p_netlist: str, p_tag: str) -> dict[str, Any]:
                 return self._evaluate_netlist_unified(
                     netlist_code=p_netlist,
                     subckt_name=subckt_name,
@@ -530,14 +536,19 @@ Return ONLY valid JSON.
                         prior_feedback=current_feedback
                     )
                 else:
-                    def eval_probe(p_netlist: str, p_tag: str) -> Dict[str, Any]:
+                    def eval_probe(
+                        p_netlist: str,
+                        p_tag: str,
+                        _subckt_name: str = subckt_name,
+                        _iteration: int = iteration,
+                    ) -> dict[str, Any]:
                         return self._evaluate_netlist_unified(
                             netlist_code=p_netlist,
-                            subckt_name=subckt_name,
+                            subckt_name=_subckt_name,
                             pins=pins,
                             specifications=specifications,
                             pdg_schedule=pdg_schedule,
-                            tag=f"iter{iteration}_{p_tag}"
+                            tag=f"iter{_iteration}_{p_tag}"
                         )
     
                     logger.info(f"Iteration {iteration}: Launching Harness² Contrastive Propose–Probe–Compose cycle...")
@@ -773,19 +784,19 @@ Return ONLY valid JSON.
         self,
         part_name: str,
         subckt_name: str,
-        ic_info: Dict[str, Any],
-        pins: List[Dict[str, Any]],
-        specifications: List[Dict[str, Any]],
-        pdg_res: Dict[str, Any],
-        iterations: List[Dict[str, Any]],
-        final_eval: Optional[Dict[str, Any]],
-        final_netlist_path: Optional[str]
-    ) -> Dict[str, Any]:
+        ic_info: dict[str, Any],
+        pins: list[dict[str, Any]],
+        specifications: list[dict[str, Any]],
+        pdg_res: dict[str, Any],
+        iterations: list[dict[str, Any]],
+        final_eval: dict[str, Any] | None,
+        final_netlist_path: str | None
+    ) -> dict[str, Any]:
         """Compiles human-readable Markdown and structured JSON design reports."""
         pass_rate = final_eval["pass_rate_percent"] if final_eval else 0.0
 
         md_lines = [
-            f"# Autonomous AI Analog Circuit Synthesis & Verification Report",
+            "# Autonomous AI Analog Circuit Synthesis & Verification Report",
             f"**Target IC:** `{part_name}` | **Subcircuit:** `{subckt_name}`",
             f"**Overall Datasheet Specification Pass Rate (among measured specs):** `{pass_rate:.1f}%`",
             f"**Measurement Coverage (measured / testable specs):** `{(final_eval or {}).get('coverage_pct', 0.0)}%`",

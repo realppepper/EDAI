@@ -11,7 +11,9 @@ import time
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 from ai_analog_designer.llm_client import LLMClient
-from ai_analog_designer.pdf_to_graph.hardware_kg_builder import HardwareKnowledgeGraphBuilder
+from ai_analog_designer.pdf_to_graph.hardware_kg_builder import (
+    HardwareKnowledgeGraphBuilder,
+)
 
 
 class _TimeoutThenRecoverHandler(BaseHTTPRequestHandler):
@@ -50,7 +52,7 @@ class _TimeoutThenRecoverHandler(BaseHTTPRequestHandler):
             }
 
         event = json.dumps({"choices": [{"delta": {"content": json.dumps(response)}}]})
-        body = f"data: {event}\n\ndata: [DONE]\n\n".encode("utf-8")
+        body = f"data: {event}\n\ndata: [DONE]\n\n".encode()
         self.send_response(200)
         self.send_header("Content-Type", "text/event-stream")
         self.send_header("Content-Length", str(len(body)))

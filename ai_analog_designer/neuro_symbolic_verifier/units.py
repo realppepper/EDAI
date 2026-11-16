@@ -6,7 +6,7 @@ like with like (e.g. AOL given as 140 V/mV and a measurement of 103 dB; CMRR giv
 """
 import math
 import re
-from typing import Optional, Tuple, Dict, Any
+from typing import Any
 
 _PREFIX = {"f": 1e-15, "p": 1e-12, "n": 1e-9, "u": 1e-6, "µ": 1e-6, "μ": 1e-6, "m": 1e-3,
            "": 1.0, "k": 1e3, "K": 1e3, "M": 1e6, "G": 1e9, "T": 1e12}
@@ -18,7 +18,7 @@ _BASE = {"v": "V", "a": "A", "hz": "Hz", "s": "s", "ohm": "Ohm", "Ω": "Ohm", "�
          "v/mv": "V/V", "mv/v": "V/V", "uv/v": "V/V", "µv/v": "V/V", "μv/v": "V/V", "%/v": "%/V", "ppm/°c": "ppm/C",
          "uv/°c": "uV/C", "µv/°c": "uV/C", "μv/°c": "uV/C", "nv/√hz": "nV/rtHz", "nv/rthz": "nV/rtHz",
          "pa/√hz": "pA/rtHz", "fa/√hz": "fA/rtHz", "uvpp": "uVpp", "µvpp": "uVpp", "uvrms": "uVrms", "µvrms": "uVrms",
-         "v/mv": "V/V", "%vo": "%", "% of fsr": "%", "mw": "W", "dbu": "dBu"}
+         "%vo": "%", "% of fsr": "%", "mw": "W", "dbu": "dBu"}
 
 
 def normalise_unit_token(u: str) -> str:
@@ -28,7 +28,7 @@ def normalise_unit_token(u: str) -> str:
     return u
 
 
-def to_si(value: Optional[float], unit: str) -> Tuple[Optional[float], str]:
+def to_si(value: float | None, unit: str) -> tuple[float | None, str]:
     """Converts (value, printed unit) into (value in canonical unit, canonical unit).
     Returns (None, unit) when the unit is not understood."""
     if value is None:
@@ -90,7 +90,7 @@ def ratio_to_db(x: float) -> float:
     return 20 * math.log10(abs(x)) if x else float("inf")
 
 
-def spec_limits_in(kind_unit: str, spec: Dict[str, Any]) -> Dict[str, Optional[float]]:
+def spec_limits_in(kind_unit: str, spec: dict[str, Any]) -> dict[str, float | None]:
     """Converts a spec row's min/typ/max into the canonical unit expected by a measurement kind.
 
     kind_unit: "V", "A", "dB", "V/us", "Hz", "V/V", "Ohm", "deg", "%", "%/V", "nV/rtHz".
@@ -101,9 +101,9 @@ def spec_limits_in(kind_unit: str, spec: Dict[str, Any]) -> Dict[str, Optional[f
     """
     unit = (spec.get("unit") or "")
     u = unit.replace("µ", "u").replace("μ", "u").strip()
-    is_error_ratio = bool(re.match(r"^\s*(u|m|n)?v\s*/\s*v\s*$", u, re.I))
+    is_error_ratio = bool(re.match(r"^\s*(u|m|n)?v\s*/\s*v\s*$", u, re.IGNORECASE))
     if kind_unit == "dB" and is_error_ratio:
-        pm = re.match(r"^\s*(u|m|n)?v\s*/\s*v\s*$", u, re.I)
+        pm = re.match(r"^\s*(u|m|n)?v\s*/\s*v\s*$", u, re.IGNORECASE)
         scale = {"u": 1e-6, "m": 1e-3, "n": 1e-9, None: 1.0}[pm.group(1).lower() if pm and pm.group(1) else None]
 
         def to_db(v):
@@ -111,7 +111,7 @@ def spec_limits_in(kind_unit: str, spec: Dict[str, Any]) -> Dict[str, Optional[f
         return {"min": to_db(spec.get("max")) if spec.get("max") is not None else None,
                 "typ": to_db(spec.get("typ")) if spec.get("typ") is not None else None,
                 "max": None}
-    out: Dict[str, Optional[float]] = {}
+    out: dict[str, float | None] = {}
     for k in ("min", "typ", "max"):
         v = spec.get(k)
         if v is None:
@@ -131,7 +131,7 @@ def spec_limits_in(kind_unit: str, spec: Dict[str, Any]) -> Dict[str, Optional[f
     return out
 
 
-def fmt(v: Optional[float], unit: str) -> str:
+def fmt(v: float | None, unit: str) -> str:
     if v is None:
         return "-"
     a = abs(v)

@@ -1,11 +1,12 @@
-import os
 import json
 import logging
-from typing import Dict, Any, List, Optional, Tuple
+import os
+from typing import Any
+
 import networkx as nx
 
-from .pdf_parser import PDFDatasheetParser
 from .hardware_kg_builder import HardwareKnowledgeGraphBuilder
+from .pdf_parser import PDFDatasheetParser
 from .pdg_extractor import PortDependencyGraphExtractor
 
 logger = logging.getLogger("PDGVisualizer")
@@ -29,7 +30,7 @@ class PDGVisualizer:
     }
 
     @classmethod
-    def extract_from_pdf(cls, pdf_path: str, max_pages: int = 15) -> Dict[str, Any]:
+    def extract_from_pdf(cls, pdf_path: str, max_pages: int = 15) -> dict[str, Any]:
         """Runs the PDF-to-HKG-to-PDG pipeline on demand and returns visualization data."""
         parser = PDFDatasheetParser(max_pages=max_pages)
         parsed_doc = parser.parse_pdf(pdf_path)
@@ -123,7 +124,7 @@ class PDGVisualizer:
 
 
     @classmethod
-    def to_mermaid(cls, pins: List[Dict[str, Any]], schedule: Dict[str, float], pdg: Optional[nx.DiGraph] = None) -> str:
+    def to_mermaid(cls, pins: list[dict[str, Any]], schedule: dict[str, float], pdg: nx.DiGraph | None = None) -> str:
         """Generates Mermaid graph TD syntax reflecting true causal physical dependencies."""
         lines = ["graph TD"]
         for p in pins:
@@ -161,9 +162,9 @@ class PDGVisualizer:
     @classmethod
     def to_svg(
         cls,
-        pins: List[Dict[str, Any]],
-        schedule: Dict[str, float],
-        pdg: Optional[nx.DiGraph] = None,
+        pins: list[dict[str, Any]],
+        schedule: dict[str, float],
+        pdg: nx.DiGraph | None = None,
         width: int = 920,
         height: int = 340
     ) -> str:

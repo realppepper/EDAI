@@ -12,23 +12,22 @@ Fixture conventions
   * Transient decks ramp the supply with a PWL over t_ramp (from the PDG schedule) and measure after settling.
   * Unused op-amp / comparator channels are parked as followers at mid.
 """
+import concurrent.futures as cf
+import math
 import os
 import re
-import math
-import glob
 import subprocess
-import concurrent.futures as cf
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any
 
 from .ltspice_runner import LTSPICE_EXE
-from .units import spec_limits_in, fmt
+from .units import fmt, spec_limits_in
 
 
 # ----------------------------------------------------------------------------- DUT instantiation
-def subckt_header(netlist: str, dut_name: Optional[str] = None) -> Tuple[str, List[str]]:
+def subckt_header(netlist: str, dut_name: str | None = None) -> tuple[str, list[str]]:
     """Returns (name, pins) of the DUT subcircuit: the one called `dut_name`, else the LAST .subckt in the
     file (helper/vendor subcircuits are defined before the top-level wrapper)."""
-    heads = re.findall(r"^\s*\.subckt\s+(\S+)\s+(.+?)\s*$", netlist or "", re.M | re.I)
+    heads = re.findall(r"^\s*\.subckt\s+(\S+)\s+(.+?)\s*$", netlist or "", re.MULTILINE | re.IGNORECASE)
     if not heads:
         return (dut_name or "DUT"), ["IN_P", "IN_N", "VCC", "VEE", "OUT"]
     if dut_name:
@@ -39,7 +38,7 @@ def subckt_header(netlist: str, dut_name: Optional[str] = None) -> Tuple[str, Li
     return n, p.split()
 
 
-def _semantic_node_for_pin(pin_str: str, node_of: Dict[str, str], lut: Dict[str, str]) -> Optional[str]:
+def _semantic_node_for_pin(pin_str: str, node_of: dict[str, str], lut: dict[str, str]) -> str | None:
     """Resolves a .subckt pin to a fixture node even when pin naming conventions differ
     (e.g., VCC vs VCC_P vs V+, VEE vs VCC_N vs GND, IN+ vs IN_P vs 1IN+)."""
     u = pin_str.upper().strip()
@@ -69,7 +68,7 @@ def _semantic_node_for_pin(pin_str: str, node_of: Dict[str, str], lut: Dict[str,
     return None
 
 
-def instantiate(netlist: str, node_of: Dict[str, str], inst: str = "XDUT", dut_name: Optional[str] = None) -> str:
+def instantiate(netlist: str, node_of: dict[str, str], inst: str = "XDUT", dut_name: str | None = None) -> str:
     """Builds the X-line, mapping subckt header pins to fixture nodes via exact, sanitized, or semantic role names."""
     name, pins = subckt_header(netlist, dut_name)
     def key(p):
@@ -84,8 +83,8 @@ def instantiate(netlist: str, node_of: Dict[str, str], inst: str = "XDUT", dut_n
 
 # ----------------------------------------------------------------------------- deck assembly
 class Deck:
-    def __init__(self, key: str, kind: str, title: str, lines: List[str], analysis: str, meas: List[str],
-                 extract, fixture: Dict[str, Any]):
+    def __init__(self, key: str, kind: str, title: str, lines: list[str], analysis: str, meas: list[str],
+                 extract, fixture: dict[str, Any]):
         self.key, self.kind, self.title = key, kind, title
         self.lines, self.analysis, self.meas = lines, analysis, meas
         self.extract, self.fixture = extract, fixture
@@ -104,8 +103,8 @@ def _ramp(vs: float, t_ramp: float) -> str:
 
 
 class FixtureContext:
-    def __init__(self, netlist: str, plan: Dict[str, Any], schedule_us: Optional[Dict[str, float]] = None,
-                 dut_name: Optional[str] = None):
+    def __init__(self, netlist: str, plan: dict[str, Any], schedule_us: dict[str, float] | None = None,
+                 dut_name: str | None = None):
         self.netlist = netlist
         self.dut_name = dut_name
         # Symmetric-supply fixtures (V- = -VS/2, mid = 0) for macromodels written for +/-15 V rails.
@@ -120,7 +119,7 @@ class FixtureContext:
         self.t_end = self.t_settle + 50e-6
 
     # -------- helpers
-    def park_unused(self, used_channel: Dict[str, str], node_of: Dict[str, str], lines: List[str], mid: str = "mid"):
+    def park_unused(self, used_channel: dict[str, str], node_of: dict[str, str], lines: list[str], mid: str = "mid"):
         for i, ch in enumerate(self.pm.get("channels", [])):
             if ch is used_channel:
                 continue
@@ -136,7 +135,7 @@ class FixtureContext:
                 node_of[ch["out"]] = f"park{i}"
                 lines.append(f"Rpark{i} park{i} {mid} 100k")
 
-    def base_nodes(self, vs: float) -> Dict[str, str]:
+    def base_nodes(self, vs: float) -> dict[str, str]:
         n = {}
         if self.pm.get("vpos"):
             n[self.pm["vpos"]] = "vp"
@@ -144,13 +143,13 @@ class FixtureContext:
             n[self.pm["vneg"]] = "vn" if self.split else "0"
         return n
 
-    def _rails(self, vs: float, ac: bool) -> List[str]:
+    def _rails(self, vs: float, ac: bool) -> list[str]:
         if self.split:
             return [f"VPOS vp 0 {_r(vs / 2)}" + (" AC 1" if ac else ""),
                     f"VNEG vn 0 {_r(-vs / 2)}", "VMID mid 0 0"]
         return [f"VPOS vp 0 {_r(vs)}" + (" AC 1" if ac else ""), f"VMID mid 0 {_r(vs / 2)}"]
 
-    def supply_tran(self, vs: float) -> List[str]:
+    def supply_tran(self, vs: float) -> list[str]:
         # Supply ramping (PDG start-up sequencing) is opt-in: several vendor macromodels (e.g. TI LM393) do not
         # converge through a 0->VS ramp in transient, so spec measurements use a DC supply by default.
         if os.environ.get("TB_RAMP_SUPPLY") == "1":
@@ -159,7 +158,7 @@ class FixtureContext:
             return [f"VPOS vp 0 {_ramp(vs, self.t_ramp)}", f"VMID mid 0 {_ramp(vs / 2, self.t_ramp)}"]
         return self._rails(vs, False)
 
-    def supply_dc(self, vs: float, ac_on_vp: bool = False) -> List[str]:
+    def supply_dc(self, vs: float, ac_on_vp: bool = False) -> list[str]:
         return self._rails(vs, ac_on_vp)
 
     def tran(self) -> str:
@@ -168,7 +167,7 @@ class FixtureContext:
     def win(self) -> str:
         return f"FROM {_r(self.t_settle)} TO {_r(self.t_end)}"
 
-    def ch(self) -> Dict[str, str]:
+    def ch(self) -> dict[str, str]:
         chans = self.pm.get("channels") or []
         if chans:
             return chans[0]
@@ -190,7 +189,7 @@ class FixtureContext:
 
 
 # ============================================================================ OP-AMP / INAMP
-def opamp_dc(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
+def opamp_dc(ctx: FixtureContext, key: str, fx: dict[str, Any]) -> Deck:
     vs, ch = fx["vs"], ctx.ch()
     rl = fx.get("rl") or 10e3
     n = ctx.base_nodes(vs); n.update({ch["inp"]: "inp", ch["inn"]: "inn", ch["out"]: "out"})
@@ -219,7 +218,7 @@ def opamp_dc(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
     return Deck(key, "opamp_dc", f"follower DC: VOS/IB/IOS/IQ VS={vs}", lines, ctx.tran(), meas, extract, fx)
 
 
-def opamp_openloop(ctx: FixtureContext, key: str, fx: Dict[str, Any], cm: bool = False) -> Deck:
+def opamp_openloop(ctx: FixtureContext, key: str, fx: dict[str, Any], cm: bool = False) -> Deck:
     vs, ch = fx["vs"], ctx.ch()
     rl = fx.get("rl") or 10e3
     cl = fx.get("cl") or 20e-12
@@ -257,7 +256,7 @@ def opamp_openloop(ctx: FixtureContext, key: str, fx: Dict[str, Any], cm: bool =
                 ".ac dec 20 0.1 1G", meas, extract, fx)
 
 
-def opamp_psrr(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
+def opamp_psrr(ctx: FixtureContext, key: str, fx: dict[str, Any]) -> Deck:
     vs, ch = fx["vs"], ctx.ch()
     n = ctx.base_nodes(vs); n.update({ch["inp"]: "mid", ch["inn"]: "out", ch["out"]: "out"})
     lines = ctx.supply_dc(vs, ac_on_vp=True) + ["RL out mid 10k"]
@@ -271,7 +270,7 @@ def opamp_psrr(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
     return Deck(key, "opamp_psrr", f"PSRR follower VS={vs}", lines, ".ac dec 20 1 10Meg", meas, extract, fx)
 
 
-def opamp_sr(ctx: FixtureContext, key: str, fx: Dict[str, Any], sr_hint: float = 1.0) -> Deck:
+def opamp_sr(ctx: FixtureContext, key: str, fx: dict[str, Any], sr_hint: float = 1.0) -> Deck:
     vs, ch = fx["vs"], ctx.ch()
     rl = fx.get("rl") or 10e3
     cl = fx.get("cl") or 20e-12
@@ -304,7 +303,7 @@ def opamp_sr(ctx: FixtureContext, key: str, fx: Dict[str, Any], sr_hint: float =
                 f".tran 0 {_r(t_end)} 0 {_r(t_sw / 2000)}", meas, extract, fx)
 
 
-def opamp_swing(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
+def opamp_swing(ctx: FixtureContext, key: str, fx: dict[str, Any]) -> Deck:
     vs, ch = fx["vs"], ctx.ch()
     rail = fx.get("rail") or "pos"
     iout = fx.get("iout")
@@ -332,7 +331,7 @@ def opamp_swing(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
     return Deck(key, "opamp_swing", f"output swing {rail} rail RL={rl:.4g} VS={vs}", lines, ctx.tran(), meas, extract, fx)
 
 
-def opamp_iout(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
+def opamp_iout(ctx: FixtureContext, key: str, fx: dict[str, Any]) -> Deck:
     """Output current at a forced output voltage (datasheet: VO = V+ or V-, VID = +-1 V)."""
     vs, ch = fx["vs"], ctx.ch()
     at = fx.get("vo_at") or "pos"
@@ -351,7 +350,7 @@ def opamp_iout(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
     return Deck(key, "opamp_iout", f"output current at VO={at} rail VS={vs}", lines, ctx.tran(), meas, extract, fx)
 
 
-def opamp_isc(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
+def opamp_isc(ctx: FixtureContext, key: str, fx: dict[str, Any]) -> Deck:
     vs, ch = fx["vs"], ctx.ch()
     rail = fx.get("rail") or "pos"
     ovd = 1.0 if rail == "pos" else -1.0
@@ -366,7 +365,7 @@ def opamp_isc(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
     return Deck(key, "opamp_isc", f"short-circuit current {rail} VS={vs}", lines, ctx.tran(), meas, extract, fx)
 
 
-def opamp_noise(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
+def opamp_noise(ctx: FixtureContext, key: str, fx: dict[str, Any]) -> Deck:
     vs, ch = fx["vs"], ctx.ch()
     n = ctx.base_nodes(vs); n.update({ch["inp"]: "inp", ch["inn"]: "out", ch["out"]: "out"})
     lines = ctx.supply_dc(vs) + ["VIN inp mid 0", "RL out mid 10k"]
@@ -385,7 +384,7 @@ def _cmp_pullup(fx, vs):
     return fx.get("rl") or 5.1e3
 
 
-def cmp_vos(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
+def cmp_vos(ctx: FixtureContext, key: str, fx: dict[str, Any]) -> Deck:
     vs, ch = fx["vs"], ctx.ch()
     vref = 1.4 if vs >= 3 else vs / 2
     t0, span, tr = ctx.t_settle, 0.05, 400e-6
@@ -403,7 +402,7 @@ def cmp_vos(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
                 f".tran 0 {_r(t0 + tr + 10e-6)} 0 {_r(tr / 4000)}", meas, extract, fx)
 
 
-def cmp_ib(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
+def cmp_ib(ctx: FixtureContext, key: str, fx: dict[str, Any]) -> Deck:
     vs, ch = fx["vs"], ctx.ch()
     vcm = 1.4 if vs >= 3 else vs / 2
     n = ctx.base_nodes(vs); n.update({ch["inp"]: "inp", ch["inn"]: "inn", ch["out"]: "out"})
@@ -423,7 +422,7 @@ def cmp_ib(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
     return Deck(key, "cmp_ib", f"comparator IB/IOS VS={vs}", lines, ctx.tran(), meas, extract, fx)
 
 
-def cmp_avd(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
+def cmp_avd(ctx: FixtureContext, key: str, fx: dict[str, Any]) -> Deck:
     vs, ch = fx.get("vs") or 15.0, ctx.ch()
     rl = fx.get("rl") or 15e3
     vref = 1.4
@@ -446,7 +445,7 @@ def cmp_avd(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
     return Deck(key, "cmp_avd", f"comparator AVD VS={vs}", lines, f".tran 0 {_r(t0 + tr + 10e-6)} 0 {_r(tr / 3000)}", meas, extract, fx)
 
 
-def cmp_vol(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
+def cmp_vol(ctx: FixtureContext, key: str, fx: dict[str, Any]) -> Deck:
     vs, ch = fx["vs"], ctx.ch()
     iol = fx.get("iout") or 4e-3
     vid = fx.get("vid") or -1.0
@@ -461,7 +460,7 @@ def cmp_vol(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
     return Deck(key, "cmp_vol", f"comparator VOL @IOL={iol:.3g} VS={vs}", lines, ctx.tran(), meas, extract, fx)
 
 
-def cmp_iol(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
+def cmp_iol(ctx: FixtureContext, key: str, fx: dict[str, Any]) -> Deck:
     vs, ch = fx["vs"], ctx.ch()
     vo = fx.get("vo") or 1.5
     n = ctx.base_nodes(vs); n.update({ch["inp"]: "inp", ch["inn"]: "inn", ch["out"]: "out"})
@@ -475,7 +474,7 @@ def cmp_iol(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
     return Deck(key, "cmp_iol", f"comparator IOL @VOL={vo} VS={vs}", lines, ctx.tran(), meas, extract, fx)
 
 
-def cmp_ioh(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
+def cmp_ioh(ctx: FixtureContext, key: str, fx: dict[str, Any]) -> Deck:
     vs, ch = fx["vs"], ctx.ch()
     vo = fx.get("vo") or vs
     n = ctx.base_nodes(vs); n.update({ch["inp"]: "inp", ch["inn"]: "inn", ch["out"]: "out"})
@@ -489,7 +488,7 @@ def cmp_ioh(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
     return Deck(key, "cmp_ioh", f"comparator IOH @VOH={vo} VS={vs}", lines, ctx.tran(), meas, extract, fx)
 
 
-def cmp_icc(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
+def cmp_icc(ctx: FixtureContext, key: str, fx: dict[str, Any]) -> Deck:
     vs, ch = fx["vs"], ctx.ch()
     n = ctx.base_nodes(vs); n.update({ch["inp"]: "inp", ch["inn"]: "inn", ch["out"]: "out"})
     lines = ctx.supply_tran(vs) + ["VCM inn 0 1.4", "VID inp inn -1", "ROUT_BLEED out 0 1G"]
@@ -502,7 +501,7 @@ def cmp_icc(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
     return Deck(key, "cmp_icc", f"comparator ICC VS={vs}", lines, ctx.tran(), meas, extract, fx)
 
 
-def cmp_tresp(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
+def cmp_tresp(ctx: FixtureContext, key: str, fx: dict[str, Any]) -> Deck:
     vs, ch = fx["vs"], ctx.ch()
     rpu = fx.get("rl") or 5.1e3
     cl = fx.get("cl") or 15e-12
@@ -522,7 +521,7 @@ def cmp_tresp(ctx: FixtureContext, key: str, fx: Dict[str, Any]) -> Deck:
 
 
 # ============================================================================ 555 TIMER
-def _t(ctx: FixtureContext) -> Dict[str, str]:
+def _t(ctx: FixtureContext) -> dict[str, str]:
     t = dict(ctx.pm.get("timer") or {})
     if not {"trig", "thres", "out"} <= set(t):
         _, pins = subckt_header(ctx.netlist, ctx.dut_name)
@@ -838,10 +837,10 @@ def ldo_psrr(ctx, key, fx):
 
 
 # ============================================================================ dispatcher
-def build_decks(ctx: FixtureContext) -> Tuple[Dict[str, Deck], Dict[str, str]]:
+def build_decks(ctx: FixtureContext) -> tuple[dict[str, Deck], dict[str, str]]:
     """Returns ({fixture_key: Deck}, {fixture_key: error}) for all PLANNED items of the plan."""
-    decks: Dict[str, Deck] = {}
-    errors: Dict[str, str] = {}
+    decks: dict[str, Deck] = {}
+    errors: dict[str, str] = {}
     sr_hint = 1.0
     for it in ctx.plan["items"]:
         if it.get("kind") == "sr" and it.get("typ"):
@@ -945,13 +944,13 @@ def build_decks(ctx: FixtureContext) -> Tuple[Dict[str, Deck], Dict[str, str]]:
 _NUM = r"[-+]?\d*\.?\d+(?:[eE][-+]?\d+)?"
 
 
-def parse_meas_log(path: str) -> Dict[str, float]:
-    res: Dict[str, float] = {}
+def parse_meas_log(path: str) -> dict[str, float]:
+    res: dict[str, float] = {}
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         text = f.read()
     for line in text.splitlines():
         s = line.strip()
-        m = re.match(rf"^([a-zA-Z_][\w]*)\s*:\s*.*?=\s*\(\s*({_NUM})dB\s*,\s*({_NUM})°?\s*\)(?:\s+at\s+({_NUM}))?", s, re.I)
+        m = re.match(rf"^([a-zA-Z_][\w]*)\s*:\s*.*?=\s*\(\s*({_NUM})dB\s*,\s*({_NUM})°?\s*\)(?:\s+at\s+({_NUM}))?", s, re.IGNORECASE)
         if m:
             name = m.group(1).lower()
             db, ph = float(m.group(2)), float(m.group(3))
@@ -967,7 +966,7 @@ def parse_meas_log(path: str) -> Dict[str, float]:
             res[m.group(1).lower()] = float(m.group(3))       # WHEN-type: the x coordinate is the result
             res[m.group(1).lower() + "_value"] = float(m.group(2))
             continue
-        m = re.match(rf"^([a-zA-Z_][\w]*)\s*:\s*.*?=\s*({_NUM})(?:\s+(?:at|from)\s+.*)?$", s, re.I)
+        m = re.match(rf"^([a-zA-Z_][\w]*)\s*:\s*.*?=\s*({_NUM})(?:\s+(?:at|from)\s+.*)?$", s, re.IGNORECASE)
         if m:
             res[m.group(1).lower()] = float(m.group(2))
             continue
@@ -983,9 +982,9 @@ _ERR_PATTERNS = re.compile(
     r"syntax error|iteration limit reached|simulation failed|is not a valid)")
 
 
-def ltspice_errors(log_text: str) -> List[str]:
+def ltspice_errors(log_text: str) -> list[str]:
     """Extracts LTspice error lines together with the offending netlist line that follows them."""
-    out: List[str] = []
+    out: list[str] = []
     lines = log_text.splitlines()
     for i, ln in enumerate(lines):
         low = ln.strip().lower()
@@ -1000,7 +999,7 @@ def ltspice_errors(log_text: str) -> List[str]:
 
 
 
-def pdg_topological_audit(netlist: str, plan: Dict[str, Any], dut_name: Optional[str] = None) -> List[str]:
+def pdg_topological_audit(netlist: str, plan: dict[str, Any], dut_name: str | None = None) -> list[str]:
     """PDG Stage 0: Structural & Topological Causal Connectivity Audit.
     Verifies:
       1. Zero behavioral constructs (no B-sources, A-devices, VALUE={}, if(), table(), laplace()).
@@ -1010,13 +1009,13 @@ def pdg_topological_audit(netlist: str, plan: Dict[str, Any], dut_name: Optional
       5. No degenerate/shorted active devices or rail-locked output gates.
       6. PDG Causal Signal Connectivity: a continuous non-rail component path exists from SIGNAL_IN to SIGNAL_OUT.
     """
-    analog_errs: List[str] = []
+    analog_errs: list[str] = []
     name, pins = subckt_header(netlist, dut_name)
     transistor_count = 0
 
     # Parse all subcircuits in the netlist
-    subckts: Dict[str, Dict[str, Any]] = {}
-    cur_sub: Optional[str] = None
+    subckts: dict[str, dict[str, Any]] = {}
+    cur_sub: str | None = None
     for raw_ln in netlist.splitlines():
         s = raw_ln.strip()
         if not s or s.startswith(("*", ";", "+")):
@@ -1042,7 +1041,7 @@ def pdg_topological_audit(netlist: str, plan: Dict[str, Any], dut_name: Optional
             analog_errs.append(f"PDG_STAGE0_BEHAVIORAL: Behavioral B-source '{first_tok}' is prohibited | {s}")
         elif first_tok.startswith("A"):
             analog_errs.append(f"PDG_STAGE0_BEHAVIORAL: Digital/behavioral A-device '{first_tok}' is prohibited | {s}")
-        elif re.search(r"\b(?:value\s*=\s*\{|v\s*=\s*if\s*\(|i\s*=\s*if\s*\(|table\s*\(|laplace\s*=)", s, re.I):
+        elif re.search(r"\b(?:value\s*=\s*\{|v\s*=\s*if\s*\(|i\s*=\s*if\s*\(|table\s*\(|laplace\s*=)", s, re.IGNORECASE):
             analog_errs.append(f"PDG_STAGE0_BEHAVIORAL: Behavioral expression is prohibited; use physical transistors/passives | {s}")
 
         if cur_sub is not None:
@@ -1106,13 +1105,13 @@ def pdg_topological_audit(netlist: str, plan: Dict[str, Any], dut_name: Optional
         rail_pins = {str(pm.get("vpos") or "").upper(), str(pm.get("vneg") or "").upper(), "0", "GND", "VCC", "VDD", "VSS", "VEE", "V+", "V-"}
         rail_pins.discard("")
 
-        adj: Dict[str, set] = {}
-        def add_clique(nodes_list: List[str]):
+        adj: dict[str, set] = {}
+        def add_clique(nodes_list: list[str]):
             clean_nds = [n for n in nodes_list if n not in rail_pins]
             for u in clean_nds:
                 adj.setdefault(u, set()).update(clean_nds)
 
-        def expand_sub(sub_key: str, prefix: str, pin_map_dict: Dict[str, str], depth: int = 0):
+        def expand_sub(sub_key: str, prefix: str, pin_map_dict: dict[str, str], depth: int = 0):
             if depth > 4 or sub_key not in subckts:
                 return
             sb = subckts[sub_key]
@@ -1142,7 +1141,7 @@ def pdg_topological_audit(netlist: str, plan: Dict[str, Any], dut_name: Optional
         top_identity = {p.upper(): p.upper() for p in top_sub["pins"]}
         expand_sub(name.upper(), "", top_identity, 0)
 
-        def has_path(src_pins: List[str], dst_pin: str) -> bool:
+        def has_path(src_pins: list[str], dst_pin: str) -> bool:
             target = dst_pin.upper()
             visited = set()
             stack = [s.upper() for s in src_pins if s]
@@ -1185,9 +1184,9 @@ def pdg_topological_audit(netlist: str, plan: Dict[str, Any], dut_name: Optional
     return list(dict.fromkeys(analog_errs))
 
 
-def pdg_bias_and_transfer_check(netlist: str, plan: Dict[str, Any], out_dir: str,
-                                schedule_us: Optional[Dict[str, float]] = None,
-                                dut_name: Optional[str] = None, vs: Optional[float] = None) -> Dict[str, Any]:
+def pdg_bias_and_transfer_check(netlist: str, plan: dict[str, Any], out_dir: str,
+                                schedule_us: dict[str, float] | None = None,
+                                dut_name: str | None = None, vs: float | None = None) -> dict[str, Any]:
     """PDG Stage 1 (Power & DC Bias Gate) & Stage 2 (Causal DC Signal Transfer Gate).
     Sequenced by the PDG startup schedule sigma(p):
       - Stage 1 (at t = sigma(BIAS)): Verifies supply/cathode bias current IQ is in an active physical window
@@ -1208,7 +1207,7 @@ def pdg_bias_and_transfer_check(netlist: str, plan: Dict[str, Any], out_dir: str
     ctx = FixtureContext(netlist, plan, schedule_us=sched, dut_name=dut_name)
     lines = ["* PDG Stage 1 (DC Bias) & Stage 2 (Causal Signal Transfer) Gate", ".temp 25",
              ".options plotwinsize=0 numdgt=7", netlist.strip(), ""]
-    meas: List[str] = []
+    meas: list[str] = []
 
     if cls in ("comparator", "opamp", "inamp"):
         ch = ctx.ch()
@@ -1221,9 +1220,9 @@ def pdg_bias_and_transfer_check(netlist: str, plan: Dict[str, Any], out_dir: str
             f"VID inp inn PWL(0 -0.1 {_r(t_step)} -0.1 {_r(t_step + 1e-6)} 0.1 {_r(t_end)} 0.1)",
         ]
         if cls == "comparator":
-            lines.append(f"RPU out vp 5.1k")
+            lines.append("RPU out vp 5.1k")
         else:
-            lines.append(f"RL out mid 10k")
+            lines.append("RL out mid 10k")
         ctx.park_unused(ch, n, lines)
         lines.append(instantiate(netlist, n, dut_name=dut_name))
         meas = [
@@ -1286,7 +1285,7 @@ def pdg_bias_and_transfer_check(netlist: str, plan: Dict[str, Any], out_dir: str
     iq = abs(raw.get("m_iq", 0.0))
     vlo = raw.get("m_vlo")
     vhi = raw.get("m_vhi")
-    errs: List[str] = []
+    errs: list[str] = []
 
     # Stage 1 Gate: Power & DC Bias Operating Point
     if "m_iq" not in raw or iq < 1e-7:
@@ -1323,10 +1322,10 @@ def pdg_bias_and_transfer_check(netlist: str, plan: Dict[str, Any], out_dir: str
     return {"ok": len(errs) == 0, "errors": errs, "path": path, "metrics": {"iq": iq, "v_low": vlo, "v_high": vhi}}
 
 
-def compile_check(netlist: str, plan: Dict[str, Any], out_dir: str, dut_name: Optional[str] = None,
-                  vs: Optional[float] = None, strict_analog: bool = True,
-                  schedule_us: Optional[Dict[str, float]] = None,
-                  enforce_pdg_gate: bool = True) -> Dict[str, Any]:
+def compile_check(netlist: str, plan: dict[str, Any], out_dir: str, dut_name: str | None = None,
+                  vs: float | None = None, strict_analog: bool = True,
+                  schedule_us: dict[str, float] | None = None,
+                  enforce_pdg_gate: bool = True) -> dict[str, Any]:
     """PDG-Driven Staged Gate:
       - Stage 0: Topological & Structural PDG Audit (no behavioral sources, no internal independent V/I sources,
         no global ground '0' leak, verified SIGNAL_IN -> SIGNAL_OUT connectivity).
@@ -1381,7 +1380,7 @@ def compile_check(netlist: str, plan: Dict[str, Any], out_dir: str, dut_name: Op
     return {"ok": True, "stage": "PDG_GATE_PASSED", "errors": [], "path": path}
 
 
-def run_deck(deck: Deck, netlist: str, out_dir: str, timeout: Optional[int] = None) -> Dict[str, Any]:
+def run_deck(deck: Deck, netlist: str, out_dir: str, timeout: int | None = None) -> dict[str, Any]:
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, f"tb_{deck.key}.cir")
     with open(path, "w", encoding="utf-8") as f:
@@ -1432,10 +1431,10 @@ _PDG_DECK_STAGE = {
 }
 
 
-def run_all(decks: Dict[str, Deck], netlist: str, out_dir: str, workers: int = 4) -> Dict[str, Dict[str, Any]]:
+def run_all(decks: dict[str, Deck], netlist: str, out_dir: str, workers: int = 4) -> dict[str, dict[str, Any]]:
     """Executes testbench decks in PDG causal stage order:
     Stage 1 (Power/DC Bias) -> Stage 2 (Static DC Transfer/Thresholds) -> Stage 3 (AC/Dynamic Transient)."""
-    results: Dict[str, Dict[str, Any]] = {}
+    results: dict[str, dict[str, Any]] = {}
     for stage_num in (1, 2, 3):
         stage_decks = {k: d for k, d in decks.items() if _PDG_DECK_STAGE.get(d.kind, 2) == stage_num}
         if not stage_decks:
@@ -1468,7 +1467,7 @@ def _tol(unit: str, typ: float) -> float:
     return abs(typ) * 0.30
 
 
-def evaluate(plan: Dict[str, Any], results: Dict[str, Dict[str, Any]], deck_errors: Dict[str, str]) -> Dict[str, Any]:
+def evaluate(plan: dict[str, Any], results: dict[str, dict[str, Any]], deck_errors: dict[str, str]) -> dict[str, Any]:
     rows = []
     for it in plan["items"]:
         row = {k: it.get(k) for k in ("spec_index", "symbol", "name", "category", "min", "typ", "max", "unit",
@@ -1549,7 +1548,7 @@ def evaluate(plan: Dict[str, Any], results: Dict[str, Dict[str, Any]], deck_erro
     hard = cnt("PASS", "FAIL")
 
     # Compute deduplicated unique-kind pass rate (so 12 rows of VOL count as 1 parameter kind)
-    kinds_rows: Dict[str, List[str]] = {}
+    kinds_rows: dict[str, list[str]] = {}
     for r in rows:
         if r["result"] in ("PASS", "FAIL", "PASS_TYP", "FAIL_TYP") and r.get("kind"):
             kinds_rows.setdefault(r["kind"], []).append(r["result"])
@@ -1577,7 +1576,7 @@ def evaluate(plan: Dict[str, Any], results: Dict[str, Dict[str, Any]], deck_erro
     return {"summary": summary, "rows": rows}
 
 
-def feedback_text(evaluation: Dict[str, Any], max_items: int = 25) -> str:
+def feedback_text(evaluation: dict[str, Any], max_items: int = 25) -> str:
     """Compact, actionable feedback for the netlist synthesiser."""
     lines = []
     for r in evaluation["rows"]:

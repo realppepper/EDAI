@@ -5,12 +5,11 @@ simulatable, high pass rate analog circuit without human intervention.
 """
 
 import os
-import shutil
-import pytest
-from ai_analog_designer.llm_client import LLMClient
+
 from ai_analog_designer.hermes_core import HermesAnalogWorkflowRunner
-from ai_analog_designer.neuro_symbolic_verifier.verification_flow import verify
 from ai_analog_designer.neuro_symbolic_verifier.spec_planner import build_plan
+from ai_analog_designer.neuro_symbolic_verifier.verification_flow import verify
+
 
 def test_hermes_harness2_synthesizes_passing_comparator(tmp_path):
     output_dir = str(tmp_path / "test_out")

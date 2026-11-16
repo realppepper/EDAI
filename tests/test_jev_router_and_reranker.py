@@ -8,16 +8,15 @@ Verifies:
 """
 import os
 import sys
-import pytest
 
 # Ensure repository root in path
 repo_root = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 if repo_root not in sys.path:
     sys.path.insert(0, repo_root)
 
-from ai_analog_designer.hermes_core.tool_decision_router import ToolDecisionRouter
 from ai_analog_designer.hermes_core.blueprint_reranker import BlueprintReranker
 from ai_analog_designer.hermes_core.hermes_tools import HermesAnalogTools
+from ai_analog_designer.hermes_core.tool_decision_router import ToolDecisionRouter
 
 
 def test_jev_router_turn1_blueprint_routing():

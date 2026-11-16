@@ -1,11 +1,12 @@
+import json
 import os
 import re
-import json
+from typing import Any
+
 import networkx as nx
-from typing import Dict, List, Any, Tuple, Optional
 
 
-def time_to_us(value: float, unit: str) -> Optional[float]:
+def time_to_us(value: float, unit: str) -> float | None:
     u = (unit or "").strip().lower().replace("µ", "u").replace("μ", "u")
     if u in ("ns",):
         return value / 1000.0
@@ -20,7 +21,7 @@ def time_to_us(value: float, unit: str) -> Optional[float]:
     return None
 
 
-def freq_to_mhz(value: float, unit: str) -> Optional[float]:
+def freq_to_mhz(value: float, unit: str) -> float | None:
     u = (unit or "").strip().lower()
     return {"hz": value / 1e6, "khz": value / 1e3, "mhz": value, "ghz": value * 1e3}.get(u)
 
@@ -44,7 +45,7 @@ class PortDependencyGraphExtractor:
         self.delta_multiplier = delta_multiplier
 
     @classmethod
-    def extract_timing_specs_from_hkg(cls, hkg: nx.MultiDiGraph) -> Dict[str, Any]:
+    def extract_timing_specs_from_hkg(cls, hkg: nx.MultiDiGraph) -> dict[str, Any]:
         params = hkg.graph.get("raw_extraction", {}).get("electrical_parameters", [])
         timing = {"turnon_settling_us": None, "propagation_delay_us": None, "slew_rate_v_us": None,
                   "bandwidth_mhz": None, "sources": {}}
@@ -96,10 +97,10 @@ class PortDependencyGraphExtractor:
 
     def _llm_infer_pdg_edges_and_delays(
         self,
-        raw: Dict[str, Any],
-        active_pins: List[Tuple[str, str, Dict[str, Any]]],
-        prior_timing: Dict[str, Any],
-    ) -> Tuple[List[Dict[str, Any]], Dict[str, Any]]:
+        raw: dict[str, Any],
+        active_pins: list[tuple[str, str, dict[str, Any]]],
+        prior_timing: dict[str, Any],
+    ) -> tuple[list[dict[str, Any]], dict[str, Any]]:
         """
         Uses LLM probabilistic reasoning to infer causal Port Dependency Graph (PDG) edges
         and realistic physical settling delays (in us) when explicit datasheet edges or timing specs
@@ -179,7 +180,7 @@ class PortDependencyGraphExtractor:
         except Exception:
             return [], prior_timing
 
-    def extract_pdg(self, hkg: nx.MultiDiGraph) -> Tuple[nx.DiGraph, Dict[str, float], List[List[str]]]:
+    def extract_pdg(self, hkg: nx.MultiDiGraph) -> tuple[nx.DiGraph, dict[str, float], list[list[str]]]:
         timing = self.extract_timing_specs_from_hkg(hkg)
         raw = hkg.graph.get("raw_extraction", {})
 
@@ -269,12 +270,12 @@ class PortDependencyGraphExtractor:
             pdg.remove_edge(u, v)
 
         topo = list(nx.topological_sort(pdg))
-        sigma: Dict[str, float] = {}
+        sigma: dict[str, float] = {}
         for p in topo:
             ins = list(pdg.in_edges(p, data=True))
             sigma[p] = max((sigma[q] + d.get("weight", 1e-6) for q, _, d in ins), default=0.0)
 
-        level_map: Dict[str, int] = {}
+        level_map: dict[str, int] = {}
         for v in topo:
             preds = list(pdg.predecessors(v))
             level_map[v] = max(level_map[u] for u in preds) + 1 if preds else 0

@@ -6,15 +6,15 @@ by synthesizing targeted LTspice testbenches and applying NumPy/SciPy mathematic
 """
 from __future__ import annotations
 
+import logging
+import math
 import os
 import re
-import math
-import logging
-from typing import Dict, Any, List, Optional, Tuple
-import numpy as np
+from typing import Any
+
+from ai_analog_designer.llm_client import LLMClient
 
 from .ltspice_runner import LTspiceRunner
-from ai_analog_designer.llm_client import LLMClient
 from .sympy_oracle_engine import SymPyOracleEngine
 
 logger = logging.getLogger("DynamicTestbenchHarness")
@@ -28,7 +28,7 @@ class MathPostProcessor:
     """
 
     @staticmethod
-    def parse_fourier_data(log_text: str) -> Optional[Dict[str, Any]]:
+    def parse_fourier_data(log_text: str) -> dict[str, Any] | None:
         """
         Parses the LTspice .four Fourier components table and THD percentage from simulation log.
         Format:
@@ -83,7 +83,7 @@ class MathPostProcessor:
 
     @staticmethod
     def calculate_thd_n_from_harmonics_and_noise(
-        fourier_data: Dict[str, Any],
+        fourier_data: dict[str, Any],
         noise_floor_v: float = 1e-5
     ) -> float:
         """
@@ -100,7 +100,7 @@ class MathPostProcessor:
         return float((math.sqrt(total_distortion_noise_sq) / v1) * 100.0)
 
     @staticmethod
-    def calculate_power(meas_dict: Dict[str, float], default_rl: float = 4.0) -> Optional[float]:
+    def calculate_power(meas_dict: dict[str, float], default_rl: float = 4.0) -> float | None:
         """
         Calculates output power (Watts) from measured RMS voltage/current or direct avg power.
         Formula: P = V_rms^2 / R_L  or  P = AVG(V * I).
@@ -124,7 +124,7 @@ class MathPostProcessor:
         return None
 
     @staticmethod
-    def calculate_frequency(meas_dict: Dict[str, float]) -> Optional[float]:
+    def calculate_frequency(meas_dict: dict[str, float]) -> float | None:
         """
         Calculates frequency (Hz) from frequency parameters or period measurements.
         Formula: f = 1 / (t2 - t1).
@@ -147,7 +147,7 @@ class MathPostProcessor:
         return None
 
     @staticmethod
-    def calculate_resistance(meas_dict: Dict[str, float]) -> Optional[float]:
+    def calculate_resistance(meas_dict: dict[str, float]) -> float | None:
         """
         Calculates dynamic on-resistance or internal impedance: R = Delta_V / Delta_I.
         """
@@ -187,8 +187,8 @@ class DynamicTestbenchHarness:
 
     def __init__(
         self,
-        llm_client: Optional[LLMClient] = None,
-        simulator_path: Optional[str] = None
+        llm_client: LLMClient | None = None,
+        simulator_path: str | None = None
     ):
         self.llm = llm_client or LLMClient()
         self.runner = LTspiceRunner(simulator_path=simulator_path)
@@ -196,9 +196,9 @@ class DynamicTestbenchHarness:
 
     def identify_dynamic_specs(
         self,
-        specs: List[Dict[str, Any]],
+        specs: list[dict[str, Any]],
         unsupported_only: bool = True
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Filters specifications that benefit from LLM dynamic testbench and mathematical calculation.
         """
@@ -225,12 +225,12 @@ class DynamicTestbenchHarness:
     def synthesize_dynamic_testbench(
         self,
         subckt_name: str,
-        pins: List[Dict[str, Any]],
-        target_specs: List[Dict[str, Any]],
-        pdg_schedule: Dict[str, float],
+        pins: list[dict[str, Any]],
+        target_specs: list[dict[str, Any]],
+        pdg_schedule: dict[str, float],
         netlist_path: str,
         dut_category: str = "Audio Amplifier"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Synthesizes a specialized LTspice testbench (.cir) equipped with
         appropriate stimulus, Fourier (.four) directives, and math probes.
@@ -317,7 +317,7 @@ Respond with the exact testbench enclosed in:
 
         # Sanitize deck
         deck = self._sanitize_dynamic_testbench(deck, pins)
-        if not re.search(r'\.include\s+["\']?' + re.escape(netlist_filename), deck, re.I):
+        if not re.search(r'\.include\s+["\']?' + re.escape(netlist_filename), deck, re.IGNORECASE):
             deck = f'.include "{netlist_filename}"\n' + deck
         if ".end" not in deck.lower():
             deck += "\n.end\n"
@@ -329,7 +329,7 @@ Respond with the exact testbench enclosed in:
         }
 
     @staticmethod
-    def _sanitize_dynamic_testbench(deck: str, pins: List[Dict[str, Any]]) -> str:
+    def _sanitize_dynamic_testbench(deck: str, pins: list[dict[str, Any]]) -> str:
         """
         Deterministically repairs common LLM SPICE testbench syntax mistakes:
           - Missing 'V' prefix or node '0' on voltage source declarations (e.g. 'PVCC PVCC 21' -> 'VPVCC PVCC 0 21')
@@ -337,7 +337,7 @@ Respond with the exact testbench enclosed in:
           - Invalid '.meas ... param ... from=... to=...' syntax
         """
         pin_names = {p.get("name", "").upper(): p.get("name", "") for p in pins if isinstance(p, dict) and p.get("name")}
-        cleaned_lines: List[str] = []
+        cleaned_lines: list[str] = []
 
         for raw_ln in deck.splitlines():
             s = raw_ln.strip()
@@ -347,12 +347,12 @@ Respond with the exact testbench enclosed in:
 
             # Fix invalid .meas ... param ... from=... to=... or V(...) inside param
             if s.lower().startswith(".meas"):
-                if re.search(r'\bparam\b', s, re.I) and (
-                    re.search(r'\bfrom\s*=', s, re.I) or re.search(r'\bV\s*\(', s, re.I) or re.search(r'Fourier\s*\(', s, re.I)
+                if re.search(r'\bparam\b', s, re.IGNORECASE) and (
+                    re.search(r'\bfrom\s*=', s, re.IGNORECASE) or re.search(r'\bV\s*\(', s, re.IGNORECASE) or re.search(r'Fourier\s*\(', s, re.IGNORECASE)
                 ):
                     cleaned_lines.append("* [Auto-commented invalid .meas param] " + s)
                     continue
-                if re.search(r'^.meas\s+\w+\s+\w+\s+(?:rise|fall)=', s, re.I) and "when" not in s.lower() and "trig" not in s.lower():
+                if re.search(r'^.meas\s+\w+\s+\w+\s+(?:rise|fall)=', s, re.IGNORECASE) and "when" not in s.lower() and "trig" not in s.lower():
                     cleaned_lines.append("* [Auto-commented malformed .meas trigger] " + s)
                     continue
                 cleaned_lines.append(raw_ln)
@@ -399,9 +399,9 @@ Respond with the exact testbench enclosed in:
         testbench_deck: str,
         tb_name: str,
         out_dir: str,
-        target_specs: List[Dict[str, Any]],
+        target_specs: list[dict[str, Any]],
         timeout: int = 60
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Executes the dynamic testbench in LTspice, processes Fourier & waveform math,
         and evaluates every target specification.
@@ -413,8 +413,8 @@ Respond with the exact testbench enclosed in:
 
         log_path = os.path.join(out_dir, f"{tb_name}.log")
 
-        meas_results: Dict[str, float] = {}
-        sim_errors: List[str] = []
+        meas_results: dict[str, float] = {}
+        sim_errors: list[str] = []
         raw_log = ""
 
         try:
@@ -435,7 +435,7 @@ Respond with the exact testbench enclosed in:
         computed_freq = MathPostProcessor.calculate_frequency(meas_results)
         computed_res = MathPostProcessor.calculate_resistance(meas_results)
 
-        spec_evaluations: List[Dict[str, Any]] = []
+        spec_evaluations: list[dict[str, Any]] = []
         passed_count = 0
         failed_count = 0
 

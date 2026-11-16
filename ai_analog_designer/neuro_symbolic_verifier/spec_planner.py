@@ -6,13 +6,11 @@ to classify device topology, map arbitrary datasheet pin names to fixture roles
 (IN+, IN-, OUT, V+, V-, etc.), and map electrical specification rows + test conditions
 into canonical SPICE verification fixtures without brittle regex failures.
 """
+import hashlib
+import json
 import os
 import re
-import json
-import hashlib
-from typing import Dict, Any, List, Optional, Tuple
-
-from .units import to_si
+from typing import Any
 
 DEVICE_KEYWORDS = [
     ("comparator", "comparator"),
@@ -25,7 +23,7 @@ DEVICE_KEYWORDS = [
 ]
 
 
-def detect_device_class(ic_info: Dict[str, Any], pins: List[Dict[str, Any]]) -> str:
+def detect_device_class(ic_info: dict[str, Any], pins: list[dict[str, Any]]) -> str:
     text = " ".join(str(ic_info.get(k, "")) for k in ("name", "category", "description")).lower()
     names = " ".join(str(p.get("raw_name") or p.get("name") or "") for p in pins).upper()
     if re.search(r"THRES|TRIG|DISCH", names):
@@ -49,7 +47,7 @@ def _norm(n: str) -> str:
     return str(n or "").upper().replace("−", "-").replace("–", "-").strip()
 
 
-def _polarity(n: str) -> Optional[str]:
+def _polarity(n: str) -> str | None:
     """Returns 'P', 'N' or None for an input pin name."""
     u = _norm(n)
     if "+" in u or re.search(r"_P\b|_P\d|P$", u) or "NONINV" in u or "NON-INV" in u or u.startswith("+") or re.match(r"^\d?IN\+?P", u):
@@ -71,9 +69,9 @@ def _channel(n: str) -> str:
     return "1"
 
 
-def map_pins(device_class: str, pins: List[Dict[str, Any]]) -> Dict[str, Any]:
+def map_pins(device_class: str, pins: list[dict[str, Any]]) -> dict[str, Any]:
     """Maps datasheet pins to fixture roles. Returns {'vpos','vneg','gnd','channels':[{'inp','inn','out'}], ...}."""
-    roles: Dict[str, Any] = {
+    roles: dict[str, Any] = {
         "vpos": None,
         "vneg": None,
         "channels": [],
@@ -114,7 +112,7 @@ def map_pins(device_class: str, pins: List[Dict[str, Any]]) -> Dict[str, Any]:
         roles["other"].append(entry)
 
     if device_class in ("opamp", "comparator"):
-        chans: Dict[str, Dict[str, str]] = {}
+        chans: dict[str, dict[str, str]] = {}
         for e in ins:
             pol = _polarity(e["raw"])
             ch = _channel(e["raw"])
@@ -125,7 +123,7 @@ def map_pins(device_class: str, pins: List[Dict[str, Any]]) -> Dict[str, Any]:
                 chans[ch]["inn"] = e["node"]
         # A channel with one known polarity and a leftover input: the leftover is the other polarity
         # (covers pin names such as "IN1" / "1IN" or "IN" / "IN_P" that carry no +/- suffix on one pin).
-        leftovers: Dict[str, List[Dict[str, str]]] = {}
+        leftovers: dict[str, list[dict[str, str]]] = {}
         for e in ins:
             if _polarity(e["raw"]) is None:
                 leftovers.setdefault(_channel(e["raw"]), []).append(e)
@@ -236,28 +234,28 @@ def map_pins(device_class: str, pins: List[Dict[str, Any]]) -> Dict[str, Any]:
 
 
 # ---------------------------------------------------------------- condition parsing
-def parse_conditions(text: str) -> Dict[str, Any]:
+def parse_conditions(text: str) -> dict[str, Any]:
     """Pulls numeric test conditions out of a datasheet condition string."""
     t = (text or "").replace("µ", "u").replace("μ", "u").replace("Ω", "Ohm").replace("−", "-").replace("–", "-")
-    c: Dict[str, Any] = {}
-    m = re.search(r"V(?:S|CC|DD|\+)\s*=\s*±\s*(\d+\.?\d*)\s*V", t, re.I)
+    c: dict[str, Any] = {}
+    m = re.search(r"V(?:S|CC|DD|\+)\s*=\s*±\s*(\d+\.?\d*)\s*V", t, re.IGNORECASE)
     if m:
         c["vs"] = 2 * float(m.group(1))
     else:
-        m = re.search(r"V(?:S|CC|DD|IN)\s*=\s*(?:\(V\+\)\s*[-–]\s*\(V[-–]\)\s*=\s*)?(\d+\.?\d*)\s*V(?!\s*(?:to|-|–)\s*\d)", t, re.I)
+        m = re.search(r"V(?:S|CC|DD|IN)\s*=\s*(?:\(V\+\)\s*[-–]\s*\(V[-–]\)\s*=\s*)?(\d+\.?\d*)\s*V(?!\s*(?:to|-|–)\s*\d)", t, re.IGNORECASE)
         if m:
             c["vs"] = float(m.group(1))
         else:
-            m = re.search(r"V(?:S|CC|DD)\s*=\s*(\d+\.?\d*)\s*V?\s*(?:to|-|–)\s*(\d+\.?\d*)\s*V", t, re.I)
+            m = re.search(r"V(?:S|CC|DD)\s*=\s*(\d+\.?\d*)\s*V?\s*(?:to|-|–)\s*(\d+\.?\d*)\s*V", t, re.IGNORECASE)
             if m:
                 c["vs_range"] = (float(m.group(1)), float(m.group(2)))
     m = re.search(r"R\s*L\s*[=≥>≤<]+\s*(\d+\.?\d*)\s*([kKmM]?)\s*(?:Ohm|Ω)?", t)
     if m:
         c["rl"] = float(m.group(1)) * {"k": 1e3, "K": 1e3, "m": 1e-3, "M": 1e6, "": 1}[m.group(2)]
-    m = re.search(r"C\s*L\s*=\s*(\d+\.?\d*)\s*([pnu]?)F", t, re.I)
+    m = re.search(r"C\s*L\s*=\s*(\d+\.?\d*)\s*([pnu]?)F", t, re.IGNORECASE)
     if m:
         c["cl"] = float(m.group(1)) * {"p": 1e-12, "n": 1e-9, "u": 1e-6, "": 1}[m.group(2).lower()]
-    m = re.search(r"I\s*(?:OUT|O|OL|OH|L|KA|K)\s*=\s*([-+]?\d+\.?\d*)\s*([munp]?)A", t, re.I)
+    m = re.search(r"I\s*(?:OUT|O|OL|OH|L|KA|K)\s*=\s*([-+]?\d+\.?\d*)\s*([munp]?)A", t, re.IGNORECASE)
     if m:
         c["iout"] = float(m.group(1)) * {"m": 1e-3, "u": 1e-6, "n": 1e-9, "p": 1e-12, "": 1}[m.group(2).lower()]
     m = re.search(r"\bG\s*=\s*\+?\s*(\d+\.?\d*)", t)
@@ -280,20 +278,20 @@ def parse_conditions(text: str) -> Dict[str, Any]:
     m = re.search(r"VKA\s*=\s*(\d+\.?\d*)\s*V", t)
     if m:
         c["vka"] = float(m.group(1))
-    m = re.search(r"RESET\s+at\s+(VCC|0\s*V|\d+\.?\d*\s*V)", t, re.I)
+    m = re.search(r"RESET\s+at\s+(VCC|0\s*V|\d+\.?\d*\s*V)", t, re.IGNORECASE)
     if m:
         c["rst_level"] = 0.0 if m.group(1).upper().startswith("0") else ("vcc" if "VCC" in m.group(1).upper() else float(re.findall(r"\d+\.?\d*", m.group(1))[0]))
-    if re.search(r"output\s+low", t, re.I):
+    if re.search(r"output\s+low", t, re.IGNORECASE):
         c["state"] = "low"
-    elif re.search(r"output\s+high", t, re.I):
+    elif re.search(r"output\s+high", t, re.IGNORECASE):
         c["state"] = "high"
-    if re.search(r"positive rail|\(V\+\)|V\+\b.*rail|sourc", t, re.I):
+    if re.search(r"positive rail|\(V\+\)|V\+\b.*rail|sourc", t, re.IGNORECASE):
         c["rail"] = "pos"
-    elif re.search(r"negative rail|\(V[-–]\)|V[-–]\b.*rail|sink", t, re.I):
+    elif re.search(r"negative rail|\(V[-–]\)|V[-–]\b.*rail|sink", t, re.IGNORECASE):
         c["rail"] = "neg"
-    if re.search(r"connected\s+to\s*\(?\s*V\s*[-–]\s*\)?|connected\s+to\s+GND", t, re.I):
+    if re.search(r"connected\s+to\s*\(?\s*V\s*[-–]\s*\)?|connected\s+to\s+GND", t, re.IGNORECASE):
         c["rl_to"] = "vn"
-    if re.search(r"-\s*40\s*°?C|0\s*°?C\s*(to|≤)|full\s+range|full operating|T\s*A\s*=\s*T\s*MIN|TMIN|over (the )?(full|rated|operating).*temp|over temperature|full temp", t, re.I) \
+    if re.search(r"-\s*40\s*°?C|0\s*°?C\s*(to|≤)|full\s+range|full operating|T\s*A\s*=\s*T\s*MIN|TMIN|over (the )?(full|rated|operating).*temp|over temperature|full temp", t, re.IGNORECASE) \
             and not re.search(r"25\s*°?C", t):
         c["temp_range"] = True
     return c
@@ -364,7 +362,7 @@ UNSUPPORTED_HINTS = [
 ]
 
 
-def classify_spec(device_class: str, spec: Dict[str, Any]) -> Tuple[Optional[str], Optional[str], bool, str]:
+def classify_spec(device_class: str, spec: dict[str, Any]) -> tuple[str | None, str | None, bool, str]:
     """Returns (kind, canonical_unit, magnitude_compare, status)."""
     sym = str(spec.get("symbol") or "").strip()
     name = str(spec.get("name") or "").strip()
@@ -372,14 +370,14 @@ def classify_spec(device_class: str, spec: Dict[str, Any]) -> Tuple[Optional[str
     if cat != "ELECTRICAL":
         return None, None, False, f"NOT_TESTABLE_{cat}"
     for pat, status in UNSUPPORTED_HINTS:
-        if re.search(pat, name, re.I) and not re.search(r"density", name, re.I):
-            if status == "UNSUPPORTED_KIND" and re.search(r"noise density", name, re.I):
+        if re.search(pat, name, re.IGNORECASE) and not re.search(r"density", name, re.IGNORECASE):
+            if status == "UNSUPPORTED_KIND" and re.search(r"noise density", name, re.IGNORECASE):
                 continue
             return None, None, False, status
     for classes, sym_re, name_re, kind, unit, mag in KIND_RULES:
         if device_class not in classes:
             continue
-        if (sym_re and re.search(sym_re, sym, re.I)) or (name_re and re.search(name_re, name, re.I)):
+        if (sym_re and re.search(sym_re, sym, re.IGNORECASE)) or (name_re and re.search(name_re, name, re.IGNORECASE)):
             return kind, unit, mag, "PLANNED"
     # values that are not numbers (expressions) are untestable anyway
     if spec.get("min") is None and spec.get("typ") is None and spec.get("max") is None:
@@ -387,9 +385,9 @@ def classify_spec(device_class: str, spec: Dict[str, Any]) -> Tuple[Optional[str
     return None, None, False, "UNSUPPORTED_KIND"
 
 
-def default_vs(device_class: str, specs: List[Dict[str, Any]]) -> float:
+def default_vs(device_class: str, specs: list[dict[str, Any]]) -> float:
     """Chooses the fixture supply voltage: most frequent explicit VS in conditions, else class default."""
-    votes: Dict[float, int] = {}
+    votes: dict[float, int] = {}
     for s in specs:
         c = parse_conditions(s.get("test_conditions") or "")
         if "vs" in c:
@@ -400,12 +398,12 @@ def default_vs(device_class: str, specs: List[Dict[str, Any]]) -> float:
             "audio_amp": 6.0}.get(device_class, 5.0)
 
 
-_KIND_META: Dict[str, Tuple[str, bool]] = {
+_KIND_META: dict[str, tuple[str, bool]] = {
     kind: (unit, mag) for _, _, _, kind, unit, mag in KIND_RULES
 }
 
 
-def _needs_llm_pin_refinement(device_class: str, pin_map: Dict[str, Any], pins: List[Dict[str, Any]]) -> bool:
+def _needs_llm_pin_refinement(device_class: str, pin_map: dict[str, Any], pins: list[dict[str, Any]]) -> bool:
     if not pins:
         return False
     if device_class in ("opamp", "comparator", "inamp", "audio_amp"):
@@ -427,13 +425,13 @@ def _needs_llm_pin_refinement(device_class: str, pin_map: Dict[str, Any], pins: 
 
 
 def _llm_probabilistic_plan(
-    ic_info: Dict[str, Any],
-    pins: List[Dict[str, Any]],
-    specs: List[Dict[str, Any]],
+    ic_info: dict[str, Any],
+    pins: list[dict[str, Any]],
+    specs: list[dict[str, Any]],
     prior_class: str,
-    prior_pin_map: Dict[str, Any],
-    prior_items: List[Dict[str, Any]],
-) -> Tuple[str, Dict[str, Any], Dict[int, Dict[str, Any]]]:
+    prior_pin_map: dict[str, Any],
+    prior_items: list[dict[str, Any]],
+) -> tuple[str, dict[str, Any], dict[int, dict[str, Any]]]:
     """
     Uses LLM probabilistic semantic inference to:
       1. Infer/refine device_class and map arbitrary pin names to fixture roles (vpos, vneg, channels, etc.)
@@ -536,7 +534,7 @@ def _llm_probabilistic_plan(
                 if clean_ch:
                     merged_pm["channels"] = clean_ch
 
-        spec_overrides: Dict[int, Dict[str, Any]] = {}
+        spec_overrides: dict[int, dict[str, Any]] = {}
         for sm in res.get("spec_mappings") or []:
             if not isinstance(sm, dict):
                 continue
@@ -552,7 +550,7 @@ def _llm_probabilistic_plan(
         return prior_class, prior_pin_map, {}
 
 
-def build_plan(ic_info: Dict[str, Any], pins: List[Dict[str, Any]], specs: List[Dict[str, Any]]) -> Dict[str, Any]:
+def build_plan(ic_info: dict[str, Any], pins: list[dict[str, Any]], specs: list[dict[str, Any]]) -> dict[str, Any]:
     device_class = detect_device_class(ic_info, pins)
     pin_map = map_pins(device_class, pins)
     elec = [s for s in specs if str(s.get("category") or "ELECTRICAL").upper() == "ELECTRICAL"]
@@ -587,7 +585,7 @@ def build_plan(ic_info: Dict[str, Any], pins: List[Dict[str, Any]], specs: List[
                     except (ValueError, TypeError):
                         pass
 
-    seen_keys: Dict[Tuple, int] = {}
+    seen_keys: dict[tuple, int] = {}
     for item in items:
         if item["status"] == "PLANNED":
             cond = item["conditions"]
@@ -659,7 +657,7 @@ KIND_DESC = {
 }
 
 
-def fixture_brief(plan: Dict[str, Any], limit: int = 24) -> str:
+def fixture_brief(plan: dict[str, Any], limit: int = 24) -> str:
     """Human/LLM-readable list of how the circuit will actually be measured."""
     seen, lines = set(), []
     for it in plan["items"]:

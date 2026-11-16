@@ -6,16 +6,16 @@ for candidate chat models using a realistic datasheet-extraction style prompt.
 Usage:
   python tools/nim_latency_bench.py [--models m1,m2] [--runs 2] [--timeout 180]
 """
+import argparse
+import concurrent.futures as cf
+import json
 import os
 import sys
-import json
 import time
-import argparse
 import urllib.request
-import concurrent.futures as cf
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from ai_analog_designer.llm_client import _load_env  # noqa: E402
+from ai_analog_designer.llm_client import _load_env
 
 _load_env()
 

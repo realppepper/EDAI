@@ -7,13 +7,14 @@ Anchored strictly by physical analog circuit rules and the Golden Oracle Gatekee
 """
 from __future__ import annotations
 
-import os
 import logging
-from typing import Dict, Any, List, Optional, Tuple, Callable
+from typing import Any
 
-from ai_analog_designer.circuit_synthesis.harness2.harness2_architect import Harness2CircuitArchitect
+from ai_analog_designer.circuit_synthesis.harness2.harness2_architect import (
+    Harness2CircuitArchitect,
+)
+
 from .harness2_verifier_architect import Harness2VerifierArchitect
-from .golden_oracle_anchor import GoldenOracleAnchor
 
 logger = logging.getLogger("DualHarness2Coordinator")
 
@@ -27,8 +28,8 @@ class DualHarness2Coordinator:
 
     def __init__(
         self,
-        circuit_architect: Optional[Harness2CircuitArchitect] = None,
-        verifier_architect: Optional[Harness2VerifierArchitect] = None
+        circuit_architect: Harness2CircuitArchitect | None = None,
+        verifier_architect: Harness2VerifierArchitect | None = None
     ):
         self.circuit_architect = circuit_architect or Harness2CircuitArchitect()
         self.verifier_architect = verifier_architect or Harness2VerifierArchitect()
@@ -39,11 +40,11 @@ class DualHarness2Coordinator:
 
     def prepare_dual_evolution_for_ic(
         self,
-        ic_info: Dict[str, Any],
-        pins: List[Dict[str, Any]],
-        specifications: List[Dict[str, Any]],
-        spec_plan: Dict[str, Any]
-    ) -> Dict[str, Any]:
+        ic_info: dict[str, Any],
+        pins: list[dict[str, Any]],
+        specifications: list[dict[str, Any]],
+        spec_plan: dict[str, Any]
+    ) -> dict[str, Any]:
         """
         Step 1 of Co-evolution: Checks if target IC requires Verifier evolution.
         If unsupported specs exist, evolves the Verifier first using Golden Oracle Gatekeeper.

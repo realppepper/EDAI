@@ -1,9 +1,9 @@
-import urllib.request
-import urllib.error
+import concurrent.futures
 import json
 import time
-import concurrent.futures
-from typing import Dict, Any, List, Optional
+import urllib.error
+import urllib.request
+from typing import Any
 
 API_KEY = "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"
 BASE_URL = "https://integrate.api.nvidia.com/v1/chat/completions"
@@ -34,7 +34,7 @@ MODELS_TO_BENCHMARK = [
 
 PROMPT_CIRCUIT = "Write a CMOS operational amplifier SPICE subcircuit with differential input, current mirror active load, and common source output stage. Keep explanations under 20 words."
 
-def call_nim_stream(model: str, prompt: str, max_tokens: int = 250, timeout: float = 60.0) -> Dict[str, Any]:
+def call_nim_stream(model: str, prompt: str, max_tokens: int = 250, timeout: float = 60.0) -> dict[str, Any]:
     payload = {
         "model": model,
         "messages": [
@@ -126,7 +126,7 @@ def run_single_model_benchmarks():
         time.sleep(0.5)
     return results
 
-def run_queue_degradation_benchmark(target_models: List[str], num_repeats: int = 10):
+def run_queue_degradation_benchmark(target_models: list[str], num_repeats: int = 10):
     print("\n" + "=" * 80)
     print(f"PHASE 2: QUEUE & RATE DEGRADATION TEST ({num_repeats} Sequential Rapid Calls)")
     print("=" * 80)
@@ -154,7 +154,7 @@ def run_queue_degradation_benchmark(target_models: List[str], num_repeats: int =
         queue_results[m_id] = history
     return queue_results
 
-def run_concurrency_stress_test(m_id: str, concurrency_levels: List[int] = [2, 4, 8]):
+def run_concurrency_stress_test(m_id: str, concurrency_levels: list[int] = [2, 4, 8]):
     print("\n" + "=" * 80)
     print(f"PHASE 3: CONCURRENCY QUEUE STRESS TEST: {m_id}")
     print("=" * 80)

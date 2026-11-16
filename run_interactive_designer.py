@@ -4,10 +4,10 @@ Allows users to directly supply any IC datasheet PDF and specify custom natural 
 circuit requirements, triggering first-principles AI netlist synthesis and LTspice verification.
 """
 
-import os
-import sys
 import argparse
 import logging
+import os
+import sys
 import time
 
 from ai_analog_designer import AutonomousAnalogDesignAgent

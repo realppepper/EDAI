@@ -6,16 +6,20 @@ specs of part X must pass (most of) them. Any systematic failure here is a verif
 
   python tools/calibrate_testbench.py            # LM393 (TI model in LTspice lib), NE555 (LTspice lib), LM741 (repo macromodel)
 """
+import argparse
+import json
 import os
 import re
 import sys
-import json
-import glob
-import argparse
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
+from ai_analog_designer.neuro_symbolic_verifier.deterministic_testbench import (
+    FixtureContext,
+    build_decks,
+    evaluate,
+    run_all,
+)
 from ai_analog_designer.neuro_symbolic_verifier.spec_planner import build_plan
-from ai_analog_designer.neuro_symbolic_verifier.deterministic_testbench import FixtureContext, build_decks, run_all, evaluate
 
 LTLIB = os.path.join(os.environ.get("LOCALAPPDATA", ""), "LTspice", "lib", "sub")
 
@@ -125,7 +129,7 @@ def main():
             lim = r.get("limits_canonical") or {}
             lims = f"{lim.get('min')} / {lim.get('typ')} / {lim.get('max')} {r.get('canonical_unit', '')}"
             meas = r.get("measured")
-            print(f"  {r['result']:12s} {str(r['symbol']):10s} {str(r['name'])[:34]:34s} meas={meas if meas is None else f'{meas:.4g}'} lim={lims}  {str(r.get('diagnostic') or '')[:90]}")
+            print(f"  {r['result']:12s} {r['symbol']!s:10s} {str(r['name'])[:34]:34s} meas={meas if meas is None else f'{meas:.4g}'} lim={lims}  {str(r.get('diagnostic') or '')[:90]}")
             report.append(f"| {r['symbol']} | {str(r['name'])[:40]} | {str(r.get('test_conditions') or '')[:40]} | {lims} | "
                           f"{'-' if meas is None else f'{meas:.4g}'} | {r['result']} |")
         if errs:

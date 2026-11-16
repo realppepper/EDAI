@@ -3,12 +3,12 @@ Dedicated CLI tool to extract and visualize the Port Dependency Graph (PDG) from
 Outputs Mermaid DAG, terminal activation schedule, and generates interactive HTML simulator.
 """
 
-import os
-import sys
-import re
 import argparse
-import webbrowser
 import logging
+import os
+import re
+import sys
+import webbrowser
 
 from ai_analog_designer.pdf_to_graph import PDGVisualizer
 

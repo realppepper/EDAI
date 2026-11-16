@@ -1,19 +1,24 @@
+import json
 import os
 import sys
-import json
 import time
-import networkx as nx
 
 repo_root = os.path.abspath(r"C:\Users\Sera\.gemini\antigravity\worktrees\Project2\graph_analyze_codebase")
 if repo_root not in sys.path:
     sys.path.insert(0, repo_root)
 
-from ai_analog_designer.pdf_to_graph.pdf_parser import PDFDatasheetParser
-from ai_analog_designer.pdf_to_graph.hardware_kg_builder import (
-    HardwareKnowledgeGraphBuilder, PINS_PROMPT, SPECS_PROMPT, ROLES, SPEC_CATEGORIES, _num
-)
-from ai_analog_designer.llm_client import LLMClient
 import concurrent.futures as cf
+
+from ai_analog_designer.llm_client import LLMClient
+from ai_analog_designer.pdf_to_graph.hardware_kg_builder import (
+    PINS_PROMPT,
+    ROLES,
+    SPEC_CATEGORIES,
+    SPECS_PROMPT,
+    HardwareKnowledgeGraphBuilder,
+    _num,
+)
+from ai_analog_designer.pdf_to_graph.pdf_parser import PDFDatasheetParser
 
 pdf_path = r"D:\Sera\Documents\2026-2\pre-capstone\Project2\testcases\ads7891.pdf"
 out_dir = os.path.join(repo_root, "output_ads7891_knowledge_graph")
@@ -22,7 +27,7 @@ os.makedirs(out_dir, exist_ok=True)
 openrouter_key = os.getenv("OPENROUTER_API_KEY", "")
 model_name = "nvidia/nemotron-3.5-lightning:free"
 
-print(f"=== [STEP 1] Loading Cached 32-page Nemotron-Parse Data ===", flush=True)
+print("=== [STEP 1] Loading Cached 32-page Nemotron-Parse Data ===", flush=True)
 cache_file = os.path.join(out_dir, "parsed_full_document.json")
 with open(cache_file, "r", encoding="utf-8") as f:
     parsed_data = json.load(f)
@@ -38,7 +43,7 @@ llm_client = LLMClient(
 )
 llm_client.fallback_models = []
 
-print(f"\n=== [STEP 3] Extracting Nodes & Edges (Pins + All Spec Pages) ===", flush=True)
+print("\n=== [STEP 3] Extracting Nodes & Edges (Pins + All Spec Pages) ===", flush=True)
 P = PDFDatasheetParser
 # Pin table in ADS7891 is on Page 6 & 7
 pin_pages = [6, 7]
@@ -112,7 +117,7 @@ print(f"-> Saved JSON to: {json_out}", flush=True)
 
 nodes = list(hkg.nodes(data=True))
 edges = list(hkg.edges(data=True))
-print(f"\n=== [STEP 4] Knowledge Graph Stats ===", flush=True)
+print("\n=== [STEP 4] Knowledge Graph Stats ===", flush=True)
 print(f"Total Nodes: {len(nodes)}", flush=True)
 print(f"Total Edges: {len(edges)}", flush=True)
 
@@ -134,7 +139,7 @@ for rel, cnt in sorted(edge_relations.items()):
 summary_out = os.path.join(out_dir, "ads7891_graph_summary.txt")
 with open(summary_out, "w", encoding="utf-8") as f:
     f.write(f"ADS7891 Hardware Knowledge Graph Summary\n{'='*50}\n")
-    f.write(f"Parser: nvidia/nemotron-parse (NVIDIA NIM 32 pages)\n")
+    f.write("Parser: nvidia/nemotron-parse (NVIDIA NIM 32 pages)\n")
     f.write(f"LLM Engine: {model_name} (OpenRouter 100% Free)\n")
     f.write(f"Total Nodes: {len(nodes)} | Total Edges: {len(edges)}\n\n")
     f.write("=== NODE TYPES ===\n")
@@ -147,13 +152,12 @@ with open(summary_out, "w", encoding="utf-8") as f:
     for p in raw_data.get("pins", [])[:20]:
         f.write(f"  Pin {p.get('name')} (Pin {p.get('pin_number')}): Role={p.get('role')}, Dir={p.get('direction')}\n")
     f.write("\n=== ELECTRICAL PARAMETERS (Sample) ===\n")
-    for s in raw_data.get("electrical_parameters", [])[:25]:
-        f.write(f"  [{s.get('category')}] {s.get('symbol')} ({s.get('name')}): min={s.get('min')}, typ={s.get('typ')}, max={s.get('max')} {s.get('unit')} [p.{s.get('page')}]\n")
+    f.writelines(f"  [{s.get('category')}] {s.get('symbol')} ({s.get('name')}): min={s.get('min')}, typ={s.get('typ')}, max={s.get('max')} {s.get('unit')} [p.{s.get('page')}]\n" for s in raw_data.get("electrical_parameters", [])[:25])
 
 print(f"-> Saved Summary to: {summary_out}", flush=True)
 
 # Generate HTML Visualizer
-print(f"\n=== [STEP 5] Generating Interactive HTML Visualizer ===", flush=True)
+print("\n=== [STEP 5] Generating Interactive HTML Visualizer ===", flush=True)
 html_nodes = []
 html_edges = []
 color_map = {

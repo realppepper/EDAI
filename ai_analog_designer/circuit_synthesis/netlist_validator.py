@@ -1,7 +1,5 @@
 import re
-
-from typing import Dict, Any, List, Tuple
-
+from typing import Any
 
 
 class NetlistValidator:
@@ -46,7 +44,7 @@ class NetlistValidator:
 
     # ------------------------------------------------------------------ structural pre-pass
 
-    _ELEM = re.compile(r"^[RCLMQDJKVIEFGHABXS][A-Za-z0-9_\-\.]*\s+\S", re.I)
+    _ELEM = re.compile(r"^[RCLMQDJKVIEFGHABXS][A-Za-z0-9_\-\.]*\s+\S", re.IGNORECASE)
 
 
 
@@ -66,7 +64,7 @@ class NetlistValidator:
 
         """
 
-        code = re.sub(r"^\s*```[a-zA-Z]*\s*$", "", code, flags=re.M)
+        code = re.sub(r"^\s*```[a-zA-Z]*\s*$", "", code, flags=re.MULTILINE)
 
         # 1. backslash continuations
 
@@ -88,11 +86,11 @@ class NetlistValidator:
 
         # 2. hoist nested subckts (stack-based)
 
-        top: List[str] = []
+        top: list[str] = []
 
-        stack: List[List[str]] = []
+        stack: list[list[str]] = []
 
-        finished: List[List[str]] = []
+        finished: list[list[str]] = []
 
         for ln in out:
 
@@ -153,7 +151,7 @@ class NetlistValidator:
 
                 # Check for accidental pin declarations like OUT1 OUT1 0 or IN1- IN1- 0
 
-                if re.match(r"^(?:OUT|IN)\d*[\+\-]?\s+(?:OUT|IN)\d*[\+\-]?\b", s, re.I):
+                if re.match(r"^(?:OUT|IN)\d*[\+\-]?\s+(?:OUT|IN)\d*[\+\-]?\b", s, re.IGNORECASE):
 
                     fixed.append("* " + s)
 
@@ -399,7 +397,7 @@ class NetlistValidator:
 
             # Drop accidental pin declaration lines inside body: e.g. OUT1 OUT1 0, IN1- IN1- 0, V- V- 0
 
-            if tokens_code and re.match(r"^(?:OUT|IN)\d*[\+\-]?$", tokens_code[0], re.I):
+            if tokens_code and re.match(r"^(?:OUT|IN)\d*[\+\-]?$", tokens_code[0], re.IGNORECASE):
 
                 clean_lines.append(f"* Removed pin declaration: {line_str}")
 
@@ -429,13 +427,7 @@ class NetlistValidator:
 
                 f_char = first_tok[0].upper()
 
-                if f_char in "RCL" and len(tokens_code) < 4:
-
-                    clean_lines.append(f"* Truncated element removed: {line_str}")
-
-                    continue
-
-                elif f_char == "M" and len(tokens_code) < 6:
+                if f_char in "RCL" and len(tokens_code) < 4 or f_char == "M" and len(tokens_code) < 6:
 
                     clean_lines.append(f"* Truncated element removed: {line_str}")
 
@@ -575,7 +567,7 @@ class NetlistValidator:
 
             if tokens and first_tok.upper().startswith("C") and not first_tok.startswith("."):
 
-                if len(tokens_code) >= 5 and re.match(r'^[0-9\.]+[pnumkMG]?[Ff]?$', tokens_code[-1], re.I):
+                if len(tokens_code) >= 5 and re.match(r'^[0-9\.]+[pnumkMG]?[Ff]?$', tokens_code[-1], re.IGNORECASE):
 
                     val_tok = tokens_code[-1]
 
@@ -683,15 +675,7 @@ class NetlistValidator:
 
                 if not val_tok.startswith("{"):
 
-                    if any(op in val_tok for op in ["/", "*", "+"]):
-
-                        tokens[3] = f"{{{val_tok}}}"
-
-                        line = " ".join(tokens)
-
-                        line_str = line.strip()
-
-                    elif not val_tok[0].isdigit() and val_tok[0] not in "+-":
+                    if any(op in val_tok for op in ["/", "*", "+"]) or not val_tok[0].isdigit() and val_tok[0] not in "+-":
 
                         tokens[3] = f"{{{val_tok}}}"
 
@@ -763,7 +747,7 @@ class NetlistValidator:
 
             # Drop accidental pin declaration lines inside body: e.g. OUT1 OUT1 0, IN1- IN1- 0, V- V- 0
 
-            if tokens_code and re.match(r"^(?:OUT|IN)\d*[\+\-]?$", tokens_code[0], re.I):
+            if tokens_code and re.match(r"^(?:OUT|IN)\d*[\+\-]?$", tokens_code[0], re.IGNORECASE):
 
                 clean_lines.append(f"* Removed pin declaration: {line_str}")
 
@@ -861,9 +845,9 @@ class NetlistValidator:
 
         expected_subckt_name: str,
 
-        expected_pins: List[Dict[str, Any]]
+        expected_pins: list[dict[str, Any]]
 
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
 
         """
 
@@ -889,7 +873,7 @@ class NetlistValidator:
 
             pick = next((h for h in heads if h[0].lower() == str(expected_subckt_name).lower()), heads[-1])
 
-            subckt_match = re.search(r'^\s*\.subckt\s+' + re.escape(pick[0]) + r'\s+(.+)$', cleaned_netlist, re.M | re.I)
+            subckt_match = re.search(r'^\s*\.subckt\s+' + re.escape(pick[0]) + r'\s+(.+)$', cleaned_netlist, re.MULTILINE | re.IGNORECASE)
 
         if not subckt_match:
 

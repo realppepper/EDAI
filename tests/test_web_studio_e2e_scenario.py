@@ -3,7 +3,6 @@ Pytest integration for Web Studio GUI End-to-End User Scenarios.
 Ensures that full browser interaction, PDG rendering, timeline playback,
 and security sandboxing pass in automated CI/CD runs.
 """
-import pytest
 from e2e_gui_scenario_runner import WebStudioGUIScenarioRunner
 
 

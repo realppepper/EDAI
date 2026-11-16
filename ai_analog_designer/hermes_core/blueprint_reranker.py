@@ -7,8 +7,7 @@ from __future__ import annotations
 
 import os
 import re
-import math
-from typing import Dict, Any, List, Optional, Tuple
+from typing import Any
 
 
 class BlueprintReranker:
@@ -22,7 +21,7 @@ class BlueprintReranker:
         self,
         target_dut: str = "",
         target_category: str = "",
-        target_pins: Optional[List[str]] = None,
+        target_pins: list[str] | None = None,
         min_elements: int = 3
     ):
         self.target_dut = (target_dut or "").lower().strip()
@@ -30,7 +29,7 @@ class BlueprintReranker:
         self.target_pins = [p.lower().strip() for p in (target_pins or [])]
         self.min_elements = min_elements
 
-    def score_candidate(self, candidate: Dict[str, Any], query: str = "") -> Tuple[float, Dict[str, float]]:
+    def score_candidate(self, candidate: dict[str, Any], query: str = "") -> tuple[float, dict[str, float]]:
         """
         Calculates a composite relevance score for a candidate blueprint.
         Factors:
@@ -127,10 +126,10 @@ class BlueprintReranker:
 
     def rerank(
         self,
-        candidates: List[Dict[str, Any]],
+        candidates: list[dict[str, Any]],
         query: str = "",
         top_k: int = 5
-    ) -> List[Dict[str, Any]]:
+    ) -> list[dict[str, Any]]:
         """
         Reranks a list of candidate blueprints and returns top_k items
         with attached 'rerank_score' and 'rerank_details'.
@@ -151,6 +150,7 @@ class BlueprintReranker:
         if len(scored) > 1 and os.environ.get("ANALOG_ENABLE_LLM_RERANKER", "1") == "1" and os.environ.get("ANALOG_DISABLE_LLM_PLANNER") != "1":
             try:
                 import json
+
                 from ..llm_client import LLMClient
                 llm = LLMClient(role="fast")
                 if getattr(llm, "provider", "none") != "none":

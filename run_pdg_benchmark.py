@@ -10,18 +10,22 @@ Usage:
   python run_pdg_benchmark.py --reuse               # re-score cached extractions (no LLM calls)
 Outputs: benchmark_results/pdg_fidelity/<model>/<ic>.json and SUMMARY.md
 """
+import argparse
+import concurrent.futures as cf
+import glob
+import json
 import os
 import re
 import sys
-import json
 import time
-import glob
-import argparse
-import concurrent.futures as cf
 
 from ai_analog_designer.llm_client import LLMClient
-from ai_analog_designer.pdf_to_graph import (PDFDatasheetParser, HardwareKnowledgeGraphBuilder,
-                                             PortDependencyGraphExtractor, PDGFidelityVerifier)
+from ai_analog_designer.pdf_to_graph import (
+    HardwareKnowledgeGraphBuilder,
+    PDFDatasheetParser,
+    PDGFidelityVerifier,
+    PortDependencyGraphExtractor,
+)
 
 GT_DIR = "benchmarks/pdg_groundtruth"
 

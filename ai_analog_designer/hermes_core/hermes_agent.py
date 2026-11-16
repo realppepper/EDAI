@@ -5,14 +5,16 @@ conversation loop, multi-turn tool dispatch, and self-improving reflection).
 """
 from __future__ import annotations
 
-import os
-import re
 import json
 import logging
+import os
+import re
+from collections.abc import Callable
 from dataclasses import dataclass, field
-from typing import Dict, Any, List, Optional, Tuple, Callable
+from typing import Any
 
 from ai_analog_designer.llm_client import LLMClient
+
 from .hermes_tools import HermesAnalogTools
 
 logger = logging.getLogger("HermesAgent")
@@ -24,9 +26,9 @@ class AgentTurnResult:
     turn_index: int
     raw_response: str
     thought: str = ""
-    tool_calls: List[Dict[str, Any]] = field(default_factory=list)
-    tool_outputs: List[Dict[str, Any]] = field(default_factory=list)
-    netlist_extracted: Optional[str] = None
+    tool_calls: list[dict[str, Any]] = field(default_factory=list)
+    tool_outputs: list[dict[str, Any]] = field(default_factory=list)
+    netlist_extracted: str | None = None
     pass_rate: float = 0.0
     unique_pass_rate: float = 0.0
     passed_specs: int = 0
@@ -48,9 +50,9 @@ class HermesAgent:
     def __init__(
         self,
         workspace_dir: str,
-        tools: Optional[HermesAnalogTools] = None,
-        llm_client: Optional[LLMClient] = None,
-        model: Optional[str] = None,
+        tools: HermesAnalogTools | None = None,
+        llm_client: LLMClient | None = None,
+        model: str | None = None,
         temperature: float = 0.1,
     ):
         self.workspace_dir = os.path.abspath(workspace_dir)
@@ -71,11 +73,13 @@ class HermesAgent:
         self.skills_dir = os.path.join(self.workspace_dir, "skills")
         self.blueprints_dir = os.path.join(self.skills_dir, "analog_blueprints")
 
-        self.messages: List[Dict[str, str]] = []
-        self.trajectory: List[AgentTurnResult] = []
-        self._prev_tool_signatures: List[str] = []
+        self.messages: list[dict[str, str]] = []
+        self.trajectory: list[AgentTurnResult] = []
+        self._prev_tool_signatures: list[str] = []
 
-        from ai_analog_designer.hermes_core.tool_decision_router import ToolDecisionRouter
+        from ai_analog_designer.hermes_core.tool_decision_router import (
+            ToolDecisionRouter,
+        )
         dut_name = getattr(self.tools, "dut_name", "DUT") if self.tools else "DUT"
         self.router = ToolDecisionRouter(dut_name=dut_name)
 
@@ -109,7 +113,7 @@ class HermesAgent:
                 return f.read()
         return ""
 
-    def list_available_blueprint_skills(self) -> List[Dict[str, str]]:
+    def list_available_blueprint_skills(self) -> list[dict[str, str]]:
         """Scans skills/analog_blueprints/ for registered blueprint skills."""
         skills = []
         if os.path.exists(self.blueprints_dir):
@@ -198,14 +202,14 @@ CRITICAL: NEVER use ellipses, placeholders, or undefined X-subcircuit stubs in t
 """
         return prompt.strip()
 
-    def parse_tool_calls(self, text: str) -> List[Dict[str, Any]]:
+    def parse_tool_calls(self, text: str) -> list[dict[str, Any]]:
         """
         Extracts tool calls from LLM response text with robust fault tolerance:
           - Handles missing </tool_call> closing tags
           - Recovers JSON blocks from unclosed tags using bracket matching / repair
           - Clamps hallucinated monologue loops (max 2 tool calls per turn)
         """
-        calls: List[Dict[str, Any]] = []
+        calls: list[dict[str, Any]] = []
 
         # Step 0: Truncate hallucinated roleplay loops if the model started generating fake monologues
         # e.g., "\n[ASSISTANCE]:" or "\n[USER]:"
@@ -315,7 +319,7 @@ CRITICAL: NEVER use ellipses, placeholders, or undefined X-subcircuit stubs in t
                     })
 
         # Deduplicate and clamp to maximum 2 calls per turn to prevent hallucination floods
-        unique_calls: List[Dict[str, Any]] = []
+        unique_calls: list[dict[str, Any]] = []
         seen = set()
         for c in calls:
             call_sig = f"{c.get('name')}||{json.dumps(c.get('arguments', {}), sort_keys=True)}"
@@ -334,13 +338,13 @@ CRITICAL: NEVER use ellipses, placeholders, or undefined X-subcircuit stubs in t
         # Reject literal placeholder netlists
         if re.search(r'\.\.\.', netlist) and len(netlist.strip().splitlines()) <= 5:
             return False
-        if re.search(r'\([^\r\n]*placeholder[^\r\n]*\)', netlist, re.I):
+        if re.search(r'\([^\r\n]*placeholder[^\r\n]*\)', netlist, re.IGNORECASE):
             return False
         lines = [ln.strip() for ln in netlist.splitlines()]
         elem_lines = [ln for ln in lines if ln and ln[0].upper() in "RCLQMDJVI" and not ln.startswith(".")]
         return len(elem_lines) >= 3
 
-    def extract_netlist(self, text: str) -> Optional[str]:
+    def extract_netlist(self, text: str) -> str | None:
         """Extracts SPICE netlist from response text with maximum resilience."""
         m_net = re.search(r'<spice_netlist>(.*?)</spice_netlist>', text, re.DOTALL | re.IGNORECASE)
         if m_net and self._is_meaningful_netlist(m_net.group(1).strip()):
@@ -518,15 +522,15 @@ CRITICAL: NEVER use ellipses, placeholders, or undefined X-subcircuit stubs in t
                 )
             if any(o['tool'] == 'save_subcircuit_blueprint' for o in tool_outputs):
                 guidance.append(
-                    f"Blueprint operation processed. Now proceed to synthesize and verify your circuit netlist via `verify_circuit_pdg_gate`."
+                    "Blueprint operation processed. Now proceed to synthesize and verify your circuit netlist via `verify_circuit_pdg_gate`."
                 )
             if any(o['tool'] in ('validate_netlist_syntax', 'verify_circuit_pdg_gate', 'auto_eval_physical_gate') for o in tool_outputs):
                 if not turn_result.netlist_extracted:
                     guidance.append(
-                        f"CRITICAL REQUIREMENT: The netlist validated contains NO active or passive components. "
-                        f"An empty skeleton will fail all simulations! You MUST write out the complete transistor-level schematic "
-                        f"(differential pair Q..., current mirror Q..., gain stage Q..., load resistors R...) with explicit `.model` statements, "
-                        f"and test it using `verify_circuit_pdg_gate`."
+                        "CRITICAL REQUIREMENT: The netlist validated contains NO active or passive components. "
+                        "An empty skeleton will fail all simulations! You MUST write out the complete transistor-level schematic "
+                        "(differential pair Q..., current mirror Q..., gain stage Q..., load resistors R...) with explicit `.model` statements, "
+                        "and test it using `verify_circuit_pdg_gate`."
                     )
                 elif turn_result.pass_rate < 100.0:
                     guidance.append(
@@ -574,8 +578,8 @@ CRITICAL: NEVER use ellipses, placeholders, or undefined X-subcircuit stubs in t
         task_prompt: str,
         max_turns: int = 5,
         target_pass_rate: float = 100.0,
-        progress_callback: Optional[Callable[[int, str, str], None]] = None
-    ) -> Dict[str, Any]:
+        progress_callback: Callable[[int, str, str], None] | None = None
+    ) -> dict[str, Any]:
         """
         Executes the full autonomous agentic loop:
           - Initializes with user task prompt.

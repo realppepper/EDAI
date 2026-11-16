@@ -1,7 +1,9 @@
-import re
 import math
-from typing import Dict, Any, List, Optional, Tuple
+import re
+from typing import Any
+
 import sympy as sp
+
 
 class SymPyOracleEngine:
     """
@@ -19,7 +21,7 @@ class SymPyOracleEngine:
     def __init__(self):
         pass
 
-    def parse_numeric(self, val_str: Any) -> Optional[float]:
+    def parse_numeric(self, val_str: Any) -> float | None:
         """Parses numeric string with engineering suffixes or scientific notation into float."""
         if val_str is None:
             return None
@@ -44,7 +46,7 @@ class SymPyOracleEngine:
             return num
         return None
 
-    def build_oracle(self, spec: Dict[str, Any]) -> Dict[str, Any]:
+    def build_oracle(self, spec: dict[str, Any]) -> dict[str, Any]:
         """
         Builds a SymPy symbolic constraint oracle for an individual electrical parameter.
         """
@@ -125,7 +127,7 @@ class SymPyOracleEngine:
             "description": spec.get("description", spec.get("parameter", ""))
         }
 
-    def evaluate(self, oracle: Dict[str, Any], measured_val: Optional[float]) -> Dict[str, Any]:
+    def evaluate(self, oracle: dict[str, Any], measured_val: float | None) -> dict[str, Any]:
         """
         Evaluates a simulation measurement against the SymPy oracle.
         Computes pass/fail, residual distance, and diagnostic direction.

@@ -1,10 +1,15 @@
+import concurrent.futures as cf
+import logging
 import os
 import re
-import json
-import concurrent.futures as cf
+from collections.abc import Callable
+from typing import Any
+
 import networkx as nx
-from typing import Dict, Any, Callable, List, Optional
+
 from ..llm_client import LLMClient
+
+logger = logging.getLogger(__name__)
 
 ROLES = ["POWER", "GROUND", "BIAS", "REFERENCE", "CONTROL", "ENABLE", "SIGNAL", "FEEDBACK", "OUTPUT", "NC"]
 SPEC_CATEGORIES = ["ELECTRICAL", "ABS_MAX", "RECOMMENDED", "THERMAL", "ESD"]
@@ -21,7 +26,7 @@ class HKGExtractionError(RuntimeError):
     successful while measuring nothing, so this is intentionally terminal.
     """
 
-    def __init__(self, spec_pages: List[int], failed_pages: List[Dict[str, Any]]):
+    def __init__(self, spec_pages: list[int], failed_pages: list[dict[str, Any]]):
         self.spec_pages = spec_pages
         self.failed_pages = failed_pages
         page_list = ", ".join(str(p.get("page", "?")) for p in failed_pages)
@@ -99,7 +104,7 @@ class HardwareKnowledgeGraphBuilder:
     """Builds the Hardware Knowledge Graph (HKG) from a parsed datasheet using two parallel LLM extraction passes
     (interface/dependencies and specification tables), each with page-level provenance."""
 
-    def __init__(self, llm_client: Optional[LLMClient] = None, max_spec_pages: int = 10, parallel_spec_calls: int = 2):
+    def __init__(self, llm_client: LLMClient | None = None, max_spec_pages: int = 10, parallel_spec_calls: int = 2):
         self.llm = llm_client or LLMClient()
         self.max_spec_pages = max(1, int(os.environ.get("HKG_MAX_SPEC_PAGES", str(max_spec_pages))))
         # Three in-flight calls (two table pages plus pin extraction) stay
@@ -116,10 +121,10 @@ class HardwareKnowledgeGraphBuilder:
 
     def extract_raw(
         self,
-        parsed_data: Dict[str, Any],
-        progress_callback: Optional[Callable[[int, int, int, Optional[str]], None]] = None,
+        parsed_data: dict[str, Any],
+        progress_callback: Callable[[int, int, int, str | None], None] | None = None,
         pins_only: bool = False,
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         from .pdf_parser import PDFDatasheetParser as P
         if "pages" not in parsed_data:  # legacy input
             return self._legacy_extract(parsed_data)
@@ -128,16 +133,16 @@ class HardwareKnowledgeGraphBuilder:
         func_pages = P.select_pages(parsed_data, "functional")[:2]
         spec_pages = [] if pins_only else P.select_pages(parsed_data, "specs")[: self.max_spec_pages]
         pin_text = P.page_tagged_text(parsed_data, sorted(set(pin_pages + func_pages)), 30000)
-        ic_guess = re.sub(r'\.pdf$', '', parsed_data.get("source_file", "IC"), flags=re.I).upper()
+        ic_guess = re.sub(r'\.pdf$', '', parsed_data.get("source_file", "IC"), flags=re.IGNORECASE).upper()
 
         # Spec tables are extracted ONE PAGE PER CALL in parallel: a single call over all spec pages emits
         # ~10k output tokens (100-170 s on NIM and frequently truncated); per-page calls emit 1-2k tokens each.
         sys_p = "You are a meticulous analog IC datasheet analyst. Extract only what the datasheet states. Never invent values."
         spec_jobs = {}
-        spec_rows: Dict[int, List[Dict[str, Any]]] = {}
-        failed_pages: List[Dict[str, Any]] = []
+        spec_rows: dict[int, list[dict[str, Any]]] = {}
+        failed_pages: list[dict[str, Any]] = []
 
-        def extract_spec_page(page_num: int, *, retry: bool = False) -> List[Dict[str, Any]]:
+        def extract_spec_page(page_num: int, *, retry: bool = False) -> list[dict[str, Any]]:
             text = P.page_tagged_text(parsed_data, [page_num], 14000, layout=True)
             tag = f"hkg_specs_retry_p{page_num}" if retry else f"hkg_specs_p{page_num}"
             rows = self.llm.complete_json(
@@ -269,8 +274,8 @@ class HardwareKnowledgeGraphBuilder:
 
     def build_kg_from_parsed_pdf(
         self,
-        parsed_data: Dict[str, Any],
-        progress_callback: Optional[Callable[[int, int, int, Optional[str]], None]] = None,
+        parsed_data: dict[str, Any],
+        progress_callback: Callable[[int, int, int, str | None], None] | None = None,
         pins_only: bool = False,
     ) -> nx.MultiDiGraph:
         data = self.extract_raw(parsed_data, progress_callback=progress_callback, pins_only=pins_only)
@@ -298,7 +303,7 @@ class HardwareKnowledgeGraphBuilder:
             return s[:-2] + "-"
         return s
 
-    def _json_to_networkx_graph(self, data: Dict[str, Any]) -> nx.MultiDiGraph:
+    def _json_to_networkx_graph(self, data: dict[str, Any]) -> nx.MultiDiGraph:
         from .pdf_parser import PDFDatasheetParser
         G = HardwareKnowledgeGraph()
         ic_info = data.get("ic_device") or {"name": "DUT_IC", "category": "ANALOG"}
@@ -310,7 +315,7 @@ class HardwareKnowledgeGraphBuilder:
         # Pins are modelled as NETS: several package pins with the same name (e.g. TL431 SOIC-8 has four ANODE pins)
         # are the same internal node and are merged into one PDG port carrying all pin numbers.
         rename = {}
-        merged: Dict[str, Dict[str, Any]] = {}
+        merged: dict[str, dict[str, Any]] = {}
         for idx, pin in enumerate(data.get("pins") or []):
             if not isinstance(pin, dict):
                 continue

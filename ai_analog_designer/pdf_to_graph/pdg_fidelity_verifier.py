@@ -13,11 +13,12 @@ Two complementary modes:
     ParseBench's Hungarian optimal assignment subset matching (json_subset_match_score) alongside
     classical precision / recall / F1.
 """
-import os
-import sys
-import re
 import difflib
-from typing import Dict, Any, List, Optional, Tuple
+import os
+import re
+import sys
+from typing import Any
+
 import networkx as nx
 
 # Ensure ParseBench (https://github.com/run-llama/ParseBench.git) is available
@@ -27,8 +28,12 @@ if os.path.exists(_PB_SRC) and _PB_SRC not in sys.path:
     sys.path.insert(0, _PB_SRC)
 
 try:
-    from parse_bench.evaluation.metrics.extract.json_subset_match import json_subset_match_score
-    from parse_bench.evaluation.metrics.parse.text_similarity_metric import TextSimilarityMetric
+    from parse_bench.evaluation.metrics.extract.json_subset_match import (
+        json_subset_match_score,
+    )
+    from parse_bench.evaluation.metrics.parse.text_similarity_metric import (
+        TextSimilarityMetric,
+    )
     PARSEBENCH_AVAILABLE = True
 except ImportError:
     PARSEBENCH_AVAILABLE = False
@@ -82,7 +87,7 @@ def number_on_page(val: float, page_text: str) -> bool:
     return False
 
 
-def values_match(a: Optional[float], b: Optional[float]) -> bool:
+def values_match(a: float | None, b: float | None) -> bool:
     if a is None or b is None:
         return False
     a, b = float(a), float(b)
@@ -94,7 +99,7 @@ def values_match(a: Optional[float], b: Optional[float]) -> bool:
     return False
 
 
-def prf(tp: int, n_pred: int, n_gt: int) -> Dict[str, float]:
+def prf(tp: int, n_pred: int, n_gt: int) -> dict[str, float]:
     p = tp / n_pred if n_pred else 0.0
     r = tp / n_gt if n_gt else 0.0
     f = 2 * p * r / (p + r) if p + r else 0.0
@@ -105,9 +110,9 @@ def prf(tp: int, n_pred: int, n_gt: int) -> Dict[str, float]:
 class PDGFidelityVerifier:
 
     @classmethod
-    def audit_pdg(cls, hkg: nx.MultiDiGraph, pdg: nx.DiGraph, schedule: Dict[str, float]) -> Dict[str, Any]:
+    def audit_pdg(cls, hkg: nx.MultiDiGraph, pdg: nx.DiGraph, schedule: dict[str, float]) -> dict[str, Any]:
         raw = hkg.graph.get("raw_extraction", {})
-        pages: Dict[int, str] = {int(k): v for k, v in (hkg.graph.get("parsed_pages") or {}).items()}
+        pages: dict[int, str] = {int(k): v for k, v in (hkg.graph.get("parsed_pages") or {}).items()}
         pins = [p for p in raw.get("pins", []) if isinstance(p, dict)]
         specs = [s for s in raw.get("electrical_parameters", []) if isinstance(s, dict)]
 
@@ -206,7 +211,7 @@ class PDGFidelityVerifier:
 
     # ------------------------------------------------------------ (B)
     @classmethod
-    def compare_to_groundtruth(cls, raw: Dict[str, Any], pdg: nx.DiGraph, gt: Dict[str, Any]) -> Dict[str, Any]:
+    def compare_to_groundtruth(cls, raw: dict[str, Any], pdg: nx.DiGraph, gt: dict[str, Any]) -> dict[str, Any]:
         """Compares extraction against ground truth using LlamaIndex ParseBench optimal Hungarian assignment."""
         gt_pins = [g for g in gt.get("pins", []) if g.get("role") != "NC"]
         pred_pins = [p for p in raw.get("pins", []) if isinstance(p, dict) and str(p.get("role")).upper() != "NC"]
@@ -240,7 +245,7 @@ class PDGFidelityVerifier:
             for a in [g["name"]] + list(g.get("aliases", [])):
                 alias_map.setdefault(norm_pin(a), g["name"])
         gt_by_num = {str(g.get("number")): g["name"] for g in gt_pins if g.get("number")}
-        pred_to_gt: Dict[str, str] = {}
+        pred_to_gt: dict[str, str] = {}
         used_gt = set()
         for p in pred_pins:
             cand = alias_map.get(norm_pin(p.get("raw_name") or p["name"])) or alias_map.get(norm_pin(p["name"]))
@@ -334,7 +339,7 @@ class PDGFidelityVerifier:
 
         val_total = val_ok = 0
         cat_ok = 0
-        cat_conf: Dict[str, Dict[str, int]] = {}
+        cat_conf: dict[str, dict[str, int]] = {}
         for gi, pi in matches:
             g, p = gt_specs[gi], pred_specs[pi]
             for k in ("min", "typ", "max"):

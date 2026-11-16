@@ -9,37 +9,11 @@ Combines:
   - Task-Level Recursion (Contrastive Propose-Probe-Compose cycle across multiple iterations)
   - Harnessing-Level Recursion (Cross-Task Persistent Experience Library across multiple datasheets)
 """
-from __future__ import annotations
-
-import os
-import sys
-import json
-import time
-import argparse
-import networkx as nx
-from typing import Dict, Any, List, Tuple, Optional
-
-repo_root = os.path.abspath(os.path.dirname(__file__))
+from __future__ import annotationsimport argparseimport jsonimport osimport sysimport timefrom typing import Anyimport networkx as nxrepo_root = os.path.abspath(os.path.dirname(__file__))
 if repo_root not in sys.path:
     sys.path.insert(0, repo_root)
 
-from ai_analog_designer.llm_client import LLMClient
-from ai_analog_designer.circuit_synthesis.harness2 import (
-    HarnessTree,
-    HarnessLibrary,
-    Harness2CircuitArchitect,
-    Harness2Proposer
-)
-from ai_analog_designer.neuro_symbolic_verifier.harness2_verifier import (
-    DualHarness2Coordinator,
-    Harness2VerifierArchitect,
-    GoldenOracleAnchor
-)
-from ai_analog_designer.neuro_symbolic_verifier.verification_flow import plan_for, verify
-from ai_analog_designer.pdf_to_graph.pdg_extractor import PortDependencyGraphExtractor
-
-
-# Supported Benchmark ICs and Default Categories
+from ai_analog_designer.circuit_synthesis.harness2 import (    Harness2CircuitArchitect,)from ai_analog_designer.llm_client import LLMClientfrom ai_analog_designer.neuro_symbolic_verifier.harness2_verifier import (    DualHarness2Coordinator,)from ai_analog_designer.neuro_symbolic_verifier.verification_flow import (    plan_for,    verify,)from ai_analog_designer.pdf_to_graph.pdg_extractor import PortDependencyGraphExtractor# Supported Benchmark ICs and Default Categories
 SUPPORTED_ICS = {
     "lm358": {"category": "operational_amplifier", "description": "Dual High-Gain Operational Amplifier"},
     "lm393": {"category": "comparator", "description": "Dual Differential Comparator"},
@@ -51,7 +25,7 @@ SUPPORTED_ICS = {
 }
 
 
-def load_device(ic_name: str, root_dir: str) -> Tuple[str, Dict[str, Any], List[Dict[str, Any]], List[Dict[str, Any]], Dict[str, float]]:
+def load_device(ic_name: str, root_dir: str) -> tuple[str, dict[str, Any], list[dict[str, Any]], list[dict[str, Any]], dict[str, float]]:
     """
     Universal device loader for benchmark ICs and parsed datasheets.
     Returns: (part_name, ic_info, pins, specifications, pdg_schedule_us)
@@ -109,15 +83,15 @@ def run_harness2_for_ic(
     architect: Harness2CircuitArchitect,
     out_dir: str,
     max_iterations: int = 3
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """
     Executes multi-iteration Harness² Propose–Probe–Compose optimization for a single IC.
     """
     part_name, ic_info, pins, specs, schedule_us = load_device(ic_key, repo_root)
 
-    print(f"\n==================================================================", flush=True)
+    print("\n==================================================================", flush=True)
     print(f"=== [HARNESS² RUN] Target Device: {part_name} ({ic_info['category']}) ===", flush=True)
-    print(f"==================================================================", flush=True)
+    print("==================================================================", flush=True)
     print(f"-> Pins ({len(pins)}): {[p['name'] for p in pins]}", flush=True)
     print(f"-> Electrical Specifications: {len(specs)} rows", flush=True)
     print(f"-> PDG Activation Delays: {schedule_us}", flush=True)
@@ -138,7 +112,7 @@ def run_harness2_for_ic(
     active_tree = architect.bootstrap_for_device(category=ic_info["category"], part_name=part_name)
     print(f"-> Bootstrapped C1-C8 Harness Tree (System Prompt: {len(active_tree.c1_system_prompt)} chars, Guardrails: {len(active_tree.c2_guardrails)} chars)", flush=True)
 
-    trajectory: List[Dict[str, Any]] = []
+    trajectory: list[dict[str, Any]] = []
 
     # 3. Iteration 1: Baseline Synthesis & Probe
     print(f"\n--- [Iteration 1/{max_iterations}] Baseline Netlist Synthesis under Bootstrapped Harness ---", flush=True)
@@ -159,7 +133,7 @@ def run_harness2_for_ic(
     with open(base_file, "w", encoding="utf-8") as f:
         f.write(base_netlist)
 
-    print(f"-> Simulating Baseline in LTspice (settling per PDG schedule)...", flush=True)
+    print("-> Simulating Baseline in LTspice (settling per PDG schedule)...", flush=True)
     curr_eval = verify(
         netlist=base_netlist,
         plan=plan,
@@ -195,7 +169,7 @@ def run_harness2_for_ic(
     })
 
     # Helper probe evaluator
-    def probe_evaluator(netlist_code: str, probe_tag: str) -> Dict[str, Any]:
+    def probe_evaluator(netlist_code: str, probe_tag: str) -> dict[str, Any]:
         probe_cir = os.path.join(out_dir, f"{part_name}_{probe_tag}.cir")
         with open(probe_cir, "w", encoding="utf-8") as f:
             f.write(netlist_code)
@@ -305,9 +279,9 @@ def main():
     lib_dir = os.path.join(repo_root, "harness2_library")
     os.makedirs(lib_dir, exist_ok=True)
 
-    print(f"==================================================================", flush=True)
-    print(f"=== Google Research Harness² Recursive Multi-Datasheet Runner ===", flush=True)
-    print(f"==================================================================", flush=True)
+    print("==================================================================", flush=True)
+    print("=== Google Research Harness² Recursive Multi-Datasheet Runner ===", flush=True)
+    print("==================================================================", flush=True)
     print(f"-> Target ICs ({len(target_ics)}): {target_ics}", flush=True)
     print(f"-> Iterations per IC: {args.iterations}", flush=True)
     print(f"-> Output Directory: {out_dir}", flush=True)
@@ -345,7 +319,7 @@ def main():
     )
 
     t_suite = time.time()
-    all_reports: List[Dict[str, Any]] = []
+    all_reports: list[dict[str, Any]] = []
 
     for idx, ic_name in enumerate(target_ics, 1):
         print(f"\n>>> Running Device [{idx}/{len(target_ics)}]: {ic_name.upper()} <<<", flush=True)
@@ -367,9 +341,9 @@ def main():
     with open(summary_file, "w", encoding="utf-8") as f:
         json.dump(all_reports, f, indent=2, ensure_ascii=False)
 
-    print(f"\n==================================================================", flush=True)
+    print("\n==================================================================", flush=True)
     print(f"=== Harness² Multi-Datasheet Benchmark Suite Finished ({time.time() - t_suite:.1f}s) ===", flush=True)
-    print(f"==================================================================", flush=True)
+    print("==================================================================", flush=True)
     print(f"{'Device':<10} | {'Category':<22} | {'Base Pass':<10} | {'Final Pass':<10} | {'Delta':<8} | {'Iterations'}")
     print("-" * 75)
     for r in all_reports:

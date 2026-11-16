@@ -1,6 +1,6 @@
+import json
 import os
 import sys
-import json
 import time
 
 repo_root = os.path.abspath(r"C:\Users\Sera\.gemini\antigravity\worktrees\Project2\graph_analyze_codebase")
@@ -12,11 +12,13 @@ pb_src = os.path.join(repo_root, "parsebench_repo", "src")
 if os.path.exists(pb_src) and pb_src not in sys.path:
     sys.path.insert(0, pb_src)
 
+from ai_analog_designer.llm_client import LLMClient
+from ai_analog_designer.pdf_to_graph.hardware_kg_builder import (
+    HardwareKnowledgeGraphBuilder,
+)
 from ai_analog_designer.pdf_to_graph.pdf_parser import PDFDatasheetParser
-from ai_analog_designer.pdf_to_graph.hardware_kg_builder import HardwareKnowledgeGraphBuilder
 from ai_analog_designer.pdf_to_graph.pdg_extractor import PortDependencyGraphExtractor
 from ai_analog_designer.pdf_to_graph.pdg_fidelity_verifier import PDGFidelityVerifier
-from ai_analog_designer.llm_client import LLMClient
 
 pdf_path = r"D:\Sera\Documents\2026-2\pre-capstone\Project2\testcases\ref30e.pdf"
 out_dir = os.path.join(repo_root, "output_ref30e_pipeline")
@@ -50,7 +52,7 @@ llm_client = LLMClient(
 )
 llm_client.fallback_models = []
 
-print(f"\n=== [STEP 3] Extracting Hardware Knowledge Graph (HKG) ===", flush=True)
+print("\n=== [STEP 3] Extracting Hardware Knowledge Graph (HKG) ===", flush=True)
 t0 = time.time()
 kg_builder = HardwareKnowledgeGraphBuilder(
     llm_client=llm_client,
@@ -66,7 +68,7 @@ hkg_json_path = os.path.join(out_dir, "ref30e_knowledge_graph.json")
 with open(hkg_json_path, "w", encoding="utf-8") as f:
     json.dump(raw_data, f, indent=2, ensure_ascii=False)
 
-print(f"\n=== [STEP 4] Extracting Port Dependency Graph (PDG) ===", flush=True)
+print("\n=== [STEP 4] Extracting Port Dependency Graph (PDG) ===", flush=True)
 pdg_extractor = PortDependencyGraphExtractor()
 pdg, schedule, levels = pdg_extractor.extract_pdg(hkg)
 print(f"-> PDG Nodes: {len(pdg.nodes)}, Edges: {len(pdg.edges)}", flush=True)
@@ -82,13 +84,13 @@ pdg_json_path = os.path.join(out_dir, "ref30e_pdg.json")
 with open(pdg_json_path, "w", encoding="utf-8") as f:
     json.dump(pdg_data, f, indent=2, ensure_ascii=False)
 
-print(f"\n=== [STEP 5] Running ParseBench-Powered Provenance Fidelity Audit ===", flush=True)
+print("\n=== [STEP 5] Running ParseBench-Powered Provenance Fidelity Audit ===", flush=True)
 audit_res = PDGFidelityVerifier.audit_pdg(hkg, pdg, schedule)
 audit_json_path = os.path.join(out_dir, "ref30e_parsebench_audit.json")
 with open(audit_json_path, "w", encoding="utf-8") as f:
     json.dump(audit_res, f, indent=2, ensure_ascii=False)
 
-print(f"\n--- ParseBench Audit Result ---", flush=True)
+print("\n--- ParseBench Audit Result ---", flush=True)
 print(f"Benchmark Engine: {audit_res.get('benchmark_framework')}", flush=True)
 print(f"Fidelity Score: {audit_res.get('fidelity_score_pct')}%", flush=True)
 print(f"Status: {audit_res.get('status')}", flush=True)

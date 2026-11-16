@@ -8,13 +8,14 @@ parsing rule is merged into the production verifier.
 """
 from __future__ import annotations
 
+import logging
 import os
 import re
-import json
-import logging
-from typing import Dict, Any, List, Optional, Tuple, Callable
+from typing import Any
 
-from ai_analog_designer.neuro_symbolic_verifier.ltspice_runner import LTspiceRunner, LTSPICE_EXE
+from ai_analog_designer.neuro_symbolic_verifier.ltspice_runner import (
+    LTspiceRunner,
+)
 
 logger = logging.getLogger("GoldenOracleAnchor")
 
@@ -32,7 +33,7 @@ class GoldenOracleAnchor:
         self.gt_dir = os.path.abspath(gt_dir)
         self.runner = LTspiceRunner()
 
-    def get_golden_model_netlist(self, device_class: str) -> Optional[Tuple[str, str, List[str]]]:
+    def get_golden_model_netlist(self, device_class: str) -> tuple[str, str, list[str]] | None:
         """
         Returns (netlist_content, subckt_name, pin_order) for the canonical golden model of a given class.
         """
@@ -44,9 +45,9 @@ class GoldenOracleAnchor:
                     content = f.read()
                 pins = ["1OUT", "1IN-", "1IN+", "V-", "2IN+", "2IN-", "2OUT", "V+"]
                 wrapper = (
-                    f"\n.subckt DUT 1OUT 1IN- 1IN+ V- 2IN+ 2IN- 2OUT V+\n"
-                    f"X1 1OUT 1IN- 1IN+ V- 2IN+ 2IN- 2OUT V+ LM393\n"
-                    f".ends DUT\n"
+                    "\n.subckt DUT 1OUT 1IN- 1IN+ V- 2IN+ 2IN- 2OUT V+\n"
+                    "X1 1OUT 1IN- 1IN+ V- 2IN+ 2IN- 2OUT V+ LM393\n"
+                    ".ends DUT\n"
                 )
                 return content + wrapper, "DUT", pins
 
@@ -57,9 +58,9 @@ class GoldenOracleAnchor:
                     content = f.read()
                 pins = ["GND", "TRIG", "OUT", "RESET", "CONT", "THRES", "DISCH", "VCC"]
                 wrapper = (
-                    f"\n.subckt DUT GND TRIG OUT RESET CONT THRES DISCH VCC\n"
-                    f"X1 GND TRIG OUT RESET CONT THRES DISCH VCC NE555\n"
-                    f".ends DUT\n"
+                    "\n.subckt DUT GND TRIG OUT RESET CONT THRES DISCH VCC\n"
+                    "X1 GND TRIG OUT RESET CONT THRES DISCH VCC NE555\n"
+                    ".ends DUT\n"
                 )
                 return content + wrapper, "DUT", pins
 
@@ -70,9 +71,9 @@ class GoldenOracleAnchor:
                     content = f.read()
                 pins = ["INP", "INN", "VPOS", "VNEG", "OUT"]
                 wrapper = (
-                    f"\n.subckt DUT INP INN VPOS VNEG OUT\n"
-                    f"X1 INP INN VPOS VNEG OUT LM741_MACRO\n"
-                    f".ends DUT\n"
+                    "\n.subckt DUT INP INN VPOS VNEG OUT\n"
+                    "X1 INP INN VPOS VNEG OUT LM741_MACRO\n"
+                    ".ends DUT\n"
                 )
                 return content + wrapper, "DUT", pins
 
@@ -83,9 +84,9 @@ class GoldenOracleAnchor:
                     content = f.read()
                 pins = ["VIN", "GND", "ON_OFF", "BYPASS", "VOUT"]
                 wrapper = (
-                    f"\n.subckt DUT VIN GND ON_OFF BYPASS VOUT\n"
-                    f"X1 VIN GND ON_OFF BYPASS VOUT LP2985_TRANSISTOR\n"
-                    f".ends DUT\n"
+                    "\n.subckt DUT VIN GND ON_OFF BYPASS VOUT\n"
+                    "X1 VIN GND ON_OFF BYPASS VOUT LP2985_TRANSISTOR\n"
+                    ".ends DUT\n"
                 )
                 return content + wrapper, "DUT", pins
 
@@ -96,10 +97,10 @@ class GoldenOracleAnchor:
         target_kind: str,
         target_class: str,
         proposed_deck_template: str,
-        expected_range: Tuple[Optional[float], Optional[float]],
+        expected_range: tuple[float | None, float | None],
         unit: str,
         out_dir: str = "benchmark_results/testbench_calibration"
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         """
         Runs the proposed fixture against the verified manufacturer golden model.
         Returns:
@@ -142,7 +143,7 @@ class GoldenOracleAnchor:
             r'(\.include\s+["\']?).*?(["\']?\s*\n)',
             lambda m: f"{m.group(1)}{dut_file_fwd}{m.group(2)}",
             proposed_deck_template,
-            flags=re.I
+            flags=re.IGNORECASE
         )
         tb_file = os.path.join(out_dir, f"audit_{target_kind}_{target_class}.cir")
         with open(tb_file, "w", encoding="utf-8") as f:
@@ -204,7 +205,7 @@ class GoldenOracleAnchor:
             "diagnostic": f"Golden {target_class} measured {matched_val} {unit} (Expected range: [{min_val}, {max_val}])."
         }
 
-    def _check_prohibited_behavioral(self, deck: str) -> List[str]:
+    def _check_prohibited_behavioral(self, deck: str) -> list[str]:
         """Checks if fixture contains forbidden B-sources or A-devices."""
         prohibited = []
         for line in deck.splitlines():
@@ -221,7 +222,7 @@ class GoldenOracleAnchor:
                 prohibited.append(f"Behavioral VALUE expression: '{s}'")
         return prohibited
 
-    def _sanity_audit_fallback(self, target_kind: str, deck: str) -> Dict[str, Any]:
+    def _sanity_audit_fallback(self, target_kind: str, deck: str) -> dict[str, Any]:
         """Fallback syntax and analog sanity checker when physical golden macromodel is unavailable."""
         prohibited = self._check_prohibited_behavioral(deck)
         if prohibited:
@@ -233,7 +234,7 @@ class GoldenOracleAnchor:
                 "diagnostic": f"REJECTED: Prohibited behavioral constructs detected: {prohibited}"
             }
         has_meas = any(l.strip().lower().startswith(".meas") for l in deck.splitlines())
-        has_dut = any(re.search(r'\bXDUT\b', l, re.I) for l in deck.splitlines())
+        has_dut = any(re.search(r'\bXDUT\b', l, re.IGNORECASE) for l in deck.splitlines())
         accepted = has_meas and has_dut
         return {
             "accepted": accepted,

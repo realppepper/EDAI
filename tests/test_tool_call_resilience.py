@@ -4,7 +4,6 @@ Guarantees that Hermes tool calls with multi-line SPICE netlists,
 unclosed brackets, unescaped literal newlines, or malformed JSON
 are 100% recovered and never dropped.
 """
-import pytest
 from ai_analog_designer.hermes_core.hermes_agent import HermesAgent
 from ai_analog_designer.llm_client import repair_truncated_json
 

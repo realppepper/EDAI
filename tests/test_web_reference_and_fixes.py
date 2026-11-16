@@ -6,10 +6,14 @@ and placeholder rejection guardrails.
 import os
 import tempfile
 
-from ai_analog_designer.hermes_core.web_reference_search import WebCircuitReferenceSearcher
-from ai_analog_designer.hermes_core.hermes_tools import HermesAnalogTools
 from ai_analog_designer.hermes_core.hermes_agent import HermesAgent
-from ai_analog_designer.neuro_symbolic_verifier.dynamic_testbench_harness import DynamicTestbenchHarness
+from ai_analog_designer.hermes_core.hermes_tools import HermesAnalogTools
+from ai_analog_designer.hermes_core.web_reference_search import (
+    WebCircuitReferenceSearcher,
+)
+from ai_analog_designer.neuro_symbolic_verifier.dynamic_testbench_harness import (
+    DynamicTestbenchHarness,
+)
 
 
 def test_tavily_and_exa_web_circuit_reference_search():

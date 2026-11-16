@@ -5,15 +5,17 @@ subcircuit blueprint skill retrieval/persistence, and long-term memory operation
 """
 from __future__ import annotations
 
+import logging
 import os
 import re
-import json
-import logging
-from typing import Dict, Any, List, Optional, Callable
+from collections.abc import Callable
+from typing import Any
 
 from ai_analog_designer.circuit_synthesis.netlist_validator import NetlistValidator
-from ai_analog_designer.hermes_core.web_reference_search import WebCircuitReferenceSearcher
 from ai_analog_designer.hermes_core.blueprint_reranker import BlueprintReranker
+from ai_analog_designer.hermes_core.web_reference_search import (
+    WebCircuitReferenceSearcher,
+)
 
 logger = logging.getLogger("HermesAnalogTools")
 
@@ -27,13 +29,13 @@ class HermesAnalogTools:
         self,
         output_dir: str,
         dut_name: str,
-        pins: List[Dict[str, Any]],
-        specifications: List[Dict[str, Any]],
-        pdg_schedule: Dict[str, float],
-        measurement_plan: Optional[Dict[str, Any]] = None,
-        verify_fn: Optional[Callable[..., Dict[str, Any]]] = None,
-        skills_dir: Optional[str] = None,
-        memory_file: Optional[str] = None,
+        pins: list[dict[str, Any]],
+        specifications: list[dict[str, Any]],
+        pdg_schedule: dict[str, float],
+        measurement_plan: dict[str, Any] | None = None,
+        verify_fn: Callable[..., dict[str, Any]] | None = None,
+        skills_dir: str | None = None,
+        memory_file: str | None = None,
     ):
         self.output_dir = os.path.abspath(output_dir)
         os.makedirs(self.output_dir, exist_ok=True)
@@ -57,9 +59,9 @@ class HermesAnalogTools:
             target_dut=self.dut_name,
             target_pins=[p.get("name") if isinstance(p, dict) else str(p) for p in (self.pins or [])]
         )
-        self.evaluation_history: List[Dict[str, Any]] = []
+        self.evaluation_history: list[dict[str, Any]] = []
 
-    def get_tool_schemas(self) -> List[Dict[str, Any]]:
+    def get_tool_schemas(self) -> list[dict[str, Any]]:
         """Returns the list of tool JSON schemas in OpenAI / Hermes tool-calling format."""
         return [
             {
@@ -212,7 +214,7 @@ class HermesAnalogTools:
             }
         ]
 
-    def dispatch(self, tool_name: str, arguments: Dict[str, Any]) -> Dict[str, Any]:
+    def dispatch(self, tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
         """Dispatches an incoming tool call from Hermes."""
         if tool_name == "validate_netlist_syntax":
             return self.validate_netlist_syntax(**arguments)
@@ -229,7 +231,7 @@ class HermesAnalogTools:
         else:
             return {"error": f"Unknown tool: '{tool_name}'"}
 
-    def validate_netlist_syntax(self, netlist: str = "", subckt_name: Optional[str] = None, **kwargs) -> Dict[str, Any]:
+    def validate_netlist_syntax(self, netlist: str = "", subckt_name: str | None = None, **kwargs) -> dict[str, Any]:
         """Executes NetlistValidator."""
         if not netlist or not netlist.strip():
             return {
@@ -251,7 +253,7 @@ class HermesAnalogTools:
             "guardrail_status": "PASS" if res.get("is_valid") else "FAIL_SYNTAX_OR_GUARDRAIL"
         }
 
-    def verify_circuit_pdg_gate(self, netlist: str = "", tag: str = "hermes_eval", **kwargs) -> Dict[str, Any]:
+    def verify_circuit_pdg_gate(self, netlist: str = "", tag: str = "hermes_eval", **kwargs) -> dict[str, Any]:
         """Runs the 4-stage causal gate verifier."""
         if not netlist or not netlist.strip():
             return {
@@ -287,7 +289,9 @@ class HermesAnalogTools:
             eval_res = self.verify_fn(cleaned_netlist, tag)
         else:
             # Fallback to importing verify
-            from ai_analog_designer.neuro_symbolic_verifier.verification_flow import verify
+            from ai_analog_designer.neuro_symbolic_verifier.verification_flow import (
+                verify,
+            )
             sched_us = {k: v * 1e6 if v < 1.0 else v for k, v in self.pdg_schedule.items()}
             eval_res = verify(
                 netlist=cleaned_netlist,
@@ -336,7 +340,7 @@ class HermesAnalogTools:
             "total_specs": len(self.specifications)
         }
 
-    def retrieve_subcircuit_blueprint(self, query: str, category: Optional[str] = None) -> Dict[str, Any]:
+    def retrieve_subcircuit_blueprint(self, query: str, category: str | None = None) -> dict[str, Any]:
         """Searches blueprint skills in skills/analog_blueprints/ and harness2_library with Reranker scoring."""
         query_norm = query.lower().strip()
         cat_norm = category.lower().strip() if category else ""
@@ -359,9 +363,7 @@ class HermesAnalogTools:
                                     content = fp.read()
                                 # Allow broad candidate retrieval; the Reranker will rank by relevance
                                 is_candidate = False
-                                if any(t in content.lower() or t in f.lower() for t in query_norm.split()):
-                                    is_candidate = True
-                                elif cat_norm and (cat_norm in content.lower() or cat_norm in root.lower()):
+                                if any(t in content.lower() or t in f.lower() for t in query_norm.split()) or cat_norm and (cat_norm in content.lower() or cat_norm in root.lower()):
                                     is_candidate = True
                                 if is_candidate:
                                     matches.append({
@@ -383,7 +385,7 @@ class HermesAnalogTools:
         # Apply Circuit Blueprint Reranker
         reranked_matches = self.reranker.rerank(unique_matches, query=query, top_k=5)
 
-        web_refs: Optional[Dict[str, Any]] = None
+        web_refs: dict[str, Any] | None = None
         if len(reranked_matches) == 0:
             try:
                 web_refs = self.search_web_circuit_reference(
@@ -394,7 +396,7 @@ class HermesAnalogTools:
             except Exception as e:
                 logger.warning(f"Auto web reference fallback failed: {e}")
 
-        res_dict: Dict[str, Any] = {
+        res_dict: dict[str, Any] = {
             "query": query,
             "category": category,
             "matches_found": len(reranked_matches),
@@ -407,9 +409,9 @@ class HermesAnalogTools:
     def search_web_circuit_reference(
         self,
         query: str,
-        ic_name: Optional[str] = None,
-        category: Optional[str] = None
-    ) -> Dict[str, Any]:
+        ic_name: str | None = None,
+        category: str | None = None
+    ) -> dict[str, Any]:
         """
         Queries IEEE academic literature, Exa, and Tavily for circuit topology references,
         SPICE netlists, peer-reviewed design rationale, and internal schematic descriptions.
@@ -438,8 +440,8 @@ class HermesAnalogTools:
         category: str,
         subckt_code: str,
         description: str,
-        terminal_pins: Optional[List[str]] = None
-    ) -> Dict[str, Any]:
+        terminal_pins: list[str] | None = None
+    ) -> dict[str, Any]:
         """Saves a subcircuit blueprint skill to skills/analog_blueprints/<name>/SKILL.md."""
         # Strict Guardrail: Never save empty stubs without elements as reusable blueprints
         clean_code = subckt_code.strip()
@@ -495,7 +497,7 @@ pins: [{pins_str}]
             "category": category
         }
 
-    def manage_memory(self, action: str, content: str = "", target: Optional[str] = None) -> Dict[str, Any]:
+    def manage_memory(self, action: str, content: str = "", target: str | None = None) -> dict[str, Any]:
         """Manages long-term memories in MEMORY.md."""
         action = action.lower().strip()
         current_memory = ""
@@ -525,7 +527,7 @@ pins: [{pins_str}]
         else:
             return {"status": "ERROR", "message": f"Unsupported action: '{action}'"}
 
-    def adapt_blueprint_to_dut(self, blueprint_code: str, target_subckt: Optional[str] = None) -> str:
+    def adapt_blueprint_to_dut(self, blueprint_code: str, target_subckt: str | None = None) -> str:
         """Adapts a blueprint subcircuit netlist to match the target DUT name and pin interface,
         handling multi-channel mapping (e.g. dual comparators/opamps), substrate/thermal pad
         termination, and preserving all physical transistor model cards."""
@@ -534,10 +536,10 @@ pins: [{pins_str}]
         pins_line = " ".join(pin_names)
 
         # 1. Clean markdown fences or commentary
-        code = re.sub(r"^\s*```[a-zA-Z]*\s*$", "", blueprint_code, flags=re.M).strip()
+        code = re.sub(r"^\s*```[a-zA-Z]*\s*$", "", blueprint_code, flags=re.MULTILINE).strip()
 
         # 2. Extract and preserve all .model definitions
-        models = re.findall(r'(?m)^\s*\.model\s+[^\r\n]+', code, re.I)
+        models = re.findall(r'(?m)^\s*\.model\s+[^\r\n]+', code, re.IGNORECASE)
 
         # 3. Classify target pins
         vcc_pin = next((p for p in pin_names if p.upper() in ('VCC', 'VDD', 'VP', 'PVCC', 'AVCC')), 'Vcc')
@@ -560,7 +562,7 @@ pins: [{pins_str}]
         ch2_out = next((p for p in pin_names if '2OUT' in p.upper()), None)
 
         # 4. Check for single-channel comparator/opamp core inside blueprint
-        m_sub = re.search(r'(?m)^\s*\.subckt\s+([a-zA-Z0-9_]+)\s+[^\r\n]+([\s\S]*?)^\s*\.ends\b', code, re.I)
+        m_sub = re.search(r'(?m)^\s*\.subckt\s+([a-zA-Z0-9_]+)\s+[^\r\n]+([\s\S]*?)^\s*\.ends\b', code, re.IGNORECASE)
         if m_sub and ch1_inp and ch1_inn and ch1_out and ch2_inp and ch2_inn and ch2_out:
             core_body = m_sub.group(2).strip()
             # Strip hoisted models from core body
@@ -583,12 +585,12 @@ XU2 {ch2_inp} {ch2_inn} {ch2_out} {vcc_pin} {gnd_pin} {target_name}_CORE
 """
 
         # 5. Fallback: single subcircuit header replacement
-        m_head = re.search(r'(?m)^\s*\.subckt\s+([a-zA-Z0-9_]+)\s+.*$', code, re.I)
+        m_head = re.search(r'(?m)^\s*\.subckt\s+([a-zA-Z0-9_]+)\s+.*$', code, re.IGNORECASE)
         if m_head:
             old_name = m_head.group(1)
             code = code[:m_head.start()] + f".subckt {target_name} {pins_line}" + code[m_head.end():]
-            code = re.sub(r'(?m)^\s*\.ends\s+' + re.escape(old_name) + r'\b', f".ends {target_name}", code, flags=re.I)
-        elif not re.search(r'(?m)^\s*\.subckt\b', code, re.I):
+            code = re.sub(r'(?m)^\s*\.ends\s+' + re.escape(old_name) + r'\b', f".ends {target_name}", code, flags=re.IGNORECASE)
+        elif not re.search(r'(?m)^\s*\.subckt\b', code, re.IGNORECASE):
             code = f".subckt {target_name} {pins_line}\n" + code + f"\n.ends {target_name}\n"
 
         if models and not any(m in code for m in models):

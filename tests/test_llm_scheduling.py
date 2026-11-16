@@ -1,6 +1,5 @@
 """Offline checks for the task-aware LLM scheduler."""
 import pytest
-
 from ai_analog_designer.llm_client import LLMClient
 
 
@@ -132,7 +131,9 @@ def test_transport_failure_escalates_to_next_scheduled_model(monkeypatch):
 
 
 def test_harness2_uses_the_application_provider_instead_of_forcing_openrouter(tmp_path):
-    from ai_analog_designer.circuit_synthesis.harness2.harness2_architect import Harness2CircuitArchitect
+    from ai_analog_designer.circuit_synthesis.harness2.harness2_architect import (
+        Harness2CircuitArchitect,
+    )
 
     client = nim_client()
     architect = Harness2CircuitArchitect(llm_client=client, library_root=str(tmp_path / "library"))

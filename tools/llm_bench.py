@@ -7,15 +7,15 @@ Provider-agnostic LLM benchmark (latency + JSON validity + cost) on the two real
 Usage:
   python tools/llm_bench.py --provider openrouter --models anthropic/claude-haiku-5.5,openai/gpt-6-luna --runs 2
 """
-import os
-import sys
-import json
-import time
 import argparse
 import concurrent.futures as cf
+import json
+import os
+import sys
+import time
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
-from ai_analog_designer.llm_client import LLMClient  # noqa: E402
+from ai_analog_designer.llm_client import LLMClient
 
 
 def spec_page_prompt():
@@ -86,7 +86,7 @@ def main():
     out = args.out.format(provider=args.provider)
     json.dump(res, open(out, "w", encoding="utf-8"), indent=2)
 
-    print(f"\n| model | workload | ok | valid | TTFT med (s) | total med (s) | out tok | cost/call ($) |")
+    print("\n| model | workload | ok | valid | TTFT med (s) | total med (s) | out tok | cost/call ($) |")
     print("|---|---|---|---|---|---|---|---|")
     for m in dict.fromkeys(j[0] for j in jobs):
         for w in args.workloads.split(","):

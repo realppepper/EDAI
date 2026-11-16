@@ -1,13 +1,15 @@
-import re
-import os
-import json
 import base64
-import time
-import urllib.request
-import urllib.error
 import concurrent.futures as cf
+import json
+import os
+import re
+import time
+import urllib.error
+import urllib.request
+from collections.abc import Callable
+from typing import Any
+
 import pymupdf
-from typing import Callable, Dict, List, Any, Optional
 
 DEFAULT_NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY", "")
 
@@ -38,7 +40,7 @@ class PDFDatasheetParser:
     def __init__(
         self,
         max_pages: int = 30,
-        api_key: Optional[str] = None,
+        api_key: str | None = None,
         model: str = "nvidia/nemotron-parse",
         concurrency: int = 3,
         dpi: int = 150,
@@ -62,7 +64,7 @@ class PDFDatasheetParser:
         name = re.sub(r'_+', '_', name).strip('_')
         return name or "PIN"
 
-    def _call_nemotron_parse(self, b64_img: str, max_retries: int = 2) -> Dict[str, Any]:
+    def _call_nemotron_parse(self, b64_img: str, max_retries: int = 2) -> dict[str, Any]:
         """Calls NVIDIA NIM nemotron-parse endpoint with image payload."""
         payload = {
             "model": self.model,
@@ -111,7 +113,7 @@ class PDFDatasheetParser:
                 break
         raise last_err or RuntimeError("Failed to call Nemotron-Parse API.")
 
-    def parse_page_with_nemotron(self, page_index_0based: int, doc: pymupdf.Document) -> Dict[str, Any]:
+    def parse_page_with_nemotron(self, page_index_0based: int, doc: pymupdf.Document) -> dict[str, Any]:
         """Renders single page to image and parses it via NVIDIA Nemotron-Parse."""
         page_num = page_index_0based + 1
         page = doc[page_index_0based]
@@ -196,7 +198,7 @@ class PDFDatasheetParser:
             }
 
     @staticmethod
-    def classify_page(text: str) -> List[str]:
+    def classify_page(text: str) -> list[str]:
         lower = text.lower()
         classes = [c for c, kws in PAGE_CLASS_KEYWORDS.items() if any(k in lower for k in kws)]
         toc_hits = len(re.findall(r'\.{5,}\s*\d+', text))
@@ -207,8 +209,8 @@ class PDFDatasheetParser:
     def parse_pdf(
         self,
         pdf_path: str,
-        progress_callback: Optional[Callable[[int, int, int, Optional[str]], None]] = None,
-    ) -> Dict[str, Any]:
+        progress_callback: Callable[[int, int, int, str | None], None] | None = None,
+    ) -> dict[str, Any]:
         """
         Parses all PDF pages concurrently using NVIDIA Nemotron-Parse.
         Returns unified dictionary with page-level provenance.
@@ -220,7 +222,7 @@ class PDFDatasheetParser:
         total_pages = len(doc)
         pages_to_process = min(total_pages, self.max_pages)
 
-        pages: Dict[int, Dict[str, Any]] = {}
+        pages: dict[int, dict[str, Any]] = {}
         tables_found = []
 
         # Concurrently parse pages through Nemotron-Parse
@@ -280,7 +282,7 @@ class PDFDatasheetParser:
             "parser_engine": "nvidia/nemotron-parse" if self.use_nemotron else "pymupdf_fallback"
         }
 
-    def _segment_functional_sections(self, pages: Dict[int, Dict[str, Any]]) -> Dict[str, str]:
+    def _segment_functional_sections(self, pages: dict[int, dict[str, Any]]) -> dict[str, str]:
         """Legacy flat sections (kept for backwards compatibility)."""
         sec = {"overview": "", "pin_configuration": "", "electrical_specifications": "", "functional_description": ""}
         for pn in sorted(pages):
@@ -296,7 +298,7 @@ class PDFDatasheetParser:
         return sec
 
     @staticmethod
-    def _prior_score_page(pn: int, pg: Dict[str, Any], purpose: str, table_pages: set) -> float:
+    def _prior_score_page(pn: int, pg: dict[str, Any], purpose: str, table_pages: set) -> float:
         """Calculates a soft prior relevance score for a page when LLM selection is unavailable or combined."""
         text = (pg.get("text") or "")
         lower = text.lower()
@@ -345,7 +347,7 @@ class PDFDatasheetParser:
         return score
 
     @classmethod
-    def _llm_rank_pages(cls, parsed: Dict[str, Any]) -> Dict[str, List[int]]:
+    def _llm_rank_pages(cls, parsed: dict[str, Any]) -> dict[str, list[int]]:
         """Uses an LLM probabilistic classifier over compact page digests to select the best pages
         for 'pins', 'specs' (prioritizing Electrical Characteristics tables), and 'functional'."""
         cache = parsed.get("_llm_page_selection")
@@ -370,7 +372,7 @@ class PDFDatasheetParser:
                     continue
                 lines = [ln.strip() for ln in txt.splitlines() if ln.strip()]
                 head = " | ".join(lines[:6])[:260]
-                unit_cnt = len(re.findall(r"\b(mV|uA|nA|mA|dB|MHz|kHz|V/us|ns|us|kOhm|Ohm)\b", txt, re.I))
+                unit_cnt = len(re.findall(r"\b(mV|uA|nA|mA|dB|MHz|kHz|V/us|ns|us|kOhm|Ohm)\b", txt, re.IGNORECASE))
                 digests.append({
                     "page": pn,
                     "has_table": pn in table_pages,
@@ -422,7 +424,7 @@ class PDFDatasheetParser:
         return {}
 
     @classmethod
-    def select_pages(cls, parsed: Dict[str, Any], purpose: str) -> List[int]:
+    def select_pages(cls, parsed: dict[str, Any], purpose: str) -> list[int]:
         """Selects and ranks the page numbers relevant for a given extraction purpose using
         LLM probabilistic page ranking combined with structural density priors."""
         pages = {int(k): v for k, v in (parsed.get("pages") or {}).items()}
@@ -448,7 +450,7 @@ class PDFDatasheetParser:
                     prior_ranked.append(e)
 
         llm_sel = cls._llm_rank_pages(parsed).get(purpose) or []
-        merged: List[int] = []
+        merged: list[int] = []
         for pn in llm_sel + prior_ranked:
             if pn in pages and pn not in merged:
                 merged.append(pn)
@@ -460,12 +462,12 @@ class PDFDatasheetParser:
         return merged
 
     @staticmethod
-    def audit_pages(parsed: Dict[str, Any]) -> Dict[int, str]:
+    def audit_pages(parsed: dict[str, Any]) -> dict[int, str]:
         """Page texts used by the provenance audit."""
         return {pn: v["text"] + "\n" + v.get("layout_text", "") for pn, v in (parsed.get("pages") or {}).items()}
 
     @staticmethod
-    def page_tagged_text(parsed: Dict[str, Any], page_numbers: List[int], budget_chars: int = 60000,
+    def page_tagged_text(parsed: dict[str, Any], page_numbers: list[int], budget_chars: int = 60000,
                           layout: bool = False) -> str:
         out, used = [], 0
         for pn in page_numbers:

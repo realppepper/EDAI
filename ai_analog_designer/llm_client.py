@@ -11,14 +11,14 @@ Features:
   - Automatic model fallback chain on timeout / 5xx / 429
   - Per-call latency telemetry (TTFT, total, tokens) collected in LLMClient.call_log
 """
+import json
 import os
 import re
-import json
-import time
 import threading
-import urllib.request
+import time
 import urllib.error
-from typing import Dict, Any, List, Optional
+import urllib.request
+from typing import Any
 
 
 def _load_env():
@@ -40,11 +40,11 @@ def _load_env():
 
 _load_env()
 
-def model_extra_body(provider: str, model: str) -> Dict[str, Any]:
+def model_extra_body(provider: str, model: str) -> dict[str, Any]:
     """Per-model request knobs. Reasoning ("thinking") is disabled by default for extraction/synthesis:
     on NIM it multiplies latency 5-30x (see benchmark_results/NIM_LATENCY_BENCH.md). Set LLM_THINKING=1 to enable."""
     if provider == "openrouter":
-        body: Dict[str, Any] = {"usage": {"include": True}}       # returns exact USD cost per call
+        body: dict[str, Any] = {"usage": {"include": True}}       # returns exact USD cost per call
         if os.environ.get("LLM_THINKING") != "1":
             body["reasoning"] = {"enabled": False}
         return body
@@ -96,7 +96,7 @@ PROVIDERS = {
 }
 
 
-def repair_truncated_json(raw: str) -> Optional[Dict[str, Any]]:
+def repair_truncated_json(raw: str) -> dict[str, Any] | None:
     """Attempts to repair and parse a truncated or malformed JSON string with control-char tolerance."""
     text = raw.strip()
     # Step 1: Direct attempt with strict=False (allows unescaped newlines/tabs in strings)
@@ -193,12 +193,12 @@ class LLMClient:
 
     def __init__(
         self,
-        api_key: Optional[str] = None,
-        default_model: Optional[str] = None,
-        base_url: Optional[str] = None,
-        provider: Optional[str] = None,
-        request_timeout: Optional[float] = None,
-        first_token_timeout: Optional[float] = None,
+        api_key: str | None = None,
+        default_model: str | None = None,
+        base_url: str | None = None,
+        provider: str | None = None,
+        request_timeout: float | None = None,
+        first_token_timeout: float | None = None,
     ):
         self.provider = (provider or os.environ.get("LLM_PROVIDER") or
                          ("nim" if os.environ.get("NVIDIA_API_KEY") else "openrouter")).lower()
@@ -257,20 +257,20 @@ class LLMClient:
         }
         self.hermes_escalate_after = max(1, int(os.environ.get("LLM_HERMES_ESCALATE_AFTER", "3")))
         self.min_interval_s = float(os.environ.get("LLM_MIN_INTERVAL_S", 0.5))
-        self.call_log: List[Dict[str, Any]] = []
+        self.call_log: list[dict[str, Any]] = []
         self._lock = threading.Lock()
 
     # ------------------------------------------------------------------
     @staticmethod
-    def _dedupe_models(models: List[str], exclude: Optional[str] = None) -> List[str]:
-        result: List[str] = []
+    def _dedupe_models(models: list[str], exclude: str | None = None) -> list[str]:
+        result: list[str] = []
         for model in models:
             model = (model or "").strip()
             if model and model != exclude and model not in result:
                 result.append(model)
         return result
 
-    def _task_override(self, tag: str) -> Optional[str]:
+    def _task_override(self, tag: str) -> str | None:
         for prefix, env in TASK_MODEL_ENV:
             if tag.startswith(prefix) and os.environ.get(env):
                 return os.environ[env]
@@ -282,7 +282,7 @@ class LLMClient:
                 return tier
         return "capable"
 
-    def _tiers_for_tag(self, tag: str) -> List[str]:
+    def _tiers_for_tag(self, tag: str) -> list[str]:
         """Return the smallest model sequence that fits this workflow step.
 
         Structured per-page extraction and generated test benches are bounded
@@ -318,7 +318,7 @@ class LLMClient:
             return ["capable", "fast"]
         return ["fast", "capable"]
 
-    def model_chain_for(self, tag: str = "", model: Optional[str] = None) -> List[str]:
+    def model_chain_for(self, tag: str = "", model: str | None = None) -> list[str]:
         """Resolve a deterministic, de-duplicated model chain for one call."""
         explicit = model or self._task_override(tag) or self._explicit_default_model
         if explicit:
@@ -329,7 +329,7 @@ class LLMClient:
             [self.model_tiers[tier] for tier in self._tiers_for_tag(tag)] + self._explicit_fallback_models
         )
 
-    def routing_config(self) -> Dict[str, Any]:
+    def routing_config(self) -> dict[str, Any]:
         """Safe, display-ready routing metadata for the Studio API."""
         return {
             "scheduler": self.scheduler_mode,
@@ -362,10 +362,10 @@ class LLMClient:
 
     def _stream_call(
         self,
-        payload: Dict[str, Any],
-        request_timeout: Optional[float] = None,
-        first_token_timeout: Optional[float] = None,
-    ) -> Dict[str, Any]:
+        payload: dict[str, Any],
+        request_timeout: float | None = None,
+        first_token_timeout: float | None = None,
+    ) -> dict[str, Any]:
         payload = dict(payload, stream=True)
         headers = {
             "Authorization": f"Bearer {self.api_key}",
@@ -379,8 +379,8 @@ class LLMClient:
 
         t0 = time.perf_counter()
         ttft = None
-        parts: List[str] = []
-        reasoning_parts: List[str] = []
+        parts: list[str] = []
+        reasoning_parts: list[str] = []
         usage = None
         finish_reason = None
         # socket timeout bounds the wait for each chunk (incl. first token)
@@ -433,15 +433,15 @@ class LLMClient:
     def complete(
         self,
         prompt: str = "",
-        system_prompt: Optional[str] = None,
-        model: Optional[str] = None,
+        system_prompt: str | None = None,
+        model: str | None = None,
         temperature: float = 0.2,
         max_tokens: int = 8192,
-        response_format: Optional[Dict[str, str]] = None,
+        response_format: dict[str, str] | None = None,
         retries: int = 3,
         tag: str = "",
-        messages: Optional[List[Dict[str, Any]]] = None,
-        model_chain: Optional[List[str]] = None,
+        messages: list[dict[str, Any]] | None = None,
+        model_chain: list[str] | None = None,
         timeout_profile: str = "default",
     ) -> str:
         if messages is not None:
@@ -468,7 +468,7 @@ class LLMClient:
         last_err = None
         for m in chain:
             for attempt in range(1, retries + 1):
-                payload: Dict[str, Any] = {"model": m, "messages": messages_payload,
+                payload: dict[str, Any] = {"model": m, "messages": messages_payload,
                                            "temperature": temperature, "max_tokens": max_tokens}
                 payload.update(model_extra_body(self.provider, m))
                 if response_format and self.supports_json_mode:
@@ -538,7 +538,7 @@ class LLMClient:
         print(f"[LLM] {tag or 'call'} model={model} status={status} ttft={entry.get('ttft_s')}s "
               f"total={entry.get('total_s')}s tokens={entry.get('completion_tokens')}{cost}", flush=True)
 
-    def latency_summary(self) -> Dict[str, Any]:
+    def latency_summary(self) -> dict[str, Any]:
         ok = [c for c in self.call_log if c["status"] == "ok"]
         tot = sorted(c["total_s"] for c in ok)
         return {
@@ -556,13 +556,13 @@ class LLMClient:
     def complete_json(
         self,
         prompt: str,
-        system_prompt: Optional[str] = None,
-        model: Optional[str] = None,
+        system_prompt: str | None = None,
+        model: str | None = None,
         temperature: float = 0.1,
         max_tokens: int = 8192,
         tag: str = "",
         timeout_profile: str = "default",
-    ) -> Dict[str, Any]:
+    ) -> dict[str, Any]:
         if self.provider == "groq":
             groq_cap = int(os.environ.get("GROQ_MAX_TOKENS", "2048"))
             max_tokens = min(max_tokens, groq_cap)
@@ -571,7 +571,7 @@ class LLMClient:
         # can answer successfully yet emit unusable JSON.  In that case retry on
         # the next scheduled tier, rather than failing the whole PDF workflow.
         chain = self.model_chain_for(tag, model)
-        last_error: Optional[Exception] = None
+        last_error: Exception | None = None
         for idx, selected_model in enumerate(chain, start=1):
             try:
                 raw_text = self.complete(
@@ -606,7 +606,7 @@ class LLMClient:
         raise last_error or ValueError("Failed to parse JSON from all scheduled models")
 
     @staticmethod
-    def parse_json_text(raw_text: str) -> Dict[str, Any]:
+    def parse_json_text(raw_text: str) -> dict[str, Any]:
         cleaned = raw_text.strip()
         m = re.search(r"```(?:json)?\s*(.*?)```", cleaned, re.DOTALL)
         if m:
@@ -626,12 +626,12 @@ class LLMClient:
             raise ValueError(f"Failed to parse JSON from LLM response:\n{raw_text[:500]}")
 
     # Backwards-compat helpers used by extract_specs_from_prompt
-    def chat_completion(self, messages: List[Dict[str, str]], temperature: float = 0.1, **kw) -> str:
+    def chat_completion(self, messages: list[dict[str, str]], temperature: float = 0.1, **kw) -> str:
         sys_p = "\n".join(m["content"] for m in messages if m["role"] == "system") or None
         user_p = "\n".join(m["content"] for m in messages if m["role"] != "system")
         return self.complete(user_p, system_prompt=sys_p, temperature=temperature, tag=kw.get("tag", "chat"))
 
-    def parse_json_response(self, text: str) -> Optional[Dict[str, Any]]:
+    def parse_json_response(self, text: str) -> dict[str, Any] | None:
         try:
             return self.parse_json_text(text)
         except Exception:
