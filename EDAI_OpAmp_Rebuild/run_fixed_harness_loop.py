@@ -23,7 +23,8 @@ def main():
     else:
         state=resume(a.session,a.ltspice) if a.action=='resume' else load(a.session)
     print(json.dumps({'status':state['status'],'candidates':len(state['candidates']),'best_index':state['best_index'],
-                      'pending_request':state.get('pending_request'),'external_llm_api_calls':0,'harness2_enabled':False},ensure_ascii=False))
+                      'pending_request':state.get('pending_request'),'external_llm_api_calls':0,'harness2_enabled':False,
+                      'schematic':state.get('schematic'),'deliverables_complete':state.get('deliverables_complete',False)},ensure_ascii=False))
 
 
 if __name__=='__main__':main()

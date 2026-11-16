@@ -7,6 +7,7 @@ from .harness_02_request import make_request
 from .loop_04_extended_policy import ledger
 from .support.execution_state import file_hash
 from .support.atomic_files import atomic_write_bytes
+from .verify_07_startup_gate import startup_gate
 
 ROOT=Path(__file__).resolve().parents[1]
 def read(path):return json.loads(Path(path).read_text(encoding='utf-8'))
@@ -47,6 +48,7 @@ def check_chain(core,impedance,overload,model,plan):
     if set(ledger(result))!=source_ids:raise ValueError('Final case coverage differs')
     counts={s:sum(c['case']['status']==s for c in ledger(result).values()) for s in {x['case']['status'] for x in ledger(result).values()}}
     if counts!=result['case_status_counts']:raise ValueError('Reported counts differ from actual cases')
+    result['operational_startup']=startup_gate(a,read(plan))
     return result
 
 

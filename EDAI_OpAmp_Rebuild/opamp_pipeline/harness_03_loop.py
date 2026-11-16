@@ -9,6 +9,12 @@ from .loop_04_extended_policy import ledger
 from .support.execution_state import file_hash
 from .support.source_checks import fingerprint
 from .support.atomic_files import atomic_write_text,atomic_write_bytes
+from .harness_04_feedback import implemented_scope_case_ids
+from .harness_05_history import build_iteration_history
+from .ref_05_research import record_usage
+from .verify_07_startup_gate import gate_assessment
+from . import schematic_01_export as schematic
+from . import ref_07_datasheet as datasheet_refs
 
 
 def assessment(baseline,current,scope):
@@ -20,10 +26,16 @@ def assessment(baseline,current,scope):
         if k not in scope and w['case']['status']=='passed_sampled_model_case':raise ValueError('Unknown case promoted without a new qualification study')
     failed=[k for k in scope if b[k]['case']['status']!='passed_sampled_model_case']
     counts={s:sum(v['case']['status']==s for v in b.values()) for s in sorted({v['case']['status'] for v in b.values()})}
-    return {'scope_passed':not failed,'failed_case_ids':failed,'counts':counts,'score':[0,len(failed)],'full_datasheet_success':False}
+    gates=gate_assessment(baseline,current)
+    unresolved=failed+gates['failed_operational_gate_ids']
+    return {'scope_passed':not unresolved,'failed_case_ids':failed,'failed_requirement_ids':unresolved,
+            **gates,'counts':counts,'score':[0,len(unresolved)],'full_datasheet_success':False}
 
 
 def save(session,state):
+    if state['status']=='implemented_scope_passed' and state['candidates']:
+        successful=next((c for c in reversed(state['candidates']) if c['assessment']['scope_passed']),None)
+        if successful:schematic.complete(session,state,successful)
     write_json(session/'STATE.json',state)
     best=state['candidates'][state['best_index']] if state['candidates'] else None
     write_json(session/'BEST.json',best)
@@ -37,6 +49,7 @@ def save(session,state):
                 '검증 중단은 설계 미달 판정이나 추가 수정 제안으로 계산하지 않습니다.']
     lines+=['',f"최선 후보: {best['candidate_path'] if best else '최초 검증 완료 전'}",f"하네스 SHA256: {state['harness_sha256']}",
             '실제 채팅 토큰/비용은 미측정(null)이며0으로 추정하지 않습니다. 전체 제조사 사양 성공은 false입니다.']
+    lines+=schematic.report_lines(state)
     atomic_write_text(session/'REPORT.md','\n'.join(lines))
 
 
@@ -46,7 +59,12 @@ def prepare(session,state):
     if current.get('execution_error'):
         request['current_execution_failure']=current['execution_error']
         request['feedback_notice']='Measurements belong to the last fully measured candidate, not this failed execution. Use current_execution_failure for the current candidate.'
+    history=request.get('iteration_history_configuration',{})
+    if history.get('enabled'):
+        request['iteration_history']=build_iteration_history(state['candidates'],
+            request['evaluation_scope']['implemented_scope_case_ids'],history['max_transitions'])
     request['iteration_index']=len(state['candidates'])
+    datasheet_refs.add_catalog(request,state.get('run_dir'))
     request['request_id']=fingerprint({k:v for k,v in request.items() if k!='request_id'})
     path=session/f"REQUEST_{len(state['candidates']):03d}.json";write_json(path,request)
     state['pending_request']={'path':str(path),'sha256':file_hash(path),'request_id':request['request_id']};state['status']='awaiting_chat_designer'
@@ -66,6 +84,10 @@ def load(session):
     if file_hash(state['harness_path'])!=state['harness_sha256'] or file_hash(state['plan_path'])!=state['plan_sha256']:raise ValueError('Frozen harness/plan changed')
     for p,sha in state['code_signatures'].items():
         if file_hash(p)!=sha:raise ValueError('Loop/verification code changed during fixed session')
+    for p,sha in state.get('literature_artifacts',{}).items():
+        if file_hash(p)!=sha:raise ValueError('Attached literature evidence changed')
+    for p,sha in state.get('datasheet_reference_artifacts',{}).items():
+        if file_hash(p)!=sha:raise ValueError('Attached datasheet reference evidence changed')
     for c in state['candidates']:
         if file_hash(c['candidate_path'])!=c['candidate_sha256']:raise ValueError('Recorded candidate changed')
         if c.get('ledger_path') and file_hash(c['ledger_path'])!=c['ledger_sha256']:raise ValueError('Recorded result changed')
@@ -123,7 +145,7 @@ def execute_pending(session,state,ltspice,automatic_retries=None):
             path=folder/'validation/LEDGER.json';current=read(path)
             if initial:
                 policy,_=load_harness(state['harness_path'])
-                scope=[k for k,v in ledger(current).items() if v['kind'] in policy['qualified_measurement_families']]
+                scope=implemented_scope_case_ids(ledger(current),policy)
                 if not scope:raise ValueError('No independently qualified measurement families in this plan')
                 base=current
             else:
@@ -175,6 +197,8 @@ def submit(session,response_path,ltspice,defer_validation=False):
     if (folder/'validation').exists():raise ValueError('Unrecorded validation exists; preserved for review')
     if not model.exists():atomic_write_bytes(model,payload)
     if not receipt.exists():write_json(receipt,response)
+    record_usage(state,read(pending['path']),response)
+    datasheet_refs.record_usage(state,read(pending['path']),response)
     state['pending_candidate']={'index':index,'candidate_path':str(model),'candidate_sha256':file_hash(model),'response_path':str(receipt),
                                 'response_sha256':file_hash(receipt),'submitted_response_sha256':response_sha,'origin':'current_chat_designer','based_on_request_sha256':pending['sha256']}
     state['status']='validating_candidate';save(session,state)

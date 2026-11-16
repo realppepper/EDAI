@@ -4,7 +4,7 @@ from pathlib import Path
 from .loop_02_handoff import validate_dut
 from .support.execution_state import file_hash
 
-DEFAULT_POLICY=Path(__file__).resolve().parents[1]/'harness/fixed_v1.json'
+DEFAULT_POLICY=Path(__file__).resolve().parents[1]/'harness/fixed_v3_history.json'
 
 
 def load_harness(path=DEFAULT_POLICY):

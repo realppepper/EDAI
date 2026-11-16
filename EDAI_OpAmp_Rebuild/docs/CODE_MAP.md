@@ -1,117 +1,106 @@
-# 전체 코드 지도
+# 전체 코드 지도 — 2026-11-16
 
-파일 이름의 앞부분은 기능, 숫자는 그 기능 안의 대략적인 처리 순서입니다. 서로 다른 계열의 숫자를 전체 실행 순서로 해석하지 않습니다. `verify_04_dc_coverage`와 `verify_04_input_impedance`는 독립 기능으로 둘 다 보존했습니다.
-
-## 핵심 모듈
+숫자는 각 기능 안의 처리 순서입니다. 런타임 Python은 원본과 동일하며, 두 테스트의 로컬 자료 탐색만 공유 fixture fallback을 유지합니다. [최신 변경](LATEST_UPDATE_20261116.md)을 먼저 확인하세요.
 
 | 파일 | 역할 |
 |---|---|
-| [opamp_pipeline/chart_01_collect.py](../opamp_pipeline/chart_01_collect.py) | 원문 그림·캡션 후보와 검토 입력 수집 |
-| [opamp_pipeline/chart_02_verify.py](../opamp_pipeline/chart_02_verify.py) | 그림 메타데이터 검토 적용·사양 참고 연결 |
-| [opamp_pipeline/design_01_cmos_candidate.py](../opamp_pipeline/design_01_cmos_candidate.py) | 동결 일반 MOS 모델과 최초 후보 구성 |
-| [opamp_pipeline/design_02_check_bias.py](../opamp_pipeline/design_02_check_bias.py) | MOS 동작점·바이어스 해석 |
-| [opamp_pipeline/design_03_cascoded_bias.py](../opamp_pipeline/design_03_cascoded_bias.py) | 캐스코드 기준 전류/바이어스 후보 |
-| [opamp_pipeline/design_04_folded_input.py](../opamp_pipeline/design_04_folded_input.py) | folded 입력단 후보 구성 |
-| [opamp_pipeline/design_05_overload_clamp.py](../opamp_pipeline/design_05_overload_clamp.py) | 과부하 회복 클램프 후보 구성 |
-| [opamp_pipeline/diag_01_convergence.py](../opamp_pipeline/diag_01_convergence.py) | 수치 수렴 조건 대조 보조 도구 |
-| [opamp_pipeline/diag_02_startup_seed.py](../opamp_pipeline/diag_02_startup_seed.py) | 실제 기동 파형에서 수치 초기 힌트 구성 |
-| [opamp_pipeline/diag_03_solver_attempts.py](../opamp_pipeline/diag_03_solver_attempts.py) | 계산 실패 시 원래 계산 조건 재시도·저장 신호 선택 |
-| [opamp_pipeline/harness_01_fixed.py](../opamp_pipeline/harness_01_fixed.py) | 고정 지침 로딩과 허용 DUT 경계 |
-| [opamp_pipeline/harness_02_request.py](../opamp_pipeline/harness_02_request.py) | 전체 목표·피드백 요청 및 응답 계약 |
-| [opamp_pipeline/harness_03_loop.py](../opamp_pipeline/harness_03_loop.py) | 최초/후보 저장·재검증·best·예산·중단/재개 |
-| [opamp_pipeline/hkg_01_build.py](../opamp_pipeline/hkg_01_build.py) | 사양·조건·출처·검토 상태 HKG 구성 |
-| [opamp_pipeline/hkg_02_validate.py](../opamp_pipeline/hkg_02_validate.py) | HKG와 입력 문서의 구조·보존 검사 |
-| [opamp_pipeline/hkg_query.py](../opamp_pipeline/hkg_query.py) | HKG 사양과 연결 문맥 조회 |
-| [opamp_pipeline/legacy_comparison/spec_01_extract_rows.py](../opamp_pipeline/legacy_comparison/spec_01_extract_rows.py) | 과거 독립 사양 추출 비교 코드 |
-| [opamp_pipeline/legacy_comparison/spec_03_merge_evidence.py](../opamp_pipeline/legacy_comparison/spec_03_merge_evidence.py) | 과거 두 사양 결과 비교/병합 코드 |
-| [opamp_pipeline/loop_01_policy.py](../opamp_pipeline/loop_01_policy.py) | 이전 설계 루프의 목표/예산 정책 |
-| [opamp_pipeline/loop_02_handoff.py](../opamp_pipeline/loop_02_handoff.py) | 공통 JSON 저장·이전 요청/응답 도구 |
-| [opamp_pipeline/loop_03_controller.py](../opamp_pipeline/loop_03_controller.py) | 이전 수동 설계 루프 상태 관리 |
-| [opamp_pipeline/loop_04_extended_policy.py](../opamp_pipeline/loop_04_extended_policy.py) | 전체 사례 비교·회귀/우선 목표 평가 |
-| [opamp_pipeline/pdf_01_inventory.py](../opamp_pipeline/pdf_01_inventory.py) | PDF 전체 페이지·텍스트·단어 좌표·책갈피 목록 |
-| [opamp_pipeline/pdf_02_page_plan.py](../opamp_pipeline/pdf_02_page_plan.py) | 목표 제품 관련 후보 페이지와 분류 근거 |
-| [opamp_pipeline/pdf_03_render_pages.py](../opamp_pipeline/pdf_03_render_pages.py) | 선택 페이지 이미지 생성과 공통 JSON 저장 |
-| [opamp_pipeline/pdf_04_parse_layout.py](../opamp_pipeline/pdf_04_parse_layout.py) | Nemotron Parse 호출·응답 해독·서명 기반 재사용 |
-| [opamp_pipeline/pdf_05_check_layout.py](../opamp_pipeline/pdf_05_check_layout.py) | 파싱 구조·내용 누락 후보 검사 |
-| [opamp_pipeline/pdg_01_build.py](../opamp_pipeline/pdg_01_build.py) | 원문/AI 주석에서 핀·채널·동작 관계 구성 |
-| [opamp_pipeline/pdg_02_validate.py](../opamp_pipeline/pdg_02_validate.py) | PDG 주석·원문 근거·관계 무결성 검사 |
-| [opamp_pipeline/pdg_03_audit.py](../opamp_pipeline/pdg_03_audit.py) | 채널 경로·전원·출처 기능 감사 |
-| [opamp_pipeline/pdg_04_schedule.py](../opamp_pipeline/pdg_04_schedule.py) | 명시적인 분석/시간 정책과 실행 일정 |
-| [opamp_pipeline/pdg_05_visualize.py](../opamp_pipeline/pdg_05_visualize.py) | PDG 검토 HTML/SVG 생성 |
-| [opamp_pipeline/pipeline_01_verification.py](../opamp_pipeline/pipeline_01_verification.py) | 기본→입력 임피던스→과부하 검증 통합·자격/이력 확인 |
-| [opamp_pipeline/plan_01_select_targets.py](../opamp_pipeline/plan_01_select_targets.py) | 원문 행별 프로젝트 범위 선택 |
-| [opamp_pipeline/plan_02_measurements.py](../opamp_pipeline/plan_02_measurements.py) | 단위·전압식·조건을 검사 사례로 변환 |
-| [opamp_pipeline/plan_03_execution_policies.py](../opamp_pipeline/plan_03_execution_policies.py) | 사례별 분석/자극/판정 실행 정책 |
-| [opamp_pipeline/plan_04_validate.py](../opamp_pipeline/plan_04_validate.py) | 선택·측정·실행 정책의 일치 검사 |
-| [opamp_pipeline/ref_01_ieee_server.py](../opamp_pipeline/ref_01_ieee_server.py) | 선택적 IEEE 제목·초록 검색 MCP 서버 |
-| [opamp_pipeline/ref_02_retrieve.py](../opamp_pipeline/ref_02_retrieve.py) | 설계 참고 문헌 메타데이터 검색 |
-| [opamp_pipeline/ref_03_design_context.py](../opamp_pipeline/ref_03_design_context.py) | 사양·참고 자료의 설계 문맥 구성 |
-| [opamp_pipeline/spec_01_build_rows.py](../opamp_pipeline/spec_01_build_rows.py) | 원문 셀로 공통 사양 행과 안정된 ID 생성 |
-| [opamp_pipeline/spec_02_enrich_rows.py](../opamp_pipeline/spec_02_enrich_rows.py) | 같은 행에 AI 의미/조건 주석 적용 |
-| [opamp_pipeline/spec_03_verify_sources.py](../opamp_pipeline/spec_03_verify_sources.py) | 통합된 행을 원문·조건·각주와 대조 |
-| [opamp_pipeline/support/atomic_files.py](../opamp_pipeline/support/atomic_files.py) | 고유 임시 파일과 Windows 잠금 재시도로 원자적 게시 |
-| [opamp_pipeline/support/condition_annotations.py](../opamp_pipeline/support/condition_annotations.py) | 상속 조건·역할·대체 관계 주석 검증 |
-| [opamp_pipeline/support/content_audit.py](../opamp_pipeline/support/content_audit.py) | 원문/파싱 내용 대조 |
-| [opamp_pipeline/support/execution_state.py](../opamp_pipeline/support/execution_state.py) | 단계 완료·입력 지문·최신 산출물 확인 |
-| [opamp_pipeline/support/graph_conditions.py](../opamp_pipeline/support/graph_conditions.py) | 특성곡선 조건과 의미 해석 보조 |
-| [opamp_pipeline/support/native_tables.py](../opamp_pipeline/support/native_tables.py) | 원본 PDF 좌표 기반 표/셀 읽기 |
-| [opamp_pipeline/support/parse_identity.py](../opamp_pipeline/support/parse_identity.py) | 파싱 결과의 원문 연결/동일성 |
-| [opamp_pipeline/support/semantic_review.py](../opamp_pipeline/support/semantic_review.py) | 원문 의미 검토 패킷·AI 검토 검증 |
-| [opamp_pipeline/support/source_checks.py](../opamp_pipeline/support/source_checks.py) | 원문 단어/숫자/단위 대조와 지문 |
-| [opamp_pipeline/support/stability_receipt.py](../opamp_pipeline/support/stability_receipt.py) | 안정성 측정 근거·자격 확인 |
-| [opamp_pipeline/tb_01_reference_benches.py](../opamp_pipeline/tb_01_reference_benches.py) | 이론값이 알려진 기본 회로 벤치 |
-| [opamp_pipeline/tb_02_ltspice.py](../opamp_pipeline/tb_02_ltspice.py) | 격리된 LTspice 배치 실행·로그/측정값 읽기 |
-| [opamp_pipeline/tb_03_validate_reference.py](../opamp_pipeline/tb_03_validate_reference.py) | 기준값·누락·비유한 수치 판정 |
-| [opamp_pipeline/tb_04_opamp_fixtures.py](../opamp_pipeline/tb_04_opamp_fixtures.py) | 분석용 이상 op amp와 기본 벤치 |
-| [opamp_pipeline/tb_05_waveform_metrics.py](../opamp_pipeline/tb_05_waveform_metrics.py) | ASCII 파형·정착시간/오버슈트 해석 |
-| [opamp_pipeline/tb_06_loop_gain.py](../opamp_pipeline/tb_06_loop_gain.py) | 이중 주입 루프 이득·교차점·위상여유 |
-| [opamp_pipeline/verify_01_fixtures.py](../opamp_pipeline/verify_01_fixtures.py) | 원문 조건을 실제 op/dc/ac/tran/noise 벤치로 구성 |
-| [opamp_pipeline/verify_02_metrics.py](../opamp_pipeline/verify_02_metrics.py) | 파형에서 수치 추출·동작/모델 성립 게이트 |
-| [opamp_pipeline/verify_03_calibrate.py](../opamp_pipeline/verify_03_calibrate.py) | 기본 검사와 DC 두 경로의 정상/미달 기준 검증 |
-| [opamp_pipeline/verify_04_dc_coverage.py](../opamp_pipeline/verify_04_dc_coverage.py) | 선언된 DC 격자 완전성·VCM 경로·제한된 수치 재시도 |
-| [opamp_pipeline/verify_04_input_impedance.py](../opamp_pipeline/verify_04_input_impedance.py) | 차동/공통모드 입력 임피던스 및 R/C 해석 |
-| [opamp_pipeline/verify_05_overload_recovery.py](../opamp_pipeline/verify_05_overload_recovery.py) | 포화/해제 프로토콜과 양방향 회복 측정 |
-
-## 실행 진입점
-
-| 파일 | 용도 |
-|---|---|
-| [run_bias_probe.py](../run_bias_probe.py) | 동작점 대조 보조 |
-| [run_chart_references.py](../run_chart_references.py) | 특성곡선 검토·사양 연결(주 경로) |
-| [run_convergence_diagnostic.py](../run_convergence_diagnostic.py) | 수치 수렴 점검 보조 |
-| [run_design_context.py](../run_design_context.py) | 선택적 IEEE 참고 문맥 |
-| [run_design_loop.py](../run_design_loop.py) | 이전 루프 보존 |
-| [run_extended_design_loop.py](../run_extended_design_loop.py) | 이전 확장 루프 보존 |
-| [run_extended_verification.py](../run_extended_verification.py) | 기본 확장 검사 단독 실행 |
-| [run_fault_validation.py](../run_fault_validation.py) | 의도적 오류 검출 확인 |
-| [run_first_opamp.py](../run_first_opamp.py) | 이전 최초 후보 실험 |
-| [run_fixed_harness_loop.py](../run_fixed_harness_loop.py) | 설계자 전달·재검증·중단/재개(현재 주 경로) |
-| [run_hkg.py](../run_hkg.py) | HKG 생성·검사(주 경로) |
-| [run_input_impedance_extension.py](../run_input_impedance_extension.py) | 입력 임피던스 확장 단독 실행 |
-| [run_load_diagnostic.py](../run_load_diagnostic.py) | 출력 부하 원인 점검 보조 |
-| [run_measurement_plan.py](../run_measurement_plan.py) | 목표·검사 계획(주 경로) |
-| [run_opamp_testbench_validation.py](../run_opamp_testbench_validation.py) | 이상 op amp 벤치 대조 |
-| [run_overload_extension.py](../run_overload_extension.py) | 과부하 확장 단독 실행 |
-| [run_pdf_layout.py](../run_pdf_layout.py) | 이미지 생성·Nemotron 파싱(주 경로) |
-| [run_pdf_overview.py](../run_pdf_overview.py) | PDF 탐색·후보 페이지(주 경로) |
-| [run_pdg.py](../run_pdg.py) | PDG 생성·감사·정책/화면(주 경로) |
-| [run_seeded_diagnostic.py](../run_seeded_diagnostic.py) | 기동 힌트 적용 대조 보조 |
-| [run_spec_pipeline.py](../run_spec_pipeline.py) | 행 생성→AI 주석→원문 검증(주 경로) |
-| [run_stability_validation.py](../run_stability_validation.py) | 루프 이득/위상여유 측정법 대조 |
-| [run_testbench_validation.py](../run_testbench_validation.py) | 기본 회로 이론값 대조 |
-| [run_verification_pipeline.py](../run_verification_pipeline.py) | 세 검사 단계 통합(현재 주 경로) |
-
-## 테스트와 보조 파일
-
-`tests/`는 실행 없이 구조를 확인하는 검사, 원문이 필요한 선택 통합 검사, 오류 주입/복구 검사를 함께 담습니다. 다음 이름으로 찾으면 됩니다.
-
-- `test_atomic_files.py`, `test_validation_recovery.py`, `test_pipeline_process_recovery.py`: 저장·동일 후보 재개·로그 보존.
-- `test_dc_coverage.py`: 중간점 누락·중복 위장·분할 경계·수치 재시도.
-- `test_extended_verification.py`, `test_input_impedance.py`, `test_overload_recovery.py`: 측정/판정.
-- `test_fixed_harness.py`, `test_fixed_loop_control.py`, `test_fixed_loop_resume.py`: 고정 지침·루프.
-- `test_pdf*`, `test_parse*`, `test_native_tables.py`, `test_sequential_specs.py`, `test_semantic_review.py`: 문서·사양.
-- `test_hkg.py`, `test_pdg.py`, `test_pdg_upgrade.py`, `test_measurement_plan.py`: 그래프·계획.
-
-`tools/migrate_reviewed_semantics.py`는 과거 검토 결과를 순차 주석으로 옮긴 일회성 도구입니다. `tools/verify_pdg_viewer.cjs`는 PDG 화면 검토용이며 Python 주 실행의 필수 의존성이 아닙니다.
-
-`docs/BEFORE_SEQUENTIAL_REFACTOR.md`, `docs/PDG_UPGRADE_20261113.md`는 당시 개발 경위입니다. 현재 구현 범위는 README와 최신 문서를 우선합니다.
+| [__init__.py](../opamp_pipeline/__init__.py) | Independent, staged op-amp datasheet pipeline. No legacy runtime imports. |
+| [chart_01_collect.py](../opamp_pipeline/chart_01_collect.py) | Collect typical-characteristic chart evidence without adopting target values. |
+| [chart_02_verify.py](../opamp_pipeline/chart_02_verify.py) | Attach visual review with explicit temperature scope and source safeguards. |
+| [design_01_cmos_candidate.py](../opamp_pipeline/design_01_cmos_candidate.py) | First transistor op-amp candidate. Educational LEVEL1 models, no PDK claims. |
+| [design_02_check_bias.py](../opamp_pipeline/design_02_check_bias.py) | Nominal LEVEL1 headroom diagnostic, not a temperature-corrected device OP oracle. |
+| [design_03_cascoded_bias.py](../opamp_pipeline/design_03_cascoded_bias.py) | Supply-insensitive MOS beta-multiplier proposal; frozen models unchanged. |
+| [design_04_folded_input.py](../opamp_pipeline/design_04_folded_input.py) | PMOS input folded-cascode proposal for the remaining input-range/gain goals. |
+| [design_05_overload_clamp.py](../opamp_pipeline/design_05_overload_clamp.py) | Optional all-MOS anti-windup candidate; frozen model coefficients retained. |
+| [diag_01_convergence.py](../opamp_pipeline/diag_01_convergence.py) | Diagnostic-only numerical changes; never loosen acceptance or force a DC state. |
+| [diag_02_startup_seed.py](../opamp_pipeline/diag_02_startup_seed.py) | Physical-ramp-derived initial guesses; no .ic, UIC, tolerance relaxation or added DUT elements. |
+| [diag_03_solver_attempts.py](../opamp_pipeline/diag_03_solver_attempts.py) | Retry a numerical failure without changing the circuit, tolerances or acceptance. |
+| [diag_04_vcm_points.py](../opamp_pipeline/diag_04_vcm_points.py) | Read-only circuit diagnosis: individual DC points, not sweep qualification. |
+| [harness_01_fixed.py](../opamp_pipeline/harness_01_fixed.py) | Reviewed fixed instructions and enforced DUT boundaries; no provider or Harness² calls. |
+| [harness_02_request.py](../opamp_pipeline/harness_02_request.py) | Full-scope request/response contract for current-chat or a future API transport. |
+| [harness_03_loop.py](../opamp_pipeline/harness_03_loop.py) | Fixed-harness current-chat handoff loop. API transport and Harness² are disabled. |
+| [harness_04_feedback.py](../opamp_pipeline/harness_04_feedback.py) | Describe existing verification evidence without changing verdicts or targets. |
+| [harness_05_history.py](../opamp_pipeline/harness_05_history.py) | Observed adjacent-candidate history; never infer physical causes or edit rules. |
+| [harness_06_evolution.py](../opamp_pipeline/harness_06_evolution.py) | Outer instruction-edit controller; each probe uses the unchanged fixed inner loop. |
+| [harness_07_workflow.py](../opamp_pipeline/harness_07_workflow.py) | Bounded operational Harness2 rounds around the existing fixed design loop. |
+| [hkg_01_build.py](../opamp_pipeline/hkg_01_build.py) | Lossless, typed property graph from reviewed spec candidates; no inference. |
+| [hkg_02_validate.py](../opamp_pipeline/hkg_02_validate.py) | Graph integrity and source round-trip verification, not new circuit judgement. |
+| [hkg_query.py](../opamp_pipeline/hkg_query.py) | Return a spec with its linked context without flattening its conditions. |
+| [loop_01_policy.py](../opamp_pipeline/loop_01_policy.py) | Fixed partial-scope goals; challenge overrides never change datasheet sources. |
+| [loop_02_handoff.py](../opamp_pipeline/loop_02_handoff.py) | Manual chat designer contract; a future API can produce the same response. |
+| [loop_03_controller.py](../opamp_pipeline/loop_03_controller.py) | Persisted partial-scope loop: evaluate, stop, hand off, preserve best, resume. |
+| [loop_04_extended_policy.py](../opamp_pipeline/loop_04_extended_policy.py) | Compare the full source-case ledger without erasing unknowns or regressions. |
+| [pdf_01_inventory.py](../opamp_pipeline/pdf_01_inventory.py) | Step 1: inspect EVERY PDF page locally; no rendering or AI calls. |
+| [pdf_02_page_plan.py](../opamp_pipeline/pdf_02_page_plan.py) | Step 2: make an auditable candidate-page map, without extracting spec values. |
+| [pdf_03_render_pages.py](../opamp_pipeline/pdf_03_render_pages.py) | Step 3: render reviewed page categories, retaining PDF/image provenance. |
+| [pdf_04_parse_layout.py](../opamp_pipeline/pdf_04_parse_layout.py) | Step 4: parse page images with Nemotron 3.5 Parse; no spec interpretation. |
+| [pdf_05_check_layout.py](../opamp_pipeline/pdf_05_check_layout.py) | Step 5: structural checks, not certification of extracted spec values. |
+| [pdg_01_build.py](../opamp_pipeline/pdg_01_build.py) | Build a source-reviewed port dependency graph, never a fabricated schedule. |
+| [pdg_02_validate.py](../opamp_pipeline/pdg_02_validate.py) | Check PDG structure, graph provenance and no inferred activation timetable. |
+| [pdg_03_audit.py](../opamp_pipeline/pdg_03_audit.py) | Channel completeness and provenance audit, inspired by legacy PDG checks. |
+| [pdg_04_schedule.py](../opamp_pipeline/pdg_04_schedule.py) | Generate analysis-operation sequences or explicit-policy transient timing. |
+| [pdg_05_visualize.py](../opamp_pipeline/pdg_05_visualize.py) | Standalone local PDG inspector with provenance, audit and policy views. |
+| [pipeline_01_verification.py](../opamp_pipeline/pipeline_01_verification.py) | One entry for core, input impedance and overload; imported chains are hash-bound. |
+| [plan_01_select_targets.py](../opamp_pipeline/plan_01_select_targets.py) | Select project targets without changing source data or temperature claims. |
+| [plan_02_measurements.py](../opamp_pipeline/plan_02_measurements.py) | Op-amp measurement recipes inspired by the legacy spec planner. |
+| [plan_03_execution_policies.py](../opamp_pipeline/plan_03_execution_policies.py) | Attach explicit engineering execution policies to measurement cases. |
+| [plan_04_validate.py](../opamp_pipeline/plan_04_validate.py) | Validate source retention, goal provenance, fixtures and policy link coverage. |
+| [ref_01_ieee_server.py](../opamp_pipeline/ref_01_ieee_server.py) | Read-only IEEE search and explicitly requested official full-text MCP. |
+| [ref_02_retrieve.py](../opamp_pipeline/ref_02_retrieve.py) | MCP search with explicit trigger, content-addressed cache, safe failures. |
+| [ref_03_design_context.py](../opamp_pipeline/ref_03_design_context.py) | Construct factual design input; abstracts are reference material, never rules. |
+| [ref_04_ieee_body.py](../opamp_pipeline/ref_04_ieee_body.py) | Official IEEE full-text endpoint only; abstract/login pages never count as body. |
+| [ref_05_research.py](../opamp_pipeline/ref_05_research.py) | Need-gated search, selected body reads, bounded source-exact design excerpts. |
+| [ref_06_attach.py](../opamp_pipeline/ref_06_attach.py) | Attach selected literature to an awaiting request, retaining frozen prior requests. |
+| [ref_07_datasheet.py](../opamp_pipeline/ref_07_datasheet.py) | Need-gated source-exact datasheet references, separate from accepted targets. |
+| [schematic_01_export.py](../opamp_pipeline/schematic_01_export.py) | Deterministic LTspice DUT drawings for the current physical M/R/C adapter. |
+| [spec_01_build_rows.py](../opamp_pipeline/spec_01_build_rows.py) | Create one canonical row set from original-PDF evidence, before AI enrichment. |
+| [spec_02_enrich_rows.py](../opamp_pipeline/spec_02_enrich_rows.py) | Apply semantic-only AI annotations to the SAME immutable-source row set. |
+| [spec_03_verify_sources.py](../opamp_pipeline/spec_03_verify_sources.py) | Final verification on the integrated document; row IDs persist end to end. |
+| [startup_01_initial_design.py](../opamp_pipeline/startup_01_initial_design.py) | Source-reviewed project admission and an initial design request with no seed DUT. |
+| [startup_02_datasheet.py](../opamp_pipeline/startup_02_datasheet.py) | Fresh PDF stages -> explicit source/policy handoffs -> new DUT -> operational loop. |
+| [tb_01_reference_benches.py](../opamp_pipeline/tb_01_reference_benches.py) | Analytical calibration fixtures, not an op-amp design or datasheet pass test. |
+| [tb_02_ltspice.py](../opamp_pipeline/tb_02_ltspice.py) | Run isolated batch jobs and read explicit .meas scalars. Never reuse old logs. |
+| [tb_03_validate_reference.py](../opamp_pipeline/tb_03_validate_reference.py) | Compare measurements against analytical values; absent/nonfinite never pass. |
+| [tb_04_opamp_fixtures.py](../opamp_pipeline/tb_04_opamp_fixtures.py) | Explicit five-terminal op-amp fixtures. Calibration defaults are NOT DUT specs. |
+| [tb_05_waveform_metrics.py](../opamp_pipeline/tb_05_waveform_metrics.py) | Read LTspice ASCII real raw data and measure finite-window settling safely. |
+| [tb_06_loop_gain.py](../opamp_pipeline/tb_06_loop_gain.py) | Tian dual-injection, following LTspice Educational/LoopGain2.asc. |
+| [verify_01_fixtures.py](../opamp_pipeline/verify_01_fixtures.py) | Source-bound extended fixtures. Numeric grids/waveforms are explicit project settings. |
+| [verify_02_metrics.py](../opamp_pipeline/verify_02_metrics.py) | Interpret extended simulations with validity gates and explicit model limitations. |
+| [verify_03_calibrate.py](../opamp_pipeline/verify_03_calibrate.py) | Known-answer checks for new source-bound fixture methods before DUT verdicts. |
+| [verify_04_dc_coverage.py](../opamp_pipeline/verify_04_dc_coverage.py) | Require every declared sample of an adapter's numeric one-source DC sweep. |
+| [verify_04_input_impedance.py](../opamp_pipeline/verify_04_input_impedance.py) | Input two-port admittance and a declared symmetric parallel-R/C interpretation. |
+| [verify_05_overload_recovery.py](../opamp_pipeline/verify_05_overload_recovery.py) | Explicit project overload protocol, saturation evidence and finite-window recovery. |
+| [verify_06_batch.py](../opamp_pipeline/verify_06_batch.py) | Select a diagnostic batch while retaining the original full-plan inventory. |
+| [verify_07_startup_gate.py](../opamp_pipeline/verify_07_startup_gate.py) | Project operating gate, separate from the datasheet's case count. |
+| [verify_08_distortion.py](../opamp_pipeline/verify_08_distortion.py) | Deterministic distortion component only. Never label this THD+N compliance. |
+| [run_bias_probe.py](../run_bias_probe.py) | Fast priority screen; full extended revalidation is still required afterward. |
+| [run_chart_references.py](../run_chart_references.py) | Collect/review typical graphs and attach separate references to spec JSON. |
+| [run_convergence_diagnostic.py](../run_convergence_diagnostic.py) | Compare unchanged DUTs under identical diagnostic numerical policies. |
+| [run_datasheet_design.py](../run_datasheet_design.py) | Cold document handoffs and first-DUT generation; no historical netlist input. |
+| [run_datasheet_references.py](../run_datasheet_references.py) | Select existing datasheet references only after a concrete design need. |
+| [run_design_context.py](../run_design_context.py) | Search IEEE via MCP and prepare source-linked input for the design LLM. |
+| [run_design_loop.py](../run_design_loop.py) | Manual-chat designer bridge. No polling and no paid LLM API invocation. |
+| [run_extended_design_loop.py](../run_extended_design_loop.py) | Register chat-authored revisions and execute the full80-case validation loop. |
+| [run_extended_verification.py](../run_extended_verification.py) | Three requested verification stages; all source rows remain in coverage ledger. |
+| [run_fault_validation.py](../run_fault_validation.py) | Real LTspice negative controls. Faults live in isolated copies, never best DUT. |
+| [run_first_opamp.py](../run_first_opamp.py) | First all-transistor LEVEL1 op-amp experiment, separately from calibration. |
+| [run_fixed_harness_loop.py](../run_fixed_harness_loop.py) | Current chat is the designer; the deterministic host executes the full verification pipeline. |
+| [run_harness2_loop.py](../run_harness2_loop.py) | Instruction proposal -> fixed control/probe loops -> whole-policy decision. |
+| [run_hkg.py](../run_hkg.py) | Build HKG from current, completed source artifacts; no LLM/API call. |
+| [run_ieee_research.py](../run_ieee_research.py) | Explicit need -> IEEE search -> selected body read -> bound design handoff. |
+| [run_input_impedance_extension.py](../run_input_impedance_extension.py) | Qualified impedance measurement extension; existing55 passes and original80-case ledger stay intact. |
+| [run_load_diagnostic.py](../run_load_diagnostic.py) | Separate follower input range from output-sink loading; never change source-case verdicts. |
+| [run_measurement_plan.py](../run_measurement_plan.py) | Build 25 C measurement definitions and per-test execution policies only. |
+| [run_model_capability_audit.py](../run_model_capability_audit.py) | Inventory unresolved cases and qualify deterministic THD without changing models. |
+| [run_opamp_testbench_validation.py](../run_opamp_testbench_validation.py) | Validate op-amp fixture methods using a fully disclosed analytical calibration DUT. |
+| [run_opamp_workflow.py](../run_opamp_workflow.py) | Continuous operational circuit/instruction rounds; no effect-comparison branch. |
+| [run_overload_extension.py](../run_overload_extension.py) | Qualify overload timing then append both saturation directions to the unchanged80-case ledger. |
+| [run_pdf_layout.py](../run_pdf_layout.py) | Run steps 3–4 on a saved page plan. Never calls a general-purpose LLM. |
+| [run_pdf_overview.py](../run_pdf_overview.py) | Run the first two local-only steps, saving each stage for debugging. |
+| [run_pdg.py](../run_pdg.py) | Build source-grounded PDG using current-chat annotations; no API invocation. |
+| [run_seeded_diagnostic.py](../run_seeded_diagnostic.py) | Derive nodeset hints from a physical supply ramp, then release all hints for DC solving. |
+| [run_spec_pipeline.py](../run_spec_pipeline.py) | Code rows -> semantic enrichment -> integrated-document verification. |
+| [run_stability_validation.py](../run_stability_validation.py) | Analytic PM references, phase-wrap/impedance stress, and existing CMOS crosscheck. |
+| [run_testbench_validation.py](../run_testbench_validation.py) | Calibrate LTspice measurement plumbing; no API or op-amp design. |
+| [run_vcm_point_diagnostic.py](../run_vcm_point_diagnostic.py) | Inspect missing points of three saved candidates without rewriting their results. |
+| [run_verification_pipeline.py](../run_verification_pipeline.py) | Unified qualification pipeline. No designer API calls. |

@@ -105,11 +105,43 @@ def require_complete_vcm_case(fixture, parts):
             'cold_startup_at_each_input_verified': False}
 
 
-def collect_vcm_with_numerical_fallback(collect):
+def normal_vcm_recovery_deck(deck,sweep_source='VIN'):
+    """Change only initial guesses/solver, retaining the full measurement contract."""
+    commands = re.findall(r'^\s*\.dc\s+([^\r\n]+)', deck, re.M | re.I)
+    if sweep_source not in {'VIN','VCM'} or len(commands) != 1 or len(commands[0].split()) != 4 or commands[0].split()[0].lower() != sweep_source.lower():
+        raise ValueError('Normal recovery requires one declared VIN/VCM sweep')
+    deck = re.sub(r'^\s*\.nodeset[^\r\n]*\r?\n?', '', deck, flags=re.M | re.I)
+    # Remove a solver token, not its whole options line (which may set tolerances).
+    deck = re.sub(r'\bsolver\s*=\s*\w+', '', deck, flags=re.I)
+    deck = re.sub(r'^\.options[ \t]*\r?\n', '', deck, flags=re.M | re.I)
+    if deck.lower().count('.end\n') != 1:
+        raise ValueError('Expected one top-level end')
+    return re.sub(r'^\.end\s*$', '.options solver=norm\n.end', deck, flags=re.M | re.I).rstrip()+'\n'
+
+
+def collect_cmrr_with_numerical_fallback(collect):
+    """One whole-grid no-hint retry for missing CMRR samples, never valid misses."""
+    try:
+        return collect(False),[{'policy':'full_ascending','status':'computed'}]
+    except IncompleteDCSweep as error:
+        c=error.coverage
+        if not (c.get('missing_count',0)>0 and c.get('unexpected_count',0)==0 and c.get('direction_errors',0)==0):raise
+        attempts=[{'policy':'full_ascending','status':'incomplete','coverage':c}]
+        try:parts=collect(True)
+        except Exception as retry_error:
+            retry_error.numerical_attempts=attempts+[{'policy':'full_ascending_normal_no_hint_once','status':'error','error':str(retry_error)}]
+            raise
+        return parts,attempts+[{'policy':'full_ascending_normal_no_hint_once','status':'computed'}]
+
+
+def collect_vcm_with_numerical_fallback(collect, collect_normal=None):
     """Retry only an incomplete measurement/solver failure, never a valid miss.
 
-    Both strategies must independently cover the same original 201-point grid.
+    All strategies must independently cover the same original 201-point grid.
     Spec verdicts are evaluated after this function; they do not select a path.
+    The optional third strategy is one Normal/no-hint execution, only for missing
+    samples. Schema errors, off-grid points, reversed axes and valid misses do
+    not authorize it. The collector still enforces completeness on its result.
     """
     from .diag_03_solver_attempts import SolverAttemptsError
     attempts = []
@@ -125,7 +157,21 @@ def collect_vcm_with_numerical_fallback(collect):
     except Exception as error:
         attempts.append({'policy': 'full_ascending', 'status': 'error', 'error': str(error),
                          'coverage': getattr(error, 'coverage', None)})
-        error.numerical_attempts = attempts
-        raise
+        coverage = getattr(error, 'coverage', {})
+        recoverable = (isinstance(error, IncompleteDCSweep) and coverage.get('missing_count', 0) > 0
+                       and coverage.get('unexpected_count', 0) == 0 and coverage.get('direction_errors', 0) == 0)
+        if collect_normal is None or not recoverable:
+            error.numerical_attempts = attempts
+            raise
+        try:
+            parts = collect_normal()
+        except Exception as recovery_error:
+            attempts.append({'policy': 'full_ascending_normal_no_hint_once', 'status': 'error',
+                             'error': str(recovery_error), 'error_type': type(recovery_error).__name__,
+                             'coverage': getattr(recovery_error, 'coverage', None)})
+            recovery_error.numerical_attempts = attempts
+            raise
+        attempts.append({'policy': 'full_ascending_normal_no_hint_once', 'status': 'computed'})
+        return parts, attempts
     attempts.append({'policy': 'full_ascending', 'status': 'computed'})
     return parts, attempts

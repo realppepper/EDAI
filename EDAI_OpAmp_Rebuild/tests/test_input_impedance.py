@@ -1,4 +1,7 @@
 import math,unittest
+from copy import deepcopy
+from run_input_impedance_extension import seed_for_supply,measure_dut_pair,failed_measurement_case
+import subprocess
 from opamp_pipeline.verify_04_input_impedance import modal_admittance,parallel_fit
 
 
@@ -14,6 +17,28 @@ def passive_ports(frequencies,reverse=False):
 
 
 class InputImpedanceTests(unittest.TestCase):
+    def test_dut_timeout_is_explicit_without_changing_fixture_or_hiding_next_case(self):
+        fixture={'supply_voltage_V':5,'input_common_mode_V':2.5}
+        def failed(*args):raise subprocess.TimeoutExpired(['simulator'],45)
+        m=measure_dut_pair(failed,'dut_5','candidate.inc',fixture,None)
+        c={'case_id':'ZID-5','fixture':fixture};record=failed_measurement_case(c,m)
+        self.assertEqual(record['status'],'execution_error')
+        self.assertEqual(record['case_id'],c['case_id']);self.assertEqual(record['fixture'],fixture)
+        self.assertFalse(record['measurement_executed']);self.assertEqual(record['tests'],[])
+        success=measure_dut_pair(lambda *args:{'known':'measurement'},'dut_9','candidate.inc',{'supply_voltage_V':9},None)
+        self.assertEqual(success['measured'],{'known':'measurement'})
+
+    def test_missing_startup_seed_uses_fixture_op_without_erasing_failure(self):
+        baseline={'startup_seeds':{'15':{'seeds':{'node':1.2}}},
+                  'startup_seed_failures':{'5':{'error':'did not settle'}}}
+        before=deepcopy(baseline)
+        self.assertIsNone(seed_for_supply(baseline,5))
+        self.assertIsNone(seed_for_supply({},36))
+        self.assertEqual(seed_for_supply(baseline,15),{'node':1.2})
+        self.assertEqual(baseline,before)
+        with self.assertRaises(KeyError):
+            seed_for_supply({'startup_seeds':{'5':{}}},5)
+
     def test_removes_common_mode_loading_from_differential_bridge(self):
         f=[1,10,100,1000,1e6];data=modal_admittance(*passive_ports(f))
         d=parallel_fit(f,data['differential_branch_Y']);c=parallel_fit(f,data['common_per_pin_Y'])

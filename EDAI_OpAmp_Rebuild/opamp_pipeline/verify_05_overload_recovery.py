@@ -58,7 +58,8 @@ def recovery_metrics(raw,profile):
     if abs(input_level-(mid+profile['input_offset_V']))>1e-6*vs:gates.append('Declared overload stimulus not applied')
     if abs(profile['gain']*(input_level-mid))<=vs:gates.append('VIN amplitude times gain does not exceed supply')
     if sign*(level-mid)<.1*vs or sign*diff<.01*vs:gates.append('No measured output compression and differential-error evidence of requested saturation')
-    if span>.02*vs:gates.append('Overload state not sufficiently stationary in declared hold window')
+    stationarity_limit=.02*vs
+    if span>stationarity_limit:gates.append('Overload state not sufficiently stationary in declared hold window')
     if max(abs(stim[i]-mid) for i in after)>1e-6*vs:gates.append('Input did not return to midpoint')
     amplitude=abs(level-mid)
     if not amplitude:raise ValueError('No overload excursion')
@@ -66,6 +67,9 @@ def recovery_metrics(raw,profile):
           'stop_s':profile['stop_s'],'max_step_s':profile['max_step_s'],'error_fraction':profile['error_band_V']/amplitude}
     measured=settling_metrics(t,out,step)
     return {'value':measured['settling_s'],'metrics':measured,'overload_evidence':evidence,'gate_issues':gates,
+            'qualification_checks':[{'name':'overload_stationarity','metric':'overload_output_span_V',
+                'value':span,'operator':'<=','limit':stationarity_limit,'unit':'V','passed':span<=stationarity_limit,
+                'origin':'existing_project_measurement_gate_not_a_datasheet_spec'}],
             'model_scope':'Frozen generic MOS dynamics,25C. Project protocol; not a reproduction of the manufacturer silicon test.'}
 
 

@@ -1,3 +1,5 @@
+> 최신 진입점은 `run_datasheet_design.py start --session <새세션> --pdf <PDF> --target <모델명> --settings settings/generic_opamp_25c.json --env-file .env`입니다. [최초 설계](COLD_START.md), [운영 루프](CONTINUOUS_WORKFLOW.md), [이번 갱신](LATEST_UPDATE_20261116.md)을 함께 확인하세요. 아래 단계별 명령은 개별 단계 검사에도 사용합니다.
+
 # 설치·실행·재개
 
 ## 환경과 테스트
@@ -11,7 +13,7 @@ py -3.12 -m venv .venv
 .\.venv\Scripts\python.exe -m unittest discover -s tests -q
 ```
 
-공유본 검사 결과는 192개 중 186개 통과, 원본 PDF/로컬 런을 요구하는 6개 건너뜀입니다. 운영체제에 따라 실제 Windows 잠금 검사도 건너뛸 수 있습니다. 이 검사는 API나 전체 EDA 실험을 자동 실행하지 않습니다.
+현재 공유본 검사 결과는 `docs/SHARE_MANIFEST.json`을 확인하세요. 원본 로컬 환경은309개를 통과했으며, 공유본에는 PDF/개인 실행 자료가 없어 일부 검사를 건너뜁니다. 이 검사는 API나 전체 EDA 실험을 자동 실행하지 않습니다.
 
 `.env.example`을 참고해 `.env`를 직접 만듭니다. 기본 문서 파싱에는 `NVIDIA_API_KEY`를 사용합니다. `IEEE_API_KEY`는 선택 기능입니다. 설계 모델의 API 키나 모델명은 현재 연결돼 있지 않습니다.
 

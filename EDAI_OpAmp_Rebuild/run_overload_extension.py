@@ -10,6 +10,14 @@ from opamp_pipeline.loop_02_handoff import write_json
 from opamp_pipeline.support.execution_state import file_hash
 
 
+def recovery_job_path(out,index,supply,direction):
+    """Keep each stimulus direction's unchanged fallback in its own directory."""
+    if direction not in {'high','low'}:raise ValueError('Invalid overload direction')
+    folder=Path(out)/f'case_{index:03d}_{direction}'
+    folder.mkdir(exist_ok=False)
+    return folder/f'dut_{supply:g}.cir'
+
+
 def main():
     root=Path(__file__).resolve().parent;p=argparse.ArgumentParser();p.add_argument('--ltspice',required=True)
     p.add_argument('--output-dir',type=Path,required=True)
@@ -39,14 +47,14 @@ def main():
                 if not qualified:raise ValueError('Recovery known-answer/slow-failure calibration did not qualify')
         print('Fast/slow analytic recovery controls qualified in both directions.',flush=True)
         combined=copy.deepcopy(base);row=combined['rows'][item['row_id']];row['cases']=[]
-        for case in item['cases']:
+        for index,case in enumerate(item['cases']):
             vs=case['fixture']['supply_voltage_V'];record={'case_id':case['case_id'],'supply_V':vs,'fixture':case['fixture'],'parts':[],'tests':[]}
             result['cases'].append(record)
             for direction in ('high','low'):
                 deck,profile=recovery_deck(model,item,case,direction);fallback=deck.replace('solver=alt','solver=norm')
                 seed=base['startup_seeds'].get(f'{vs:.10g}')
                 if seed:deck=seeded_deck(deck,seed['seeds'])
-                path=out/f'dut_{vs:g}_{direction}.cir';path.write_text(deck,encoding='ascii')
+                path=recovery_job_path(out,index,vs,direction);path.write_text(deck,encoding='ascii')
                 try:
                     job=run_with_fallback(a.ltspice,path,[],True,60,fallback)
                     m=recovery_metrics(read_real_raw(job['path'].with_suffix('.raw')),profile)

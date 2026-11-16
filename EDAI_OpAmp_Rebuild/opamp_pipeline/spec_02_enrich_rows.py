@@ -56,6 +56,13 @@ def apply_enrichment(document: dict, annotations: dict) -> dict:
     allowed_meta={'condition_sets','operating_conditions','behavior_constraints','deferred_information','policy_notes'}
     if set(metadata)-allowed_meta:raise ValueError('Unexpected document annotations')
     if 'condition_sets' in metadata and not isinstance(metadata['condition_sets'],dict):raise ValueError('condition_sets must be an object')
+    for key in ('operating_conditions','behavior_constraints','deferred_information'):
+        if key in metadata and (not isinstance(metadata[key],list) or any(not isinstance(x,dict) for x in metadata[key])):
+            raise ValueError(key+' must be a list of source-context objects')
+    for key in ('operating_conditions','behavior_constraints'):
+        for item in metadata.get(key,[]):
+            if not isinstance(item.get('id'),str) or not isinstance(item.get('source_page'),int):
+                raise ValueError(key+' items require id and source_page')
     for key,value in metadata.items():result[key]=deepcopy(value)
     result['stage']='spec_02_enrich_rows'
     result['base_document_fingerprint']=fingerprint(document)

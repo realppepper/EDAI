@@ -85,7 +85,7 @@ RL out mid 10k
         '', '## 적용 범위와 근거','',
         '이번 검증은5V·25°C 단일 외부 단위이득 피드백 테스트벤치와 지정 부하/수치 설정의 검증입니다. 다중 피드백·내부 불안정 루프·모든 토폴로지에 대한 보편 인증이 아닙니다. 모델의 실제 제조 공정 정확성을 검증한 것도 아닙니다.',
         '', '[ADI: 전압 단독 주입의 한계와 이중 주입](https://ez.analog.com/ez-blogs/b/engineerzone-spotlight/posts/so-many-middlebrooks-which-stability-method-wins-part-5-of-7)',
-        '', '설치본 참고: <LTspice install>/examples/Educational/LoopGain2.asc']
+        '', '설치본 참고: C:/Users/wowyo/AppData/Local/LTspice/examples/Educational/LoopGain2.asc']
     (out/'REPORT.md').write_text('\n'.join(lines),encoding='utf-8')
     if result['status']=='passed':
         module=root/'opamp_pipeline/tb_06_loop_gain.py'

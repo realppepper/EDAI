@@ -1,4 +1,9 @@
 import unittest
+import tempfile
+from pathlib import Path
+from unittest.mock import patch
+from run_overload_extension import recovery_job_path
+from opamp_pipeline.diag_03_solver_attempts import run_with_fallback
 from opamp_pipeline.verify_05_overload_recovery import recovery_profile,recovery_metrics,analytic_recovery
 
 
@@ -21,6 +26,22 @@ def waveform(direction='high'):
 
 
 class OverloadRecoveryTests(unittest.TestCase):
+    def test_distinct_jobs_can_both_use_normal_retry_without_folder_collision(self):
+        with tempfile.TemporaryDirectory() as temp:
+            seen=[]
+            def runner(executable,path,*args,**kwargs):
+                seen.append(str(path))
+                if path.parent.name!='normal_retry':raise RuntimeError('injected primary failure')
+                return {'computed':True}
+            with patch('opamp_pipeline.diag_03_solver_attempts.run_bench',side_effect=runner):
+                results=[]
+                for index,direction in [(0,'high'),(0,'low'),(1,'high')]:
+                    path=recovery_job_path(temp,index,5,direction);path.write_text('primary')
+                    results.append(run_with_fallback('fake',path,[],True,60,'fallback'))
+            self.assertEqual(len({str(r['path']) for r in results}),3)
+            self.assertEqual(len(seen),6)
+            self.assertTrue(all(len(r['attempts'])==2 for r in results))
+
     def test_both_saturation_directions_have_evidence_and_recover(self):
         for direction in ('high','low'):
             with self.subTest(direction=direction):

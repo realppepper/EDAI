@@ -164,9 +164,11 @@ def make_fixture(row,kind,resolved,vs,profile):
             'min':voltage_expression(window.get('min',window.get('min_expression')),positive,negative),
             'max':voltage_expression(window.get('max',window.get('max_expression')),positive,negative)}
     if kind=='vswing':
-        fixture['output_dc_bias_V']=None;fixture['forced_output_rail']=values['output_rail']
+        rail={'V_plus':'V_plus','positive':'V_plus','V_minus':'V_minus','negative':'V_minus'}.get(values.get('output_rail'))
+        if rail is None:raise ValueError('Output swing rail needs an explicit positive/negative supply binding')
+        fixture['output_dc_bias_V']=None;fixture['forced_output_rail']=rail
         if 'output_current_uA' in values:
-            fixture['load']={'kind':'forced_current','magnitude_A':abs(values['output_current_uA'])*1e-6,'direction_selected_by_rail':values['output_rail']}
+            fixture['load']={'kind':'forced_current','magnitude_A':abs(values['output_current_uA'])*1e-6,'direction_selected_by_rail':rail}
             assumptions.append('Explicit output-load current replaces the generic RL fixture; do not add the two loads.')
     if kind=='iout':fixture['output_dc_bias_V']=voltage_expression(values['output_voltage_expression'],positive,negative)
     if kind=='isc':fixture['output_dc_bias_V']=values['output_voltage_V']
@@ -210,9 +212,21 @@ def build_measurements(selection,hkg,profile):
             'requires_two_channels':kind=='channel_separation'}
         if kind in {'ib','ios','iout','isc'}:recipe['gates'].append('source_current_sign_convention_verified')
         if kind=='vswing':recipe['gates'].append('output_between_supply_rails')
-        if kind=='settling':recipe['definition']={'error_percent':conditions['values']['settling_error_percent'],
-            'reference_time':'end_of_input_transition','metric':'last_entry_and_residence_until_end_of_observation',
-            'input_step_V':conditions['values']['input_step_V'],'baseline_fraction_of_supply':profile['step_baseline_fraction']}
+        if kind=='settling':
+            values=conditions['values'];step=values.get('input_step_V')
+            project_binding=step is None
+            if project_binding:
+                step=profile.get('settling_input_step_V')
+                if not isinstance(step,(int,float)) or isinstance(step,bool) or step<=0:
+                    raise ValueError('Source step signal is unspecified; explicit engineering input-step binding required')
+                source_step=values.get('step_amplitude_V')
+                if source_step is not None and source_step!=step:
+                    raise ValueError('Project input step differs from source step amplitude')
+            recipe['definition']={'error_percent':values['settling_error_percent'],
+                'reference_time':'end_of_input_transition','metric':'last_entry_and_residence_until_end_of_observation',
+                'input_step_V':step,'baseline_fraction_of_supply':profile['step_baseline_fraction']}
+            if project_binding:
+                recipe['definition']['input_signal_binding_origin']='explicit_project_policy_not_source_node_identification'
         if kind=='sr':recipe['definition']={'fraction_interval':[.1,.9],'required_directions':['rising','falling'],'step_V':profile['slew_step_V']}
         if kind=='overload_recovery':recipe['definition']={'gain':-10,'initial_input_offset_fraction_of_supply':.12,
             'final_input':'rail_midpoint','output_error_band_fraction_of_supply':profile['overload_error_fraction'],
@@ -227,7 +241,7 @@ def build_measurements(selection,hkg,profile):
                 'derived_peak_load_current_A':peak/values['load_resistance_Ohm'],
                 'noise_analysis_required':True,'deterministic_fft_alone_is_not_thdn':True}
             current=values.get('output_current_uA',{})
-            if isinstance(current,dict) and peak/values['load_resistance_Ohm']>max(abs(current['min']),abs(current['max']))*1e-6:
+            if isinstance(current,dict) and {'min','max'}<=set(current) and peak/values['load_resistance_Ohm']>max(abs(current['min']),abs(current['max']))*1e-6:
                 raise ValueError('THD fixture exceeds source peak output-current condition')
         goal=target_criteria(row,kind,profile,isinstance(decision['source_temperature_condition_C'],dict))
         measurements.append({'measurement_id':'MEASURE-'+row['id'],'row_id':row['id'],'hkg_node_id':row['hkg_node_id'],

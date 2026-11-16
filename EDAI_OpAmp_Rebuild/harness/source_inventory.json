@@ -1,119 +1,119 @@
 {
   "sources": [
     {
-      "path": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
+      "path": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
       "sha256": "5a8ee81230f66dbb504d0f99a0b3094c4e06f8db5c64d2791e1b766509a3cb56"
     },
     {
-      "path": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\ai_circuit_architect.py",
+      "path": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\ai_circuit_architect.py",
       "sha256": "06850aa6ff047a5bbc0254d3c86933aca0884afc3bab5f4b4c3c0d506559d8ab"
     }
   ],
   "default_clauses": [
     {
-      "source": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
+      "source": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
       "component": "DEFAULT_C1_SYSTEM_PROMPT",
       "block": 0,
       "original": "You are a World-Class Principal Analog & Mixed-Signal IC Design Engineer.\n\nSynthesize production-quality, convergent SPICE netlists from first physical principles.\n\nEvery circuit must reach a stable DC operating point, satisfy the startup sequencing dictated by the Port Dependency Graph (PDG), and strictly satisfy all datasheet specifications without hardcoding or superficial behavioral bypasses."
     },
     {
-      "source": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
+      "source": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
       "component": "DEFAULT_C2_GUARDRAILS",
       "block": 0,
       "original": "## MANDATORY SPICE SYNTAX & COMPILATION INVARIANTS:"
     },
     {
-      "source": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
+      "source": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
       "component": "DEFAULT_C2_GUARDRAILS",
       "block": 1,
       "original": "1. Subcircuit Definition: Must begin with `.subckt <SUBCKT_NAME> <PINS...>` and terminate with `.ends <SUBCKT_NAME>`."
     },
     {
-      "source": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
+      "source": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
       "component": "DEFAULT_C2_GUARDRAILS",
       "block": 2,
       "original": "2. Port Alignment: Every pin listed in the PIN INTERFACE must appear on the `.subckt` line in EXACT order."
     },
     {
-      "source": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
+      "source": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
       "component": "DEFAULT_C2_GUARDRAILS",
       "block": 3,
       "original": "3. Node Zero (0) Ground Isolation:\n\n   - The subcircuit MUST NOT tie internal nodes directly to external node '0' except through the designated supply/ground pins (e.g. GND, VSS, V-, VMIN).\n\n   - In a single-supply environment, the negative supply pin is tied to 0 externally; all internal references must reference the pin name."
     },
     {
-      "source": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
+      "source": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
       "component": "DEFAULT_C2_GUARDRAILS",
       "block": 4,
       "original": "4. Active Device Models:\n\n   - All MOSFETs, BJTs, and diodes MUST use explicit `.model` statements within the subcircuit or top-level.\n\n     * MOSFET: `M... d g s b <model> W=... L=...` with `.model NMOS NMOS (VTO=0.7 KP=100u LAMBDA=0.02)` / `.model PMOS PMOS (VTO=-0.7 KP=40u LAMBDA=0.02)`.\n\n     * BJT: `Q... c b e <model>` with `.model QNPN NPN (IS=1e-16 BF=100)` / `.model QPNP PNP (IS=1e-16 BF=50)`.\n\n     * Diode: `D... a k <model>` with `.model DMOD D (IS=1e-14 RS=1)`. NEVER write `D... a k` without a model name!\n\n   - Never write parentheses around transistor parameters: write `W=10u L=0.5u`, NEVER `(W=10u L=0.5u)`."
     },
     {
-      "source": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
+      "source": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
       "component": "DEFAULT_C2_GUARDRAILS",
       "block": 5,
       "original": "5. STRICT PHYSICAL ANALOG MANDATE (PROHIBITED BEHAVIORAL DEVICES):\n\n   - STRICTLY PROHIBITED: Do NOT use behavioral B-sources (`B...`, `Bxxx`, `V=if(...)`, `I=if(...)`, `table(...)`, `laplace(...)`).\n\n   - STRICTLY PROHIBITED: Do NOT use digital logic pseudo-devices (`A_xxx`, `.model xxx logic(...)`, `.model xxx Schmitt(...)`).\n\n   - STRICTLY PROHIBITED: Do NOT use arbitrary behavioral VALUE expressions (`E/G ... VALUE={...}`).\n\n   - All circuitry MUST be designed purely using physical analog elements:\n\n     * Transistors: MOSFET `M... d g s b <model> W=... L=...`, BJT `Q... c b e <model>`, JFET `J... d g s <model>`.\n\n     * Diodes: `D... a c <model>`.\n\n     * Passives: Resistors `R... n1 n2 <val>`, Capacitors `C... n1 n2 <val>`, Inductors `L... n1 n2 <val>`.\n\n     * Subcircuits: `X... <nodes...> <subcircuit_name>`."
     },
     {
-      "source": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
+      "source": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
       "component": "DEFAULT_C2_GUARDRAILS",
       "block": 6,
       "original": "7. Structural Rules:\n\n   - NEVER nest `.subckt` blocks. Define helper subcircuits first at top level, then main subcircuit last.\n\n   - NEVER write simulation commands (`.tran`, `.ac`, `.op`, `.dc`) inside a subcircuit.\n\n   - Line continuation is a leading `+` on the next line."
     },
     {
-      "source": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
+      "source": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
       "component": "DEFAULT_C2_GUARDRAILS",
       "block": 7,
       "original": "8. Component Syntax & Terminal Invariants:\n\n   - Every BJT MUST have EXACTLY 3 terminal nodes before the model: `Q<name> <collector> <base> <emitter> <model>`. E.g. `Q1 N_COL N_BASE N_EMIT QNPN`. NEVER omit the collector or emitter (e.g. writing `Q1 N_BASE N_EMIT QNPN` with only 2 nodes is a fatal syntax error!).\n\n   - Every MOSFET MUST have EXACTLY 4 terminal nodes before the model: `M<name> <drain> <gate> <source> <bulk> <model> W=... L=...`.\n\n   - NEVER write pseudo pin declarations or ground shorting lines like `OUT1 OUT1 0` or `IN1- IN1- 0` or `V- V- 0 0V`. Pins are ALREADY declared in the `.subckt` header!\n\n   - For multi-channel devices (e.g. dual op-amp LM358 with OUT1, IN1+, IN1- and OUT2, IN2+, IN2-), provide complete independent circuitry for each channel or instantiate subcircuits:\n\n     `X1 OUT1 IN1- IN1+ V+ V- OPAMP_CORE`\n\n     `X2 OUT2 IN2- IN2+ V+ V- OPAMP_CORE`\n\n     NEVER write shortcut lines like `OUT2 OUT1` or `OUT1 OUT1 0`.\n\n   - Every component line MUST start with a standard SPICE letter: R, C, L, D, Q, M, V, I, E, G, B, X. Lines starting with arbitrary pin names will crash LTspice."
     },
     {
-      "source": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
+      "source": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
       "component": "DEFAULT_C3_MEMORY",
       "block": 0,
       "original": "## EXPERIENCE MEMORY & KNOWN CONVERGENCE TRAPS:"
     },
     {
-      "source": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
+      "source": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
       "component": "DEFAULT_C3_MEMORY",
       "block": 1,
       "original": "1. High-Impedance Floating Nodes:\n\n   - High-gain nodes (like the intermediate node of a 2-stage op-amp or bandgap summing junction) must have a high-value DC leakage path (e.g. 100Meg) to ground/supply if isolated by capacitors, preventing 'Singular matrix' errors."
     },
     {
-      "source": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
+      "source": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
       "component": "DEFAULT_C3_MEMORY",
       "block": 2,
       "original": "2. Output Stage Biasing:\n\n   - Class-AB output stages must include minimum dead-zone biasing (diodes or Vbe multiplier) to prevent crossover distortion and current shoot-through."
     },
     {
-      "source": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
+      "source": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
       "component": "DEFAULT_C3_MEMORY",
       "block": 3,
       "original": "3. Bandgap / Voltage Reference Core:\n\n   - Ensure the proportional-to-absolute-temperature (PTAT) current source has an explicit startup circuit (leakage transistor or high-value startup resistor) so it doesn't get trapped in the zero-current degenerate operating point."
     },
     {
-      "source": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
+      "source": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
       "component": "DEFAULT_C3_MEMORY",
       "block": 4,
       "original": "4. Op-Amp Frequency Compensation:\n\n   - Two-stage op-amps must include Miller compensation capacitor (Cc = 5pF - 30pF) between output of stage 1 and output of stage 2, optionally with a series nulling resistor (Rz = 1k - 5k) to eliminate the right-half-plane zero."
     },
     {
-      "source": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
+      "source": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
       "component": "DEFAULT_C4_TOOL_GUIDANCE",
       "block": 0,
       "original": "## TOOL GUIDANCE & SIMULATION ALIGNMENT:"
     },
     {
-      "source": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
+      "source": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
       "component": "DEFAULT_C4_TOOL_GUIDANCE",
       "block": 1,
       "original": "1. LTspice Execution:\n\n   - Netlists are verified headlessly using LTspice. All `.meas` commands generated by deterministic testbenches measure parameters at settling points determined by the PDG schedule."
     },
     {
-      "source": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
+      "source": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
       "component": "DEFAULT_C4_TOOL_GUIDANCE",
       "block": 2,
       "original": "2. Startup Settling:\n\n   - The circuit must stabilize within the settling delay specified in the PDG schedule (e.g. 20us for bias, 50us for output)."
     },
     {
-      "source": "<UPSTREAM_CHECKOUT>\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
+      "source": "C:\\Projects\\AnalogVerifier_upstream_20261111\\ai_analog_designer\\circuit_synthesis\\harness2\\harness_tree.py",
       "component": "DEFAULT_C4_TOOL_GUIDANCE",
       "block": 3,
       "original": "3. Output Format:\n\n   - Enclose technical rationale in `<architecture_summary>...</architecture_summary>`.\n\n   - Enclose the complete SPICE netlist in `<spice_netlist>...</spice_netlist>`."
@@ -121,7 +121,7 @@
   ],
   "experience_files": [
     {
-      "path": "<UPSTREAM_CHECKOUT>\\harness2_library\\audio_amplifier\\TPA3116D2\\EXPERIENCE.json",
+      "path": "C:\\Projects\\AnalogVerifier_upstream_20261111\\harness2_library\\audio_amplifier\\TPA3116D2\\EXPERIENCE.json",
       "sha256": "3b7b2d299c7ac718de2dd649b0e84e714535b0f6886c37c6c11fa244ba3a5239",
       "lesson": "Use explicit transistor-level PNP differential preamplifiers, NPN level shifters, and high-W/L complementary power MOSFET H-bridges (PMOS_PWR/NMOS_PWR) for OUTPL/OUTNL and OUTPR/OUTNR, plus an NPN pass regulator for GVDD (~6.9V). Never emit undefined X-subcircuit placeholder lines.",
       "evidence_claim": "Eliminates undefined subcircuit syntax errors and achieves convergent BTL differential output swing and quiescent bias.",
@@ -140,7 +140,7 @@
       "decision": "Review only; do not bootstrap runtime memory or treat old pass rates as current evidence."
     },
     {
-      "path": "<UPSTREAM_CHECKOUT>\\harness2_library\\comparator\\LM393\\EXPERIENCE.json",
+      "path": "C:\\Projects\\AnalogVerifier_upstream_20261111\\harness2_library\\comparator\\LM393\\EXPERIENCE.json",
       "sha256": "2b2a23b963439414b6dce090d64dda1eda05fd583cb8bfdea9a11ec82c46acdf",
       "lesson": "Adopted Domain (Candidate B) topology blueprints and sizing directives.",
       "evidence_claim": "Base Pass Rate: 0.0% -> Composed Best Probe: 72.7%.",
@@ -160,7 +160,7 @@
       "decision": "Review only; do not bootstrap runtime memory or treat old pass rates as current evidence."
     },
     {
-      "path": "<UPSTREAM_CHECKOUT>\\harness2_library\\comparator\\LM393B\\EXPERIENCE.json",
+      "path": "C:\\Projects\\AnalogVerifier_upstream_20261111\\harness2_library\\comparator\\LM393B\\EXPERIENCE.json",
       "sha256": "bb6b06ef81a84950f85317476d5b90a81cb58f50674a22c1033773374c15116a",
       "lesson": "Evolved 3 blueprint skills and refined convergence rules in MEMORY.md.",
       "evidence_claim": "Pass rate improved from 0.0% to 68.4%.",
@@ -181,7 +181,7 @@
       "decision": "Review only; do not bootstrap runtime memory or treat old pass rates as current evidence."
     },
     {
-      "path": "<UPSTREAM_CHECKOUT>\\harness2_library\\comparator\\LM393_VERIFIED\\EXPERIENCE.json",
+      "path": "C:\\Projects\\AnalogVerifier_upstream_20261111\\harness2_library\\comparator\\LM393_VERIFIED\\EXPERIENCE.json",
       "sha256": "32c4dd779ec298bc2326c66823afaf4a8f2eba5f53759c47608668e2255ed2f9",
       "lesson": "Evolved 3 blueprint skills and refined convergence rules in MEMORY.md.",
       "evidence_claim": "Pass rate improved from 0.0% to 100.0%.",
@@ -202,7 +202,7 @@
       "decision": "Review only; do not bootstrap runtime memory or treat old pass rates as current evidence."
     },
     {
-      "path": "<UPSTREAM_CHECKOUT>\\harness2_library\\general\\NE555\\EXPERIENCE.json",
+      "path": "C:\\Projects\\AnalogVerifier_upstream_20261111\\harness2_library\\general\\NE555\\EXPERIENCE.json",
       "sha256": "3bb07c1efd91bea752f7fd13659444ffd0ce33288df9f344046f360f550f66e1",
       "lesson": "Evolved 0 blueprint skills and refined convergence rules in MEMORY.md.",
       "evidence_claim": "Pass rate improved from 0.0% to 3.1%.",
@@ -219,7 +219,7 @@
       "decision": "Review only; do not bootstrap runtime memory or treat old pass rates as current evidence."
     },
     {
-      "path": "<UPSTREAM_CHECKOUT>\\harness2_library\\operational_amplifier\\LM358\\EXPERIENCE.json",
+      "path": "C:\\Projects\\AnalogVerifier_upstream_20261111\\harness2_library\\operational_amplifier\\LM358\\EXPERIENCE.json",
       "sha256": "839d7218e3d609fba7100e46c175063bbc01edf00b17029f9a6cc07b832dfbcf",
       "lesson": "Adopted Domain (Candidate B) topology blueprints and sizing directives.",
       "evidence_claim": "Base Pass Rate: 0.0% -> Composed Best Probe: 25.0%.",
@@ -238,7 +238,7 @@
       "decision": "Review only; do not bootstrap runtime memory or treat old pass rates as current evidence."
     },
     {
-      "path": "<UPSTREAM_CHECKOUT>\\harness2_library\\voltage_reference\\TL431\\EXPERIENCE.json",
+      "path": "C:\\Projects\\AnalogVerifier_upstream_20261111\\harness2_library\\voltage_reference\\TL431\\EXPERIENCE.json",
       "sha256": "a9370d01e6f6486cc9bb1cc889e5e06a3d82aa109494fb8a3957b2d8cefdd716",
       "lesson": "Adopted Invariant (Candidate A) guardrails for SPICE convergence.",
       "evidence_claim": "Base Pass Rate: 0.0% -> Composed Best Probe: 40.0%.",

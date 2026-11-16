@@ -3,7 +3,7 @@ import unittest
 from pathlib import Path
 from unittest.mock import patch, Mock, call
 
-from opamp_pipeline.verify_04_dc_coverage import dc_sweep_coverage, require_complete_dc_sweep, require_complete_vcm_case, collect_vcm_with_numerical_fallback, IncompleteDCSweep
+from opamp_pipeline.verify_04_dc_coverage import dc_sweep_coverage, require_complete_dc_sweep, require_complete_vcm_case, collect_vcm_with_numerical_fallback, IncompleteDCSweep, normal_vcm_recovery_deck
 from opamp_pipeline.verify_02_metrics import measure
 
 
@@ -122,3 +122,56 @@ class DCCoverageTests(unittest.TestCase):
         collect=Mock(side_effect=KeyError('bad schema'))
         with self.assertRaises(KeyError):collect_vcm_with_numerical_fallback(collect)
         self.assertEqual(collect.call_count,1)
+
+    def test_missing_points_enable_one_normal_recovery(self):
+        collect=Mock(side_effect=[self.missing_error(),self.missing_error()])
+        normal=Mock(return_value=[{'value':.003}])
+        parts,attempts=collect_vcm_with_numerical_fallback(collect,normal)
+        self.assertEqual(parts,[{'value':.003}])
+        normal.assert_called_once_with()
+        self.assertEqual(len(attempts),3)
+        self.assertEqual(attempts[-1]['policy'],'full_ascending_normal_no_hint_once')
+        self.assertEqual(attempts[1]['coverage']['missing_count'],1)
+
+    def test_normal_failure_is_terminal_and_keeps_prior_coverage(self):
+        collect=Mock(side_effect=[self.missing_error(),self.missing_error()])
+        normal=Mock(side_effect=TimeoutError('Budget exhausted'))
+        with self.assertRaises(TimeoutError) as error:
+            collect_vcm_with_numerical_fallback(collect,normal)
+        normal.assert_called_once_with()
+        self.assertEqual(len(error.exception.numerical_attempts),3)
+        self.assertEqual(error.exception.numerical_attempts[1]['coverage']['missing_count'],1)
+
+    def test_normal_incomplete_result_cannot_trigger_another_attempt(self):
+        collect=Mock(side_effect=[self.missing_error(),self.missing_error()])
+        normal=Mock(side_effect=self.missing_error())
+        with self.assertRaises(IncompleteDCSweep):collect_vcm_with_numerical_fallback(collect,normal)
+        normal.assert_called_once_with()
+
+    def test_normal_recovered_measurement_may_still_be_a_spec_miss(self):
+        normal=Mock(return_value=[{'value':.03}])
+        collect=Mock(side_effect=[self.missing_error(),self.missing_error()])
+        parts,_=collect_vcm_with_numerical_fallback(collect,normal)
+        self.assertGreater(parts[0]['value'],.01)
+        # Conversely, a complete miss must not authorize a different numeric solve.
+        collect=Mock(return_value=[{'value':.03}]);normal.reset_mock()
+        parts,_=collect_vcm_with_numerical_fallback(collect,normal)
+        normal.assert_not_called()
+
+    def test_bad_axis_or_schema_does_not_authorize_normal_recovery(self):
+        for failure in (KeyError('bad schema'),IncompleteDCSweep(self.coverage('.dc VIN 0 .2 .1',[0,.15,.2]))):
+            collect=Mock(side_effect=[self.missing_error(),failure]);normal=Mock()
+            with self.assertRaises(type(failure)):collect_vcm_with_numerical_fallback(collect,normal)
+            normal.assert_not_called()
+
+    def test_normal_deck_preserves_contract_and_tolerances(self):
+        source='.include "dut.inc"\n.temp 25\n.options solver=alt reltol=1e-6 vntol=1e-10\nVDD vp 0 15\nRL out mid 10000\nVIN inp 0 0\nVFB out inn 0\n.dc VIN 0 13.5 .0675\n.nodeset V(xdut:bias)=.85\n.end\n'
+        deck=normal_vcm_recovery_deck(source)
+        self.assertNotIn('.nodeset',deck)
+        self.assertNotIn('solver=alt',deck)
+        self.assertEqual(deck.count('solver=norm'),1)
+        self.assertTrue(deck.endswith('.end\n'))
+        self.assertNotIn('\n.options \n',normal_vcm_recovery_deck(source.replace('solver=alt reltol=1e-6 vntol=1e-10','solver=alt')))
+        for line in ('.include "dut.inc"','.temp 25','reltol=1e-6 vntol=1e-10','VDD vp 0 15','RL out mid 10000','VIN inp 0 0','VFB out inn 0','.dc VIN 0 13.5 .0675'):
+            self.assertIn(line,deck)
+        with self.assertRaises(ValueError):normal_vcm_recovery_deck(source.replace('.dc VIN 0 13.5 .0675','.dc VIN 0 13.5 .0675 VDD 5 15 5'))

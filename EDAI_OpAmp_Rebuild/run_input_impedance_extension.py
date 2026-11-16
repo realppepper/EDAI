@@ -1,11 +1,43 @@
 """Qualified impedance measurement extension; existing55 passes and original80-case ledger stay intact."""
-import argparse,json,math,copy
+import argparse,json,math,copy,subprocess
 from pathlib import Path
 from opamp_pipeline.verify_04_input_impedance import REFERENCE,impedance_deck,measure_pair
 from opamp_pipeline.tb_02_ltspice import run_bench
 from opamp_pipeline.diag_02_startup_seed import seeded_deck
 from opamp_pipeline.loop_02_handoff import write_json
 from opamp_pipeline.support.execution_state import file_hash
+
+
+def seed_for_supply(baseline, supply_V):
+    """A failed/absent startup diagnostic is not a mandatory AC initializer.
+
+    Without a qualified seed, LTspice solves the fixture's own DC operating
+    point. Measurement gates still decide whether that solution is usable.
+    Startup failures remain unchanged in the source and combined ledgers.
+    """
+    receipt=baseline.get('startup_seeds',{}).get(f'{supply_V:.10g}')
+    return receipt['seeds'] if receipt is not None else None
+
+
+def measure_dut_pair(runner,label,model,fixture,seed):
+    """A DUT convergence/data failure is evidence, not a failed calibration."""
+    try:
+        return {'supply_V':fixture['supply_voltage_V'],
+                'measured':runner(label,model,fixture,'FIRSTAMP',seed)}
+    except (subprocess.TimeoutExpired,RuntimeError,ValueError,KeyError,FileNotFoundError) as error:
+        return {'supply_V':fixture['supply_voltage_V'],'execution_error':str(error),
+                'error_type':type(error).__name__,'measurement_attempted':True,
+                'measurement_executed':False,'job_label':label}
+
+
+def failed_measurement_case(case,measurement):
+    return {'case_id':case['case_id'],'supply_V':case['fixture']['supply_voltage_V'],
+            'fixture':copy.deepcopy(case['fixture']),'status':'execution_error',
+            'measurement_attempted':True,'measurement_executed':False,'tests':[],
+            'component_checks':[],'error':measurement['execution_error'],
+            'error_type':measurement['error_type'],
+            'reason':'Input impedance DUT measurement did not complete; no compliance verdict.',
+            'full_continuous_range_verified':False}
 
 
 def main():
@@ -47,14 +79,16 @@ def main():
             if not good:raise ValueError('Known parallel-R/C network failed; DUT verdict withheld')
         print('Reference differential10M/0.1p and common-per-pin4G/1.5p checks passed.',flush=True)
         for index,dcase in enumerate(items['zid']['cases']):
-            vs=dcase['fixture']['supply_voltage_V'];seed=baseline['startup_seeds'][f'{vs:.10g}']['seeds']
-            m=run_pair(f'dut_{vs:g}',model,dcase['fixture'],'FIRSTAMP',seed)
-            result['measurements'].append({'supply_V':vs,'measured':m});save();print(vs,'measurement completed',flush=True)
+            vs=dcase['fixture']['supply_voltage_V'];seed=seed_for_supply(baseline,vs)
+            m=measure_dut_pair(run_pair,f'dut_{vs:g}',model,dcase['fixture'],seed)
+            result['measurements'].append(m);save();print(vs,'execution_error' if 'execution_error' in m else 'measurement completed',flush=True)
         combined=copy.deepcopy(baseline)
         for kind,item in items.items():
             row=combined['rows'][item['row_id']];row['cases']=[]
             for c,m in zip(item['cases'],result['measurements']):
                 assert math.isclose(c['fixture']['supply_voltage_V'],m['supply_V'],rel_tol=1e-12)
+                if 'execution_error' in m:
+                    row['cases'].append(failed_measurement_case(c,m));continue
                 mode='differential' if kind=='zid' else 'common';fit=m['measured'][mode]
                 eligible=not fit['capacitance_fit_issues'] and not m['measured']['gate_issues']
                 cap_value=fit['capacitance_F']
