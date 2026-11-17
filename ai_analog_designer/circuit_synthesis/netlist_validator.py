@@ -1074,6 +1074,11 @@ class NetlistValidator:
                 s = re.sub(r'\bQNPN\b', 'NMOS', s, flags=re.IGNORECASE)
                 s = re.sub(r'\bQPNP\b', 'PMOS', s, flags=re.IGNORECASE)
                 toks = s.split()
+                pos_toks = [t for t in toks[1:] if '=' not in t]
+                if len(pos_toks) < 5:
+                    errors.append(
+                        f"SPICE_SYNTAX_ERROR on '{toks[0]}': MOSFET (M) devices require 4 pins (D G S B) plus a model name. Line: '{s}'"
+                    )
             # Drop malformed 1-node R/C/L lines (e.g. 'Rleak1 OUT1 100Meg' missing 2nd node)
             if first[0] in ('R', 'C', 'L') and len(toks) < 4:
                 warnings.append(f"Removed malformed 1-node passive element: '{s}'")
@@ -1091,6 +1096,28 @@ class NetlistValidator:
                 )
             repaired_lines.append(s)
         cleaned_netlist = "\n".join(repaired_lines)
+
+        # 7. Check that declared POWER and GROUND pins are actually connected inside the netlist
+        used_nodes_upper: set[str] = set()
+        for line in cleaned_netlist.splitlines():
+            s = line.strip()
+            if not s or s.startswith(('*', ';', '+', '.')):
+                continue
+            toks = s.split()
+            if len(toks) >= 3:
+                for t in toks[1:-1]:
+                    if '=' not in t:
+                        used_nodes_upper.add(t.upper())
+        for p in expected_pins:
+            if not isinstance(p, dict):
+                continue
+            pname = str(p.get("name", "")).strip()
+            prole = str(p.get("role", "")).upper()
+            if pname and prole in ("POWER", "GROUND") and pname.upper() not in used_nodes_upper:
+                errors.append(
+                    f"TOPOLOGY_ERROR: Declared {prole} pin '{pname}' has zero internal component connections "
+                    f"(floating rail — DC operating point will not converge)."
+                )
 
         is_valid = len(errors) == 0
 

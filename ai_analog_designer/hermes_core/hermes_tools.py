@@ -283,7 +283,12 @@ class HermesAnalogTools:
         bp_context = ""
         bp_res = self.retrieve_subcircuit_blueprint(query=blueprint_name or self.dut_name)
         if bp_res.get("blueprints"):
-            bp_context = f"\n## VERIFIED REFERENCE BLUEPRINT TO ADAPT:\n{bp_res['blueprints'][0].get('content', '')[:3000]}\n"
+            raw_bp = bp_res["blueprints"][0].get("content", "")
+            adapted_seed = self.adapt_blueprint_to_dut(raw_bp, target_subckt=self.dut_name)
+            bp_context = (
+                "\n## PRE-ADAPTED DC-CONVERGENT SKELETON (Start from this pin-matched architecture and tune W/L, R, C values):\n"
+                f"{adapted_seed[:3200]}\n"
+            )
 
         prior_feedback = ""
         if self.evaluation_history:
@@ -655,9 +660,15 @@ pins: [{pins_str}]
         # 2. Extract and preserve all .model definitions
         models = re.findall(r'(?m)^\s*\.model\s+[^\r\n]+', code, re.IGNORECASE)
 
-        # 3. Classify target pins
-        vcc_pin = next((p for p in pin_names if p.upper() in ('VCC', 'VDD', 'VP', 'PVCC', 'AVCC')), 'Vcc')
-        gnd_pin = next((p for p in pin_names if p.upper() in ('GND', 'VSS', '0')), 'GND')
+        # 3. Classify target pins (prefer explicit roles from HKG, fallback to name heuristics)
+        vcc_pin = next(
+            (p["name"] for p in self.pins if isinstance(p, dict) and str(p.get("role", "")).upper() == "POWER"),
+            None,
+        ) or next((p for p in pin_names if p.upper() in ('VCC', 'VDD', 'VP', 'V_P', 'PVCC', 'AVCC')), 'Vcc')
+        gnd_pin = next(
+            (p["name"] for p in self.pins if isinstance(p, dict) and str(p.get("role", "")).upper() == "GROUND"),
+            None,
+        ) or next((p for p in pin_names if p.upper() in ('GND', 'VSS', 'V', '0')), 'GND')
         thermal_pins = [p for p in pin_names if any(k in p.upper() for k in ('THERMAL', 'POWERPAD', 'EPAD', 'TAB', 'SUB'))]
 
         def is_pos(p: str) -> bool:
@@ -668,12 +679,12 @@ pins: [{pins_str}]
             up = p.upper()
             return any(up.endswith(s) for s in ('_N', 'N', '-', 'MINUS')) and not any(up.endswith(s) for s in ('_P', 'P', '+', 'PLUS'))
 
-        ch1_inp = next((p for p in pin_names if '1IN' in p.upper() and is_pos(p)), None)
-        ch1_inn = next((p for p in pin_names if '1IN' in p.upper() and is_neg(p)), None)
-        ch1_out = next((p for p in pin_names if '1OUT' in p.upper()), None)
-        ch2_inp = next((p for p in pin_names if '2IN' in p.upper() and is_pos(p)), None)
-        ch2_inn = next((p for p in pin_names if '2IN' in p.upper() and is_neg(p)), None)
-        ch2_out = next((p for p in pin_names if '2OUT' in p.upper()), None)
+        ch1_inp = next((p for p in pin_names if ('1IN' in p.upper() or 'IN1' in p.upper()) and is_pos(p)), None)
+        ch1_inn = next((p for p in pin_names if ('1IN' in p.upper() or 'IN1' in p.upper()) and (is_neg(p) or p.upper() == 'IN1')), None)
+        ch1_out = next((p for p in pin_names if '1OUT' in p.upper() or 'OUT1' in p.upper()), None)
+        ch2_inp = next((p for p in pin_names if ('2IN' in p.upper() or 'IN2' in p.upper()) and is_pos(p)), None)
+        ch2_inn = next((p for p in pin_names if ('2IN' in p.upper() or 'IN2' in p.upper()) and (is_neg(p) or p.upper() == 'IN2')), None)
+        ch2_out = next((p for p in pin_names if '2OUT' in p.upper() or 'OUT2' in p.upper()), None)
 
         # 4. Check for single-channel comparator/opamp core inside blueprint
         m_sub = re.search(r'(?m)^\s*\.subckt\s+([a-zA-Z0-9_]+)\s+[^\r\n]+([\s\S]*?)^\s*\.ends\b', code, re.IGNORECASE)
