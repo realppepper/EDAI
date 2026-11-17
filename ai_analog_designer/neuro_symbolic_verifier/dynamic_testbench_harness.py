@@ -244,13 +244,28 @@ class DynamicTestbenchHarness:
             for s in target_specs
         ])
 
+        pwr_pins = [p.get("name") for p in pins if isinstance(p, dict) and str(p.get("role", "")).upper() == "POWER"]
+        gnd_pins = [p.get("name") for p in pins if isinstance(p, dict) and str(p.get("role", "")).upper() == "GROUND"]
+        out_pins = [p.get("name") for p in pins if isinstance(p, dict) and (str(p.get("role", "")).upper() == "OUTPUT" or str(p.get("direction", "")).upper() == "OUTPUT")]
+        in_pins = [p.get("name") for p in pins if isinstance(p, dict) and p.get("name") not in pwr_pins + gnd_pins + out_pins]
+
+        ex_pwr = pwr_pins[0] if pwr_pins else "VCC"
+        ex_gnd = gnd_pins[0] if gnd_pins else "GND"
+        ex_out = out_pins[0] if out_pins else "OUT"
+        ex_inp = in_pins[0] if in_pins else "INP"
+        ex_inn = in_pins[1] if len(in_pins) > 1 else ex_inp
+
         prompt = f"""You are a Principal SPICE Verification & Test Architect specializing in high-fidelity LTspice test decks.
 Synthesize an advanced LTspice testbench to rigorously measure complex performance specifications for subcircuit '{subckt_name}'.
 
-## DUT INTERFACE:
+## DUT INTERFACE (STRICT — USE ONLY THESE EXACT PIN NAMES):
 - Subcircuit Name: {subckt_name}
 - Category: {dut_category}
 - Pins: {pin_names_str}
+- Power Pin(s): {pwr_pins or [ex_pwr]}
+- Ground Pin(s): {gnd_pins or [ex_gnd]}
+- Output Pin(s): {out_pins or [ex_out]}
+- Input Pin(s): {in_pins or [ex_inp]}
 
 ## PORT DEPENDENCY TIMING (STARTUP SEQUENCE):
 {sched_summary}
@@ -258,40 +273,26 @@ Synthesize an advanced LTspice testbench to rigorously measure complex performan
 ## TARGET COMPLEX SPECIFICATIONS TO VERIFY:
 {specs_summary}
 
-## MANDATORY LTSPICE RULES & DIRECTIVES:
-1. Subcircuit Inclusion:
+## MANDATORY LTSPICE GUARDRAILS & DIRECTIVES (C2/V2 Verifier Guardrails):
+1. Subcircuit Inclusion & DUT Instantiation:
    `.include "{netlist_filename}"`
-2. DUT Instantiation:
    `XDUT {pin_names_str} {subckt_name}`
-3. Power & Grounding (STRICT SPICE SYNTAX - EVERY voltage source MUST start with 'V' and have 2 nodes):
-   - Tie ground pins to node 0 using 0V sources: `VGND GND 0 0`, `VPAD PowerPAD 0 0`. NEVER write `GND GND 0` or `PowerPAD 0`.
-   - Power supplies MUST start with `V` and reference node `0`: e.g. `VPVCC PVCC 0 21`, `VAVCC AVCC 0 5`. NEVER write `PVCC PVCC 21`.
-4. Audio / Dynamic Signal Stimulus:
-   - For THD/THD+N and Output Power:
-     Provide 1kHz differential sinusoidal source on audio input pins:
-     `VINP INP 0 SINE(0 1.0 1k 29u)`
-     `VINN INN 0 SINE(0 -1.0 1k 29u)` (anti-phase for true differential input)
-     Or single-ended if non-differential.
-   - For Digital / Enable / Mute (MUST use `V` prefix and node `0`):
-     `VSDZ SDZ 0 PULSE(0 3.3 25u 100n 100n 20m 40m)`
-     `VMUTE MUTE 0 0`
-5. Load Termination:
-   - For Audio Amplifiers / BTL power stages: Connect standard load resistor between differential output pins:
-     `RL OUTPL OUTNL 4` (or 8 Ohm per datasheet conditions).
-     `RR OUTPR OUTNR 4`
-6. Fourier Distortion Directive:
-   - To measure THD and harmonics, MUST include:
-     `.four 1k 9 V(OUTPL, OUTNL)`
-7. Measurement Directives (.meas):
-   - Measure power: `.meas tran p_out AVG (V(OUTPL)-V(OUTNL))*I(RL) from=15m to=20m`
-   - Measure RMS voltage: `.meas tran v_rms RMS V(OUTPL, OUTNL) from=15m to=20m`
-   - Measure frequency: `.meas tran t1 when V(OUTPL)=0 rise=10`
-                        `.meas tran t2 when V(OUTPL)=0 rise=11`
-                        `.meas tran f_meas param 1/(t2-t1)`
-   - Measure DC quiescent current: `.meas tran icc AVG -I(VPVCC) from=10m to=20m`
-8. Simulation Control:
-   - Transient command with sufficient settled periods: `.tran 10u 20m 10m`
-   - End with strictly `.end`.
+2. Power & Grounding (STRICT — Connect ONLY to declared Power/Ground pins above; NEVER invent undeclared nodes like PVCC, AVCC, PowerPAD, OUT1_P):
+   - Tie declared ground pin(s) to node 0: `V_{ex_gnd} {ex_gnd} 0 0`
+   - Drive declared power pin(s) wrt node 0: `V_{ex_pwr} {ex_pwr} 0 15`
+3. Dynamic Signal Stimulus:
+   - Drive declared input pins (`{ex_inp}`, `{ex_inn}`):
+     `VINP {ex_inp} 0 SINE(2.5 0.1 1k 10u)`
+     `VINN {ex_inn} 0 DC 2.5`
+4. Load Termination (Connect from declared output pin `{ex_out}` to `0`; NEVER invent floating nodes like `{ex_out}_P`):
+   - `RL {ex_out} 0 10k`
+5. Fourier Distortion & Measurements (.meas MUST start with `.meas tran <name>`):
+   - `.four 1k 9 V({ex_out})`
+   - `.meas tran v_rms RMS V({ex_out}) from=15m to=20m`
+   - `.meas tran icc AVG -I(V_{ex_pwr}) from=10m to=20m`
+6. Single Simulation Control Only:
+   - Include ONLY `.tran 10u 20m 10m`. NEVER include `.ac` or `.dc` alongside `.tran` in the same deck.
+   - End strictly with `.end`.
 
 OUTPUT FORMAT:
 Respond with the exact testbench enclosed in:
@@ -301,7 +302,13 @@ Respond with the exact testbench enclosed in:
 .end
 </spice_deck>
 """
-        system_prompt = "You are a World-Class Mixed-Signal Testbench Engineer. Emit only valid, runnable LTspice decks with .four and .meas directives."
+        system_prompt = (
+            "You are a World-Class Mixed-Signal Testbench Engineer governed by Strict LTspice Verifier Guardrails (V2).\n"
+            "- NEVER reference undeclared pin/node names (only use exact pins from XDUT plus node 0).\n"
+            "- NEVER put both .tran and .ac in the same SPICE deck; emit ONLY .tran.\n"
+            "- Every .meas directive MUST have 'tran' as its second token: '.meas tran <name> <FUNC> <EXPR>'.\n"
+            "- Emit only valid, runnable LTspice decks enclosed in <spice_deck>...</spice_deck>."
+        )
 
         raw_resp = self.llm.complete(prompt, system_prompt=system_prompt, temperature=0.1, max_tokens=8192, tag="dyn_tb")
         deck = ""
@@ -345,8 +352,15 @@ Respond with the exact testbench enclosed in:
                 cleaned_lines.append(raw_ln)
                 continue
 
-            # Fix invalid .meas ... param ... from=... to=... or V(...) inside param
+            # Fix invalid .meas ... param ... from=... to=... or V(...) inside param, or missing 'tran' keyword
             if s.lower().startswith(".meas"):
+                m_toks = s.split()
+                if len(m_toks) >= 2 and m_toks[1].lower() not in ("tran", "ac", "dc", "op", "noise"):
+                    cleaned_lines.append("* [Auto-commented .meas missing analysis type] " + s)
+                    continue
+                if " dB " in s or s.lower().endswith(" db"):
+                    cleaned_lines.append("* [Auto-commented invalid .meas dB syntax] " + s)
+                    continue
                 if re.search(r'\bparam\b', s, re.IGNORECASE) and (
                     re.search(r'\bfrom\s*=', s, re.IGNORECASE) or re.search(r'\bV\s*\(', s, re.IGNORECASE) or re.search(r'Fourier\s*\(', s, re.IGNORECASE)
                 ):
@@ -356,6 +370,10 @@ Respond with the exact testbench enclosed in:
                     cleaned_lines.append("* [Auto-commented malformed .meas trigger] " + s)
                     continue
                 cleaned_lines.append(raw_ln)
+                continue
+
+            if s.lower().startswith(".ac ") or s.lower().startswith(".dc "):
+                cleaned_lines.append("* [Auto-commented conflicting analysis directive in tran deck] " + s)
                 continue
 
             if s.startswith("."):

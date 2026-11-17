@@ -473,20 +473,19 @@ CRITICAL: NEVER use ellipses, placeholders, or undefined X-subcircuit stubs in t
                 })
                 tool_outputs.append({"tool": name, "output": output})
 
-                # Check if netlist validation or verification was run
-                if name in ("validate_netlist_syntax", "verify_circuit_pdg_gate"):
-                    if isinstance(args, dict) and args.get("netlist"):
-                        candidate_nl = output.get("cleaned_netlist") or args.get("netlist")
-                        if self._is_meaningful_netlist(candidate_nl):
-                            turn_result.netlist_extracted = candidate_nl
-                            # Proactively evaluate physical performance if syntax is valid
-                            if name == "validate_netlist_syntax" and output.get("is_valid", False):
-                                eval_out = self.tools.verify_circuit_pdg_gate(candidate_nl, tag=f"turn{turn_idx}")
-                                turn_result.pass_rate = eval_out.get("pass_rate_percent", 0.0)
-                                turn_result.unique_pass_rate = eval_out.get("unique_kind_pass_rate_pct", 0.0)
-                                turn_result.passed_specs = eval_out.get("passed_specs", 0)
-                                turn_result.total_specs = eval_out.get("total_specs", 0)
-                                tool_outputs.append({"tool": "auto_eval_physical_gate", "output": eval_out})
+                # Check if netlist sub-agent, validation, or verification was run
+                if name in ("synthesize_circuit_netlist", "validate_netlist_syntax", "verify_circuit_pdg_gate"):
+                    candidate_nl = output.get("cleaned_netlist") or (args.get("netlist") if isinstance(args, dict) else None)
+                    if candidate_nl and self._is_meaningful_netlist(candidate_nl):
+                        turn_result.netlist_extracted = candidate_nl
+                        # Proactively evaluate physical performance if syntax is valid
+                        if name in ("synthesize_circuit_netlist", "validate_netlist_syntax") and output.get("is_valid", False):
+                            eval_out = self.tools.verify_circuit_pdg_gate(candidate_nl, tag=f"turn{turn_idx}")
+                            turn_result.pass_rate = eval_out.get("pass_rate_percent", 0.0)
+                            turn_result.unique_pass_rate = eval_out.get("unique_kind_pass_rate_pct", 0.0)
+                            turn_result.passed_specs = eval_out.get("passed_specs", 0)
+                            turn_result.total_specs = eval_out.get("total_specs", 0)
+                            tool_outputs.append({"tool": "auto_eval_physical_gate", "output": eval_out})
 
                 # Check if simulation was run
                 if name == "verify_circuit_pdg_gate":
@@ -608,14 +607,15 @@ CRITICAL: NEVER use ellipses, placeholders, or undefined X-subcircuit stubs in t
     def run_autonomous_loop(
         self,
         task_prompt: str,
-        max_turns: int = 5,
+        max_turns: int = 12,
         target_pass_rate: float = 100.0,
         progress_callback: Callable[[int, str, str], None] | None = None
     ) -> dict[str, Any]:
         """
         Executes the full autonomous agentic loop:
           - Initializes with user task prompt.
-          - Runs multiple turns with reasoning, tool execution, and reflection.
+          - Only counts invocations of the Netlist Synthesis Sub-Agent (`synthesize_circuit_netlist`)
+            toward `max_turns` (default: 12, within 10-15 range).
           - Terminates early upon 100% pass rate.
         """
         self.messages = [{"role": "user", "content": task_prompt}]
@@ -623,24 +623,44 @@ CRITICAL: NEVER use ellipses, placeholders, or undefined X-subcircuit stubs in t
         best_pass_rate = 0.0
         best_turn = None
 
-        logger.info(f"Starting Hermes Autonomous Design Loop (Max Turns: {max_turns}, Target: {target_pass_rate}%)...")
+        logger.info(f"Starting Hermes Autonomous Design Loop (Max Netlist Sub-Agent Calls: {max_turns}, Target: {target_pass_rate}%)...")
 
-        for turn in range(1, max_turns + 1):
+        synthesis_turns = 0
+        raw_turn = 0
+        max_raw_turns = max(max_turns * 3, max_turns + 6)
+        while synthesis_turns < max_turns and raw_turn < max_raw_turns:
+            raw_turn += 1
             if progress_callback:
-                progress_callback(3, f"Hermes Agent Loop (Turn {turn}/{max_turns})", "Agent reasoning, tool dispatching & verifying...")
+                progress_callback(
+                    3,
+                    f"Hermes Agent Loop (Netlist Sub-Agent {synthesis_turns}/{max_turns}, Step {raw_turn})",
+                    "Agent reasoning, tool dispatching & verifying...",
+                )
 
             from ..tracing.phoenix_tracer import set_span_output, trace_span
             with trace_span(
-                f"hermes.turn_{turn}",
+                f"hermes.turn_{raw_turn}",
                 span_kind="AGENT",
-                attributes={"turn": turn, "max_turns": max_turns},
+                attributes={
+                    "turn": raw_turn,
+                    "netlist_subagent_calls": synthesis_turns,
+                    "max_turns": max_turns,
+                },
                 input_data=self.messages[-1] if self.messages else None,
             ) as turn_span:
-                turn_res = self.run_turn(turn)
+                turn_res = self.run_turn(raw_turn)
+                called_subagent = any(
+                    c.get("name") == "synthesize_circuit_netlist" for c in turn_res.tool_calls
+                )
+                if called_subagent or turn_res.netlist_extracted:
+                    synthesis_turns += 1
                 set_span_output(turn_span, {
                     "pass_rate": turn_res.pass_rate,
                     "passed_specs": turn_res.passed_specs,
                     "total_specs": turn_res.total_specs,
+                    "netlist_subagent_calls": synthesis_turns,
+                    "subagent_invoked": called_subagent,
+                    "netlist_generated": bool(turn_res.netlist_extracted),
                     "tool_calls": [c.get("name") for c in turn_res.tool_calls],
                 })
 
@@ -649,10 +669,13 @@ CRITICAL: NEVER use ellipses, placeholders, or undefined X-subcircuit stubs in t
                 best_netlist = turn_res.netlist_extracted
                 best_turn = turn_res
 
-            logger.info(f"Turn {turn} Complete: Pass Rate = {turn_res.pass_rate:.1f}% ({turn_res.passed_specs}/{turn_res.total_specs} specs)")
+            logger.info(
+                f"Step {raw_turn} Complete (Synthesis {synthesis_turns}/{max_turns}): "
+                f"Pass Rate = {turn_res.pass_rate:.1f}% ({turn_res.passed_specs}/{turn_res.total_specs} specs)"
+            )
 
             if turn_res.pass_rate >= target_pass_rate and turn_res.total_specs > 0:
-                logger.info(f"Target pass rate ({target_pass_rate}%) reached at turn {turn}! Terminating loop.")
+                logger.info(f"Target pass rate ({target_pass_rate}%) reached at step {raw_turn}! Terminating loop.")
                 turn_res.is_terminal = True
                 break
 

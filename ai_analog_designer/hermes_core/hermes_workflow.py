@@ -32,7 +32,7 @@ class HermesAnalogWorkflowRunner:
         output_dir: str = "output_design",
         llm_client: LLMClient | None = None,
         library_root: str = "harness2_library",
-        max_turns: int = 5,
+        max_turns: int = 12,
         target_pass_rate: float = 100.0,
     ):
         self.output_dir = os.path.abspath(output_dir)
@@ -89,7 +89,9 @@ class HermesAnalogWorkflowRunner:
             measurement_plan=measurement_plan,
             verify_fn=verify_fn,
             skills_dir=os.path.join(workspace_dir, "skills"),
-            memory_file=os.path.join(workspace_dir, "memories", "MEMORY.md")
+            memory_file=os.path.join(workspace_dir, "memories", "MEMORY.md"),
+            llm_client=self.llm_client,
+            harness_tree=active_tree,
         )
 
         agent = HermesAgent(
@@ -176,12 +178,11 @@ The subcircuit must operate with its negative supply pin tied to 0 V (single sup
 
 ### AGENT INSTRUCTIONS:
 1. First, search available subcircuit blueprint skills using `retrieve_subcircuit_blueprint` (and `search_web_circuit_reference` if additional topology details are needed) to find the proven topology for this IC family.
-2. Formulate your schematic sizing (bias currents, differential pair, active load, gain stage, output buffer) using ONLY real SPICE primitives (`Q`, `M`, `R`, `C`, `D`, `I`, `V`) and explicit `.model` cards. NEVER write undefined `X...` placeholder subcircuit calls.
-3. Validate your SPICE syntax and guardrails using `validate_netlist_syntax`.
-4. Run LTspice physical simulation via `verify_circuit_pdg_gate`.
-5. Examine any failed specifications or stage cutoffs. If a design trap or convergence issue occurs, record it in memory using `manage_memory`.
-6. Refine component sizes and re-verify until 100% pass rate is achieved.
-7. Save your final verified circuit as a reusable blueprint using `save_subcircuit_blueprint`.
+2. Invoke the dedicated Netlist Synthesis Sub-Agent via `synthesize_circuit_netlist` with explicit `design_directives` (bias currents, differential pair, active load, gain stage, output buffer, and optional `blueprint_name`). Do NOT write raw SPICE netlists directly in chat; delegate synthesis to `synthesize_circuit_netlist`.
+3. Run LTspice physical simulation via `verify_circuit_pdg_gate` on the synthesized netlist.
+4. Examine any failed specifications or stage cutoffs. If a design trap or convergence issue occurs, record it in memory using `manage_memory`.
+5. Call `synthesize_circuit_netlist` again with refined sizing directives until 100% pass rate is achieved.
+6. Save your final verified circuit as a reusable blueprint using `save_subcircuit_blueprint`.
 """
 
         # 5. Run Hermes Agentic Loop

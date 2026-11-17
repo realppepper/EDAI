@@ -36,6 +36,8 @@ class HermesAnalogTools:
         verify_fn: Callable[..., dict[str, Any]] | None = None,
         skills_dir: str | None = None,
         memory_file: str | None = None,
+        llm_client: Any = None,
+        harness_tree: Any = None,
     ):
         self.output_dir = os.path.abspath(output_dir)
         os.makedirs(self.output_dir, exist_ok=True)
@@ -46,6 +48,8 @@ class HermesAnalogTools:
         self.pdg_schedule = pdg_schedule
         self.measurement_plan = measurement_plan
         self.verify_fn = verify_fn
+        self.llm_client = llm_client
+        self.harness_tree = harness_tree
 
         self.skills_dir = os.path.abspath(skills_dir) if skills_dir else os.path.join(self.output_dir, "skills")
         os.makedirs(self.skills_dir, exist_ok=True)
@@ -64,6 +68,27 @@ class HermesAnalogTools:
     def get_tool_schemas(self) -> list[dict[str, Any]]:
         """Returns the list of tool JSON schemas in OpenAI / Hermes tool-calling format."""
         return [
+            {
+                "type": "function",
+                "function": {
+                    "name": "synthesize_circuit_netlist",
+                    "description": "Invokes the dedicated Netlist Synthesis Sub-Agent to generate or refine a pure transistor-level SPICE subcircuit (.subckt) based on topology directives, blueprint references, and prior simulation feedback.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "design_directives": {
+                                "type": "string",
+                                "description": "Concrete circuit topology, stage biasing, and component sizing directives for the Netlist Synthesis Sub-Agent."
+                            },
+                            "blueprint_name": {
+                                "type": "string",
+                                "description": "Optional blueprint skill name or topology template to adapt from."
+                            }
+                        },
+                        "required": ["design_directives"]
+                    }
+                }
+            },
             {
                 "type": "function",
                 "function": {
@@ -216,7 +241,9 @@ class HermesAnalogTools:
 
     def dispatch(self, tool_name: str, arguments: dict[str, Any]) -> dict[str, Any]:
         """Dispatches an incoming tool call from Hermes."""
-        if tool_name == "validate_netlist_syntax":
+        if tool_name == "synthesize_circuit_netlist":
+            return self.synthesize_circuit_netlist(**arguments)
+        elif tool_name == "validate_netlist_syntax":
             return self.validate_netlist_syntax(**arguments)
         elif tool_name == "verify_circuit_pdg_gate":
             return self.verify_circuit_pdg_gate(**arguments)
@@ -230,6 +257,93 @@ class HermesAnalogTools:
             return self.search_web_circuit_reference(**arguments)
         else:
             return {"error": f"Unknown tool: '{tool_name}'"}
+
+    def synthesize_circuit_netlist(
+        self,
+        design_directives: str = "",
+        blueprint_name: str = "",
+        **kwargs,
+    ) -> dict[str, Any]:
+        """Invokes the dedicated Netlist Synthesis Sub-Agent to generate a pure transistor-level SPICE netlist."""
+        from ..llm_client import LLMClient
+        from ..tracing.phoenix_tracer import set_span_output, trace_span
+
+        client = self.llm_client or LLMClient()
+        pin_names = [p.get("name") if isinstance(p, dict) else str(p) for p in (self.pins or [])]
+        pins_line = " ".join(pin_names) if pin_names else "INP INM OUT VCC GND"
+        pins_desc = "\n".join(
+            f"  - {p.get('name')}: role={p.get('role', 'SIGNAL')}, dir={p.get('direction', 'IO')}, desc={p.get('description', '')}"
+            for p in (self.pins or []) if isinstance(p, dict)
+        )
+        specs_desc = "\n".join(
+            f"  - {s.get('symbol') or s.get('name')}: min={s.get('min')}, typ={s.get('typ')}, max={s.get('max')} {s.get('unit', '')}"
+            for s in (self.specifications or [])[:12]
+        )
+
+        bp_context = ""
+        bp_res = self.retrieve_subcircuit_blueprint(query=blueprint_name or self.dut_name)
+        if bp_res.get("blueprints"):
+            bp_context = f"\n## VERIFIED REFERENCE BLUEPRINT TO ADAPT:\n{bp_res['blueprints'][0].get('content', '')[:3000]}\n"
+
+        prior_feedback = ""
+        if self.evaluation_history:
+            last_ev = self.evaluation_history[-1]
+            prior_feedback = (
+                f"\n## PRIOR SIMULATION FEEDBACK (Pass Rate: {last_ev.get('pass_rate_percent', 0.0)}%):\n"
+                f"Errors: {last_ev.get('errors') or last_ev.get('simulation_errors')}\n"
+                f"Diagnostic: {str(last_ev.get('diagnostic_feedback', ''))[:1500]}\n"
+            )
+
+        guardrails = getattr(self.harness_tree, "c2_guardrails", "") if self.harness_tree else ""
+        sys_prompt = (
+            "You are the dedicated Netlist Synthesis Sub-Agent for pure transistor-level SPICE circuit design.\n"
+            "Output ONLY a valid SPICE subcircuit enclosed in <spice_netlist>...</spice_netlist> tags.\n"
+            "STRICT LTSPICE SYNTAX RULES:\n"
+            "- BJT (Q): Qxxx C B E <NPN_MODEL|PNP_MODEL> (strictly 3 pins + BJT model; NEVER NMOS/PMOS or W/L).\n"
+            "- MOSFET (M): Mxxx D G S B <NMOS_MODEL|PMOS_MODEL> W=<val> L=<val> (strictly 4 pins + MOS model).\n"
+            "- NEVER put inline model parameters '(VTO=...)' on Q/M/D instance lines; define '.model <NAME> <TYPE>(...)' on separate lines.\n"
+            "- NEVER use behavioral B-sources, digital A-devices, or external node '0' directly inside the subcircuit.\n"
+            "- Keep internal nodes (N_TAIL, N_DIFF1, N_GAIN, N_BIAS) distinct from external subckt pins.\n"
+            f"{guardrails[:1500]}"
+        )
+        user_prompt = (
+            f"Synthesize the complete transistor-level SPICE subcircuit for `{self.dut_name}`.\n"
+            f"Mandatory header: `.subckt {self.dut_name} {pins_line}` and footer: `.ends {self.dut_name}`.\n\n"
+            f"## PIN INTERFACE:\n{pins_desc}\n\n"
+            f"## KEY SPECIFICATIONS:\n{specs_desc}\n\n"
+            f"## ORCHESTRATOR DESIGN DIRECTIVES:\n{design_directives}\n"
+            f"{bp_context}{prior_feedback}\n"
+            "Return ONLY the `<spice_netlist>...</spice_netlist>` block."
+        )
+
+        with trace_span(
+            "subagent.netlist_synthesizer",
+            span_kind="AGENT",
+            attributes={"dut_name": self.dut_name, "blueprint_name": blueprint_name},
+            input_data={"design_directives": design_directives, "blueprint_name": blueprint_name},
+        ) as sub_span:
+            raw = client.complete(
+                prompt=user_prompt,
+                system_prompt=sys_prompt,
+                temperature=0.15,
+                max_tokens=4096,
+                tag="hermes_turn_3",
+            )
+            m = re.search(r"<spice_netlist>(.*?)</spice_netlist>", raw, re.DOTALL | re.IGNORECASE)
+            if not m:
+                m = re.search(r"(\.subckt\b[\s\S]*?\.ends\b[^\r\n]*)", raw, re.IGNORECASE)
+            netlist = m.group(1).strip() if m else raw.strip()
+            val_res = self.validate_netlist_syntax(netlist)
+            out = {
+                "status": "SYNTHESIZED" if val_res.get("is_valid") else "SYNTHESIZED_WITH_SYNTAX_ERRORS",
+                "subagent_invoked": True,
+                "is_valid": val_res.get("is_valid", False),
+                "errors": val_res.get("errors", []),
+                "device_counts": val_res.get("device_counts", {}),
+                "cleaned_netlist": val_res.get("cleaned_netlist", netlist),
+            }
+            set_span_output(sub_span, out)
+            return out
 
     def validate_netlist_syntax(self, netlist: str = "", subckt_name: str | None = None, **kwargs) -> dict[str, Any]:
         """Executes NetlistValidator."""

@@ -1051,27 +1051,46 @@ class NetlistValidator:
 
 
 
-        # 6. Catch BJT/MOSFET syntax mixing and inline model parameter blocks on instance lines
+        # 6. Auto-repair & catch BJT/MOSFET syntax mixing, 1-node passives, and inline model parameters
+        repaired_lines = []
         for line in cleaned_netlist.splitlines():
             s = line.strip()
             if not s or s.startswith(('*', ';', '+', '.')):
+                repaired_lines.append(line)
                 continue
+            # Strip inline comment '; ...'
+            if ';' in s:
+                s = s.split(';', 1)[0].strip()
             toks = s.split()
             if not toks:
                 continue
             first = toks[0].upper()
+            # Auto-strip W=... L=... from BJT Q lines
+            if first.startswith('Q'):
+                s = re.sub(r'\s+\b[WL]\s*=\s*[^\s]+', '', s, flags=re.IGNORECASE)
+                toks = s.split()
+            # Auto-fix M lines referencing BJT model names QNPN/QPNP
+            if first.startswith('M'):
+                s = re.sub(r'\bQNPN\b', 'NMOS', s, flags=re.IGNORECASE)
+                s = re.sub(r'\bQPNP\b', 'PMOS', s, flags=re.IGNORECASE)
+                toks = s.split()
+            # Drop malformed 1-node R/C/L lines (e.g. 'Rleak1 OUT1 100Meg' missing 2nd node)
+            if first[0] in ('R', 'C', 'L') and len(toks) < 4:
+                warnings.append(f"Removed malformed 1-node passive element: '{s}'")
+                continue
             upper_line = s.upper()
             if first.startswith('Q'):
-                if re.search(r'\b(NMOS|PMOS)\b', upper_line) or re.search(r'\b[WL]\s*=', upper_line):
+                if re.search(r'\b(NMOS|PMOS)\b', upper_line):
                     errors.append(
-                        f"SPICE_SYNTAX_ERROR on '{toks[0]}': BJT (Q) devices must have 3 pins (C B E) and an NPN/PNP model, "
-                        f"never NMOS/PMOS or W/L parameters. Line: '{s}'"
+                        f"SPICE_SYNTAX_ERROR on '{toks[0]}': BJT (Q) devices must use NPN/PNP model, never NMOS/PMOS. Line: '{s}'"
                     )
             if (first.startswith('Q') or first.startswith('M') or first.startswith('D')) and re.search(r'\([^)]*=[^)]*\)', s):
                 errors.append(
                     f"SPICE_SYNTAX_ERROR on '{toks[0]}': Inline model parameters '(...)' are invalid on component instance lines. "
                     f"Define them in a separate '.model <NAME> <TYPE>(...)' line. Line: '{s}'"
                 )
+            repaired_lines.append(s)
+        cleaned_netlist = "\n".join(repaired_lines)
 
         is_valid = len(errors) == 0
 

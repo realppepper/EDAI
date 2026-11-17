@@ -42,7 +42,7 @@ class AutonomousAnalogDesignAgent:
         model: str | None = None,
         output_dir: str = "output_design",
         simulator_path: str | None = None,
-        max_iterations: int = 10,
+        max_iterations: int = 12,
         reuse_hkg_path: str | None = None,
         use_hermes: bool = True
     ):
@@ -383,19 +383,6 @@ Return ONLY valid JSON.
         logger.info(f"  [Measurement Plan Baseline] class={self.spec_plan['device_class']} electrical_rows={_ps['electrical_rows']} "
                     f"planned_fixtures={_ps['planned']} unsupported={_ps['unsupported_kind']} not_testable={_ps['not_testable']}")
 
-        # Dual-Harness² Step: Co-evolve Verifier if unsupported specs exist (anchored by Golden Oracle)
-        co_evolve_res = self.dual_coordinator.prepare_dual_evolution_for_ic(
-            ic_info=ic_info,
-            pins=pins,
-            specifications=specifications,
-            spec_plan=self.spec_plan
-        )
-        if co_evolve_res.get("verifier_evolved"):
-            self.spec_plan = plan_for(ic_info, pins, specifications)
-            _ps = self.spec_plan["summary"]
-            logger.info(f"  [Measurement Plan Evolved] class={self.spec_plan['device_class']} electrical_rows={_ps['electrical_rows']} "
-                        f"planned_fixtures={_ps['planned']} unsupported={_ps['unsupported_kind']}")
-
         # Save KG snapshot
         kg_file = os.path.join(self.output_dir, f"{safe_part_name}_knowledge_graph.json")
         with open(kg_file, "w", encoding="utf-8") as f:
@@ -523,6 +510,46 @@ Return ONLY valid JSON.
                 }
 
             pass_rate = final_evaluation.get("pass_rate_percent", 0.0)
+
+            # Post-Hermes Propose -> Probe -> Compose cycle (Harness² contrastive refinement after baseline execution)
+            if pass_rate < 100.0:
+                logger.info(
+                    f"Post-Hermes Pass Rate ({pass_rate:.1f}%) < 100%. "
+                    "Running Harness² Contrastive Propose -> Probe -> Compose cycle..."
+                )
+                try:
+                    winning_res, winning_eval, composed_tree, _ = self.harness2_architect.execute_contrastive_iteration(
+                        ic_info=ic_info,
+                        pins=pins,
+                        specifications=specifications,
+                        pdg_schedule={k: v * 1e-6 for k, v in pdg_schedule.items()},
+                        base_eval=final_evaluation,
+                        eval_probe_fn=eval_probe,
+                        measurement_plan=self.spec_plan,
+                        user_prompt=user_prompt,
+                    )
+                    if winning_eval and winning_eval.get("pass_rate_percent", 0.0) >= pass_rate:
+                        final_evaluation = winning_eval
+                        pass_rate = winning_eval.get("pass_rate_percent", 0.0)
+                        active_harness_tree = composed_tree
+                        if winning_res and winning_res.get("netlist"):
+                            post_path = os.path.join(self.output_dir, f"{safe_part_name}_HARNESS2_REFINED.cir")
+                            with open(post_path, "w", encoding="utf-8") as f:
+                                f.write(winning_res["netlist"])
+                            final_netlist_path = post_path
+                except Exception as he:
+                    logger.warning(f"Post-Hermes Harness² Propose-Probe-Compose skipped: {he}")
+
+            # Dual-Harness² Verifier Evolution (runs after synthesis execution)
+            if os.environ.get("ANALOG_EVOLVE_VERIFIER", "1") == "1":
+                co_evolve_res = self.dual_coordinator.prepare_dual_evolution_for_ic(
+                    ic_info=ic_info,
+                    pins=pins,
+                    specifications=specifications,
+                    spec_plan=self.spec_plan,
+                )
+                if co_evolve_res.get("verifier_evolved"):
+                    self.spec_plan = plan_for(ic_info, pins, specifications)
 
             for t_item in hermes_flow_res.get("trajectory", []):
                 t_idx = t_item.get("turn", 1)

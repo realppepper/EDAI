@@ -16,7 +16,7 @@ from ai_analog_designer.visualization import ProcessVisualizer
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger("InteractiveDesigner")
 
-def run_cli_design(pdf_path=None, prompt=None, output_dir=None, iterations=10, open_dashboard=True, reuse_hkg=None):
+def run_cli_design(pdf_path=None, prompt=None, output_dir=None, iterations=12, open_dashboard=True, reuse_hkg=None):
     if not output_dir:
         timestamp = time.strftime("%Y%m%d_%H%M%S")
         output_dir = os.path.abspath(f"output_design/custom_run_{timestamp}")
@@ -97,7 +97,7 @@ def main():
     parser = argparse.ArgumentParser(description="On-Demand Autonomous Analog Circuit Synthesis & Verification.")
     parser.add_argument("--pdf", help="Path to custom analog IC datasheet PDF.")
     parser.add_argument("--prompt", help="Natural language circuit specification / custom design requirements.")
-    parser.add_argument("--iterations", type=int, default=10, help="Number of closed-loop iterations (default: 10).")
+    parser.add_argument("--iterations", type=int, default=12, help="Number of closed-loop iterations (default: 12).")
     parser.add_argument("--output-dir", help="Output directory for synthesized netlists & reports.")
     parser.add_argument("--web", action="store_true", help="Launch the Web Studio browser interface.")
     parser.add_argument("--port", type=int, default=8080, help="Port for Web Studio (default: 8080).")

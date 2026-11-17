@@ -27,6 +27,7 @@ class ToolDecisionRouter:
     """
 
     SUPPORTED_TOOLS = [
+        "synthesize_circuit_netlist",
         "verify_circuit_pdg_gate",
         "validate_netlist_syntax",
         "retrieve_subcircuit_blueprint",
@@ -115,22 +116,33 @@ class ToolDecisionRouter:
         # Rule 4: Repetition trap breaker (agent repeatedly calling manage_memory or read-only tools)
         recent_memory_calls = sum(1 for t in history_tool_names[-3:] if t == "manage_memory")
         if recent_memory_calls >= 2:
-            # Force circuit synthesis
             probs = {t: 0.01 for t in self.SUPPORTED_TOOLS}
-            probs["verify_circuit_pdg_gate"] = 0.70
-            probs["validate_netlist_syntax"] = 0.25
+            probs["synthesize_circuit_netlist"] = 0.85
+            probs["verify_circuit_pdg_gate"] = 0.10
             probs["manage_memory"] = 0.00
             return self._format_decision(
-                "verify_circuit_pdg_gate",
+                "synthesize_circuit_netlist",
                 probs,
-                "Repetition trap broken: manage_memory called consecutively. Forcing circuit synthesis."
+                "Repetition trap broken: invoking Netlist Synthesis Sub-Agent."
             )
 
-        # Rule 5: Ambiguous / mid-loop state -> use LLM probabilistic policy evaluation blended with Bayesian prior
-        probs["verify_circuit_pdg_gate"] = 0.60
-        probs["validate_netlist_syntax"] = 0.20
-        probs["retrieve_subcircuit_blueprint"] = 0.10
-        probs["manage_memory"] = 0.10
+        # Rule 5: No netlist yet after Turn 1 -> Invoke Netlist Synthesis Sub-Agent
+        if not has_netlist:
+            probs = {t: 0.01 for t in self.SUPPORTED_TOOLS}
+            probs["synthesize_circuit_netlist"] = 0.80
+            probs["retrieve_subcircuit_blueprint"] = 0.10
+            return self._format_decision(
+                "synthesize_circuit_netlist",
+                probs,
+                "No candidate netlist yet: invoke Netlist Synthesis Sub-Agent."
+            )
+
+        # Rule 6: Ambiguous / mid-loop state -> blend with Bayesian prior
+        probs["synthesize_circuit_netlist"] = 0.45
+        probs["verify_circuit_pdg_gate"] = 0.35
+        probs["validate_netlist_syntax"] = 0.10
+        probs["retrieve_subcircuit_blueprint"] = 0.05
+        probs["manage_memory"] = 0.05
         reason = "Standard iterative synthesis cycle."
 
         if os.environ.get("ANALOG_ENABLE_LLM_ROUTER", "1") == "1" and os.environ.get("ANALOG_DISABLE_LLM_PLANNER") != "1":
