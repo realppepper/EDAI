@@ -64,24 +64,51 @@ def prepare(session,state):
         request['iteration_history']=build_iteration_history(state['candidates'],
             request['evaluation_scope']['implemented_scope_case_ids'],history['max_transitions'])
     request['iteration_index']=len(state['candidates'])
+    if state.get('optuna'):
+        from .optuna_03_loop_bridge import feedback
+        request['numeric_sizing_feedback']=feedback(state)
+        if state['optuna'].get('mode')=='designer_proposal':
+            from .optuna_04_designer import proposal_contract
+            from .optuna_03_loop_bridge import routing_reason
+            request['numeric_sizing_proposal']=proposal_contract(state,routing_reason(state,current,read(source['ledger_path'])))
+            request['response_schema']={'one_of':{'circuit_revision':request['response_schema'],
+                'numeric_sizing_proposal':request['numeric_sizing_proposal']['response_schema']}}
     datasheet_refs.add_catalog(request,state.get('run_dir'))
     request['request_id']=fingerprint({k:v for k,v in request.items() if k!='request_id'})
-    path=session/f"REQUEST_{len(state['candidates']):03d}.json";write_json(path,request)
+    suffix=f"_sizing_{len(state.get('sizing_proposals',[])):03d}" if state.get('optuna',{}).get('mode')=='designer_proposal' else ''
+    path=session/f"REQUEST_{len(state['candidates']):03d}{suffix}.json";write_json(path,request)
     state['pending_request']={'path':str(path),'sha256':file_hash(path),'request_id':request['request_id']};state['status']='awaiting_chat_designer'
 
 
-def advance(session,state):
+def advance(session,state,ltspice=None,allow_sizing=True):
     current=state['candidates'][-1];best=state['candidates'][state['best_index']]
-    if current['assessment']['score']<best['assessment']['score']:state['best_index']=current['index']
+    if current.get('eligible_for_best',True) and current['assessment']['score']<best['assessment']['score']:state['best_index']=current['index']
     if current['assessment']['scope_passed']:state['status']='implemented_scope_passed';state['pending_request']=None
     elif len(state['candidates'])>=state['max_candidates']:state['status']='candidate_budget_exhausted';state['pending_request']=None
-    else:prepare(session,state)
+    else:
+        if state.get('optuna') and allow_sizing:
+            from . import optuna_03_loop_bridge as sizing
+            reason=sizing.routing_reason(state,current,read(current['ledger_path']) if current.get('ledger_path') else {})
+            state['optuna_routing_reason']=reason
+            if reason in {'numeric_repair_eligible','startup_repair_eligible'}:
+                if state['optuna'].get('mode')=='designer_proposal':
+                    prepare(session,state);save(session,state);return state
+                state.update(status='awaiting_optuna_execution',pending_request=None);save(session,state)
+                if ltspice:return sizing.execute(session,state,ltspice)
+                return state
+        prepare(session,state)
     save(session,state)
 
 
 def load(session):
     session=Path(session).resolve();state=read(session/'STATE.json')
     if file_hash(state['harness_path'])!=state['harness_sha256'] or file_hash(state['plan_path'])!=state['plan_sha256']:raise ValueError('Frozen harness/plan changed')
+    if state.get('optuna',{}).get('config_path') and file_hash(state['optuna']['config_path'])!=state['optuna']['config_sha256']:raise ValueError('Frozen sizing configuration changed')
+    for proposal in state.get('sizing_proposals',[]):
+        for key in ('request','response','config'):
+            if file_hash(proposal[key+'_path'])!=proposal[key+'_sha256']:raise ValueError('Accepted sizing proposal changed')
+    for event in state.get('optuna_attempts',[]):
+        if event.get('status')=='completed' and file_hash(event['result_path'])!=event['result_sha256']:raise ValueError('Recorded sizing result changed')
     for p,sha in state['code_signatures'].items():
         if file_hash(p)!=sha:raise ValueError('Loop/verification code changed during fixed session')
     for p,sha in state.get('literature_artifacts',{}).items():
@@ -99,7 +126,7 @@ def load(session):
     return state
 
 
-def start(session,model,run_dir,ltspice=None,imports=None,harness=DEFAULT_POLICY,max_candidates=3,defer_validation=False):
+def start(session,model,run_dir,ltspice=None,imports=None,harness=DEFAULT_POLICY,max_candidates=3,defer_validation=False,optuna_config=None,optuna_trials=4,optuna_rounds=1,optuna_from_designer=False):
     session=Path(session).resolve()
     if (session/'STATE.json').exists():raise ValueError('Session already exists')
     if max_candidates<2:raise ValueError('At least one revision slot required')
@@ -117,6 +144,13 @@ def start(session,model,run_dir,ltspice=None,imports=None,harness=DEFAULT_POLICY
            'initial_imports':[str(Path(p).resolve()) for p in imports] if imports else None,
            'pending_request':None,'automatic_validation_retries':1,
            'pending_candidate':{'index':0,'candidate_path':str(copy),'candidate_sha256':file_hash(copy),'origin':'declared_initial_candidate'},'candidates':[]}
+    if optuna_config is not None and optuna_from_designer:raise ValueError('Choose fixed config or designer-selected sizing, not both')
+    if optuna_config is not None or optuna_from_designer:
+        from .optuna_03_loop_bridge import configure
+        from .optuna_04_designer import designer_policy
+        state['optuna']=designer_policy(optuna_trials,optuna_rounds) if optuna_from_designer else configure(optuna_config,optuna_trials,optuna_rounds)
+        for path in (Path(__file__).parents[1]/'run_optuna_sizing.py',Path(__file__).parents[1]/'requirements-optuna.txt'):
+            state['code_signatures'][str(path)]=file_hash(path)
     save(session,state)
     if defer_validation:return state
     return execute_pending(session,state,ltspice)
@@ -163,11 +197,17 @@ def execute_pending(session,state,ltspice,automatic_retries=None):
                 'pipeline_seconds':pipe['execution_seconds']}
         if initial:state['scope_case_ids']=scope
         state['candidates'].append(record);state['pending_candidate']=None
-        advance(session,state);return state
+        advance(session,state,ltspice);return state
 
 
 def resume(session,ltspice=None):
     session=Path(session).resolve();state=load(session)
+    if state['status']=='optuna_ready_to_advance':
+        advance(session,state,ltspice,allow_sizing=False);return state
+    if state['status'] in {'awaiting_optuna_execution','optimizing_parameters','optuna_interrupted'}:
+        if not ltspice:raise ValueError('LTspice required to resume numeric sizing')
+        from .optuna_03_loop_bridge import execute
+        return execute(session,state,ltspice)
     if state['status'] in {'validating_initial','validating_candidate','validation_interrupted'}:
         if not ltspice and not (not state['candidates'] and state.get('initial_imports')):
             raise ValueError('LTspice required to resume validation')
@@ -179,17 +219,31 @@ def resume(session,ltspice=None):
 
 def submit(session,response_path,ltspice,defer_validation=False):
     session=Path(session).resolve();state=load(session);response_path=Path(response_path).resolve();response_sha=file_hash(response_path)
+    if any(p.get('submitted_response_sha256')==response_sha for p in state.get('sizing_proposals',[])):return state
     if any(c.get('submitted_response_sha256')==response_sha for c in state['candidates']):return state
     if state.get('pending_candidate',{} ) and state['pending_candidate'].get('submitted_response_sha256')==response_sha:return state
     if state['status']!='awaiting_chat_designer':raise ValueError('No pending design request')
     pending=state['pending_request']
     if file_hash(pending['path'])!=pending['sha256']:raise ValueError('Prepared request changed')
     response=read(response_path)
-    try:validate_response(read(pending['path']),response)
+    approved=None
+    try:
+        if response.get('action')=='propose_sizing':
+            if state.get('optuna',{}).get('mode')!='designer_proposal':raise ValueError('Designer-selected sizing is not enabled')
+            from .optuna_04_designer import validate_proposal
+            current=state['candidates'][-1]
+            approved=validate_proposal(read(pending['path']),response,Path(current['candidate_path']).read_text(encoding='ascii'),state['optuna'],pending['sha256'])
+        else:validate_response(read(pending['path']),response)
     except Exception as error:
         state['invalid_submissions']+=1;write_json(session/f"REJECTED_{state['invalid_submissions']:03d}.json",{'response_sha256':response_sha,'error':str(error)})
         if state['invalid_submissions']>=3:state['status']='invalid_response_budget_exhausted'
         save(session,state);raise
+    if approved is not None:
+        from .optuna_04_designer import accept
+        from .optuna_03_loop_bridge import execute
+        state=accept(session,state,response_path,response,*approved)
+        if defer_validation:return state
+        return execute(session,state,ltspice)
     index=len(state['candidates']);folder=session/f'candidate_{index:03d}';folder.mkdir(exist_ok=True)
     model=folder/'candidate.inc';receipt=folder/'RESPONSE.json';payload=response['netlist'].encode('ascii')
     if model.exists() and model.read_bytes()!=payload:raise ValueError('Unrecorded candidate differs; preserved for review')

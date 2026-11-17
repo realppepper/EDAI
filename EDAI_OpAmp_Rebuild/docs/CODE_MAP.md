@@ -104,3 +104,25 @@
 | [run_testbench_validation.py](../run_testbench_validation.py) | Calibrate LTspice measurement plumbing; no API or op-amp design. |
 | [run_vcm_point_diagnostic.py](../run_vcm_point_diagnostic.py) | Inspect missing points of three saved candidates without rewriting their results. |
 | [run_verification_pipeline.py](../run_verification_pipeline.py) | Unified qualification pipeline. No designer API calls. |
+
+## 2026-11-18 추가 코드
+
+| 파일 | 역할 |
+|---|---|
+| [optuna_01_parameters.py](../opamp_pipeline/optuna_01_parameters.py) | Bounded edits of explicit scalar values; never change topology or model cards. |
+| [optuna_02_screening.py](../opamp_pipeline/optuna_02_screening.py) | Source-bound screening using the existing calibrated measurement adapters. |
+| [optuna_03_loop_bridge.py](../opamp_pipeline/optuna_03_loop_bridge.py) | Optional bounded numeric-repair stage inside the existing fixed-harness loop. |
+| [optuna_04_designer.py](../opamp_pipeline/optuna_04_designer.py) | Validate designer-selected sizing variables/ranges without executing designer code. |
+| [optuna_05_acceptance.py](../opamp_pipeline/optuna_05_acceptance.py) | Bounded full-scope selection after partial screens; power ties are explicit. |
+| [optuna_06_startup.py](../opamp_pipeline/optuna_06_startup.py) | Numeric startup evidence; incomplete simulation is never a physical violation. |
+| [validation_01_results.py](../opamp_pipeline/validation_01_results.py) | Common evidence envelope; existing validators still run at their own stages. |
+| [validation_02_spice_reader.py](../opamp_pipeline/validation_02_spice_reader.py) | Independent, deliberately restricted reader for our generated fixture syntax. |
+| [validation_03_execution_contract.py](../opamp_pipeline/validation_03_execution_contract.py) | Plan -> actual deck -> consumed metric contract for source-case fixtures. |
+| [validation_04_execution_paths.py](../opamp_pipeline/validation_04_execution_paths.py) | Shared retry invariants and conservative content-bound raw-job reuse. |
+| [validation_05_special_fixtures.py](../opamp_pipeline/validation_05_special_fixtures.py) | Independent project contracts for startup, impedance and overload adapters. |
+| [run_optuna_sizing.py](../run_optuna_sizing.py) | Optional fixed-topology Optuna sizing; source targets and original DUT are immutable. |
+| [run_validation_report.py](../run_validation_report.py) | Wrap existing stage results in a common read-only evidence index. |
+| [run_additional_adapter_checks.py](../run_additional_adapter_checks.py) | Run source-bound supplemental checks without changing a completed workflow. |
+| [verify_09_scalar_input_resistance.py](../opamp_pipeline/verify_09_scalar_input_resistance.py) | DC input resistance without imposing an R||C equivalent on source data. |
+| [verify_10_additional.py](../opamp_pipeline/verify_10_additional.py) | Versioned additional checks; never rewrite a completed circuit's source ledger. |
+| [verify_11_settling.py](../opamp_pipeline/verify_11_settling.py) | First-order settling controls, including finite input-transition timing. |

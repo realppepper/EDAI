@@ -27,8 +27,12 @@ def select_targets(hkg,pdg,policy):
     result=[]
     for row in rows:
         decision=mapping[row['id']]
-        if decision.get('action') not in {'include','defer_temperature_coefficient','not_separate_temperature_variant'} or not decision.get('reason'):
+        if decision.get('action') not in {'include','defer_temperature_coefficient','not_separate_temperature_variant',
+                'defer_product_scope','defer_unimplemented_source','defer_source_ambiguity'} or not decision.get('reason'):
             raise ValueError('Invalid source-row scope decision')
+        if decision['action'] in {'defer_product_scope','defer_unimplemented_source','defer_source_ambiguity'}:
+            if not decision.get('source_evidence'):
+                raise ValueError('Deferred source row needs explicit source evidence and remains unverified')
         if decision['action']=='not_separate_temperature_variant':
             primary=decision.get('primary_25c_row_id')
             if primary not in selected or known[primary]['symbol']!=row['symbol']:
@@ -50,4 +54,6 @@ def select_targets(hkg,pdg,policy):
         'items':result,'summary':{'source_rows':len(rows),'included':len(selected),
             'temperature_coefficients_deferred':sum(d['action']=='defer_temperature_coefficient' for d in decisions),
             'temperature_variants_not_separately_scheduled':sum(d['action']=='not_separate_temperature_variant' for d in decisions)},
+        'explicit_source_deferrals':[deepcopy(d) for d in decisions if d['action'] in {
+                'defer_product_scope','defer_unimplemented_source','defer_source_ambiguity'}],
         'origin':'explicit_project_engineering_policy','all_source_rows_retained':True}

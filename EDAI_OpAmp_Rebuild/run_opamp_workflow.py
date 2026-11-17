@@ -14,12 +14,14 @@ def main():
     p.add_argument('--run-dir', type=Path, default=Path('runs/lm358b_overview_20261112'))
     p.add_argument('--harness', type=Path, default=DEFAULT_POLICY)
     p.add_argument('--max-rounds', type=int, default=3); p.add_argument('--revisions-per-round', type=int, default=2)
+    p.add_argument('--optuna-config',type=Path);p.add_argument('--optuna-trials',type=int,default=4);p.add_argument('--optuna-rounds',type=int,default=1)
+    p.add_argument('--optuna-from-designer',action='store_true')
     p.add_argument('--response', type=Path); p.add_argument('--ltspice')
     p.add_argument('--defer-validation', action='store_true'); a = p.parse_args()
     if a.action == 'start':
         if not a.baseline_pipeline or not a.netlist: p.error('Baseline pipeline and netlist required')
         s = workflow.start(a.session, a.baseline_pipeline, a.netlist, a.run_dir,
-            a.harness, a.max_rounds, a.revisions_per_round)
+            a.harness, a.max_rounds, a.revisions_per_round,a.optuna_config,a.optuna_trials,a.optuna_rounds,a.optuna_from_designer)
     elif a.action == 'propose':
         if not a.response: p.error('Instruction response required')
         s = workflow.propose(a.session, a.response)

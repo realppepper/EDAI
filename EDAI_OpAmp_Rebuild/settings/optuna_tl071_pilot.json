@@ -1,0 +1,12 @@
+{
+  "schema_version": "opamp-sizing/1",
+  "description": "Small optional generic-model TL071C sizing pilot; source goals remain unchanged.",
+  "seed": 17,
+  "screening_kinds": ["iq", "gbw", "pm", "sr"],
+  "objective": "minimize_worst_case_quiescent_power_mW",
+  "parameters": [
+    {"name": "bias_resistance_Ohm", "elements": ["RBREF"], "field": "value", "low": 80000, "high": 140000, "baseline": 100000, "log": true},
+    {"name": "compensation_F", "elements": ["CCOMP"], "field": "value", "low": 1.4e-11, "high": 5.6e-11, "baseline": 2.8e-11, "log": true},
+    {"name": "input_pair_width_m", "elements": ["MINL", "MINR"], "field": "W", "low": 1e-5, "high": 4e-5, "baseline": 2e-5, "log": true}
+  ]
+}

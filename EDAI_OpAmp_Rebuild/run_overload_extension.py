@@ -8,6 +8,8 @@ from opamp_pipeline.diag_03_solver_attempts import run_with_fallback
 from opamp_pipeline.tb_02_ltspice import run_bench
 from opamp_pipeline.loop_02_handoff import write_json
 from opamp_pipeline.support.execution_state import file_hash
+from opamp_pipeline.validation_05_special_fixtures import overload_meta
+from opamp_pipeline.validation_03_execution_contract import validate_execution,ExecutionContractError
 
 
 def recovery_job_path(out,index,supply,direction):
@@ -39,7 +41,11 @@ def main():
             ref=out/f'{name}_reference.inc';ref.write_text(reference_model(cap),encoding='ascii')
             for direction in ('high','low'):
                 deck,profile=recovery_deck(ref,item,case,direction,'ORREF',calibration_stimulus_port=True);path=out/f'cal_{name}_{direction}.cir';path.write_text(deck,encoding='ascii')
-                run_bench(a.ltspice,path,[],ascii_raw=True,timeout=60);m=recovery_metrics(read_real_raw(path.with_suffix('.raw')),profile)
+                meta=overload_meta(ref,item,case,direction,profile,'ORREF',calibration=True)
+                meta['execution_contract_receipt_dir']=str(out/'execution_contracts')
+                validate_execution(deck,meta,phase='overload_preflight')
+                run_bench(a.ltspice,path,[],ascii_raw=True,timeout=60)
+                m=recovery_metrics(read_real_raw(path.with_suffix('.raw')),profile,meta,path)
                 expected=analytic_recovery(profile,cap,case['fixture']['load']['value_Ohm'])
                 expected_pass=expected<=limit;observed_pass=m['value'] is not None and m['value']<=limit
                 qualified=not m['gate_issues'] and m['value'] is not None and abs(m['value']-expected)<max(5e-9,expected*.01) and expected_pass==observed_pass
@@ -52,20 +58,25 @@ def main():
             result['cases'].append(record)
             for direction in ('high','low'):
                 deck,profile=recovery_deck(model,item,case,direction);fallback=deck.replace('solver=alt','solver=norm')
+                meta=overload_meta(model,item,case,direction,profile)
+                meta['execution_contract_receipt_dir']=str(out/'execution_contracts')
                 seed=base['startup_seeds'].get(f'{vs:.10g}')
                 if seed:deck=seeded_deck(deck,seed['seeds'])
                 path=recovery_job_path(out,index,vs,direction);path.write_text(deck,encoding='ascii')
                 try:
-                    job=run_with_fallback(a.ltspice,path,[],True,60,fallback)
-                    m=recovery_metrics(read_real_raw(job['path'].with_suffix('.raw')),profile)
+                    job=run_with_fallback(a.ltspice,path,[],True,60,fallback,meta=meta)
+                    m=recovery_metrics(read_real_raw(job['path'].with_suffix('.raw')),profile,meta,job['path'])
                     part={**m,'direction':direction,'profile':profile,'path':str(job['path']),'solver_attempts':job['attempts']}
                     passed=not m['gate_issues'] and m['value'] is not None and m['value']<=limit
                     record['tests'].append({'metric':'overload_recovery','variant':direction,'value':m['value'],'operator':'<=','limit':limit,'unit':'s','passed':passed})
                 except Exception as e:
                     part={'direction':direction,'execution_error':str(e)}
+                    if isinstance(e,ExecutionContractError):
+                        part.update(error_type=type(e).__name__,validation=e.validation,physical_spec_failure_established=False)
                     record['tests'].append({'metric':'overload_recovery','variant':direction,'value':None,'operator':'<=','limit':limit,'unit':'s','passed':False})
                 record['parts'].append(part);save();print(vs,direction,part.get('value',part.get('execution_error')),flush=True)
-            if any('execution_error' in p for p in record['parts']):record['status']='execution_error'
+            if any(p.get('error_type')=='ExecutionContractError' for p in record['parts']):record['status']='execution_contract_error'
+            elif any('execution_error' in p for p in record['parts']):record['status']='execution_error'
             elif any(p['gate_issues'] for p in record['parts']):record['status']='unverified_adapter';record['reason']='Declared saturation/release protocol not established'
             else:record['status']='passed_sampled_model_case' if all(t['passed'] for t in record['tests']) else 'failed_in_model'
             record['full_continuous_range_verified']=False;record['manufacturer_protocol_equivalence_claimed']=False

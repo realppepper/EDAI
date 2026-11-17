@@ -114,7 +114,7 @@ def _prepare_proposal(session, state):
 
 
 def start(session, baseline_pipeline, model, run_dir, harness=DEFAULT_POLICY,
-          max_rounds=3, revisions_per_round=2):
+          max_rounds=3, revisions_per_round=2,optuna_config=None,optuna_trials=4,optuna_rounds=1,optuna_from_designer=False):
     session = Path(session).resolve()
     if (session / 'STATE.json').exists():
         raise ValueError('Workflow already exists')
@@ -144,6 +144,12 @@ def start(session, baseline_pipeline, model, run_dir, harness=DEFAULT_POLICY,
         'external_llm_api_calls': 0, 'chat_token_usage': None, 'api_cost_USD': None,
         'harness2_enabled': True, 'matched_control_experiment': False,
         'full_datasheet_success': False, 'global_default_modified': False}
+    if optuna_config is not None and optuna_from_designer:raise ValueError('Choose fixed or designer sizing mode')
+    if optuna_config is not None or optuna_from_designer:
+        from .optuna_03_loop_bridge import configure
+        from .optuna_04_designer import designer_policy
+        state['optuna']=designer_policy(optuna_trials,optuna_rounds) if optuna_from_designer else configure(optuna_config,optuna_trials,optuna_rounds)
+        if state['optuna'].get('config_path'):state['artifacts'][state['optuna']['config_path']]=state['optuna']['config_sha256']
     if fixed.assessment(result, result, scope)['scope_passed']:
         state['status'] = 'implemented_scope_passed'
     else: _prepare_proposal(session, state)
@@ -195,13 +201,16 @@ def _sync(session, state, ltspice=None, execute=False):
     if not (inner_path / 'STATE.json').exists():
         imports, _ = evolution._pipeline_evidence(r['base']['pipeline_path'],
             r['base']['candidate_path'], state['plan_path'])
+        sizing=state.get('optuna',{})
         fixed.start(inner_path, r['base']['candidate_path'], state['run_dir'],
             imports=imports, harness=r['policy_path'], max_candidates=state['revisions_per_round'] + 1,
-            defer_validation=True)
+              defer_validation=True,optuna_config=sizing.get('config_path'),
+              optuna_trials=sizing.get('trials',4),optuna_rounds=sizing.get('max_rounds',1),
+              optuna_from_designer=sizing.get('mode')=='designer_proposal')
     inner = fixed.load(inner_path)
     # Initial baseline imports require no new EDA execution. Interrupted candidate
     # validation resumes only on an explicit execute=True call.
-    if not inner['candidates'] or execute and inner['status'] in {'validating_initial', 'validating_candidate', 'validation_interrupted'}:
+    if not inner['candidates'] or execute and inner['status'] in {'validating_initial', 'validating_candidate', 'validation_interrupted','awaiting_optuna_execution','optimizing_parameters','optuna_interrupted','optuna_ready_to_advance'}:
         inner = fixed.resume(inner_path, ltspice)
     for c in [*inner['candidates'], *([inner['pending_candidate']] if inner.get('pending_candidate') else [])]:
         sha = c.get('submitted_response_sha256')

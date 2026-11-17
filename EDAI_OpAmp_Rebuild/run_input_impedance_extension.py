@@ -6,6 +6,8 @@ from opamp_pipeline.tb_02_ltspice import run_bench
 from opamp_pipeline.diag_02_startup_seed import seeded_deck
 from opamp_pipeline.loop_02_handoff import write_json
 from opamp_pipeline.support.execution_state import file_hash
+from opamp_pipeline.validation_05_special_fixtures import impedance_meta,IMPEDANCE_POLICY
+from opamp_pipeline.validation_03_execution_contract import validate_execution,ExecutionContractError
 
 
 def seed_for_supply(baseline, supply_V):
@@ -32,11 +34,12 @@ def measure_dut_pair(runner,label,model,fixture,seed):
 
 def failed_measurement_case(case,measurement):
     return {'case_id':case['case_id'],'supply_V':case['fixture']['supply_voltage_V'],
-            'fixture':copy.deepcopy(case['fixture']),'status':'execution_error',
+            'fixture':copy.deepcopy(case['fixture']),'status':'execution_contract_error' if measurement['error_type']=='ExecutionContractError' else 'execution_error',
             'measurement_attempted':True,'measurement_executed':False,'tests':[],
             'component_checks':[],'error':measurement['execution_error'],
             'error_type':measurement['error_type'],
             'reason':'Input impedance DUT measurement did not complete; no compliance verdict.',
+            'physical_spec_failure_established':False,
             'full_continuous_range_verified':False}
 
 
@@ -61,12 +64,16 @@ def main():
             'calibration':[],'measurements':[],'default_candidate_changed':False,'external_llm_calls':0,'full_datasheet_success':False}
     save=lambda:write_json(out/'RESULT.json',result);save()
     def run_pair(label,model,fixture,subckt,seed=None):
-        paths=[]
+        paths=[];metas=[]
         for mode in ('differential','common'):
             path=out/f'{label}_{mode}.cir';deck=impedance_deck(model,fixture,mode,subckt)
+            meta=impedance_meta(model,fixture,mode,subckt)
+            meta['execution_contract_receipt_dir']=str(out/'execution_contracts')
             if seed:deck=seeded_deck(deck,seed)
-            path.write_text(deck,encoding='ascii');run_bench(a.ltspice,path,[],ascii_raw=True,timeout=45);paths.append(path)
-        measured=measure_pair(*paths);measured['job_paths']=[str(p) for p in paths]
+            path.write_text(deck,encoding='ascii')
+            validate_execution(deck,meta,phase='impedance_preflight')
+            run_bench(a.ltspice,path,[],ascii_raw=True,timeout=45);paths.append(path);metas.append(meta)
+        measured=measure_pair(*paths,metas=metas);measured['job_paths']=[str(p) for p in paths]
         return measured
     reference=out/'reference.inc';reference.write_text(REFERENCE,encoding='ascii')
     try:

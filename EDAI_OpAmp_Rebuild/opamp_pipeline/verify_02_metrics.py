@@ -38,11 +38,24 @@ def slew_metrics(time,output,step):
     last=first_crossing(time,output,step['initial_V']+sign*.9*amplitude,first if first is not None else step['start_s'],sign)
     valid=first is not None and last is not None and last>first
     return {'rate_V_per_s':.8*amplitude/(last-first) if valid else None,'crossing10_s':first,'crossing90_s':last,
-            'valid':valid,'definition':'project10–90% average of specified2V step; not maximum numerical derivative'}
+            'valid':valid,'definition':'project10–90% average of the planned step; not maximum numerical derivative'}
 
 
 def measure(path,kind,fixture,meta,scalars):
+    from .validation_03_execution_contract import validate_execution
+    if meta.get('execution_contract'):
+        # Check the actual executed file and the parameters about to be consumed,
+        # before raw-data interpretation or any physical specification verdict.
+        validate_execution(Path(path).read_text(encoding='ascii'),meta,
+                           fixture=fixture,kind=kind,phase='before_metric')
     path=Path(path);gates=[];metrics={};value=None;limitations=[]
+    if kind=='input_resistance':
+        from .verify_09_scalar_input_resistance import measure_resistance
+        result=measure_resistance(path.with_suffix('.raw'))
+        values=[p['resistance_Ohm'] for p in result['pins'].values()]
+        return {'value':min(values) if all(v is not None for v in values) else None,
+            'metrics':result,'gate_issues':result['gate_issues'],
+            'model_limitations':['Frozen LEVEL1 gate leakage is not calibrated; zero current is not a resistance compliance proof.']}
     if meta['analysis']=='op':
         raw=read_real_raw(path.with_suffix('.raw'));v={k:x[0] for k,x in raw.items()}
         metrics={'output_V':v['v(out)'],'dut_output_current_A':v['i(vsense)']}
@@ -58,7 +71,7 @@ def measure(path,kind,fixture,meta,scalars):
                 currents=[-v['i(ep)'],-v['i(en)']];value=abs(sum(currents)/2) if kind=='ib' else abs(currents[0]-currents[1])
                 metrics['input_currents_A']=currents;limitations.append('MOS gate leakage/bias mismatch absent in frozen LEVEL1 model; near-zero result is not validated bias-current accuracy.')
         elif kind=='vswing':
-            rail=fixture['forced_output_rail'];value=fixture['rails_V']['V_plus']-v['v(out)'] if rail=='V_plus' else v['v(out)']-fixture['rails_V']['V_minus']
+            rail=meta.get('measured_output_rail',fixture['forced_output_rail']);value=fixture['rails_V']['V_plus']-v['v(out)'] if rail=='V_plus' else v['v(out)']-fixture['rails_V']['V_minus']
             if not fixture['rails_V']['V_minus']-1e-6<=v['v(out)']<=fixture['rails_V']['V_plus']+1e-6:gates.append('Forced load cannot be supported within supply rails')
         else:
             current=v['i(vsense)'];direction=meta['direction'];value=current if direction=='source' else -current
@@ -116,7 +129,14 @@ def measure(path,kind,fixture,meta,scalars):
         value=abs(z);metrics={'open_loop_impedance_magnitude_Ohm':value,'loaded_impedance_real_Ohm':loaded.real,
                              'loaded_impedance_imag_Ohm':loaded.imag,'external_RL_deembedded':True}
     elif kind=='noise_density':
-        value=scalars['en_1k'];metrics={'input_referred_thermal_density_V_per_sqrt_Hz':value,'frequency_Hz':1000,
+        definition=meta.get('noise_definition',{'scalar_name':'en_1k','frequency_Hz':1000,'source_resistance_Ohm':0})
+        value=scalars[definition['scalar_name']]
+        if isinstance(value,bool) or not isinstance(value,(int,float)) or not math.isfinite(value) or value<0:
+            gates.append('Noise density must be a finite nonnegative scalar')
+        metrics={'input_referred_thermal_density_V_per_sqrt_Hz':value,'frequency_Hz':definition['frequency_Hz'],
+            'source_resistance_Ohm':definition['source_resistance_Ohm'],
+            'noise_reference':'VIN upstream of any series source resistance',
+            'source_resistor_noise_subtracted':False,
             'calibrated_flicker_noise_present':False,'external_fixture_load_noise_included':True}
         limitations.append('Thermal-only lower bound; no calibrated1/f noise. Below-limit value cannot establish full noise compliance.')
     return {'value':value,'metrics':metrics,'gate_issues':gates,'model_limitations':limitations}

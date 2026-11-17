@@ -51,6 +51,15 @@ RULES = {
 def explicit_quantity(text, symbol, unit, scale=1):
     text = unicodedata.normalize('NFKC', text).replace('−', '-').replace('–', '-')
     text = text.replace('µ', 'u').replace('μ', 'u')
+    # Explicit units on both bounds can carry different SI prefixes.
+    # Applying the final prefix to both would turn 10Hz..10kHz into 10kHz..10kHz.
+    if unit:
+        bound=r'([+-]?\s*\d+(?:\.\d+)?)\s*([kMmunp]?)\s*'+re.escape(unit)
+        ranged=re.search(r'(?<![A-Za-z])'+re.escape(symbol)+r'\s*=\s*'+bound+r'\s*to\s*'+bound+r'(?![A-Za-z])',text)
+        if ranged:
+            factors={'':1,'k':1e3,'M':1e6,'m':1e-3,'u':1e-6,'n':1e-9,'p':1e-12}
+            return ({'min':float(ranged[1].replace(' ',''))*factors[ranged[2]]*scale,
+                     'max':float(ranged[3].replace(' ',''))*factors[ranged[4]]*scale},ranged[0])
     number = r'([+-]?\s*\d+(?:\.\d+)?)'
     suffix = r'\s*([kMmunp]?)\s*' + re.escape(unit) if unit else ''
     # An optional unit can appear after the first bound as well as the second.
@@ -80,7 +89,7 @@ def equal_quantity(a, b):
     return isinstance(a, (float, int)) and not isinstance(a, bool) and isinstance(b, (float, int)) and abs(a-b) <= 1e-9*max(1, abs(a), abs(b))
 
 
-def check_conditions(row, condition_sets, page_text):
+def check_conditions(row, condition_sets, page_text, footnote_context=None):
     conditions = row.get('conditions', {})
     inherited = conditions.get('inherits')
     default = condition_sets.get(inherited, {}) if inherited else {}
@@ -88,6 +97,23 @@ def check_conditions(row, condition_sets, page_text):
     raw = row['original_cell_evidence']['raw_parameter_and_conditions']
     row_text = ' | '.join(c['text'] for c in raw)
     fields = []
+    # Resolve grade ranges from the actual footnote, never a universal C-grade default.
+    if re.search(r'TA\s*=\s*Full range',row_text,re.I):
+        context=normalized(' '.join((footnote_context if footnote_context is not None else page_text).split()))
+        ranges=[]
+        pattern=r'ta\s*=\s*([+-]?\d+)\s*°?c\s*to\s*([+-]?\d+)\s*°?c\s*for\s+the\s+([^;.]+)'
+        for match in re.finditer(pattern,context):
+            products=re.findall(r'\b[a-z]+\d+[a-z0-9]*\b',match[3])
+            if any(re.search(r'(?<![a-z0-9])'+re.escape(p)+r'(?![a-z0-9])',normalized(row_text)) for p in products):
+                value={'min':float(match[1]),'max':float(match[2])}
+                if value not in ranges:ranges.append(value)
+        if ranges:
+            claimed=overrides.get('ambient_temperature_C',default.get('ambient_temperature_C'))
+            supported=any(equal_quantity(claimed,value) for value in ranges)
+            fields.append({'scope':'grade_temperature_footnote','field':'ambient_temperature_C',
+                'claimed':claimed,'source_value':ranges[0] if len(ranges)==1 else ranges,
+                'status':('explicit_quantity_supported' if len(ranges)==1 else 'review_required') if supported else 'conflict',
+                'source_excerpt':'Source Full range footnote resolved by explicit row product labels; multiple grades retain scope review.'})
     # Verify default and local claims separately. Unrecognised fields stay explicit review.
     header = re.split(r'\bPARAMETER\b', page_text, maxsplit=1)[0]
     for scope, claims, context in [('default', default, header), ('override', overrides, row_text)]:

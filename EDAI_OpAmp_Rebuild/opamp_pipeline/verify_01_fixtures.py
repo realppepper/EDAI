@@ -1,5 +1,6 @@
 """Source-bound extended fixtures. Numeric grids/waveforms are explicit project settings."""
 from pathlib import Path
+import math
 from .tb_06_loop_gain import dual_probe_deck
 
 
@@ -7,7 +8,7 @@ def header(model,f,subckt='FIRSTAMP',load=True,cap=True):
     rails=f['rails_V'];mid=(rails['V_plus']+rails['V_minus'])/2
     text=f'''* Extended source-case fixture; generic models only
 .include "{Path(model).resolve()}"
-.temp 25
+.temp {f.get('temperature_C',25):.12g}
 .options plotwinsize=0 meascplxfmt=cartesian numdgt=15 reltol=1e-6 vntol=1e-10 abstol=1e-14
 .save V(*) I(*)
 VDD vp 0 {rails['V_plus']:.12g}
@@ -32,11 +33,15 @@ def servo(target='mid',common='mid',dynamic=False):
     return f'Bservo vid 0 V=1e5*(V({target})-V(out))\nEP inp {common} vid 0 0.5\nEN inn {common} vid 0 -0.5\n'
 
 
-def build_fixture(model,item,case,variant='default',subckt='FIRSTAMP'):
+def _build_fixture(model,item,case,variant='default',subckt='FIRSTAMP'):
     f=case['fixture'];kind=item['method']['kind'];vs=f['supply_voltage_V'];mid=sum(f['rails_V'].values())/2
     base=header(model,f,subckt,load=kind!='iq',cap=kind not in {'iq','vos','ib','ios'})
     meta={'kind':kind,'variant':variant,'analysis':None,'names':[],'assumptions':[],
         'servo_error_limit_V':1e-5,'linear_servo_vid_limit_V':.05}
+    if kind=='input_resistance':
+        from .verify_09_scalar_input_resistance import resistance_deck
+        meta['analysis']='dc'
+        return resistance_deck(model,f,subckt),meta
     if kind in {'iq','vos','ib','ios'}:
         deck=base+servo()+'.op\n';meta['analysis']='op'
     elif kind in {'vcm','cmrr','aol','psrr'}:
@@ -76,19 +81,28 @@ def build_fixture(model,item,case,variant='default',subckt='FIRSTAMP'):
         deck=deck.replace('VDD vp 0 5',f'VDD vp 0 {vs:.12g}').replace('VMID mid 0 2.5',f'VMID mid 0 {mid:.12g}')
         meta['analysis']='ac';return deck,meta
     elif kind in {'sr','settling','capacitive_drive'}:
-        amplitude=.1 if kind=='capacitive_drive' else 2
-        initial=mid-amplitude/2 if kind!='settling' else .2*vs
+        definition=item['method'].get('definition',{})
+        amplitude=.1 if kind=='capacitive_drive' else definition.get('input_step_V',2) if kind=='settling' else definition.get('step_V',2)
+        initial=mid-amplitude/2 if kind!='settling' else f['rails_V']['V_minus']+definition.get('baseline_fraction_of_supply',.2)*vs
         final=initial+amplitude
         if variant=='falling':initial,final=final,initial
+        if not f['rails_V']['V_minus']<=min(initial,final)<max(initial,final)<=f['rails_V']['V_plus']:
+            raise ValueError('Planned transient step exceeds supply rails')
+        fraction=definition.get('error_percent',.1)/100 if kind=='settling' else .001
+        if not 0<fraction<1:raise ValueError('Settling error band must be between0 and100percent')
         step={'initial_V':initial,'final_V':final,'start_s':5e-6,'transition_s':1e-8,
-              'stop_s':40e-6,'max_step_s':2e-9,'error_fraction':.001}
-        if kind=='sr':meta['assumptions']+=['SR2V waveform is centered on source midrail bias; baseline replaces earlier proposed0.2VS starting point. No SR waveform baseline is specified in source.']
+              'stop_s':40e-6,'max_step_s':2e-9,'error_fraction':fraction}
+        if kind=='sr':meta['assumptions']+=['SR waveform uses the plan step amplitude, centered on source midrail bias; waveform baseline is an engineering choice.']
         deck=base+f'VIN inp 0 PWL(0 {initial:.12g} 5u {initial:.12g} 5.01u {final:.12g} 40u {final:.12g})\nVFB out inn 0\n.tran 0 40u 0 2n\n'
         meta.update(analysis='tran',step=step)
     elif kind=='vswing':
-        polarity=1 if f['forced_output_rail']=='V_plus' else -1
+        rail=f['forced_output_rail']
+        if rail=='both':
+            if variant not in {'upper','lower'}:raise ValueError('Symmetric swing requires both directional executions')
+            rail='V_plus' if variant=='upper' else 'V_minus'
+        polarity=1 if rail=='V_plus' else -1
         deck=base+f'VPIN inp 0 {mid+polarity*.5:.12g}\nVNIN inn 0 {mid-polarity*.5:.12g}\n.op\n'
-        meta.update(analysis='op',overdrive_V=polarity,assumptions=['Fixed1V differential overdrive at specified common-mode; exact manufacturer drive protocol not asserted.'])
+        meta.update(analysis='op',overdrive_V=polarity,measured_output_rail=rail,assumptions=['Fixed1V differential overdrive at specified common-mode; exact manufacturer drive protocol not asserted.'])
     elif kind in {'iout','isc'}:
         conditions=f['source_case_conditions']
         diff=conditions.get('differential_input_voltage_V',1 if variant=='source' else -1)
@@ -97,9 +111,32 @@ def build_fixture(model,item,case,variant='default',subckt='FIRSTAMP'):
         meta.update(analysis='op',direction='source' if diff>0 else 'sink',clamp_V=clamp,
                     assumptions=['VSENSE directly measures DUT terminal current; external RL current is not mistakenly added. ISC overdrive1V is a project setting.'])
     elif kind=='noise_density':
-        deck=base+'VIN inp mid DC 0 AC 1\nLFB out inn 1e15\nCFB inn mid 1\n.noise V(out) VIN dec 100 1 100k\n.meas NOISE en_1k FIND V(inoise) AT=1k\n'
-        meta.update(analysis='noise',names=['en_1k'],assumptions=['Thermal-only lower bound: frozen generic MOS models omit calibrated flicker parameters. Fixture load noise included; no full-noise pass claim.'])
+        conditions=f.get('source_case_conditions',{})
+        source_r=conditions.get('source_resistance_Ohm',0)
+        frequency=conditions.get('frequency_Hz',1000)
+        if isinstance(source_r,bool) or not isinstance(source_r,(int,float)) or not math.isfinite(source_r) or source_r<0:
+            raise ValueError('Noise source resistance must be an explicit finite nonnegative number')
+        if isinstance(frequency,bool) or not isinstance(frequency,(int,float)) or not math.isfinite(frequency) or frequency<=0:
+            raise ValueError('Noise measurement frequency must be finite and positive')
+        stimulus=(f'VIN noise_src mid DC 0 AC 1\nRSOURCE noise_src inp {source_r:.12g}\n'
+                  if source_r>0 else 'VIN inp mid DC 0 AC 1\n')
+        deck=base+stimulus+f'LFB out inn 1e15\nCFB inn mid 1\n.noise V(out) VIN dec 100 {min(1,frequency):.12g} {max(1e5,frequency):.12g}\n.meas NOISE en_density FIND V(inoise) AT={frequency:.12g}\n'
+        definition={'source_resistance_Ohm':source_r,'frequency_Hz':frequency,'scalar_name':'en_density',
+                    'input_reference':'VIN_before_source_resistance',
+                    'source_resistance_included_in_total_noise':True}
+        meta.update(analysis='noise',names=['en_density'],noise_definition=definition,
+                    assumptions=['Thermal-only lower bound: frozen generic MOS models omit calibrated flicker parameters. Source resistance and fixture load noise are included; no subtraction or full-noise pass claim.'])
     elif kind=='ro':
         deck=base+servo(dynamic=True)+'ITEST 0 out DC 0 AC 1\n.ac lin 1 1Meg 1Meg\n';meta['analysis']='ac'
     else:raise NotImplementedError('No validated adapter for '+kind)
     return deck+'.end\n',meta
+
+
+def build_fixture(model,item,case,variant='default',subckt='FIRSTAMP'):
+    from .validation_03_execution_contract import make_contract
+    # Derive the expectation before invoking the generator. Never infer an
+    # expectation from the generated deck or its returned metadata.
+    contract=make_contract(model,item,case,variant,subckt)
+    deck,meta=_build_fixture(model,item,case,variant,subckt)
+    meta['execution_contract']=contract
+    return deck,meta

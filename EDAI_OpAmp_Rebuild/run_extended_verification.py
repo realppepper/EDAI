@@ -15,9 +15,13 @@ from opamp_pipeline.diag_02_startup_seed import internal_nodes,startup_deck,seed
 from opamp_pipeline.tb_05_waveform_metrics import read_real_raw
 from opamp_pipeline.diag_03_solver_attempts import run_with_fallback,SolverAttemptsError,measured_trace_deck
 from opamp_pipeline.verify_06_batch import select_batch
+from opamp_pipeline.validation_03_execution_contract import validate_execution,ExecutionContractError
+from opamp_pipeline.validation_04_execution_paths import execution_signature,reusable_job
+from opamp_pipeline.validation_05_special_fixtures import startup_meta
 
 STAGES={1:{'vos','iq','gbw','pm','settling','ib','ios'},2:{'vcm','vswing','aol'},
         3:{'iout','isc','sr','cmrr','psrr','noise_density','ro','capacitive_drive'}}
+STAGES[3].add('input_resistance')
 UNSUPPORTED={'channel_separation':'Single-channel DUT has no second physical channel/coupling model.',
  'noise_pp':'No calibrated intrinsic stochastic device-noise transient adapter/1f model; RMS is not substituted for peak-to-peak.',
  'zid':'R||C input impedance fit adapter not implemented; ideal MOS DC gate resistance is not calibrated.',
@@ -84,6 +88,7 @@ def main():
     if a.numerical_policy!='default':
         for path in (root/'run_extended_verification.py',root/'opamp_pipeline/diag_02_startup_seed.py',root/'opamp_pipeline/diag_03_solver_attempts.py'):
             signatures[str(path)]=file_hash(path)
+    for path in [*(root/'opamp_pipeline').glob('*.py'),Path(__file__).resolve()]:signatures[str(path)]=file_hash(path)
     if a.resume:
         result=read(out/'RESULT.json')
         if result['input_signatures']!=signatures:raise ValueError('Inputs/code changed; preserve old run and start a new one')
@@ -110,9 +115,11 @@ def main():
             'rule':'Raw jobs reused only after full netlist and included-model content equivalence; current metrics recalculated.'}
     def save():write_json(out/'RESULT.json',result)
     save()
-    def execute(label,deck,meta):
+    def execute(label,deck,meta,*,calibration_job=False):
+        meta['execution_contract_receipt_dir']=str(out/'execution_contracts')
+        validate_execution(deck,meta,phase='generated_preflight')
         normal_recovery=meta.get('numerical_execution')=='normal_no_hint_once'
-        if normal_recovery and (meta['analysis']!='dc' or meta.get('kind') not in {'vcm','cmrr'} or label.startswith('cal_')):
+        if normal_recovery and (meta['analysis']!='dc' or meta.get('kind') not in {'vcm','cmrr'} or calibration_job):
             raise ValueError('Normal recovery is limited to DUT VCM/CMRR DC coverage')
         if a.numerical_policy=='startup_seeded':deck=measured_trace_deck(deck,meta)
         fallback_deck=deck
@@ -122,7 +129,7 @@ def main():
             from opamp_pipeline.verify_04_dc_coverage import normal_vcm_recovery_deck
             deck=normal_vcm_recovery_deck(deck,'VCM' if meta['kind']=='cmrr' else 'VIN')
         elif a.numerical_policy=='startup_seeded':
-            if label.startswith('cal_'):
+            if calibration_job:
                 deck=deck.replace('.end\n','.options solver=alt\n.end\n')
             else:
                 vs,minus=supply_from_deck(deck);key=f'{vs:.10g}'
@@ -133,40 +140,44 @@ def main():
                     if any(file_hash(p)!=h for p,h in receipt['artifacts'].items()):raise ValueError('Startup seed artifact changed')
                 elif not failure:
                     path=seedfolder/f'start_{key}.cir';path.write_text(startup_deck(model,vs),encoding='ascii')
+                    start_meta=startup_meta(model,vs)
+                    start_meta['execution_contract_receipt_dir']=str(out/'execution_contracts')
+                    validate_execution(path.read_text(encoding='ascii'),start_meta,phase='startup_preflight')
                     try:
                         run_bench(a.ltspice,path,[],ascii_raw=True,timeout=a.bench_timeout)
+                        start_validation=validate_execution(path.read_text(encoding='ascii'),start_meta,phase='startup_before_metric')
                         seeds,details=seeds_from_waveform(read_real_raw(path.with_suffix('.raw')),vs,internal_nodes(model.read_text(encoding='ascii')))
+                    except ExecutionContractError:
+                        raise
                     except Exception as error:
                         result['startup_seed_failures'][key]={'error':str(error),'path':str(path)}
                         result['startup_seed_failure_is_not_a_source_case_verdict']=True;save()
                     else:
-                        receipt={'seeds':seeds,'details':details,'artifacts':{str(p):file_hash(p) for p in (path,path.with_suffix('.raw'),path.with_suffix('.log'))}}
+                        receipt={'seeds':seeds,'details':details,'execution_contract':start_validation,
+                                 'artifacts':{str(p):file_hash(p) for p in (path,path.with_suffix('.raw'),path.with_suffix('.log'))}}
                         result['startup_seeds'][key]=receipt;save()
                 if receipt:deck=seeded_deck(deck,receipt['seeds'],minus)
                 else:deck=deck.replace('.end\n','.options solver=alt\n.end\n')
             if meta['analysis']=='tran':deck=deck.replace('.end\n','.options itl4=100\n.end\n')
-        identity=fingerprint({'deck':deck,'names':meta['names'],'analysis':meta['analysis']})
+        validate_execution(deck,meta,phase='execution_preflight')
+        execution_binding=execution_signature(deck,meta)
+        identity=execution_binding['key']
         old=result['job_cache'].get(identity)
-        if old:
-            if old.get('completed') and all(file_hash(path)==sha for path,sha in old['artifacts'].items()):
-                return {'path':Path(old['path']),'measurements':old['measurements'],'cache_reused':True}
-        if reuse_dir and (not calibration_only or label.startswith('cal_')):
-            equivalent=True
-            for include in re.findall(r'^\.include "([^"]+)"',deck,re.M|re.I):
-                new_path=Path(include)
-                try:old_path=reuse_dir/new_path.relative_to(out)
-                except ValueError:equivalent=False;break
-                if not old_path.is_file() or file_hash(new_path)!=file_hash(old_path):equivalent=False;break
-            old_deck=deck.replace(str(out),str(reuse_dir))
-            old_key=fingerprint({'deck':old_deck,'names':meta['names'],'analysis':meta['analysis']})
-            reused=reuse_result['job_cache'].get(old_key)
-            if equivalent and reused and reused.get('completed') and all(file_hash(path)==sha for path,sha in reused['artifacts'].items()):
+        hit=reusable_job(old,deck,meta,execution_binding)
+        if hit:return hit
+        if reuse_dir and (not calibration_only or calibration_job):
+            # Legacy unbound entries are misses. A verdict is never reused;
+            # every hit is interpreted by today's checked measurement code.
+            reused=reuse_result['job_cache'].get(identity)
+            hit=reusable_job(reused,deck,meta,execution_binding)
+            if hit:
                 result['job_cache'][identity]={**reused,'reused_from_readonly_run':str(reuse_dir),'reused_without_simulation':True}
-                save();return {'path':Path(reused['path']),'measurements':reused['measurements'],'cache_reused':True}
+                save();return hit
         jobroot=out/'jobs'/identity[:20];jobroot.mkdir(parents=True,exist_ok=True)
         attempt=len(list(jobroot.glob('attempt_*')))+1;folder=jobroot/f'attempt_{attempt:02d}';folder.mkdir()
         path=folder/'bench.cir';path.write_text(deck,encoding='ascii')
-        result['job_cache'][identity]={'completed':False,'path':str(path),'label':label};save()
+        result['job_cache'][identity]={'completed':False,'path':str(path),'label':label,
+                                       'execution_signature':execution_binding};save()
         start=time.monotonic()
         try:
             if normal_recovery:
@@ -177,7 +188,7 @@ def main():
                 result['job_cache'][identity].update(numerical_execution='normal_no_hint_once',observed_solver='Normal',
                     solver_attempts=[{'policy':'normal_no_hint_once','path':str(path),'status':'computed'}])
             elif a.numerical_policy=='startup_seeded':
-                attempt=run_with_fallback(a.ltspice,path,meta['names'],meta['analysis']!='noise',a.bench_timeout,fallback_deck)
+                attempt=run_with_fallback(a.ltspice,path,meta['names'],meta['analysis']!='noise',a.bench_timeout,fallback_deck,meta=meta)
                 path=attempt['path'];run=attempt['run'];result['job_cache'][identity].update(path=str(path),solver_attempts=attempt['attempts'])
             else:run=run_bench(a.ltspice,path,meta['names'],ascii_raw=meta['analysis']!='noise',timeout=a.bench_timeout)
         except Exception as error:
@@ -189,7 +200,10 @@ def main():
         save();return {'path':path,'measurements':run['measurements'],'cache_reused':False}
     try:
         result['stage']='calibration';save()
-        calibration=calibrate(out,measurements,execute)
+        # Calibration may use nested labels such as core_cal_settling_*. Its
+        # known-answer circuits must never receive the DUT's startup seeds.
+        calibration=calibrate(out,measurements,
+            lambda label,deck,meta:execute(label,deck,meta,calibration_job=True))
         write_json(out/'ADAPTER_VALIDATION.json',calibration)
         if calibration['status']!='passed':raise ValueError('New adapter calibration failed; DUT source-case verdicts withheld')
         result['calibration_passed']=True;save();print('Adapter known-answer checks passed.',flush=True)
@@ -203,6 +217,7 @@ def main():
                 for case in item['cases']:
                     if case['case_id'] in done:continue
                     variants=['lower','upper'] if kind=='vcm' else ['rising','falling'] if kind in {'sr','settling'} else ['pm','rising','falling'] if kind=='capacitive_drive' else ['source','sink'] if kind=='isc' else ['default']
+                    if kind=='vswing' and case['fixture'].get('forced_output_rail')=='both':variants=['upper','lower']
                     parts=[];numerical_attempts=None
                     def collect(requested_variants,normal_no_hint=False):
                         parts.clear()
@@ -233,6 +248,9 @@ def main():
                         verdict={'case_id':case['case_id'],'supply_V':case['fixture']['supply_voltage_V'],'fixture':case['fixture'],
                             'status':'execution_error','error':str(error),'parts':parts,'full_continuous_range_verified':False,
                             'physical_spec_failure_established':False}
+                        if isinstance(error,ExecutionContractError):
+                            verdict.update(status='execution_contract_error',error_type=type(error).__name__,
+                                           validation=error.validation)
                         if hasattr(error,'coverage'):
                             verdict['measurement_coverage']=error.coverage
                             verdict['error_type']=type(error).__name__
@@ -252,12 +270,16 @@ def main():
         result.update(status='completed_selected_cases_diagnostic' if batch['partial_run'] else 'completed_with_explicit_unverified_cases',stage='finished',case_status_counts=counts)
         save()
     except Exception as error:
-        result.update(status='error',error=str(error));save();raise
+        result.update(status='error',error=str(error))
+        if isinstance(error,ExecutionContractError):
+            result.update(error_type=type(error).__name__,error_category='execution_contract_error',
+                          validation=error.validation,physical_spec_failure_established=False)
+        save();raise
     feedback={'scope':result['scope'],'case_status_counts':counts,'rows':list(result['rows'].values()),
         'all_source_requirements_passed':False,'input_signatures':signatures,'no_source_target_rewritten':True,'batch':batch}
     write_json(out/'LLM_FEEDBACK.json',feedback)
     lines=['# 拡張検証'.replace('拡張検証','전원·범위·구동 및 성능 검증'),'',result['scope'],'',
-        (f"부분 검증: 원래{batch['full_plan_source_cases']}조건 중 선택{len(batch['selected_case_ids'])}조건만 실행하며 나머지{len(batch['not_executed_case_ids'])}조건은 미실행입니다. 전체 통과가 아닙니다." if batch['partial_run'] else '원문32행/80사례를 모두 추적합니다. 아래 통과는 해당 일반 모델·표본·프로젝트 측정 정의에서의 결과이며 실제 제조나 연속 범위 전체 인증이 아닙니다.'),
+        (f"부분 검증: 원래{batch['full_plan_source_cases']}조건 중 선택{len(batch['selected_case_ids'])}조건만 실행하며 나머지{len(batch['not_executed_case_ids'])}조건은 미실행입니다. 전체 통과가 아닙니다." if batch['partial_run'] else f"현재 채택한{batch['full_plan_source_rows']}행/{batch['full_plan_source_cases']}사례를 모두 추적합니다. 미채택 원문 행은 목표 선택 파일에 보존됩니다. 아래 통과는 해당 일반 모델·표본·프로젝트 측정 정의에서의 결과이며 실제 제조나 연속 범위 전체 인증이 아닙니다."),
         '',str(counts),'', '| 사양 | 전원(V) | 상태 | 측정값 |','|---|---:|---|---|']
     for row in result['rows'].values():
         for case in row['cases']:

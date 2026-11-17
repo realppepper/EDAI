@@ -9,10 +9,12 @@ def main():
     p.add_argument('--session',type=Path,required=True);p.add_argument('--pdf',type=Path)
     p.add_argument('--target',default='LM358B');p.add_argument('--settings',type=Path)
     p.add_argument('--env-file',type=Path);p.add_argument('--response',type=Path);p.add_argument('--ltspice')
-    p.add_argument('--max-rounds',type=int,default=2);p.add_argument('--revisions-per-round',type=int,default=1);a=p.parse_args()
+    p.add_argument('--max-rounds',type=int,default=2);p.add_argument('--revisions-per-round',type=int,default=1)
+    p.add_argument('--optuna-config',type=Path);p.add_argument('--optuna-trials',type=int,default=4);p.add_argument('--optuna-rounds',type=int,default=1)
+    p.add_argument('--optuna-from-designer',action='store_true');a=p.parse_args()
     if a.action=='start':
         if not a.pdf or not a.settings:p.error('PDF and engineering settings required')
-        s=startup.start(a.session,a.pdf,a.target,a.settings,a.env_file,a.max_rounds,a.revisions_per_round)
+        s=startup.start(a.session,a.pdf,a.target,a.settings,a.env_file,a.max_rounds,a.revisions_per_round,a.optuna_config,a.optuna_trials,a.optuna_rounds,a.optuna_from_designer)
     elif a.action=='submit':
         if not a.response:p.error('Response required')
         s=startup.submit(a.session,a.response)

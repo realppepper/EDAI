@@ -12,6 +12,7 @@ from .support.source_checks import fingerprint
 # Same measurement families as legacy spec_planner.KIND_RULES, extended to keep
 # settling, overload, THD+N, noise-band and impedance cases instead of dropping them.
 METHODS={
+ 'RID':('input_resistance',['dc'],'Measure local common-mode DC input resistance per pin; do not impose a capacitance target.'),
  'VOS':('vos',['op'],'Extract input-referred offset with an output-centering DC servo.'),
  'PSRR':('psrr',['dc'],'Measure absolute change in input-referred offset per supply-voltage change; do not treat uV/V as dB.'),
  'Channel separation, dc':('channel_separation',['ac'],'Drive the other channel and measure victim input-referred coupling over the stated frequency band.'),
@@ -39,7 +40,7 @@ METHODS={
 
 
 def classify(row):
-    symbol={'Θm':'PM','Iq':'IQ'}.get(row['symbol'],row['symbol'])
+    symbol={'Θm':'PM','Iq':'IQ','VOM':'VO'}.get(row['symbol'],row['symbol'])
     if symbol in METHODS:return METHODS[symbol]
     # Deliberately limited name fallback; unknown rows require an explicit adapter.
     name=row.get('name','').lower()
@@ -51,7 +52,8 @@ def classify(row):
 def convert(value,unit):
     scales={'V':(1,'V'),'mV':(1e-3,'V'),'uV':(1e-6,'V'),'V/mV':(1e3,'V/V'),
         'uV/V':(1e-6,'V/V'),'A':(1,'A'),'mA':(1e-3,'A'),'uA':(1e-6,'A'),'nA':(1e-9,'A'),
-        'Hz':(1,'Hz'),'kHz':(1e3,'Hz'),'MHz':(1e6,'Hz'),'us':(1e-6,'s'),'s':(1,'s'),
+        'Hz':(1,'Hz'),'kHz':(1e3,'Hz'),'MHz':(1e6,'Hz'),'us':(1e-6,'s'),'ns':(1e-9,'s'),'s':(1,'s'),
+        'pA':(1e-12,'A'),'dB':(1,'dB'),'TOhm':(1e12,'Ohm'),
         'V/us':(1e6,'V/s'),'deg':(1,'degree'),'percent':(.01,'ratio'),'Ohm':(1,'Ohm'),
         'uVpp':(1e-6,'Vpp'),'nV/sqrt(Hz)':(1e-9,'V/sqrt(Hz)'),'pF':(1e-12,'F')}
     if unit not in scales:raise ValueError('Unmapped target unit: '+unit)
@@ -60,6 +62,23 @@ def convert(value,unit):
 
 def target_criteria(row,kind,profile,range_only=False):
     limits=row['limits'];rules=[]
+    if kind=='vswing' and row['symbol']=='VOM':
+        supply=row['conditions'].get('overrides',{}).get('supply_voltage_V')
+        if not isinstance(supply,(int,float)):raise ValueError('Symmetric peak swing requires an explicit source total supply')
+        slot='min' if isinstance(limits.get('min'),(int,float)) else 'typ'
+        if not str(row.get('printed_notation',{}).get(slot,'')).startswith('±'):raise ValueError('Symmetric swing needs source ± notation')
+        headroom=supply/2-abs(limits[slot])
+        if headroom<0:raise ValueError('Peak swing exceeds source rails')
+        return {'origin':'source_symmetric_peak_swing_to_each_rail_headroom',
+            'rules':[{'metric':'vswing','operator':'<=','value':headroom,'unit':'V','source_slot':slot}],
+            'source_limits_preserved':deepcopy(limits),'source_peak_V':abs(limits[slot]),
+            'both_directions_required':True,'full_temperature_compliance_claimed':False}
+    if kind in {'cmrr','psrr'} and row['unit']=='dB':
+        slot='min' if isinstance(limits.get('min'),(int,float)) else 'typ'
+        if not isinstance(limits.get(slot),(int,float)):raise ValueError('Rejection ratio needs a numeric dB target')
+        return {'origin':'source_rejection_dB_converted_to_maximum_offset_sensitivity',
+            'rules':[{'metric':kind,'operator':'<=','value':10**(-limits[slot]/20),'unit':'V/V','source_slot':slot}],
+            'source_limits_preserved':deepcopy(limits),'full_temperature_compliance_claimed':False}
     if kind=='vcm':
         return {'origin':'source_window_plus_project_tracking_definition','rules':[
             {'metric':'valid_input_common_mode_window','operator':'covers_source_expression_range','value':deepcopy(limits),'unit':row['unit']},
@@ -85,7 +104,7 @@ def target_criteria(row,kind,profile,range_only=False):
     if not slots:
         if not isinstance(limits.get('typ'),(int,float)):raise ValueError('No numeric target or interpreted model')
         slots=['typ'];origin='typical_value_adopted_as_project_objective'
-    larger={'aol','gbw','pm','sr','iout'}
+    larger={'aol','gbw','pm','sr','iout','input_resistance'}
     for slot in slots:
         value,unit=convert(limits[slot],row['unit'])
         if kind in {'vos','ib','ios','isc','iout'}:value=abs(value)
@@ -151,10 +170,22 @@ def make_fixture(row,kind,resolved,vs,profile):
     if 'output_voltage_V' in values:fixture['output_voltage_condition']=deepcopy(values['output_voltage_V'])
     if 'output_voltage_Vrms' in values:fixture['output_ac_amplitude_Vrms']=values['output_voltage_Vrms']
     if kind=='aol':
-        fixture['output_dc_bias_V']=None;fixture['output_voltage_sweep']=deepcopy(values['output_voltage_V'])
+        sweep=deepcopy(values['output_voltage_V'])
+        if isinstance(sweep,(int,float)):
+            centre=midpoint+sweep
+            half=profile.get('aol_local_half_span_V',.01)
+            if not isinstance(half,(int,float)) or half<=0:raise ValueError('Invalid local AOL probe span')
+            sweep={'min':centre-half,'max':centre+half}
+            assumptions.append('Source point output voltage is translated relative to rail midpoint; AOL uses a declared local finite difference, not a source output range.')
+        fixture['output_dc_bias_V']=None;fixture['output_voltage_sweep']=sweep
     if kind=='vcm':
         fixture['input_common_mode_bias_V']=None;fixture['output_dc_bias_V']=None
-        fixture['input_common_mode_sweep']={'min':row['limits']['min'],'max':row['limits']['max']}
+        if str(row.get('printed_notation',{}).get('min','')).startswith('±'):
+            bound=abs(row['limits']['min'])
+            fixture['input_common_mode_sweep']={'min':midpoint-bound,'max':midpoint+bound}
+            assumptions.append('Printed symmetric ± common-mode bound is translated from source bipolar zero to the fixture rail midpoint.')
+        else:
+            fixture['input_common_mode_sweep']={'min':row['limits']['min'],'max':row['limits']['max']}
         fixture['closed_loop_gain']=1
         assumptions.append('Unity-buffer tracking tolerance is a project measurement definition, not an extra datasheet limit.')
     if kind=='cmrr':fixture['input_common_mode_bias_V']=None
@@ -164,7 +195,9 @@ def make_fixture(row,kind,resolved,vs,profile):
             'min':voltage_expression(window.get('min',window.get('min_expression')),positive,negative),
             'max':voltage_expression(window.get('max',window.get('max_expression')),positive,negative)}
     if kind=='vswing':
+        if row['symbol']=='VOM':values['output_rail']='both'
         rail={'V_plus':'V_plus','positive':'V_plus','V_minus':'V_minus','negative':'V_minus'}.get(values.get('output_rail'))
+        if values.get('output_rail')=='both':rail='both'
         if rail is None:raise ValueError('Output swing rail needs an explicit positive/negative supply binding')
         fixture['output_dc_bias_V']=None;fixture['forced_output_rail']=rail
         if 'output_current_uA' in values:

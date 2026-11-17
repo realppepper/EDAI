@@ -15,7 +15,7 @@ def fingerprint(data: dict) -> str:
 
 
 def normalized_unit(unit: str) -> str:
-    text = re.sub(r'\s+', '', unit).replace('µ', 'u').replace('μ', 'u').replace('Ω', 'Ohm').replace('℃', 'degC').replace('°C', 'degC')
+    text = re.sub(r'\s+', '', unit).replace('µ', 'u').replace('μ', 'u').replace('Ω', 'Ω').replace('Ω', 'Ohm').replace('℃', 'degC').replace('°C', 'degC')
     return {'°': 'deg', 'percent': '%', 'uVPP': 'uVpp', 'nV/√Hz': 'nV/sqrt(Hz)'}.get(text, text)
 
 

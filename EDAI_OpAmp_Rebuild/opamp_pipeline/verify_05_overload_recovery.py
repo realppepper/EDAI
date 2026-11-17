@@ -35,7 +35,12 @@ RF out inn 100k
 ''',profile
 
 
-def recovery_metrics(raw,profile):
+def recovery_metrics(raw,profile,contract_meta=None,deck_path=None):
+    if contract_meta is not None:
+        from .validation_03_execution_contract import validate_execution
+        from pathlib import Path
+        contract_meta['recovery_profile']=dict(profile)
+        validate_execution(Path(deck_path).read_text(encoding='ascii'),contract_meta,phase='overload_before_metric')
     t=raw['time'];out=raw['v(out)'];stim=raw['v(stim)'];p=raw['v(inp)'];n=raw['v(inn)']
     if len(t)<3 or any(len(v)!=len(t) for v in (out,stim,p,n)):raise ValueError('Incomplete recovery signals')
     if any(not math.isfinite(v) for seq in (t,out,stim,p,n) for v in seq) or any(b<=a for a,b in zip(t,t[1:])):

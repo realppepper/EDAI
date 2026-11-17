@@ -5,6 +5,7 @@ from .verify_01_fixtures import build_fixture
 from .verify_02_metrics import measure
 from .tb_06_loop_gain import dual_probe_deck,measure_dual_probe
 from .verify_04_dc_coverage import require_complete_vcm_case
+from .validation_05_special_fixtures import calibration_pm_meta,calibration_noise_meta
 
 REFERENCE='''* Analytical fixture-validation model, NOT an IC design
 .subckt CALX P N VP VM OUT
@@ -24,7 +25,34 @@ Rout d OUT 100
 '''
 
 
+def calibration_measurements():
+    """Analytical reference fixtures; never borrow a product's requirement rows.
+
+    Calibration voltages belong to controlled-source references, not the DUT.
+    Keep all known-answer checks even when a datasheet lacks that quantity.
+    """
+    rows=[]
+    for symbol,kind in [('VOS','vos'),('PSRR','psrr'),('CMRR','cmrr'),('AOL','aol'),
+                        ('GBW','gbw'),('RO','ro'),('SR','sr'),('VCM','vcm'),('IO','iout'),('IO','iout')]:
+        f={'supply_voltage_V':5,'rails_V':{'V_plus':5,'V_minus':0},
+           'load':{'kind':'resistance','value_Ohm':10000,'connection':'rail_midpoint'},
+           'load_capacitance_pF':20,'source_case_conditions':{},'output_dc_bias_V':2.5}
+        values={}
+        if kind in {'cmrr','vcm'}:f['input_common_mode_sweep_V']={'min':.5,'max':4.5}
+        if kind=='aol':f['output_voltage_sweep']={'min':1,'max':4}
+        if kind=='psrr':values['supply_voltage_V']={'min':4.5,'max':5.5}
+        if kind=='sr':f['load_capacitance_pF']=None
+        if kind=='iout':
+            source=sum(r['symbol']=='IO' for r in rows)==0
+            f.update(supply_voltage_V=30,rails_V={'V_plus':30,'V_minus':0},output_dc_bias_V=15,
+                     source_case_conditions={'differential_input_voltage_V':1 if source else -1})
+        rows.append({'symbol':symbol,'method':{'kind':kind,'definition':{'step_V':2}},
+                     'resolved_conditions':{'values':values},'cases':[{'fixture':f}]})
+    return {'measurements':rows,'origin':'analytical_reference_calibration_only_not_product_specifications'}
+
+
 def calibrate(out,measurements,execute):
+    measurements=calibration_measurements()
     folder=out/'calibration';folder.mkdir(exist_ok=True)
     model=folder/'reference.inc';model.write_text(REFERENCE,encoding='ascii')
     output_model=folder/'output_reference.inc';output_model.write_text(OUTPUT_REFERENCE,encoding='ascii')
@@ -58,7 +86,7 @@ def calibrate(out,measurements,execute):
     for supply in (5,15,36):
         for cap in (20e-12,100e-12):
             deck=dual_probe_deck(model,'CALX',load_C=cap).replace('VDD vp 0 5',f'VDD vp 0 {supply}').replace('VMID mid 0 2.5',f'VMID mid 0 {supply/2}')
-            job=execute(f'cal_pm_{supply}_{cap}',deck,{'names':[],'analysis':'ac'})
+            job=execute(f'cal_pm_{supply}_{cap}',deck,calibration_pm_meta(model,supply,cap))
             measured=measure_dual_probe(job['path'].with_suffix('.raw'))
             gain=10000/1.01*(1+10e-6);pole2=(1/100+1/10000)/(2*math.pi*cap)
             lo=1.;hi=1e8
@@ -77,7 +105,7 @@ RL out 0 1e12
 .meas NOISE en_1k FIND V(inoise) AT=1k
 .end
 '''
-    job=execute('cal_noise',noise,{'analysis':'noise','names':['en_1k']})
+    job=execute('cal_noise',noise,calibration_noise_meta())
     check('resistor_noise_density',job['measurements']['en_1k'],math.sqrt(4*1.380649e-23*298.15*10000),1e-10)
     # Separate positive and negative controls for the complete center-out grid.
     dc_checks=[]
@@ -98,6 +126,28 @@ RL out 0 1e12
             dc_checks.append({'name':name,'policy':policy,'expected_spec_pass':expected_pass,'observed_spec_pass':observed,
                              'coverage':coverage,'max_tracking_error_V':max(p['value'] for p in parts),
                              'passed':observed==expected_pass})
-    return {'status':'passed' if all(c['passed'] for c in checks+dc_checks) else 'failed','checks':checks,
+    swing_checks=[]
+    fixture={'supply_voltage_V':30,'rails_V':{'V_plus':30,'V_minus':0},
+        'load':{'kind':'resistance','value_Ohm':10000,'connection':'rail_midpoint'},
+        'load_capacitance_pF':None,'forced_output_rail':'both'}
+    for direction in ('upper','lower'):
+        deck,meta=build_fixture(output_model,{'method':{'kind':'vswing'}},{'fixture':fixture},direction,'OUTREF')
+        job=execute('cal_symmetric_swing_'+direction,deck,meta)
+        m=measure(job['path'],'vswing',fixture,meta,job['measurements'])
+        expected=15/101
+        swing_checks.append({'direction':direction,'measured_headroom_V':m['value'],'expected_headroom_V':expected,
+            'passed':not m['gate_issues'] and abs(m['value']-expected)<1e-6})
+    from .verify_09_scalar_input_resistance import calibrate_resistance
+    resistance_checks=calibrate_resistance(folder/'scalar_input_resistance',execute)
+    from .verify_11_settling import calibrate_settling
+    settling_fixture={'supply_voltage_V':5,'rails_V':{'V_plus':5,'V_minus':0},
+        'load':{'kind':'resistance','value_Ohm':2000,'connection':'rail_midpoint'},'load_capacitance_pF':100}
+    settling_item={'method':{'kind':'settling','definition':{'input_step_V':2,'error_percent':.1,'baseline_fraction_of_supply':.2}},'target_s':1e-6}
+    settling_checks=calibrate_settling(folder,settling_item,{'fixture':settling_fixture},
+        lambda label,deck,meta:execute('core_'+label,deck,meta))
+    return {'status':'passed' if all(c['passed'] for c in checks+dc_checks+swing_checks+resistance_checks+settling_checks) else 'failed','checks':checks,
+            'settling_validation':settling_checks,
+            'scalar_input_resistance_validation':resistance_checks,
+            'symmetric_swing_validation':swing_checks,
             'dc_grid_validation':dc_checks,
             'note':'Controlled-source calibration only. MOS flicker/leakage accuracy is not calibrated.'}

@@ -53,5 +53,6 @@ class FixedLoopControlTests(unittest.TestCase):
         b={'status':'extension_completed_with_explicit_model_limitations','calibration':[]}
         cal={'status':'passed','checks':[{'passed':True}]*23,
              'dc_grid_validation':[{'passed':True,'policy':policy,'expected_spec_pass':v,'coverage':{'complete':True,'unique_full_grid_points':201}} for policy in ('center_out_complete_grid_v1','full_ascending') for v in (True,False)]}
-        with patch('opamp_pipeline.pipeline_01_verification.read',side_effect=[a,b,{},cal]),patch('opamp_pipeline.pipeline_01_verification.file_hash',return_value='hash'):
+        plan_data={'measurements':[{'method':{'kind':'zid'}},{'method':{'kind':'zic'}}]}
+        with patch('opamp_pipeline.pipeline_01_verification.read',side_effect=[a,b,{},cal,plan_data]),patch('opamp_pipeline.pipeline_01_verification.file_hash',return_value='hash'):
             with self.assertRaises(ValueError):check_chain(core,'imp/RESULT.json','over/RESULT.json','model.inc',plan)

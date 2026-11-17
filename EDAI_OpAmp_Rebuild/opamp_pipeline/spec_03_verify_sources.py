@@ -57,7 +57,8 @@ def verify_integrated(base: dict, enriched: dict, source_pdf: str, semantic_revi
             checked['status']='conflict'
         checked['condition_reference_check']='resolved' if not inherited or inherited in enriched.get('condition_sets',{}) else 'missing'
         checked['open_correction_proposals']=deepcopy(row.get('correction_proposals',[]))
-        checked['condition_audit']=check_conditions(row,enriched.get('condition_sets',{}),page_texts[row['source']['pdf_page']])
+        checked['condition_audit']=check_conditions(row,enriched.get('condition_sets',{}),page_texts[row['source']['pdf_page']],
+            footnote_context='\n'.join(page_texts[n] for n in sorted(page_texts)))
         interpretation_issues=validate_condition_annotations(row.get('conditions',{}),enriched.get('condition_sets',{}))
         checked['condition_interpretation_check']={'issues':interpretation_issues,
             'status':'conflict' if interpretation_issues else 'annotation_references_consistent',

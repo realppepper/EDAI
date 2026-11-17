@@ -13,7 +13,8 @@ class PipelineProcessRecoveryTests(unittest.TestCase):
     def run_scenario(self, failed_stage):
         with tempfile.TemporaryDirectory() as directory:
             p=Path(directory);model=p/'candidate.inc';model.write_text('test model')
-            plan=p/'run/measurement_plan/plan_02_measurements.json';write_json(plan,{})
+            plan=p/'run/measurement_plan/plan_02_measurements.json';write_json(plan,{
+                'measurements':[{'method':{'kind':k}} for k in ('zid','zic','overload_recovery')]})
             policy=p/'policy.json';write_json(policy,{})
             out=p/'validation';calls=[];failed=[]
             expected={'core':'completed_with_explicit_unverified_cases','impedance':'extension_completed_with_explicit_model_limitations','overload':'extension_completed'}

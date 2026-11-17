@@ -38,17 +38,39 @@ def check_chain(core,impedance,overload,model,plan):
             or {c.get('policy') for c in dc_cal}!=dc_policies
             or any({c.get('expected_spec_pass') for c in dc_cal if c.get('policy')==policy}!={True,False} for policy in dc_policies)):
         raise ValueError('DC complete-grid reference qualification incomplete')
-    if b['status']!='extension_completed_with_explicit_model_limitations' or len(b['calibration'])!=2 or not all(x['passed'] for x in b['calibration']):raise ValueError('Impedance stage unqualified')
+    source_plan=read(plan)
+    kinds={m['method']['kind'] for m in source_plan['measurements']}
+    if any(m.get('symbol')=='VOM' for m in source_plan['measurements']):
+        swing=cal.get('symmetric_swing_validation',[])
+        if len(swing)!=2 or {s.get('direction') for s in swing}!={'upper','lower'} or not all(s.get('passed') for s in swing):
+            raise ValueError('Symmetric source swing adapter not qualified')
+    if 'input_resistance' in kinds:
+        resistance=cal.get('scalar_input_resistance_validation',[])
+        if len(resistance)!=3 or not all(c.get('passed') for c in resistance):
+            raise ValueError('Scalar input resistance adapter not qualified')
+    if 'settling' in kinds:
+        settling=cal.get('settling_validation',[])
+        if len(settling)!=4 or not all(c.get('passed') for c in settling) or {c.get('expected_target_pass') for c in settling}!={True,False}:
+            raise ValueError('Settling timing adapter not qualified')
+    impedance_needed=bool(kinds & {'zid','zic'})
+    overload_needed='overload_recovery' in kinds
+    if impedance_needed:
+        if b['status']!='extension_completed_with_explicit_model_limitations' or len(b['calibration'])!=2 or not all(x['passed'] for x in b['calibration']):raise ValueError('Impedance stage unqualified')
+    elif b['status']!='not_applicable_no_source_cases' or b['calibration'] or b.get('not_passed') is not True:
+        raise ValueError('Absent impedance cases need an explicit non-pass receipt')
     if Path(b['baseline_result']).resolve()!=core.resolve() or b['baseline_sha256']!=file_hash(core) or b['candidate_sha256']!=model_sha:raise ValueError('Impedance chain differs')
-    if c['status']!='extension_completed' or len(c['calibration'])!=4 or not all(x['qualified'] for x in c['calibration']) or {x['expected_spec_pass'] for x in c['calibration']}!={True,False}:raise ValueError('Overload stage unqualified')
+    if overload_needed:
+        if c['status']!='extension_completed' or len(c['calibration'])!=4 or not all(x['qualified'] for x in c['calibration']) or {x['expected_spec_pass'] for x in c['calibration']}!={True,False}:raise ValueError('Overload stage unqualified')
+    elif c['status']!='not_applicable_no_source_cases' or c['calibration'] or c.get('not_passed') is not True:
+        raise ValueError('Absent overload cases need an explicit non-pass receipt')
     if Path(c['baseline_path']).resolve()!=(impedance.parent/'COMBINED_LEDGER.json').resolve() or c['baseline_sha256']!=file_hash(impedance.parent/'COMBINED_LEDGER.json') or c['model_sha256']!=model_sha:raise ValueError('Overload chain differs')
     for path in (impedance,overload):verify_manifest(path.parent)
     result=read(overload.parent/'COMBINED_LEDGER.json')
-    source_ids={x['case_id'] for r in read(plan)['measurements'] for x in r['cases']}
+    source_ids={x['case_id'] for r in source_plan['measurements'] for x in r['cases']}
     if set(ledger(result))!=source_ids:raise ValueError('Final case coverage differs')
     counts={s:sum(c['case']['status']==s for c in ledger(result).values()) for s in {x['case']['status'] for x in ledger(result).values()}}
     if counts!=result['case_status_counts']:raise ValueError('Reported counts differ from actual cases')
-    result['operational_startup']=startup_gate(a,read(plan))
+    result['operational_startup']=startup_gate(a,source_plan)
     return result
 
 
@@ -56,6 +78,10 @@ def run_pipeline(model,run_dir,out,ltspice=None,imports=None,resume=False,harnes
     model,run_dir,out,harness=map(lambda p:Path(p).resolve(),(model,run_dir,out,harness));validate_candidate(model.read_text(encoding='ascii'))
     plan=run_dir/'measurement_plan/plan_02_measurements.json'
     signature={str(p):file_hash(p) for p in (model,plan,harness,Path(__file__),ROOT/'opamp_pipeline/harness_01_fixed.py',ROOT/'opamp_pipeline/harness_02_request.py')}
+    # Completed-stage reuse is also code-bound; preserve old sessions rather
+    # than silently trusting a verdict produced by a different verifier.
+    for path in [*(ROOT/'opamp_pipeline').glob('*.py'),ROOT/'run_extended_verification.py',ROOT/'run_input_impedance_extension.py',ROOT/'run_overload_extension.py']:
+        signature[str(path)]=file_hash(path)
     out.mkdir(parents=True,exist_ok=True);statepath=out/'STATE.json'
     if statepath.exists():
         if not resume:raise ValueError('Existing pipeline; use resume')
@@ -69,6 +95,25 @@ def run_pipeline(model,run_dir,out,ltspice=None,imports=None,resume=False,harnes
         state={'status':'started','inputs':signature,'stages':{},'execution_seconds':0,'external_llm_api_calls':0,'chat_token_usage':None,
                'imported_readonly_chain':bool(imports),'harness_sha256':file_hash(harness),'full_datasheet_success':False}
     save=lambda:write_json(statepath,state);save()
+    def absent_extension(name,baseline):
+        # Preserve the full ledger without fabricating absent product cases.
+        folder=out/name/'not_applicable';folder.mkdir(parents=True,exist_ok=True)
+        resultpath=folder/'RESULT.json'
+        if resultpath.exists():
+            verify_manifest(folder)
+            return resultpath
+        write_json(folder/'COMBINED_LEDGER.json',read(baseline))
+        atomic_write_bytes(folder/'candidate.inc',model.read_bytes())
+        result={'status':'not_applicable_no_source_cases','not_passed':True,'calibration':[],
+            'reason':'No adopted source cases for this extension; source deferrals remain in project selection.',
+            'candidate_sha256':file_hash(model),'model_sha256':file_hash(model),
+            'baseline_result':str(baseline),'baseline_path':str(baseline),
+            'baseline_sha256':file_hash(baseline)}
+        write_json(resultpath,result)
+        write_json(folder/'ARTIFACTS.json',{'files':{p.name:file_hash(p) for p in
+            [resultpath,folder/'candidate.inc',folder/'COMBINED_LEDGER.json']}})
+        state['stages'][name]={'completed':True,'result':str(resultpath),'sha256':file_hash(resultpath),'not_applicable':True};save()
+        return resultpath
     def child(name,script,args,expected):
         stage=state['stages'].get(name)
         if stage and stage.get('completed'):
@@ -114,8 +159,11 @@ def run_pipeline(model,run_dir,out,ltspice=None,imports=None,resume=False,harnes
         else:
             if not ltspice:raise ValueError('LTspice required')
             core=child('core','run_extended_verification.py',['--netlist',str(model),'--run-dir',str(run_dir),'--numerical-policy','startup_seeded','--bench-timeout','60'],'completed_with_explicit_unverified_cases')
-            imp=child('impedance','run_input_impedance_extension.py',['--baseline',str(core),'--plan',str(plan)],'extension_completed_with_explicit_model_limitations')
-            over=child('overload','run_overload_extension.py',['--baseline',str(imp.parent/'COMBINED_LEDGER.json'),'--plan',str(plan)],'extension_completed')
+            kinds={m['method']['kind'] for m in read(plan)['measurements']}
+            imp=(child('impedance','run_input_impedance_extension.py',['--baseline',str(core),'--plan',str(plan)],'extension_completed_with_explicit_model_limitations')
+                 if kinds & {'zid','zic'} else absent_extension('impedance',core))
+            over=(child('overload','run_overload_extension.py',['--baseline',str(imp.parent/'COMBINED_LEDGER.json'),'--plan',str(plan)],'extension_completed')
+                  if 'overload_recovery' in kinds else absent_extension('overload',imp.parent/'COMBINED_LEDGER.json'))
         result=check_chain(core,imp,over,model,plan)
         write_json(out/'LEDGER.json',result)
         request=make_request(read(plan),result,model.read_text(encoding='ascii'),harness);write_json(out/'DESIGN_REQUEST.json',request)

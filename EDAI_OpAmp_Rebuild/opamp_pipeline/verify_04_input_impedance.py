@@ -4,6 +4,7 @@ from pathlib import Path
 from .verify_01_fixtures import header
 from .tb_06_loop_gain import read_complex_raw
 from .tb_05_waveform_metrics import read_real_raw
+from .validation_05_special_fixtures import IMPEDANCE_POLICY
 
 REFERENCE='''* Known passive input network plus isolated amplifier; calibration only
 .subckt ZREF P N VP VM OUT
@@ -46,16 +47,16 @@ def parallel_fit(frequencies,admittance):
     omega=[2*math.pi*f for f in frequencies]
     capacitance=sum(w*y.imag for w,y in zip(omega,admittance))/sum(w*w for w in omega)
     residual=max(abs(y-complex(conductance,w*capacitance))/max(abs(y),1e-18) for w,y in zip(omega,admittance))
-    floor=1e-15;issues=[];cap_issues=[];res_issues=[]
+    floor=IMPEDANCE_POLICY['conductance_floor_S'];issues=[];cap_issues=[];res_issues=[]
     point_caps=[y.imag/w for w,y in zip(omega,admittance)]
     cap_dispersion=max(abs(c-capacitance) for c in point_caps)/max(abs(capacitance),1e-18)
     g_dispersion=max(abs(y.real-conductance) for y in admittance)/max(abs(conductance),floor)
     if capacitance<0:cap_issues.append('Negative equivalent capacitance')
-    if cap_dispersion>.05:cap_issues.append('Capacitance dispersion exceeds5% over project band')
+    if cap_dispersion>IMPEDANCE_POLICY['relative_tolerance']:cap_issues.append('Capacitance dispersion exceeds5% over project band')
     if conductance < -floor:res_issues.append('Negative equivalent conductance')
-    if g_dispersion>.05:res_issues.append('Conductance is not constant within5% over project band')
+    if g_dispersion>IMPEDANCE_POLICY['relative_tolerance']:res_issues.append('Conductance is not constant within5% over project band')
     issues+=cap_issues+res_issues
-    if residual>.05:issues.append('Parallel R/C fit residual exceeds declared5% across project1Hz–1MHz band')
+    if residual>IMPEDANCE_POLICY['relative_tolerance']:issues.append('Parallel R/C fit residual exceeds declared5% across project1Hz–1MHz band')
     resolved=conductance>floor and not issues
     return {'conductance_S':conductance,'resistance_Ohm':1/conductance if resolved else None,
             'diagnostic_inverse_conductance_Ohm':1/conductance if conductance>floor else None,
@@ -89,8 +90,14 @@ def modal_admittance(differential,common):
     return result
 
 
-def measure_pair(differential_path,common_path):
+def measure_pair(differential_path,common_path,metas=None):
     paths=[Path(differential_path),Path(common_path)];gates=[]
+    if metas is not None:
+        from .validation_03_execution_contract import validate_execution
+        if len(metas)!=2:raise ValueError('Both input-mode contracts are required')
+        for path,meta in zip(paths,metas):
+            meta['fit_policy']=dict(IMPEDANCE_POLICY)
+            validate_execution(path.read_text(encoding='ascii'),meta,phase='impedance_before_metric')
     for path in paths:
         op=read_real_raw(path.with_suffix('.op.raw'))
         if abs(op['v(out)'][0]-op['v(mid)'][0])>=1e-5 or abs(op['v(vid)'][0])>=.05:

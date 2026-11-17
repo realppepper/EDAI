@@ -48,7 +48,7 @@ def _pending(state,path,status):
         'packet_fingerprint':fingerprint(packet)})
 
 
-def start(session,pdf,target,settings,env_file=None,max_rounds=2,revisions_per_round=1):
+def start(session,pdf,target,settings,env_file=None,max_rounds=2,revisions_per_round=1,optuna_config=None,optuna_trials=4,optuna_rounds=1,optuna_from_designer=False):
     session=Path(session).resolve();session.mkdir(parents=True,exist_ok=True)
     if (session/'STARTUP_STATE.json').exists():raise ValueError('Startup already exists; resume it')
     state={'status':'prepare_document','pdf_path':str(Path(pdf).resolve()),'pdf_sha256':file_hash(pdf),
@@ -59,6 +59,12 @@ def start(session,pdf,target,settings,env_file=None,max_rounds=2,revisions_per_r
         'accepted_inputs':{},'accepted_replies':[],'pending_request':None,
         'max_rounds':max_rounds,'revisions_per_round':revisions_per_round,
         'history_imported':False,'past_circuit_imported':False,'invalid_initial_responses':0}
+    if optuna_config is not None and optuna_from_designer:raise ValueError('Choose fixed or designer sizing mode')
+    if optuna_config is not None or optuna_from_designer:
+        from .optuna_03_loop_bridge import configure
+        from .optuna_04_designer import designer_policy
+        state['optuna']=designer_policy(optuna_trials,optuna_rounds) if optuna_from_designer else configure(optuna_config,optuna_trials,optuna_rounds)
+        if state['optuna'].get('config_path'):state['accepted_inputs'][state['optuna']['config_path']]=state['optuna']['config_sha256']
     _save(session,state)
     return resume(session)
 
@@ -89,8 +95,10 @@ def resume(session,ltspice=None):
         if s['status']=='starting_operational_loop':
             loop=session/'workflow'
             if not (loop/'STATE.json').exists():
+                sizing=s.get('optuna',{})
                 workflow.start(loop,session/'initial/validation',session/'initial/candidate.inc',doc,
-                    s.get('initial_policy',str(DEFAULT_POLICY)),s['max_rounds'],s['revisions_per_round'])
+                    s.get('initial_policy',str(DEFAULT_POLICY)),s['max_rounds'],s['revisions_per_round'],
+                    sizing.get('config_path'),sizing.get('trials',4),sizing.get('max_rounds',1),sizing.get('mode')=='designer_proposal')
             s.update(status='operational_loop',workflow_session=str(loop),pending_request=None)
         if s['status']=='operational_loop':
             nested=workflow.resume(s['workflow_session'],ltspice) if ltspice else workflow.load(s['workflow_session'])
