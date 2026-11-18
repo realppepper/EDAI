@@ -202,6 +202,27 @@ CRITICAL: NEVER use ellipses, placeholders, or undefined X-subcircuit stubs in t
 """
         return prompt.strip()
 
+    @staticmethod
+    def _parse_xml_tool_call(raw_call: str) -> dict[str, Any] | None:
+        """Parses `<function=NAME><parameter=KEY>VALUE</parameter></function>` XML tool calls."""
+        m_fn = re.search(r'<function=([a-zA-Z0-9_]+)>\s*([\s\S]*?)(?:</function>|$)', raw_call, re.IGNORECASE)
+        if not m_fn:
+            return None
+        fn_name = m_fn.group(1).strip()
+        body = m_fn.group(2)
+        args: dict[str, Any] = {}
+        for m_p in re.finditer(r'<parameter=([a-zA-Z0-9_]+)>\s*([\s\S]*?)\s*</parameter>', body, re.IGNORECASE):
+            k = m_p.group(1).strip()
+            v_raw = m_p.group(2).strip()
+            if v_raw and v_raw[0] in ("{", "["):
+                try:
+                    args[k] = json.loads(v_raw, strict=False)
+                    continue
+                except Exception:
+                    pass
+            args[k] = v_raw
+        return {"name": fn_name, "arguments": args}
+
     def parse_tool_calls(self, text: str) -> list[dict[str, Any]]:
         """
         Extracts tool calls from LLM response text with robust fault tolerance:
@@ -226,10 +247,21 @@ CRITICAL: NEVER use ellipses, placeholders, or undefined X-subcircuit stubs in t
                 if isinstance(data, dict) and "name" in data:
                     calls.append(data)
             except Exception:
-                from ai_analog_designer.llm_client import repair_truncated_json
-                repaired = repair_truncated_json(raw_call)
-                if repaired and isinstance(repaired, dict) and "name" in repaired:
-                    calls.append(repaired)
+                xml_parsed = self._parse_xml_tool_call(raw_call)
+                if xml_parsed:
+                    calls.append(xml_parsed)
+                else:
+                    from ai_analog_designer.llm_client import repair_truncated_json
+                    repaired = repair_truncated_json(raw_call)
+                    if repaired and isinstance(repaired, dict) and "name" in repaired:
+                        calls.append(repaired)
+
+        # Pattern 1b: Bare <function=...> ... </function> without <tool_call> wrapper
+        if not calls:
+            for m in re.finditer(r'<function=[a-zA-Z0-9_]+>[\s\S]*?</function>', clean_text, re.IGNORECASE):
+                xml_parsed = self._parse_xml_tool_call(m.group(0))
+                if xml_parsed:
+                    calls.append(xml_parsed)
 
         # Pattern 2: Unclosed <tool_call> tags (model emitted <tool_call>\n{...} and omitted </tool_call>)
         if not calls:
