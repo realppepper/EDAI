@@ -166,8 +166,9 @@ Return JSON format:
         eval_b: dict[str, Any]
     ) -> tuple[HarnessTree, str, str]:
         """
-        Contrasts the behavioral results of the candidate probes and composes
-        the optimal unified harness tree.
+        Contrasts the behavioral execution logs/diagnostics of Base vs Probe A vs Probe B
+        using the Improver LLM (Harness² Behavioral Contrast) and composes the optimal
+        unified harness tree even when pass rates are tied at 0%.
         """
         score_base = eval_base.get("pass_rate_percent", 0.0)
         score_a = eval_a.get("pass_rate_percent", 0.0)
@@ -179,30 +180,74 @@ Return JSON format:
 
         logger.info(f"Harness² Compose: Base={score_base:.1f}% ({passed_base}), Probe A={score_a:.1f}% ({passed_a}), Probe B={score_b:.1f}% ({passed_b})")
 
+        def _summarize_eval(label: str, ev: dict[str, Any]) -> str:
+            errs = (ev.get("simulation_errors") or ev.get("errors") or [])[:5]
+            diag = str(ev.get("diagnostic_feedback", ""))[:1000]
+            return (
+                f"### {label}\n"
+                f"- PassRate: {ev.get('pass_rate_percent', 0.0):.1f}% ({ev.get('passed_specs', 0)} passed)\n"
+                f"- Errors: {errs}\n"
+                f"- Diagnostic: {diag}\n"
+            )
+
+        adopt_inv = score_a > score_base or (not eval_a.get("simulation_errors") and bool(eval_base.get("simulation_errors")))
+        adopt_dom = score_b > score_base or passed_b > passed_base
+        contrast_evidence = f"Base Pass Rate: {score_base:.1f}% -> Composed Best Probe: {max(score_a, score_b):.1f}%."
+
+        try:
+            client = self.get_improver_client()
+            compose_sys = (
+                "You are the Harness² Behavioral Contrast Composer.\n"
+                "Compare execution traces/diagnostics of Baseline (B), Probe A (Invariant edit), and Probe B (Domain edit) side-by-side.\n"
+                "Even if all pass rates are 0%, detect whether Probe A or Probe B made meaningful causal progress "
+                "(e.g., fixed syntax/rail errors, reached deeper simulation stage, reduced errors without regressions).\n"
+                "Apply conservative evidence filtering: only adopt an edit if concrete log evidence supports it.\n"
+                "Return ONLY JSON: {\"adopt_invariant\": bool, \"adopt_domain\": bool, \"evidence\": \"...\", \"summary\": \"...\"}"
+            )
+            compose_prompt = (
+                f"{_summarize_eval('Baseline (B)', eval_base)}\n"
+                f"{_summarize_eval('Probe A (Invariant Edit)', eval_a)}\n"
+                f"{_summarize_eval('Probe B (Domain Edit)', eval_b)}\n"
+                "Contrast B vs Probe A and B vs Probe B and decide which edits to compose."
+            )
+            c_res = client.complete_json(
+                compose_prompt,
+                system_prompt=compose_sys,
+                temperature=0.1,
+                max_tokens=1024,
+                tag="harness2_compose",
+            )
+            if isinstance(c_res, dict) and str(c_res.get("evidence", "")).strip():
+                adopt_inv = adopt_inv or bool(c_res.get("adopt_invariant", False))
+                adopt_dom = adopt_dom or bool(c_res.get("adopt_domain", False))
+                contrast_evidence = str(c_res.get("evidence", contrast_evidence))
+                logger.info(f"Harness² Behavioral Contrast Compose: adopt_inv={adopt_inv}, adopt_dom={adopt_dom} | {contrast_evidence[:160]}")
+        except Exception as ce:
+            logger.warning(f"LLM Behavioral Contrast Compose skipped ({ce}); using deterministic comparison.")
+
         composed_tree = base_tree.clone()
         decision_summary = []
-        lesson = ""
 
-        # Did Probe A (Invariant) fix compiler/convergence issues or improve pass rate?
-        if score_a > score_base or (not eval_a.get("simulation_errors") and eval_base.get("simulation_errors")):
+        if adopt_inv:
             composed_tree.c2_guardrails = tree_a.c2_guardrails
-            decision_summary.append("Adopted Invariant (Candidate A) guardrails for SPICE convergence.")
-            lesson += " Adopted convergence guardrails."
+            decision_summary.append("Adopted Invariant (Candidate A) guardrails via Behavioral Contrast.")
 
-        # Did Probe B (Domain) improve electrical specification compliance?
-        if score_b > score_base or passed_b > passed_base:
+        if adopt_dom:
             composed_tree.c1_system_prompt = tree_b.c1_system_prompt
             composed_tree.c5_skills.update(tree_b.c5_skills)
-            decision_summary.append("Adopted Domain (Candidate B) topology blueprints and sizing directives.")
-            lesson += " Adopted domain sizing/topology blueprint."
+            decision_summary.append("Adopted Domain (Candidate B) topology/sizing via Behavioral Contrast.")
 
-        # Merge memory additions from both successful candidates
+        # Merge memory additions from adopted candidates (or both if neither adopted yet)
         merged_memory = set(base_tree.c3_memory.splitlines())
-        for tree in (tree_a, tree_b):
+        trees_to_merge = []
+        if adopt_inv:
+            trees_to_merge.append(tree_a)
+        if adopt_dom:
+            trees_to_merge.append(tree_b)
+        for tree in trees_to_merge:
             for line in tree.c3_memory.splitlines():
                 if line.strip() and line not in merged_memory:
                     composed_tree.c3_memory += f"\n{line}"
                     merged_memory.add(line)
 
-        evidence = f"Base Pass Rate: {score_base:.1f}% -> Composed Best Probe: {max(score_a, score_b):.1f}%."
-        return composed_tree, " | ".join(decision_summary) or "Maintained baseline harness.", evidence
+        return composed_tree, " | ".join(decision_summary) or "Maintained baseline harness.", contrast_evidence
