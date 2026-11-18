@@ -54,7 +54,7 @@ uv pip install -r requirements.txt pytest
 
 ## 3. 환경 설정 (`.env`)
 
-필수 API 키가 설정되어 있지 않으면 하드코딩된 기본값을 쓰지 않고 즉시 `RuntimeError`로 실행을 차단합니다. 프로젝트 루트(`.env`)에 사용할 프로바이더와 키를 설정하세요:
+필수 API 키가 설정되어 있지 않으면 하드코딩된 기본값을 쓰지 않고 즉시 `RuntimeError`로 실행을 차단합니다. 루트의 [`.env.example`](.env.example)을 `.env`로 복사해 사용할 프로바이더와 키를 설정하세요. 전체 외부 API·Fallback·로컬 바이너리 상세 정리는 [`docs/EXTERNAL_APIS.md`](docs/EXTERNAL_APIS.md)를 참고하세요.
 
 ```ini
 # LLM 프로바이더 선택: wusrouter | nim | groq | openrouter
