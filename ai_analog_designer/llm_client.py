@@ -556,11 +556,31 @@ class LLMClient:
                         raise
                     except Exception as e:
                         last_err = f"{type(e).__name__}: {e}"
-                        self._log(tag, m, attempt, "timeout" if "timed out" in str(e).lower() or isinstance(e, LLMTimeout) else "error",
+                        err_lower = str(e).lower()
+                        self._log(tag, m, attempt, "timeout" if "timed out" in err_lower or isinstance(e, LLMTimeout) else "error",
                                   {"total_s": round(time.perf_counter() - t0, 2)}, last_err)
-                        if isinstance(e, LLMTimeout) or "timed out" in str(e).lower():
+                        if isinstance(e, LLMTimeout) or "timed out" in err_lower:
                             break  # stalled model -> fall back immediately instead of retrying
-                        time.sleep(2 * attempt)
+                        is_net_drop = isinstance(e, urllib.error.URLError) or any(
+                            k in err_lower for k in ("getaddrinfo", "name or service not known", "temporary failure in name resolution", "network is unreachable")
+                        )
+                        if is_net_drop:
+                            recovery_budget = float(os.environ.get("LLM_NETWORK_RECOVERY_S", "180"))
+                            waited = 0.0
+                            step_wait = 10.0
+                            while waited < recovery_budget:
+                                time.sleep(step_wait)
+                                waited += step_wait
+                                try:
+                                    import socket
+                                    from urllib.parse import urlparse
+                                    host = urlparse(self.base_url).hostname or "integrate.api.nvidia.com"
+                                    socket.getaddrinfo(host, 443)
+                                    break
+                                except Exception:
+                                    continue
+                        else:
+                            time.sleep(2 * attempt)
                     finally:
                         _GLOBAL_SEM.release()
             raise RuntimeError(f"LLM call failed on all models {chain}: {last_err}")
