@@ -97,27 +97,13 @@ class ToolDecisionRouter:
         # System-1 Calibrated Decision Logic
         probs: dict[str, float] = {t: 0.05 for t in self.SUPPORTED_TOOLS}
 
-        # Rule 1: Goal achieved (pass_rate >= 100%) -> save blueprint immediately
+        # Hard Guardrail 1: Goal achieved (pass_rate >= 100%) -> save blueprint immediately
         if pass_rate >= 100.0:
             probs = {t: 0.01 for t in self.SUPPORTED_TOOLS}
             probs["save_subcircuit_blueprint"] = 0.95
             return self._format_decision("save_subcircuit_blueprint", probs, "Target 100% pass rate achieved.")
 
-        # Rule 2: Turn 1 -> Prioritize blueprint / literature retrieval
-        if turn_idx == 1 and not has_netlist:
-            probs = {t: 0.01 for t in self.SUPPORTED_TOOLS}
-            probs["retrieve_subcircuit_blueprint"] = 0.85
-            probs["search_web_circuit_reference"] = 0.10
-            return self._format_decision("retrieve_subcircuit_blueprint", probs, "Initial turn: retrieve topology blueprints.")
-
-        # Rule 3: Netlist exists -> Prioritize physical simulation
-        if has_netlist:
-            probs = {t: 0.01 for t in self.SUPPORTED_TOOLS}
-            probs["verify_circuit_pdg_gate"] = 0.85
-            probs["validate_netlist_syntax"] = 0.10
-            return self._format_decision("verify_circuit_pdg_gate", probs, "Netlist present: execute physical LTspice simulation.")
-
-        # Rule 4: Repetition trap breaker (agent repeatedly calling manage_memory or read-only tools)
+        # Hard Guardrail 2: Repetition trap breaker (agent repeatedly calling manage_memory)
         recent_memory_calls = sum(1 for t in history_tool_names[-3:] if t == "manage_memory")
         if recent_memory_calls >= 2:
             probs = {t: 0.01 for t in self.SUPPORTED_TOOLS}
@@ -130,36 +116,28 @@ class ToolDecisionRouter:
                 "Repetition trap broken: invoking Netlist Synthesis Sub-Agent."
             )
 
-        # Rule 5: No netlist yet after Turn 1 -> Invoke topology/base synthesis or Netlist Synthesis Sub-Agent
-        if not has_netlist:
-            probs = {t: 0.01 for t in self.SUPPORTED_TOOLS}
-            probs["synthesize_circuit_netlist"] = 0.55
+        # Soft Priors (no forced early return): guide without blocking active LLM tool choice
+        if turn_idx == 1 and not has_netlist:
+            probs["retrieve_subcircuit_blueprint"] = 0.45
+            probs["search_web_circuit_reference"] = 0.25
             probs["generate_topology_candidates"] = 0.15
-            probs["generate_base_circuit"] = 0.10
-            probs["auto_size_gm_id"] = 0.08
-            probs["retrieve_subcircuit_blueprint"] = 0.07
-            return self._format_decision(
-                "synthesize_circuit_netlist",
-                probs,
-                "No candidate netlist yet: invoke Netlist Synthesis Sub-Agent or topology/gm-ID generators."
-            )
-
-        # Rule 6: Ambiguous / mid-loop state -> blend with Bayesian prior (including sweep & IEEE search)
-        probs["synthesize_circuit_netlist"] = 0.35
-        probs["verify_circuit_pdg_gate"] = 0.25
-        probs["sweep_parameters_grid"] = 0.12 if pass_rate > 0 else 0.04
-        probs["auto_size_gm_id"] = 0.08
-        probs["generate_topology_candidates"] = 0.05
-        probs["search_web_circuit_reference"] = 0.05
-        probs["validate_netlist_syntax"] = 0.05
-        probs["retrieve_subcircuit_blueprint"] = 0.03
-        probs["manage_memory"] = 0.02
-        reason = "Standard iterative synthesis cycle."
+            reason = "Initial turn prior: explore blueprints, IEEE references, or topology candidates."
+        elif has_netlist:
+            probs["verify_circuit_pdg_gate"] = 0.45
+            probs["validate_netlist_syntax"] = 0.20
+            probs["sweep_parameters_grid"] = 0.15 if pass_rate > 0 else 0.05
+            reason = "Netlist present prior: favor verification, syntax check, or parameter sweep."
+        else:
+            probs["synthesize_circuit_netlist"] = 0.40
+            probs["generate_topology_candidates"] = 0.20
+            probs["auto_size_gm_id"] = 0.15
+            probs["search_web_circuit_reference"] = 0.10
+            reason = "No candidate netlist yet prior: favor synthesis, topology, or gm/ID sizing."
 
         if os.environ.get("ANALOG_ENABLE_LLM_ROUTER", "1") == "1" and os.environ.get("ANALOG_DISABLE_LLM_PLANNER") != "1":
             try:
                 from ..llm_client import LLMClient
-                llm = LLMClient(role="fast")
+                llm = LLMClient()
                 if getattr(llm, "provider", "none") != "none":
                     prompt = (
                         "You are a System-1 probabilistic tool router for an analog IC synthesis agent.\n"
