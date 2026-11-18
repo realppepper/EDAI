@@ -55,7 +55,7 @@ class Harness2Proposer:
             return self.groq_client
         if self.synthesizer_provider == "openrouter" and self.openrouter_client:
             return self.openrouter_client
-        return self.wusrouter_client or self.nim_client or self.groq_client or self.openrouter_client
+        return self.nim_client or self.groq_client or self.openrouter_client or self.wusrouter_client
 
     def propose_edits(
         self,

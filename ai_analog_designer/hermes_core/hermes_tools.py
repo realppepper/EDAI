@@ -285,8 +285,14 @@ class HermesAnalogTools:
         if bp_res.get("blueprints"):
             raw_bp = bp_res["blueprints"][0].get("content", "")
             adapted_seed = self.adapt_blueprint_to_dut(raw_bp, target_subckt=self.dut_name)
+            seed_rule = (
+                "CRITICAL: Keep the exact node connections of this DC-convergent skeleton intact; "
+                "do NOT invent floating nodes—only tune W/L, R, and C values."
+                if not self.evaluation_history
+                else "Use this skeleton as structural reference and fix the failing specs below."
+            )
             bp_context = (
-                "\n## PRE-ADAPTED DC-CONVERGENT SKELETON (Start from this pin-matched architecture and tune W/L, R, C values):\n"
+                f"\n## PRE-ADAPTED DC-CONVERGENT SKELETON ({seed_rule}):\n"
                 f"{adapted_seed[:3200]}\n"
             )
 

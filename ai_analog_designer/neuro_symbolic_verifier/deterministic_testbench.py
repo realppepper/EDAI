@@ -1344,7 +1344,13 @@ def compile_check(netlist: str, plan: dict[str, Any], out_dir: str, dut_name: st
     pm = plan.get("pin_map", {})
     vs = vs or plan.get("vs_default") or 5.0
     nodes = [f"n_{re.sub(r'[^A-Za-z0-9_]', '_', p.replace('+', 'p').replace('-', 'n'))}" for p in pins]
-    lines = [f"* compile check for {name}", ".temp 25", netlist.strip(), ""]
+    lines = [
+        f"* compile check for {name}",
+        ".temp 25",
+        ".options gmin=1e-10 abstol=1e-10 reltol=0.005 itl1=500",
+        netlist.strip(),
+        "",
+    ]
     lines += [f"R_{idx}_{n} {n} 0 1G" for idx, n in enumerate(nodes, 1)]
     for p, n in zip(pins, nodes):
         if pm.get("vpos") and p == pm["vpos"]:
