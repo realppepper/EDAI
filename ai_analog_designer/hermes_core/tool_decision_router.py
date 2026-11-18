@@ -34,6 +34,10 @@ class ToolDecisionRouter:
         "search_web_circuit_reference",
         "manage_memory",
         "save_subcircuit_blueprint",
+        "generate_topology_candidates",
+        "auto_size_gm_id",
+        "generate_base_circuit",
+        "sweep_parameters_grid",
     ]
 
     def __init__(
@@ -126,23 +130,30 @@ class ToolDecisionRouter:
                 "Repetition trap broken: invoking Netlist Synthesis Sub-Agent."
             )
 
-        # Rule 5: No netlist yet after Turn 1 -> Invoke Netlist Synthesis Sub-Agent
+        # Rule 5: No netlist yet after Turn 1 -> Invoke topology/base synthesis or Netlist Synthesis Sub-Agent
         if not has_netlist:
             probs = {t: 0.01 for t in self.SUPPORTED_TOOLS}
-            probs["synthesize_circuit_netlist"] = 0.80
-            probs["retrieve_subcircuit_blueprint"] = 0.10
+            probs["synthesize_circuit_netlist"] = 0.55
+            probs["generate_topology_candidates"] = 0.15
+            probs["generate_base_circuit"] = 0.10
+            probs["auto_size_gm_id"] = 0.08
+            probs["retrieve_subcircuit_blueprint"] = 0.07
             return self._format_decision(
                 "synthesize_circuit_netlist",
                 probs,
-                "No candidate netlist yet: invoke Netlist Synthesis Sub-Agent."
+                "No candidate netlist yet: invoke Netlist Synthesis Sub-Agent or topology/gm-ID generators."
             )
 
-        # Rule 6: Ambiguous / mid-loop state -> blend with Bayesian prior
-        probs["synthesize_circuit_netlist"] = 0.45
-        probs["verify_circuit_pdg_gate"] = 0.35
-        probs["validate_netlist_syntax"] = 0.10
-        probs["retrieve_subcircuit_blueprint"] = 0.05
-        probs["manage_memory"] = 0.05
+        # Rule 6: Ambiguous / mid-loop state -> blend with Bayesian prior (including sweep & IEEE search)
+        probs["synthesize_circuit_netlist"] = 0.35
+        probs["verify_circuit_pdg_gate"] = 0.25
+        probs["sweep_parameters_grid"] = 0.12 if pass_rate > 0 else 0.04
+        probs["auto_size_gm_id"] = 0.08
+        probs["generate_topology_candidates"] = 0.05
+        probs["search_web_circuit_reference"] = 0.05
+        probs["validate_netlist_syntax"] = 0.05
+        probs["retrieve_subcircuit_blueprint"] = 0.03
+        probs["manage_memory"] = 0.02
         reason = "Standard iterative synthesis cycle."
 
         if os.environ.get("ANALOG_ENABLE_LLM_ROUTER", "1") == "1" and os.environ.get("ANALOG_DISABLE_LLM_PLANNER") != "1":

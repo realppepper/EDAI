@@ -1,0 +1,21 @@
+EDAI INPUT EXERCISE
+
+Reconstruct the supplied common-source amplifier netlist image and prepare a
+single-file SPICE transient testbench. Preserve the supplied educational MOS model.
+
+Supply: 5 V
+Input: sine wave, 1 kHz, amplitude 5 mV around a variable gate bias VG
+Transistor: NMOS, W=20u, L=2u
+Model: LEVEL=1 VTO=0.7 KP=100u LAMBDA=0.02 (generic educational assumption)
+Drain resistor RD: search 10000 to 50000 ohms
+Gate bias VG: search 0.95 to 1.2 V
+Output load: 1 megohm in parallel with 10 pF
+
+Targets:
+gain >= 12 V/V (Vout peak-to-peak / Vin peak-to-peak)
+power_mw <= 0.6 mW (mean power drawn from the 5 V supply)
+1 <= bias_v <= 4 V (mean output voltage)
+
+Among feasible candidates, minimize power_mw.
+Measure after startup, from 4 ms to 8 ms.
+Do not claim validation until the simulator actually runs.

@@ -1,0 +1,380 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>EDAI × AnalogVerifier · Circuit Studio</title>
+  <link rel="stylesheet" href="/style.css">
+  <script src="/bootstrap.js" defer></script>
+  <script src="/app.js" defer></script>
+  <script src="/review.js" defer></script>
+  <script src="/edai_extensions.js" defer></script>
+</head>
+<body>
+  <header>
+    <a href="/" class="logo">e<span>↗</span> <b>EDAI</b><small>ANALOGVERIFIER STUDIO</small></a>
+    <div class="header-badges">
+      <span id="engine-status" class="badge">연결 확인 중</span>
+      <span id="ai-provider-badge" class="badge subtle">LLM 확인 중</span>
+      <span class="badge subtle">UNIFIED · v1.0</span>
+    </div>
+  </header>
+
+  <main>
+    <nav class="workflow">
+      <b>01 자료·HKG/PDG 추출</b>
+      <span>02 출처·목표 확인</span>
+      <span>03 토폴로지·gm/ID·초안</span>
+      <span>04 SPICE 스윕 &amp; Hermes 자율 검증</span>
+      <span class="links">
+        <a href="/classic">기존 다크 Studio</a>
+        <a href="/studio/">수학 모델 데모</a>
+      </span>
+    </nav>
+
+    <div class="heading">
+      <div>
+        <p class="eyebrow">DESIGN → SIZE → SIMULATE → HERMES CLOSED-LOOP</p>
+        <h1>데이터시트에서 토폴로지 탐색, gm/ID 사이징, 자율 검증까지.</h1>
+        <p>seungcheol의 Circuit Studio UI 위에서 jiyun의 FLAN-T5·gm/ID 사이징, IEEE MCP 레퍼런스, analogverifier의 Hermes × Harness² 폐루프를 함께 실행합니다.</p>
+      </div>
+      <div class="heading-actions">
+        <button id="example" class="secondary">공통 소스 예제</button>
+        <button id="load-opamp-example" class="secondary">OP-Amp 예제</button>
+      </div>
+    </div>
+
+    <div class="intro">
+      <strong>통합 아키텍처</strong>
+      <span>초기 토폴로지·사이징(FLAN-T5/블록 + gm/ID + 베이스 초안)으로 출발점을 잡고, NetlistValidator + 4단계 인과 게이트 + Hermes × Harness² 폐루프로 스펙을 검증·개선합니다.</span>
+    </div>
+
+    <details id="setup" class="panel setup">
+      <summary>엔진 &amp; 시뮬레이터 설정 · 상태 확인</summary>
+      <div class="field-grid space">
+        <label>스윕 시뮬레이터
+          <select id="config-engine">
+            <option value="ltspice">LTspice</option>
+            <option value="ngspice">ngspice</option>
+          </select>
+        </label>
+        <label>실행 파일 경로 (비우면 자동 탐색)
+          <input id="config-path" placeholder="C:/Program Files/ADI/LTspice/LTspice.exe">
+        </label>
+        <label>모델 ID 오버라이드 (선택)
+          <input id="config-model" placeholder="비우면 .env LLM_PROVIDER 기본 라우팅 사용">
+        </label>
+        <div><button id="config-save" class="secondary">설정 저장·연결 확인</button></div>
+      </div>
+      <p id="llm-routing-info" class="note">LLM 라우팅 정보 로딩 중...</p>
+    </details>
+
+    <div id="error" class="error" role="alert" hidden></div>
+
+    <div class="layout">
+      <!-- LEFT COLUMN -->
+      <section class="input-column">
+        <article class="panel">
+          <div class="section-title">
+            <span class="step">01</span>
+            <div>
+              <h2>설계 입력 · 자료 검수 · 토폴로지 사이징</h2>
+              <p>넷리스트 직접 입력, PDF/HKG/PDG·IEEE 검색, 또는 FLAN-T5/gm-ID 사이징을 선택하세요.</p>
+            </div>
+          </div>
+
+          <div class="tabs">
+            <button class="active" data-tab="net">넷리스트 · 검증</button>
+            <button data-tab="ai">자료 · PDG · IEEE</button>
+            <button data-tab="topo">토폴로지 · gm/ID</button>
+          </div>
+
+          <!-- TAB 1: NETLIST -->
+          <div id="tab-net">
+            <div class="row">
+              <label for="netlist">실행할 SPICE 넷리스트</label>
+              <label class="file-button">.cir 파일 열기<input type="file" id="net-file" accept=".cir,.net,.sp,.txt"></label>
+            </div>
+            <textarea id="netlist" rows="18" spellcheck="false" aria-label="넷리스트"></textarea>
+            <div class="actions">
+              <button id="btn-render-svg" type="button" class="secondary">회로도 SVG 보기</button>
+              <button id="btn-validate-guardrail" type="button" class="secondary">물리 가드레일(NetlistValidator) 검사</button>
+            </div>
+            <div id="guardrail-result" class="sub-card" hidden></div>
+          </div>
+
+          <!-- TAB 2: PDF / REVIEW / PDG / IEEE MCP -->
+          <div id="tab-ai" hidden>
+            <div class="sub-card">
+              <h3>데이터시트 샘플 선택 (testcases/) 또는 파일 업로드</h3>
+              <div class="row space">
+                <select id="sample-select" style="flex:1">
+                  <option value="">-- 샘플 IC 데이터시트 선택 --</option>
+                </select>
+                <button id="btn-extract-pdg" type="button" class="secondary">PDG 추출·시각화</button>
+              </div>
+              <div id="pdg-box" hidden class="space">
+                <div class="row">
+                  <strong id="pdg-title" style="font-size:12px">PDG 그래프</strong>
+                  <label class="compact">시간 슬라이더
+                    <input type="range" id="pdg-slider" min="0" max="10" step="0.5" value="0">
+                    <span id="pdg-time-val">0.0 us</span>
+                  </label>
+                </div>
+                <div id="pdg-svg-box" class="svg-box"></div>
+                <div class="table-scroll space">
+                  <table class="history">
+                    <thead><tr><th>핀</th><th>역할</th><th>지연 σ(p)</th><th>상태</th></tr></thead>
+                    <tbody id="pdg-table-body"></tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+
+            <div class="space">
+              <label for="instruction">설계 요청과 목표 (자연어 / 스펙)</label>
+              <textarea id="instruction" rows="4" placeholder="예: LM358B 데이터시트 기반으로 단일 5V 전원, 이득 >= 80dB, 위상여유 >= 45도 OP-Amp 설계 및 검증"></textarea>
+              <label class="drop" for="source-files">
+                자료 선택 · 회로도 / 데이터시트 / 테스트벤치
+                <input type="file" id="source-files" multiple accept=".pdf,.png,.jpg,.jpeg,.webp,.txt,.cir,.net,.sp,.json">
+                <small>최대 4개 · 총 10 MB · PDF는 직접 검토 시 8쪽 이하 (전체 데이터시트는 위 샘플/자율 루프 사용)</small>
+              </label>
+              <div id="file-list" class="note"></div>
+              <div class="actions">
+                <button id="extract-local" class="secondary">1. 로컬 텍스트 추출</button>
+                <button id="extract-ai" class="secondary">1. AI로 항목 추출</button>
+              </div>
+            </div>
+
+            <section id="review-panel" hidden>
+              <h3>2. 원문과 추출값 확인 (출처 대조)</h3>
+              <div id="review-warning" class="note"></div>
+              <div id="review-fields"></div>
+              <button id="field-add" class="text-button">+ 확인 항목 직접 추가</button>
+              <details class="space"><summary>파일·페이지별 추출 원문</summary><div id="review-pages"></div></details>
+              <label class="review-consent"><input type="checkbox" id="review-consent"> 출처·값·단위를 검토했고 위 설계 요청이 목표임을 확인했습니다.</label>
+              <button id="confirm-review" class="primary full">확인한 정보 저장</button>
+              <p id="review-state" class="note">아직 확인하지 않았습니다.</p>
+            </section>
+
+            <!-- IEEE MCP Search -->
+            <div class="sub-card">
+              <h3>IEEE MCP 학술 레퍼런스 검색</h3>
+              <div class="row">
+                <input id="ieee-query" placeholder="예: two-stage Miller op-amp CMOS compensation" style="flex:1">
+                <button id="btn-ieee-search" type="button" class="secondary">IEEE 검색</button>
+              </div>
+              <div id="ieee-results"></div>
+            </div>
+
+            <button id="generate" class="secondary full">3. 확인한 자료·IEEE 근거로 베이스 회로 초안 생성</button>
+            <p id="ai-status" class="note"></p>
+            <div id="ai-result"></div>
+          </div>
+
+          <!-- TAB 3: TOPOLOGY EXPLORER + gm/ID SIZER (jiyun) -->
+          <div id="tab-topo" hidden>
+            <div class="sub-card">
+              <h3>FLAN-T5 / 블록 라이브러리 토폴로지 탐색 (jiyun)</h3>
+              <div class="row">
+                <input id="topo-hint" placeholder="아키텍처 힌트 (예: folded cascode class ab miller)" style="flex:1">
+                <button id="btn-topo-explore" type="button" class="primary">후보 탐색</button>
+              </div>
+              <p class="note">로컬 FLAN-T5 모델(<code>EDAI_MODEL_DIR</code>)이 있으면 모델 생성 후보를 포함하고, 없으면 검증된 CMOS OP-Amp 블록 조합 후보를 탐색합니다.</p>
+              <div id="topo-candidates" class="cand-list"></div>
+            </div>
+
+            <div class="sub-card" id="gmid-panel">
+              <h3>GF180 6V gm/ID 자동 사이징</h3>
+              <label>구조 표 (소자-연결선 표)
+                <textarea id="topo-table-input" rows="5" placeholder="PM1 D=N1 G=IN1 S=N3 B=VDD; ..."></textarea>
+              </label>
+              <div class="field-grid space">
+                <label>단위 전류 (uA)<input id="gmid-current" type="number" value="20" min="1" max="500"></label>
+                <label>출력단 배율
+                  <select id="gmid-scale">
+                    <option value="1">1x (저전력)</option>
+                    <option value="5">5x (표준)</option>
+                    <option value="20">20x (고구동)</option>
+                    <option value="50">50x (최대 출력)</option>
+                  </select>
+                </label>
+              </div>
+              <div class="actions">
+                <button id="btn-run-gmid" type="button" class="primary">gm/ID 사이징 &amp; 회로도 생성</button>
+                <button id="btn-apply-gmid" type="button" class="secondary" disabled>넷리스트 편집기에 적용</button>
+              </div>
+              <div id="gmid-result" class="note"></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- CARD 02: SWEEP & AUTONOMOUS EXECUTION -->
+        <article class="panel">
+          <div class="section-title">
+            <span class="step">02</span>
+            <div>
+              <h2>탐색 범위 · 자율 폐루프 실행</h2>
+              <p>로컬 SPICE 파라미터 스윕 또는 Hermes × Harness² 4단계 자율 검증 루프를 실행합니다.</p>
+            </div>
+          </div>
+
+          <div class="row"><h3>변경할 파라미터</h3><button id="add-param" class="text-button">+ 변수</button></div>
+          <div class="table-scroll">
+            <table class="edit-table">
+              <thead><tr><th>이름</th><th>최소</th><th>최대</th><th>초기</th><th>간격</th><th></th></tr></thead>
+              <tbody id="params"></tbody>
+            </table>
+          </div>
+
+          <div class="row space"><h3>통과 조건</h3><button id="add-goal" class="text-button">+ 조건</button></div>
+          <div class="table-scroll">
+            <table class="edit-table">
+              <thead><tr><th>측정명</th><th>방향</th><th>목표값</th><th>단위</th><th></th></tr></thead>
+              <tbody id="goals"></tbody>
+            </table>
+          </div>
+
+          <div class="field-grid space">
+            <label>조건 충족 후 우선 지표<input id="objective" value="power_mw" placeholder=".meas 이름"></label>
+            <label>최적화 방향
+              <select id="sense">
+                <option value="min">작을수록 좋음</option>
+                <option value="max">클수록 좋음</option>
+              </select>
+            </label>
+            <label>스윕 방식
+              <select id="method">
+                <option value="feedback">자동 피드백 · 주변 탐색</option>
+                <option value="grid">전체 그리드 비교</option>
+                <option value="single">초기값 한 번 실행</option>
+              </select>
+            </label>
+            <label>스윕 최대 횟수<input id="max-runs" type="number" min="1" max="128" value="32"></label>
+          </div>
+
+          <div class="actions">
+            <button id="run" class="primary">SPICE 스윕 실행 →</button>
+            <button id="cancel" class="secondary" disabled>중지</button>
+          </div>
+
+          <div class="sub-card">
+            <h3>Hermes × Harness² 4단계 자율 폐루프 (analogverifier)</h3>
+            <div class="field-grid">
+              <label>자율 루프 최대 턴
+                <select id="hermes-max-iters">
+                  <option value="2">2 Iterations (빠른 확인)</option>
+                  <option value="5">5 Iterations (표준)</option>
+                  <option value="10">10 Iterations</option>
+                  <option value="20" selected>20 Iterations (권장)</option>
+                </select>
+              </label>
+              <div style="display:flex;align-items:flex-end">
+                <button id="btn-run-autonomous" type="button" class="accent full">자율 합성·검증 실행 →</button>
+              </div>
+            </div>
+            <p class="note">선택된 샘플 PDF(또는 자연어 목표)를 바탕으로 HKG/PDG → Hermes(토폴로지/gm-ID/베이스/IEEE) → LTspice 4단계 게이트를 자율 실행합니다.</p>
+          </div>
+        </article>
+      </section>
+
+      <!-- RIGHT COLUMN -->
+      <section class="results-column">
+        <article class="panel result-head">
+          <div class="section-title">
+            <span class="step">03</span>
+            <div>
+              <h2>실행 결과 &amp; 파이프라인 모니터</h2>
+              <p id="run-status" aria-live="polite">아직 시뮬레이션을 실행하지 않았습니다.</p>
+            </div>
+          </div>
+
+          <!-- 6-Phase Autonomous Stepper -->
+          <div id="autonomous-monitor" hidden>
+            <div class="phase-grid">
+              <div id="auto-phase-1" class="phase-box">Phase 1 · HKG 추출</div>
+              <div id="auto-phase-2" class="phase-box">Phase 2 · PDG 스케줄</div>
+              <div id="auto-phase-3" class="phase-box">Phase 3 · Hermes 합성</div>
+              <div id="auto-phase-4" class="phase-box">Phase 4 · 테스트벤치</div>
+              <div id="auto-phase-5" class="phase-box">Phase 5 · LTspice 검증</div>
+              <div id="auto-phase-6" class="phase-box">Phase 6 · 폐루프 완료</div>
+            </div>
+            <details class="space" open>
+              <summary>자율 파이프라인 실시간 로그 (<span id="auto-log-count">0</span>)</summary>
+              <pre id="auto-logs">실행 대기 중...</pre>
+            </details>
+            <div class="actions" id="auto-result-actions" hidden>
+              <a id="auto-dashboard-link" class="secondary" target="_blank">시각 대시보드 열기 ↗</a>
+              <button id="btn-apply-auto-netlist" type="button" class="primary">최종 넷리스트 편집기로 적용</button>
+            </div>
+          </div>
+
+          <div class="stats space">
+            <div><small>실행한 후보</small><b id="count">0</b></div>
+            <div><small>목표 충족 후보</small><b id="feasible">—</b></div>
+            <div><small>현재 최선 후보</small><b id="best">—</b></div>
+          </div>
+          <div id="selection-note" class="selection">초기 결과가 여기에 표시됩니다.</div>
+        </article>
+
+        <!-- Schematic SVG Card -->
+        <article class="panel">
+          <div class="row">
+            <h2>회로도 SVG</h2>
+            <span id="schematic-renderer-badge" class="badge subtle">대기</span>
+          </div>
+          <div id="schematic-svg-container" class="svg-box">
+            <p class="empty">토폴로지 사이징 또는 넷리스트 SVG 미리보기를 누르면 회로도가 표시됩니다.</p>
+          </div>
+        </article>
+
+        <article class="panel">
+          <div class="row">
+            <h2>성능 변화</h2>
+            <label class="compact">지표<select id="trend-metric"></select></label>
+          </div>
+          <div id="trend" class="chart"><p class="empty">실제 실행 순서대로 측정값이 그려집니다.</p></div>
+        </article>
+
+        <article class="panel">
+          <div class="row">
+            <h2>선택 후보의 목표 판정</h2>
+            <span id="selected-label" class="badge subtle">—</span>
+          </div>
+          <div id="before-after" class="table-scroll"></div>
+          <div id="checks" class="empty">아래 실행 목록에서 후보를 선택하세요.</div>
+          <div id="feedback" class="feedback" hidden></div>
+        </article>
+
+        <article class="panel">
+          <div class="row">
+            <h2>SPICE 파형</h2>
+            <label class="compact">신호<select id="wave-signal"></select></label>
+          </div>
+          <div id="wave" class="chart"><p class="empty">시뮬레이터의 ASCII raw 데이터로 표시합니다.</p></div>
+        </article>
+
+        <article class="panel">
+          <div class="row">
+            <h2>실행 기록과 결과 내보내기</h2>
+            <a id="download" class="secondary disabled" aria-disabled="true">전체 결과 ZIP (회로도 SVG 포함) ↓</a>
+          </div>
+          <div class="table-scroll">
+            <table class="history">
+              <thead><tr><th>후보</th><th>변경값</th><th>목표</th><th>실행</th><th></th></tr></thead>
+              <tbody id="history"></tbody>
+            </table>
+          </div>
+          <details class="space"><summary>선택 후보의 SPICE 로그</summary><pre id="log">실행 대기</pre></details>
+          <button id="refine" class="text-button space" disabled>측정 결과를 AI에 보내 회로 수정안 받기 ↗</button>
+        </article>
+      </section>
+    </div>
+
+    <footer>
+      EDAI × AnalogVerifier · Unified Analog IC Synthesis &amp; Verification Studio
+      <span>FLAN-T5 · gm/ID · IEEE MCP · Hermes × Harness² · LTspice / ngspice</span>
+    </footer>
+  </main>
+</body>
+</html>

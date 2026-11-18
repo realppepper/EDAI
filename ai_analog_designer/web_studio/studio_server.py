@@ -13,6 +13,7 @@ from urllib.parse import parse_qs, urlparse
 from ..autonomous_design_agent import AutonomousAnalogDesignAgent
 from ..pdf_to_graph import PDGVisualizer
 from ..visualization import ProcessVisualizer
+from .edai_studio_routes import handle_edai_get, handle_edai_post
 
 logger = logging.getLogger("StudioServer")
 
@@ -50,8 +51,10 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
         path = parsed.path
         query = parse_qs(parsed.query)
 
-        if path == "/" or path == "/index.html":
+        if path == "/classic":
             self.serve_studio_html()
+        elif handle_edai_get(self, path, query):
+            return
         elif path == "/api/samples":
             self.serve_samples_api()
         elif path == "/api/llm_config":
@@ -93,7 +96,9 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path
 
-        if path == "/api/upload":
+        if handle_edai_post(self, path):
+            return
+        elif path == "/api/upload":
             self.handle_upload_api()
         elif path == "/api/generate":
             self.handle_generate_api()

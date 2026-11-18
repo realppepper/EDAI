@@ -1,0 +1,9 @@
+* 블록: 1단 - NMOS 입력 차동쌍 + PMOS 전류 미러 부하 (트랜지스터 5개)
+* 단자: VDD VSS IN_PLUS IN_MINUS NB OUT
+* 출력이 VDD 쪽에 놓여 PMOS 게이트만 구동할 수 있다.
+* 부하 소자의 크기는 2단 PMOS(40u/0.7u m=4, 250 uA)와 전류밀도를 맞춘 값이다.
+XMT  tail NB       VSS  VSS  nfet_06v0 w=11.5u l=2u m=4
+XM1  d1   IN_MINUS tail VSS  nfet_06v0 w=20u l=1u m=2
+XM2  OUT  IN_PLUS  tail VSS  nfet_06v0 w=20u l=1u m=2
+XMP3 d1   d1       VDD  VDD  pfet_06v0 w=12.8u l=0.7u
+XMP4 OUT  d1       VDD  VDD  pfet_06v0 w=12.8u l=0.7u

@@ -1,0 +1,94 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#182b2a"><meta name="description" content="데이터시트와 목표 스펙을 연결하고, 아날로그 회로의 진단과 개선 과정을 확인하는 EDAI 설계 워크스페이스.">
+<title>EDAI · Circuit Studio</title><link rel="icon" href="assets/icon.svg" type="image/svg+xml"><link rel="stylesheet" href="styles.css">
+</head>
+<body><div class="local-banner">수학 모델 데모 화면입니다. 실제 실행은 <a href="/" class="local-back">SPICE 작업실</a>을 이용하세요.</div>
+<aside class="sidebar">
+<a class="brand" href="#workspace" aria-label="EDAI 홈"><span class="brand-icon">e<span>↗</span></span><div>EDAI<span>CIRCUIT STUDIO</span></div></a>
+<div class="workspace-chip"><span class="workspace-avatar">E</span><div>예비캡스톤 프로젝트<small>17조 · Analog IC</small></div><span class="chip-chevron">⌄</span></div>
+<p class="nav-label">WORKSPACE</p>
+<nav aria-label="주 메뉴">
+<button class="nav-item active" data-view="workspace"><span data-icon="sliders"></span>설계 워크스페이스</button>
+<button class="nav-item" data-view="sources"><span data-icon="layers"></span>자료 & 근거<span class="nav-count" id="source-count">1</span></button>
+<button class="nav-item" data-view="cases"><span data-icon="grid"></span>Test Case 라이브러리<span class="nav-count">15</span></button>
+<button class="nav-item" data-view="report"><span data-icon="file"></span>결과 리포트</button>
+</nav>
+<div class="sidebar-note"><span class="tiny-dot"></span> 설계의 이유까지 연결합니다<p>자료의 근거에서 시작해<br>더 나은 회로를 확인하세요.</p><button class="text-link pale" id="guide-open">시연 가이드 보기 <span>↗</span></button></div>
+<div class="sidebar-footer"><span class="profile">SC</span><div>곽승철<small>EDAI · 설계 시각화</small></div><span class="profile-dot"></span></div>
+</aside>
+<div class="shell">
+<header class="topbar"><div class="breadcrumb">프로젝트 <span>/</span> <strong id="breadcrumb-current">설계 워크스페이스</strong></div><div class="top-actions"><span class="status-chip"><span class="tiny-dot"></span>해석 모델 데모</span><button class="icon-button" id="help-open" aria-label="도움말" title="도움말"><span data-icon="help"></span></button></div></header>
+<main>
+<section class="view active" id="view-workspace" aria-label="설계 워크스페이스">
+<div class="page-heading"><div><div class="eyebrow">DESIGN, UNDERSTAND, IMPROVE</div><h1>회로의 개선 과정을 한눈에.</h1><p>목표를 정하고, 근거를 살펴보고, 더 나은 설계를 찾아보세요.</p></div><button class="button secondary" id="reset-demo"><span data-icon="refresh"></span>예시 불러오기</button></div>
+<div class="demo-banner"><span class="demo-tag">DEMO</span><span>Case 13을 참고한 <strong>2차 전달함수 예시</strong>입니다. 수치는 브라우저에서 계산하며, 실제 CMOS·SPICE·VLM 결과가 아닙니다.</span><button class="text-link" id="model-open">모델 범위 <span>↗</span></button></div>
+<div class="workflow-strip"><div class="flow-step done"><span>01</span><div>자료 연결<small id="flow-source">예시 데이터시트 준비됨</small></div></div><i>→</i><div class="flow-step done"><span>02</span><div>목표 설정<small>사용자 스펙 & 우선순위</small></div></div><i>→</i><div class="flow-step current"><span>03</span><div>진단 & 개선<small id="flow-state">초기 설계 진단</small></div></div><i>→</i><div class="flow-step"><span>04</span><div>결과 확인<small>근거와 함께 내보내기</small></div></div></div>
+<div class="design-grid">
+<aside class="config-column">
+<section class="panel config-panel">
+<div class="panel-title"><h2>설계 입력</h2><span class="label-light">Case 13</span></div>
+<div class="selected-circuit"><span class="circuit-thumb" data-icon="circuit"></span><div><strong>다단 CMOS Op-Amp</strong><small>전달함수로 동작을 표현한 예시</small></div></div>
+<div class="field-label-row"><h3>목표 스펙</h3><button class="text-link" data-view="sources">자료에서 가져오기 ↗</button></div>
+<form id="spec-form" novalidate>
+<div class="input-grid">
+<label class="field">폐루프 이득<div class="input-wrap"><input id="spec-gain" name="gain" type="number" min="2" max="100" step="0.1" value="10" required><span>V/V</span></div></label>
+<label class="field">위상마진 ≥<div class="input-wrap"><input id="spec-pm" name="pm" type="number" min="20" max="85" step="1" value="60" required><span>°</span></div></label>
+<label class="field">오버슈트 ≤<div class="input-wrap"><input id="spec-overshoot" name="overshoot" type="number" min="1" max="70" step="0.1" value="10" required><span>%</span></div></label>
+<label class="field">정착시간 ≤<div class="input-wrap"><input id="spec-settling" name="settling" type="number" min="0.2" max="50" step="0.1" value="6" required><span>μs</span></div></label>
+<label class="field">소비전력 ≤<div class="input-wrap"><input id="spec-power" name="power" type="number" min="0.2" max="10" step="0.1" value="3" required><span>mW</span></div></label>
+<label class="field">대역폭 ≥<div class="input-wrap"><input id="spec-bw" name="bw" type="number" min="0.01" max="3" step="0.01" value="0.15" required><span>MHz</span></div></label>
+</div>
+<details class="condition-details"><summary>동작 조건 <span>전원 · 부하</span></summary><div class="input-grid"><label class="field">전원<div class="input-wrap"><input id="spec-vdd" name="vdd" type="number" min="1.8" max="5" step="0.1" value="3.3" required><span>V</span></div></label><label class="field">부하<div class="input-wrap"><input id="spec-load" name="load" type="number" min="5" max="100" step="1" value="20" required><span>pF</span></div></label></div></details>
+<label class="field priority-field">최적화 우선순위<select name="priority" id="spec-priority"><option value="balanced">균형 · 안정성 / 속도 / 전력</option><option value="stability">안정성 우선</option><option value="speed">응답 속도 우선</option><option value="power">저전력 우선</option></select></label>
+<p class="inline-error" id="spec-error" role="alert"></p>
+<button type="submit" class="button primary full" id="optimize-button"><span data-icon="play"></span>최적화 실행<span class="button-arrow">→</span></button>
+<p class="form-note">Cc · Ibias 조합 285개를 해석 모델로 비교</p>
+</form></section>
+<section class="panel source-mini"><div class="panel-title"><h3>연결된 자료</h3><span data-icon="link"></span></div><div class="source-row"><span class="file-icon">PDF</span><div><strong>EDAI Demo Datasheet</strong><small>합성 자료 · 3 pages</small></div><span class="success-dot">✓</span></div><button class="upload-mini" data-view="sources"><span data-icon="plus"></span>내 자료 추가하기</button><p class="muted small" id="upload-summary">PDF / TXT / JSON · 로컬 텍스트 분석</p></section>
+</aside>
+<div class="analysis-column">
+<div class="analysis-top"><div><span class="live-dot"></span><strong id="analysis-title">초기 설계 분석</strong><span class="analysis-sub" id="analysis-sub">수정 전 · Cc 2 pF / Ibias 220 μA</span></div><span class="result-badge" id="pass-badge">2 / 5 목표 충족</span></div>
+<div class="metric-grid" id="metrics"></div>
+<section class="panel chart-panel"><div class="panel-title"><div><h2>응답 파형 비교</h2><p class="small muted">변경 전과 선택한 설계의 차이를 확인하세요.</p></div><div class="segmented" role="group" aria-label="그래프 선택"><button class="active" data-chart="step">스텝 응답</button><button data-chart="bode">Bode plot</button></div></div><div class="chart-legend"><span><i class="legend-line dashed"></i>초기 설계</span><span><i class="legend-line teal"></i>선택 설계</span><span id="legend-target"><i class="legend-band"></i>목표 ±2%</span></div><div id="response-chart" class="chart-container" role="img" aria-label="초기 설계와 선택한 설계의 스텝 응답 비교"></div><div class="chart-foot"><span id="chart-insight"></span><button class="text-link" id="wave-export">파형 CSV <span data-icon="download"></span></button></div></section>
+<section class="panel optimization-panel"><div class="panel-title"><div><h2>개선 과정</h2><p class="small muted" id="iteration-description">최적화를 실행하면 단계별 설계와 근거가 연결됩니다.</p></div><span class="round-pill" id="round-pill">INITIAL</span></div><div id="iteration-track" class="iteration-track"></div><div class="iteration-insight" id="iteration-insight"></div><p class="small muted path-note">표시 단계는 285개 조합 중 선택한 설계까지의 설명용 조정 경로입니다. 중간 3개 설계점도 동일 모델로 계산합니다.</p></section>
+<div class="bottom-grid">
+<section class="panel diagnosis-panel"><div class="panel-title"><h2>진단 & 다음 액션</h2><span class="label-light">규칙 기반</span></div><div id="diagnosis"></div></section>
+<section class="panel circuit-panel"><div class="panel-title"><h2>설계 구조</h2><button class="text-link" id="netlist-preview">모델 보기 ↗</button></div><div id="schematic"></div><div class="parameter-row"><span>Cc <strong id="cc-value">2 pF</strong></span><span>Ibias <strong id="bias-value">220 μA</strong></span></div><p class="small muted">기능 블록 개념도 (트랜지스터 회로도 아님)</p></section>
+</div>
+<details class="panel experiment-panel"><summary><span>직접 설계값 바꿔보기</span><small>WHAT IF</small></summary><div class="experiment-body"><label>보상 커패시터 Cc <output id="cc-output">2 pF</output><input type="range" id="cc-slider" min="2" max="16" step="0.5" value="2"></label><label>바이어스 전류 Ibias <output id="ibias-output">220 μA</output><input type="range" id="ibias-slider" min="60" max="240" step="10" value="220"></label><button class="button secondary" id="apply-manual">이 값으로 비교</button></div></details>
+</div>
+</div>
+</section>
+<section class="view" id="view-sources" aria-label="자료와 근거">
+<div class="page-heading"><div><div class="eyebrow">FROM DOCUMENTS TO DECISIONS</div><h1>많은 자료에서, 필요한 근거만.</h1><p>문서 → 텍스트 → 검색 결과 → 목표 스펙으로 이어지는 과정을 확인하세요.</p></div><a class="button secondary" href="samples/EDAI_Demo_Datasheet.pdf" download><span data-icon="download"></span>예시 PDF</a></div>
+<div class="source-layout">
+<div>
+<section class="panel upload-panel"><h2>데이터시트 · 자료 추가</h2><label class="dropzone" id="dropzone" for="file-input"><span class="upload-circle" data-icon="upload"></span><strong>파일을 놓거나 클릭해서 선택하세요</strong><span>PDF, TXT, JSON · 파일당 10 MB / PDF 최대 80쪽</span><input type="file" id="file-input" accept=".pdf,.txt,.json" multiple></label><p class="small muted">파일은 이 브라우저에서 처리됩니다. PDF의 텍스트를 읽으며, 스캔 이미지의 OCR과 실제 VLM 분석은 연결되어 있지 않습니다.</p><div id="upload-status" class="upload-status" aria-live="polite"></div></section>
+<section class="panel"><div class="panel-title"><h2>자료 목록</h2><span class="label-light" id="document-total"></span></div><div id="document-list"></div><div class="library-downloads"><a href="samples/edai_demo_database.json" download>예시 데이터베이스 JSON ↗</a><a href="samples/integration_contract.json" download>실제 결과 연동 형식 ↗</a></div></section>
+<section class="panel mapping-panel"><div class="panel-title"><h2>가져올 목표 스펙</h2><span class="label-light">사용자 확인 후 적용</span></div><p class="small muted">명시적인 target key만 인식합니다. 일반 데이터시트의 Typical 값과 설계 목표를 자동으로 동일시하지 않습니다.</p><div id="extracted-targets"></div></section>
+</div>
+<div>
+<section class="panel evidence-panel"><div class="panel-title"><h2>근거 탐색</h2><span class="label-light">키워드 검색</span></div><div class="search-field"><span data-icon="search"></span><input id="evidence-search" placeholder="예: compensation, phase, power" aria-label="근거 검색"></div><div class="search-suggestions"><button data-query="phase">phase</button><button data-query="compensation">compensation</button><button data-query="power">power</button><button data-query="">전체 보기</button></div><div class="evidence-stats" id="evidence-stats"></div><div id="evidence-list"></div></section>
+<section class="panel flow-explainer"><h3>이 근거는 어디에 쓰이나요?</h3><ol><li><strong>자료</strong><span>페이지와 원문을 보존합니다.</span></li><li><strong>스펙</strong><span>단위와 목표 방향을 확인해 반영합니다.</span></li><li><strong>설계</strong><span>현재는 예시 모델로 후보를 비교합니다.</span></li><li><strong>피드백</strong><span>수치·조건·설계 변경 이유를 함께 표시합니다.</span></li></ol></section>
+</div>
+</div>
+</section>
+<section class="view" id="view-cases" aria-label="테스트 회로 라이브러리">
+<div class="page-heading"><div><div class="eyebrow">TEST CASE LIBRARY</div><h1>15개 회로, 하나의 시작점.</h1><p>첨부 목록을 정리했습니다. 이번 데모는 13번의 기능을 단순화한 해석 모델을 사용합니다.</p></div><button class="button secondary" id="reference-open">첨부 목록 보기 ↗</button></div>
+<div class="case-controls"><div class="search-field"><span data-icon="search"></span><input id="case-search" placeholder="회로 이름 또는 번호 검색" aria-label="회로 검색"></div><div class="filter-pills"><button class="active" data-case-filter="all">전체 15</button><button data-case-filter="ready">실행 가능 1</button><button data-case-filter="differential">차동 증폭기</button></div></div><div id="case-grid" class="case-grid"></div>
+</section>
+<section class="view" id="view-report" aria-label="결과 리포트">
+<div class="page-heading"><div><div class="eyebrow">DESIGN REVIEW</div><h1>과정까지 남는 설계 리포트.</h1><p>목표, 변경한 값, 개선 결과와 아직 검증하지 않은 내용을 한곳에 정리합니다.</p></div><button class="button primary" id="report-download"><span data-icon="download"></span>리포트 저장</button></div>
+<div class="demo-banner"><span class="demo-tag">MODEL</span><span>이 리포트는 예시 해석 모델의 결과입니다. 과제·발표에서 실제 SPICE 실험 결과로 기재하지 마세요.</span></div>
+<div class="report-grid"><section class="panel report-main" id="report-content"></section><div><section class="panel export-panel"><h2>결과 파일</h2><p class="small muted">다음 단계에서 팀원의 결과와 연결하기 쉬운 형식입니다.</p><button class="export-button" id="json-export"><span data-icon="file"></span><div>분석 결과 JSON<small>스펙 · 파라미터 · 모델 메트릭</small></div><span>↓</span></button><button class="export-button" id="report-wave-export"><span data-icon="chart"></span><div>비교 파형 CSV<small>시간 · 초기 응답 · 선택 응답</small></div><span>↓</span></button><button class="export-button" id="netlist-export"><span data-icon="code"></span><div>LTspice 모델 예제<small>전달함수 .cir · 실제 CMOS 아님</small></div><span>↓</span></button><a class="export-button" href="samples/EDAI_Demo_Datasheet.pdf" download><span data-icon="file"></span><div>입력용 예시 PDF<small>가상의 3쪽 자료</small></div><span>↓</span></a></section><section class="panel next-panel"><h3>실제 프로젝트로 연결하기</h3><p>팀원의 SPICE 결과를 JSON 형식으로 맞추면, 시각화 화면의 입력을 실제 결과로 교체할 수 있습니다.</p><button class="text-link" id="integration-open">연동 구조와 남은 작업 ↗</button></section></div></div>
+</section>
+</main>
+<footer class="page-footer"><span>EDAI · 예비캡스톤</span><span>설계의 변화와 근거를 연결하는 워크스페이스</span><span>PROTOTYPE 01</span></footer>
+</div>
+<dialog id="modal"><div class="modal-header"><h2 id="modal-title"></h2><button id="modal-close" class="icon-button" aria-label="창 닫기">✕</button></div><div id="modal-body"></div></dialog>
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script type="module" src="app.mjs"></script>
+</body></html>

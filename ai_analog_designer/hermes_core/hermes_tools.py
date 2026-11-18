@@ -13,6 +13,7 @@ from typing import Any
 
 from ai_analog_designer.circuit_synthesis.netlist_validator import NetlistValidator
 from ai_analog_designer.hermes_core.blueprint_reranker import BlueprintReranker
+from ai_analog_designer.hermes_core.ieee_mcp_client import IEEEMCPClient
 from ai_analog_designer.hermes_core.web_reference_search import (
     WebCircuitReferenceSearcher,
 )
@@ -59,6 +60,7 @@ class HermesAnalogTools:
 
         self.validator = NetlistValidator()
         self.web_searcher = WebCircuitReferenceSearcher()
+        self.ieee_mcp_client = IEEEMCPClient()
         self.reranker = BlueprintReranker(
             target_dut=self.dut_name,
             target_pins=[p.get("name") if isinstance(p, dict) else str(p) for p in (self.pins or [])]
@@ -236,6 +238,113 @@ class HermesAnalogTools:
                         "required": ["query"]
                     }
                 }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "generate_topology_candidates",
+                    "description": "Generates rule-validated CMOS op-amp topology structure tables using FLAN-T5 (when configured) and modular op-amp building blocks (folded cascode, telescopic, two-stage Miller, Class-AB).",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "prompt_hint": {
+                                "type": "string",
+                                "description": "Optional architecture or spec hint (e.g. 'low power rail-to-rail folded cascode')."
+                            },
+                            "max_candidates": {
+                                "type": "integer",
+                                "description": "Maximum candidates to return (default 6)."
+                            },
+                            "auto_size_preview": {
+                                "type": "boolean",
+                                "description": "If true, runs deterministic gm/ID sizing preview on each valid topology."
+                            }
+                        },
+                        "required": []
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "auto_size_gm_id",
+                    "description": "Computes deterministic transistor widths/lengths (W/L/m) for a structure table using the GF180 6V gm/ID lookup table and exports an LTspice/ngspice-ready physical .subckt netlist.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "structure_table": {
+                                "type": "string",
+                                "description": "Semicolon- or newline-separated structure table (e.g. 'PM1 D=N1 G=IN1 S=N3 B=VDD; ...')."
+                            },
+                            "unit_current_ua": {
+                                "type": "number",
+                                "description": "Unit tail/bias current in microamperes (default 20.0)."
+                            },
+                            "output_scale": {
+                                "type": "number",
+                                "description": "Output stage current scaling multiplier (default 1.0; try 5.0 or 20.0 for heavy load)."
+                            },
+                            "simulator": {
+                                "type": "string",
+                                "enum": ["auto", "ltspice", "ngspice"],
+                                "description": "Target SPICE dialect/runner (default 'auto')."
+                            }
+                        },
+                        "required": ["structure_table"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "generate_base_circuit",
+                    "description": "Synthesizes an initial single-file base SPICE circuit and bounded parameter sweep settings from natural-language requirements and optional IEEE references, validated by NetlistValidator.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "instruction": {
+                                "type": "string",
+                                "description": "Circuit architecture and performance requirements."
+                            },
+                            "simulator": {
+                                "type": "string",
+                                "enum": ["ltspice", "ngspice"],
+                                "description": "Target SPICE simulator (default 'ltspice')."
+                            },
+                            "ieee_context": {
+                                "type": "string",
+                                "description": "Optional IEEE paper summary or equations to ground the base topology."
+                            }
+                        },
+                        "required": ["instruction"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "sweep_parameters_grid",
+                    "description": "Runs a bounded LTspice/ngspice parameter optimization sweep (grid or coordinate-descent feedback) on a standalone single-file SPICE netlist with .param and .meas statements.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "netlist": {
+                                "type": "string",
+                                "description": "Standalone SPICE netlist with .param variables, one analysis, and .meas statements."
+                            },
+                            "settings": {
+                                "type": "object",
+                                "description": "Sweep settings object containing parameters, goals, objective, method ('feedback'|'grid'|'single'), and max_runs."
+                            },
+                            "simulator": {
+                                "type": "string",
+                                "enum": ["ltspice", "ngspice"],
+                                "description": "Simulator backend (default 'ltspice')."
+                            }
+                        },
+                        "required": ["netlist", "settings"]
+                    }
+                }
             }
         ]
 
@@ -255,6 +364,14 @@ class HermesAnalogTools:
             return self.manage_memory(**arguments)
         elif tool_name == "search_web_circuit_reference":
             return self.search_web_circuit_reference(**arguments)
+        elif tool_name == "generate_topology_candidates":
+            return self.generate_topology_candidates(**arguments)
+        elif tool_name == "auto_size_gm_id":
+            return self.auto_size_gm_id(**arguments)
+        elif tool_name == "generate_base_circuit":
+            return self.generate_base_circuit(**arguments)
+        elif tool_name == "sweep_parameters_grid":
+            return self.sweep_parameters_grid(**arguments)
         else:
             return {"error": f"Unknown tool: '{tool_name}'"}
 
@@ -585,11 +702,17 @@ class HermesAnalogTools:
         SPICE netlists, peer-reviewed design rationale, and internal schematic descriptions.
         """
         target_ic = (ic_name or self.dut_name).strip()
+        mcp_res: dict[str, Any] | None = None
+        if self.ieee_mcp_client.is_mcp_configured():
+            mcp_res = self.ieee_mcp_client.search_papers(query=f"{target_ic} {query}".strip(), max_results=3)
+
         res = self.web_searcher.search_circuit_reference(
             ic_name=target_ic,
             category=category or "",
             extra_query=query
         )
+        if mcp_res and mcp_res.get("papers"):
+            res["ieee_mcp_papers"] = mcp_res["papers"]
         # Persist retrieved web reference into workspace skills for traceability
         try:
             web_dir = os.path.join(self.skills_dir, "web_references")
@@ -601,6 +724,97 @@ class HermesAnalogTools:
         except Exception:
             pass
         return res
+
+    def generate_topology_candidates(
+        self,
+        prompt_hint: str = "",
+        max_candidates: int = 6,
+        auto_size_preview: bool = False,
+        **kwargs,
+    ) -> dict[str, Any]:
+        """Generates rule-validated op-amp structure candidates via FLAN-T5 & modular blocks."""
+        from ai_analog_designer.circuit_synthesis.flan_t5_topology import (
+            generate_topology_candidates as _gen_topo,
+        )
+        from ai_analog_designer.circuit_synthesis.gm_id_sizer import check_opamp_pdg
+
+        pin_names = [p.get("name") if isinstance(p, dict) else str(p) for p in (self.pins or [])]
+        pdg_fit = check_opamp_pdg(self.pins or [])
+        res = _gen_topo(
+            specifications=self.specifications,
+            prompt_hint=prompt_hint,
+            max_candidates=max_candidates,
+            auto_size_preview=auto_size_preview,
+            subckt_name=self.dut_name,
+            pin_names=pin_names or None,
+        )
+        res["opamp_5pin_fit"] = pdg_fit
+        return res
+
+    def auto_size_gm_id(
+        self,
+        structure_table: str,
+        unit_current_ua: float = 20.0,
+        output_scale: float = 1.0,
+        simulator: str = "auto",
+        **kwargs,
+    ) -> dict[str, Any]:
+        """Computes GF180 gm/ID transistor sizing and validates the resulting physical .subckt."""
+        from ai_analog_designer.circuit_synthesis.gm_id_sizer import (
+            auto_size,
+            parse_table_text,
+        )
+
+        pin_names = [p.get("name") if isinstance(p, dict) else str(p) for p in (self.pins or [])]
+        tbl = parse_table_text(structure_table)
+        sized = auto_size(
+            tbl,
+            unit_current=float(unit_current_ua) * 1e-6,
+            output_scale=float(output_scale),
+            simulator=simulator,
+            subckt_name=self.dut_name,
+            pin_names=pin_names or None,
+        )
+        subckt = sized.get("subckt_ltspice") or sized.get("subckt_ngspice") or ""
+        if subckt:
+            sized["validator"] = self.validate_netlist_syntax(subckt, subckt_name=self.dut_name)
+        return sized
+
+    def generate_base_circuit(
+        self,
+        instruction: str,
+        simulator: str = "ltspice",
+        ieee_context: str = "",
+        **kwargs,
+    ) -> dict[str, Any]:
+        """Generates a single-file base SPICE circuit & sweep config using seungcheol's bridge + LLMClient."""
+        from ai_analog_designer.hermes_core.base_circuit_generator import (
+            generate_base_circuit as _gen_base,
+        )
+        from ai_analog_designer.llm_client import LLMClient
+
+        client = self.llm_client or LLMClient()
+        return _gen_base(
+            instruction=instruction,
+            simulator=simulator,
+            ieee_context=ieee_context,
+            llm_client=client,
+        )
+
+    def sweep_parameters_grid(
+        self,
+        netlist: str,
+        settings: dict[str, Any],
+        simulator: str = "ltspice",
+        **kwargs,
+    ) -> dict[str, Any]:
+        """Runs bounded LTspice/ngspice parameter optimization sweep on a standalone SPICE deck."""
+        from pathlib import Path
+        from ai_analog_designer.neuro_symbolic_verifier.spice_sweep_engine import optimize
+
+        sweep_dir = Path(self.output_dir) / f"sweep_{len(self.evaluation_history) + 1:02d}"
+        cfg = {"simulator": simulator}
+        return optimize(netlist, settings, cfg, sweep_dir)
 
     def save_subcircuit_blueprint(
         self,
