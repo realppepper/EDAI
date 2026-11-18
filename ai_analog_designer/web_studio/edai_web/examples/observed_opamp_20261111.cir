@@ -1,0 +1,28 @@
+* Educational CMOS Op-Amp Testbench
+.param Ibias=150u
+.param Cc=8p
+
+V1 VDD 0 3.3
+V2 VSS 0 0
+V3 VIN 0 PULSE(0 0.1 1u 1n 1n 5u 10u)
+
+* Illustrative Op-Amp Model (Educational)
+X1 VIN 0 VOUT VDD VSS MY_OPAMP
+CL VOUT 0 20p
+
+.subckt MY_OPAMP INP INN OUT VDD VSS
+* Simplified behavioral model for educational purposes
+G1 0 N1 VALUE={Ibias * 1000 * (V(INP)-V(INN))}
+R1 N1 0 100k
+C1 N1 0 {Cc}
+E1 OUT 0 N1 0 1
+.ends MY_OPAMP
+
+.tran 20u
+.save V(VIN) V(VOUT) V(VDD) I(V1)
+
+.meas TRAN overshoot_pct MAX (V(VOUT)/0.1 - 1) * 100
+.meas TRAN settling_time WHEN V(VOUT)=0.098 CROSS=1
+.meas TRAN power_mw AVG V(VDD)*I(V1)*1000
+
+.end

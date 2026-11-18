@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autonomous Analog Circuit Design & Verification Visualizer</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --background: #090d16;
+      --card: #0f172a;
+      --card-hover: #1e293b;
+      --border: #334155;
+      --foreground: #f8fafc;
+      --muted-foreground: #94a3b8;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.25);
+      --accent: #818cf8;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    .glow-card {
+      box-shadow: 0 0 20px -5px rgba(56, 189, 248, 0.15);
+    }
+    .node-pin {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .node-pin:hover {
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 8px var(--primary));
+    }
+    .tab-btn.active {
+      background-color: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border-bottom: 2px solid #38bdf8;
+    }
+    .code-box {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+  </style>
+</head>
+<body class="min-h-screen custom-scrollbar p-3 md:p-6 antialiased">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- Top Navigation & IC Selector Header -->
+    <header class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-lg flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-sky-500/10 border border-sky-500/30 rounded-xl text-sky-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+              Autonomous Analog Circuit Verifier
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Neuro-Symbolic Engine</span>
+            </h1>
+            <p class="text-xs md:text-sm text-[var(--muted-foreground)] mt-0.5">
+              Deep Visual Inspection of First-Principles AI Circuit Synthesis, PDG Scheduling & Formal Verification
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- IC Selector Pills / Dropdown -->
+      <div class="flex items-center gap-2 w-full lg:w-auto">
+        <label for="icSelect" class="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider shrink-0">Selected IC:</label>
+        <select id="icSelect" onchange="switchIC(this.value)" class="w-full lg:w-72 bg-slate-900 border border-[var(--border)] text-sky-300 font-semibold text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-sky-400">
+        </select>
+      </div>
+    </header>
+
+    <!-- Sub-Process Master Flowchart (Breadcrumb Pipeline) -->
+    <section class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-lg">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xs uppercase tracking-wider font-bold text-sky-400 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Execution Sub-Process Architecture (6 Core Phases)
+        </h2>
+        <span id="pipelineStatusBadge" class="text-xs font-medium px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300 border border-sky-500/30">Active</span>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+        <!-- Phase 1 -->
+        <div onclick="selectTab('tab-hkg')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 1</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">PDF to HKG</div>
+          <div class="text-[11px] text-slate-400 mt-1">Layout, tables & knowledge graph</div>
+        </div>
+
+        <!-- Phase 2 -->
+        <div onclick="selectTab('tab-pdg')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 2</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">PDG & Schedule</div>
+          <div class="text-[11px] text-slate-400 mt-1">Causal DAG & delay &sigma;(p)</div>
+        </div>
+
+        <!-- Phase 3 -->
+        <div onclick="selectTab('tab-synthesis')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 3</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">AI Netlist Synthesis</div>
+          <div class="text-[11px] text-slate-400 mt-1">Transistor sizing & topology</div>
+        </div>
+
+        <!-- Phase 4 -->
+        <div onclick="selectTab('tab-testbenches')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 4</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">Testbench Deck</div>
+          <div class="text-[11px] text-slate-400 mt-1">.op / .tran / .ac auto decks</div>
+        </div>
+
+        <!-- Phase 5 -->
+        <div onclick="selectTab('tab-verification')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 5</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">LTspice & SymPy</div>
+          <div class="text-[11px] text-slate-400 mt-1">Batch sim & formal interval</div>
+        </div>
+
+        <!-- Phase 6 -->
+        <div onclick="selectTab('tab-healing')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 6</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">Self-Healing Loop</div>
+          <div class="text-[11px] text-slate-400 mt-1">Shortfall &rarr; Re-synthesis</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Metrics Cards for Current Selected IC -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">TARGET IC / CATEGORY</div>
+        <div id="statIcName" class="text-lg md:text-xl font-bold text-white mt-1 truncate">--</div>
+        <div id="statCategory" class="text-xs text-sky-400 truncate mt-0.5">--</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">EXTRACTED SPECS</div>
+        <div id="statSpecCount" class="text-lg md:text-xl font-bold text-white mt-1">--</div>
+        <div id="statPinCount" class="text-xs text-indigo-400 mt-0.5">-- Pins Identified</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">CLOSED-LOOP ITERATIONS</div>
+        <div id="statLoopCount" class="text-lg md:text-xl font-bold text-white mt-1">--</div>
+        <div id="statLoopStatus" class="text-xs text-amber-400 mt-0.5">2 Iterations Executed</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">FINAL VERIFICATION PASS</div>
+        <div id="statPassRate" class="text-lg md:text-xl font-bold text-emerald-400 mt-1">--%</div>
+        <div id="statPassRateSub" class="text-xs text-slate-400 mt-0.5">LTspice Neuro-Symbolic</div>
+      </div>
+    </section>
+
+    <!-- Interactive Navigation Tabs -->
+    <div class="border-b border-slate-700 flex overflow-x-auto gap-2 text-sm font-medium">
+      <button onclick="selectTab('tab-overview')" id="btn-tab-overview" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all active">
+        1. Sub-Process Flowchart
+      </button>
+      <button onclick="selectTab('tab-pdg')" id="btn-tab-pdg" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        2. Port Dependency Graph & Timing
+      </button>
+      <button onclick="selectTab('tab-synthesis')" id="btn-tab-synthesis" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        3. AI Netlist & Transistor Sizing
+      </button>
+      <button onclick="selectTab('tab-testbenches')" id="btn-tab-testbenches" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        4. Testbench Decks
+      </button>
+      <button onclick="selectTab('tab-verification')" id="btn-tab-verification" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        5. SymPy Oracle & Measurements
+      </button>
+      <button onclick="selectTab('tab-healing')" id="btn-tab-healing" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        6. Closed-Loop Diagnostics
+      </button>
+      <button onclick="selectTab('tab-hkg')" id="btn-tab-hkg" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        7. Knowledge Graph (HKG)
+      </button>
+    </div>
+
+    <!-- TAB 1: SUB-PROCESS FLOWCHART & SYSTEM ARCHITECTURE -->
+    <div id="tab-overview" class="tab-content space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+          Detailed Internal Sub-Processes Execution Flow
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-6">
+          Every analog IC undergoes an automated, six-phase end-to-end synthesis and verification cycle without template hardcoding.
+        </p>
+
+        <!-- SVG Flowchart -->
+        <div class="overflow-x-auto py-2">
+          <svg class="w-full min-w-[850px] h-64 text-slate-200" viewBox="0 0 950 260">
+            <defs>
+              <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0284c7"/>
+                <stop offset="100%" stop-color="#0369a1"/>
+              </linearGradient>
+              <linearGradient id="grad-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6366f1"/>
+                <stop offset="100%" stop-color="#4f46e5"/>
+              </linearGradient>
+              <linearGradient id="grad-emerald" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#059669"/>
+                <stop offset="100%" stop-color="#047857"/>
+              </linearGradient>
+              <linearGradient id="grad-amber" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#d97706"/>
+                <stop offset="100%" stop-color="#b45309"/>
+              </linearGradient>
+              <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+              </marker>
+              <marker id="arrow-feedback" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b"/>
+              </marker>
+            </defs>
+
+            <!-- Box 1: PDF to HKG -->
+            <rect x="20" y="40" width="130" height="90" rx="12" fill="url(#grad-blue)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="85" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">1. PDF Parsing</text>
+            <text x="85" y="90" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Layout & Tables</text>
+            <text x="85" y="105" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; HKG Graph</text>
+
+            <line x1="150" y1="85" x2="180" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 2: PDG Scheduling -->
+            <rect x="180" y="40" width="130" height="90" rx="12" fill="url(#grad-blue)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="245" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">2. PDG Engine</text>
+            <text x="245" y="90" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Pin Dependency</text>
+            <text x="245" y="105" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Delay Schedule &sigma;(p)</text>
+
+            <line x1="310" y1="85" x2="340" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 3: LLM Circuit Synthesis -->
+            <rect x="340" y="40" width="140" height="90" rx="12" fill="url(#grad-purple)" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="410" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">3. AI Synthesis</text>
+            <text x="410" y="90" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; First-Principles</text>
+            <text x="410" y="105" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; Transistor Sizing</text>
+
+            <line x1="480" y1="85" x2="510" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 4: Testbench Deck Synthesis -->
+            <rect x="510" y="40" width="130" height="90" rx="12" fill="url(#grad-purple)" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="575" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">4. Testbench Decks</text>
+            <text x="575" y="90" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; .op / .tran / .ac</text>
+            <text x="575" y="105" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; Auto .meas Bindings</text>
+
+            <line x1="640" y1="85" x2="670" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 5: LTspice & SymPy -->
+            <rect x="670" y="40" width="130" height="90" rx="12" fill="url(#grad-emerald)" stroke="#34d399" stroke-width="1.5"/>
+            <text x="735" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">5. Verification</text>
+            <text x="735" y="90" text-anchor="middle" font-size="10" fill="#d1fae5">&bull; Headless LTspice</text>
+            <text x="735" y="105" text-anchor="middle" font-size="10" fill="#d1fae5">&bull; SymPy Oracles</text>
+
+            <line x1="800" y1="85" x2="830" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 6: Decision / Self-Healing -->
+            <polygon points="885,55 935,85 885,115 835,85" fill="url(#grad-amber)" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="885" y="82" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">All</text>
+            <text x="885" y="95" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">Pass?</text>
+
+            <!-- Feedback Loop Arrow back to Phase 3 -->
+            <path d="M 885 115 L 885 180 L 410 180 L 410 135" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrow-feedback)"/>
+            <text x="645" y="195" text-anchor="middle" font-size="10" font-weight="bold" fill="#fbbf24">Self-Healing Iteration Feedback (Shortfalls &amp; Diagnosis)</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PORT DEPENDENCY GRAPH (PDG) & INTERACTIVE TIMING -->
+    <div id="tab-pdg" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              Interactive Port Dependency Graph (PDG) &amp; Startup Timeline
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+              Topological activation sequence derived from physical pin roles (Power &rarr; Bias &rarr; Signal &rarr; Output)
+            </p>
+          </div>
+
+          <!-- Playback Controls -->
+          <div class="flex items-center gap-3 bg-slate-900 border border-slate-700 px-4 py-2 rounded-xl">
+            <button onclick="toggleTimelinePlay()" id="btnPlayPause" class="text-sky-400 hover:text-sky-300 font-bold text-xs flex items-center gap-1.5">
+              <svg id="playIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg>
+              <span>Play Sequence</span>
+            </button>
+            <input type="range" id="timeSlider" min="0" max="10" step="0.5" value="0" oninput="updateTimelineTime(parseFloat(this.value))" class="w-36 accent-sky-400 cursor-pointer">
+            <span id="timeDisplay" class="text-xs font-mono font-bold text-sky-300 min-w-[55px] text-right">0.0 &mu;s</span>
+          </div>
+        </div>
+
+        <!-- Dynamic PDG SVG Container -->
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 overflow-x-auto min-h-[320px] flex items-center justify-center">
+          <svg id="pdgSvg" class="w-full max-w-4xl h-72 text-slate-200" viewBox="0 0 800 280">
+            <!-- Rendered dynamically by renderPDG() -->
+          </svg>
+        </div>
+
+        <!-- Schedule Table -->
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="text-slate-400 bg-slate-900/60 uppercase text-[11px] border-b border-slate-800">
+              <tr>
+                <th class="px-3 py-2">Pin Name</th>
+                <th class="px-3 py-2">Physical Role</th>
+                <th class="px-3 py-2">Direction</th>
+                <th class="px-3 py-2">Settling Delay &sigma;(p)</th>
+                <th class="px-3 py-2">Status at Current Time</th>
+              </tr>
+            </thead>
+            <tbody id="pdgTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: AI NETLIST SYNTHESIS & ARCHITECTURE -->
+    <div id="tab-synthesis" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+          First-Principles Transistor Netlist Synthesis &amp; Sizing Rationale
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          LLM-generated SPICE netlist without hardcoded circuit templates. Compare Loop 1 (initial synthesis) vs Loop 2 (autonomous refinement).
+        </p>
+
+        <!-- Loop Selector for Netlist -->
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-xs text-slate-400 font-semibold uppercase">View Netlist:</span>
+          <button onclick="switchNetlistIteration(1)" id="btnNetlistIter1" class="px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold">Iteration 1</button>
+          <button onclick="switchNetlistIteration(2)" id="btnNetlistIter2" class="px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold">Iteration 2</button>
+        </div>
+
+        <!-- Architecture Rationale Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 mb-4">
+          <h4 class="text-xs uppercase font-bold text-sky-400 mb-1">Architecture Rationale &amp; Block Topology</h4>
+          <p id="architectureSummaryText" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line"></p>
+        </div>
+
+        <!-- Netlist Code Box -->
+        <div class="relative bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span id="netlistFilename" class="font-mono text-sky-300">circuit.cir</span>
+            <span>SPICE Dialect: LTspice</span>
+          </div>
+          <pre id="netlistCodePre" class="p-4 text-xs font-mono text-slate-300 overflow-x-auto max-h-96 custom-scrollbar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: TESTBENCH DECKS -->
+    <div id="tab-testbenches" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+          Synthesized Multi-Domain Testbenches
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          Automated SPICE testbenches for DC Operating Point (.op), Dynamic Transient (.tran), and AC Frequency Sweeps (.ac) aligned with PDG schedule.
+        </p>
+
+        <div class="flex items-center gap-2 mb-4" id="tbDeckButtons">
+          <!-- Dynamically filled with testbench buttons -->
+        </div>
+
+        <div class="relative bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span id="currentTbName" class="font-mono text-purple-300">tb_dc_op.cir</span>
+            <span>Analysis Mode: Automated .meas</span>
+          </div>
+          <pre id="tbCodePre" class="p-4 text-xs font-mono text-slate-300 overflow-x-auto max-h-96 custom-scrollbar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: SYMPY ORACLE VERIFICATION & MEASUREMENTS -->
+    <div id="tab-verification" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              Neuro-Symbolic Specification Matrix &amp; Oracle Interval Audit
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+              Datasheet specifications formally bounded by SymPy interval algebra &amp; evaluated against LTspice measurements.
+            </p>
+          </div>
+
+          <!-- Filter Search -->
+          <div class="flex items-center gap-2 w-full md:w-auto">
+            <input type="text" id="specSearchInput" oninput="filterSpecs(this.value)" placeholder="Search parameter (e.g. VCC, Gain)..." class="text-xs bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-slate-200 focus:outline-none focus:border-sky-400 w-full md:w-56">
+          </div>
+        </div>
+
+        <!-- Spec Table -->
+        <div class="overflow-x-auto max-h-[460px] custom-scrollbar border border-slate-800 rounded-xl">
+          <table class="w-full text-xs text-left">
+            <thead class="sticky top-0 text-slate-300 bg-slate-900 uppercase text-[11px] border-b border-slate-800 shadow">
+              <tr>
+                <th class="px-3 py-2.5">Parameter Symbol</th>
+                <th class="px-3 py-2.5">Min Limit</th>
+                <th class="px-3 py-2.5">Typ Target</th>
+                <th class="px-3 py-2.5">Max Limit</th>
+                <th class="px-3 py-2.5">Unit</th>
+                <th class="px-3 py-2.5">Measured in Sim</th>
+                <th class="px-3 py-2.5">SymPy Status</th>
+              </tr>
+            </thead>
+            <tbody id="specTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: CLOSED-LOOP DIAGNOSTICS & REFINEMENT -->
+    <div id="tab-healing" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+          Closed-Loop Refinement History &amp; Shortfall Analysis
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-6">
+          Step-by-step diagnostic breakdown showing what fell short in each loop iteration and what improvements were applied.
+        </p>
+
+        <div id="diagnosticsContainer" class="space-y-6">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 7: HARDWARE KNOWLEDGE GRAPH (HKG) -->
+    <div id="tab-hkg" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+          Hardware Knowledge Graph (HKG) Topology
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          Hierarchical document entity graph extracted from PDF text, layout blocks, and electrical tables.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h4 class="text-xs font-bold uppercase text-sky-400 mb-2">Device Metadata</h4>
+            <div id="hkgDeviceMetadata" class="text-xs text-slate-300 space-y-1.5"></div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h4 class="text-xs font-bold uppercase text-indigo-400 mb-2">Pin Definitions &amp; Roles</h4>
+            <div id="hkgPinList" class="text-xs text-slate-300 max-h-48 overflow-y-auto custom-scrollbar space-y-1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Embedded Benchmark Data -->
+  <script>
+    const BENCHMARK_DATA = [{"id": "TL431", "folder_name": "TL431", "summary": {"part_name": "TL431, TL432", "subckt_name": "TL431__TL432", "pass_rate_percent": 0.0, "spec_count": 49, "iterations": [{"iteration": 1, "netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\TL431__TL432_iter1.cir", "pass_rate_percent": 0.0, "passed_specs": 0, "failed_specs": 0, "unmeasured_specs": 37, "passed_symbols": [], "simulation_errors": ["C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(28): syntax error", "  --> .meas Vref_op_val V(REF)", "  --> ^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(38): syntax error", "  --> .meas Vout_min MIN FIND V(K,A)", "  --> ^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(39): syntax error", "  --> .meas Vout_max MAX FIND V(K,A)", "  --> ^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(48): syntax error", "  --> .meas Vref_TA_min MIN FIND V(REF)", "  --> ^^^^^^^"], "shortfalls": ["Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(28): syntax error", "Compiler/Simulation Error:   --> .meas Vref_op_val V(REF)", "Compiler/Simulation Error:   --> ^^^^^^^", "Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(38): syntax error", "Param 'Vref' violated: Parameter 'Vref' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Vref' violated: Parameter 'Vref' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Vref' violated: Parameter 'Vref' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Vout' violated: Parameter 'Vout' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'TA' violated: Parameter 'TA' was not observed in simulation measurements. (Measured: Unobserved)", "Param '\u0394Vref' violated: Parameter '\u0394Vref' was not observed in simulation measurements. (Measured: Unobserved)"], "improvements": ["Initial first-principles topology and Level-1 parameter sizing synthesized from scratch."], "architecture_summary": "The TL431/TL432 is a precision adjustable shunt regulator. The core of its operation is a high-gain error amplifier that compares a fraction of the output voltage (VKA) to a precise internal reference voltage (Vref). The output of this error amplifier then drives an output transistor, which shunts current from the cathode (K) to the anode (A) to regulate the voltage.\n\n**Topology Overview:**\n\n1.  **Reference Voltage (Vref) Generation:** A bandgap reference (BGR) circuit is essential for providing a stable Vref across temperature and supply variations. A typical BGR uses the difference in base-emitter voltages (Vbe) of two bipolar transistors operating at different current densities, combined with a PTAT (Proportional To Absolute Temperature) voltage, to create a temperature-compensated reference. For simplicity and to meet the specified Vref accuracy and drift, a simplified BGR model will be used, focusing on achieving the target Vref and its temperature coefficient.\n\n2.  **Error Amplifier:** This is typically a two-stage operational transconductance amplifier (OTA).\n    *   **Input Stage:** A differential pair (e.g., NPN or PMOS) compares the feedback voltage (from the REF pin) with the internal Vref. To achieve the low input bias current (II(ref)) and high input impedance, a JFET or MOSFET input stage is often preferred, but for a BJT-based design, a high-beta NPN differential pair with appropriate biasing will be used.\n    *   **Second Stage:** A common-emitter or common-source stage provides additional gain.\n    *   **Output Stage:** The error amplifier's output drives the base of the output shunt transistor.\n\n3.  **Output Shunt Transistor:** A large NPN bipolar transistor acts as the shunt element, sinking current from the cathode (K) to the anode (A). Its collector is connected to K, and its emitter to A. The base is driven by the error amplifier.\n\n4.  **Biasing:** Constant current sources are required to bias the differential pair and the second stage of the error amplifier, ensuring stable operation across the wide VKA and IKA range.\n\n5.  **Frequency Compensation:** A compensation capacitor (Cc) is typically used to ensure stability and prevent oscillations, especially given the high gain of the error amplifier and the output shunt transistor. This capacitor creates a dominant pole.\n\n**Component Sizing and Design Considerations:**\n\n*   **Vref (2.495V typical):** The bandgap reference circuit will be designed to produce approximately 2.495V. This involves careful selection of transistor sizes and resistor values. The temperature coefficient will be modeled to achieve the specified \u0394Vref.\n    *   For the BGR, we'll use two NPN transistors with different emitter areas (or current densities) to generate a \u0394Vbe, and sum it with a Vbe to achieve a temperature-compensated voltage.\n    *   To meet the 0.5%, 1%, 2% tolerance, the BGR output will be slightly adjusted. For the netlist, we'll target the typical 2.495V.\n    *   The \u0394Vref over temperature (6mV for C temp, 14mV for I/Q temp) implies a very low temperature coefficient for the BGR. This will be modeled by adjusting the `TC1` and `TC2` parameters of the resistors in the BGR or by using a behavioral voltage source with a temperature-dependent term. For simplicity in this SPICE model, we'll primarily focus on the 25\u00b0C Vref and model the temperature drift behaviorally if needed, or rely on the inherent temperature characteristics of the BJT models.\n\n*   **Error Amplifier:**\n    *   **Input Differential Pair (Q1, Q2):** NPN transistors. To achieve low input bias current (II(ref) max 10mA, but typically much lower, 2-4uA for Iref), the base currents need to be small. This implies high beta transistors. The input impedance will be high due to the differential pair.\n    *   **Current Mirror (Q3, Q4):** Used to bias the differential pair.\n    *   **Second Stage (Q5):** Common emitter amplifier for high gain.\n    *   **Output Driver (Q6):** Drives the base of the shunt transistor.\n    *   **Gain:** The overall open-loop gain of the error amplifier needs to be high to achieve the low output impedance (Zout = 0.2\u03a9). A gain of at least 60-80dB is typical.\n    *   **Input Bias Current (II(ref)):** The base current of the input NPN transistor (Q1) will determine this. With typical NPN beta of 100-200, and a differential pair current of a few microamps, the base current will be in the nanoampere range, well within the 10uA max.\n\n*   **Output Shunt Transistor (Q_shunt):** A large NPN transistor capable of sinking up to 100mA. Its current handling capability will dictate its emitter area. A large `AREA` parameter in the `.model` or multiple parallel transistors would be used in a real design.\n\n*   **Output Impedance (Zout = 0.2\u03a9):** This is a critical specification. The output impedance of a shunt regulator is approximately `1 / (gm_shunt * A_OL)`, where `gm_shunt` is the transconductance of the shunt transistor and `A_OL` is the open-loop gain of the error amplifier. To achieve 0.2\u03a9, with `gm_shunt` around 400mS (for 100mA current), the open-loop gain needs to be very high. This implies a high-gain error amplifier.\n\n*   **Minimum Operating Current (Imin = 0.4mA to 1.0mA):** The quiescent current of the internal circuitry (BGR, error amplifier) must be less than 0.4mA to allow the device to regulate at this minimum shunt current. The biasing current sources will be designed accordingly.\n\n*   **Off-state Current (Ioff = 0.1uA to 1.0uA):** When Vref is grounded, the device should turn off. This implies very low leakage currents in the internal circuitry.\n\n*   **VKA Range (2.5V to 36V):** The circuit must operate correctly over this wide voltage range. This requires careful design of current sources to be relatively independent of VKA.\n\n*   **Frequency Compensation (Cc):** A capacitor (e.g., 10pF-30pF) will be placed between the output of the first stage and the input of the second stage (Miller compensation) to ensure stability.\n\n**Simplified Bandgap Reference Model:**\nInstead of a full BGR, a simplified approach will be used for the SPICE model to meet the Vref and its temperature characteristics. A behavioral voltage source will be used to represent the Vref, allowing for precise control over its value and temperature coefficient. This simplifies the netlist while still meeting the functional requirements.\n\n**ESD Protection:**\nESD diodes are typically placed at the input pins (REF, K) to protect against overvoltage events. These will be included as simple diode models.\n\n**Temperature Dependence:**\nThe temperature dependence of Vref (\u0394Vref) will be modeled by adjusting the `TC1` and `TC2` parameters of the resistors in the BGR or by using a behavioral voltage source with a temperature-dependent term. For the BJT models, the inherent temperature characteristics (`VAF`, `BF`, `IS`, `KF`, `AF`) will contribute to the overall temperature performance.\n\n**Pinout:**\nThe subcircuit will have three terminals: `K` (Cathode), `A` (Anode), and `REF` (Reference).\n\n**Design Steps for SPICE Netlist:**\n\n1.  **Define Models:** Create `.model` statements for NPN, PNP, NMOS, PMOS, and Diodes. These models will have typical parameters for a general-purpose analog process.\n2.  **Bandgap Reference (BGR):**\n    *   Use a combination of BJTs and resistors. A common approach is to use two NPNs with different emitter areas (Q10, Q11) to generate a \u0394Vbe, and sum it with a Vbe (Q12) to create a temperature-compensated voltage.\n    *   Current sources (M_bgr_bias) will bias the BGR.\n    *   A behavioral voltage source `B_VREF` will be used to precisely set the Vref and its temperature coefficient.\n3.  **Error Amplifier:**\n    *   **Input Stage:** NPN differential pair (Q1, Q2) with current mirror load (Q3, Q4) and current source bias (M_diff_bias).\n    *   **Second Stage:** Common emitter amplifier (Q5) with active load (Q6) and current source bias (M_second_bias).\n    *   **Output Stage:** Emitter follower (Q7) to drive the shunt transistor.\n4.  **Output Shunt Transistor:** Large NPN (Q_shunt) connected between K and A, driven by the error amplifier.\n5.  **Biasing:** Current mirrors and current sources (using PMOS or NPN/resistor combinations) to set appropriate currents for each stage.\n6.  **Frequency Compensation:** Capacitor `Ccomp` for stability.\n7.  **ESD Protection:** Diodes `D_esd_k`, `D_esd_ref` from K and REF to A.\n8.  **Resistors and Capacitors:** Sized to achieve desired operating points, gain, and compensation.\n\n**Refinement for Zout and Imin:**\n*   The error amplifier's open-loop gain will be maximized by using high-output impedance current sources and high-gain stages.\n*   The `gm` of the output shunt transistor will be maximized by ensuring it operates with sufficient current.\n*   The quiescent currents of the internal stages will be minimized to meet the `Imin` specification.\n\n**Temperature Drift Modeling:**\nThe `\u0394Vref` specification is crucial. For the BGR, the temperature coefficient of the resistors (`TC1`, `TC2`) and the inherent temperature dependence of the BJT `Vbe` will be used. A behavioral voltage source for Vref can also explicitly include a temperature term: `V = { 2.495 + (TEMP - 25) * 6m / (70 - 0) }` for the C-grade, for example. For this model, we'll rely on the BJT models' inherent temperature characteristics and adjust resistor TCs to approximate the drift.\n\n**Final Check:**\nAfter constructing the netlist, simulations will be run to verify all target electrical specifications, including Vref, Zout, Imin, Ioff, VKA range, and temperature performance. The behavioral sources will be used to fine-tune parameters that are difficult to model precisely with discrete components (e.g., exact Vref and its temperature coefficient).", "design_rationale": {"summary": "The TL431/TL432 is a precision adjustable shunt regulator. The core of its operation is a high-gain error amplifier that compares a fraction of the output voltage (VKA) to a precise internal reference voltage (Vref). The output of this error amplifier then drives an output transistor, which shunts current from the cathode (K) to the anode (A) to regulate the voltage.\n\n**Topology Overview:**\n\n1.  **Reference Voltage (Vref) Generation:** A bandgap reference (BGR) circuit is essential for providing a stable Vref across temperature and supply variations. A typical BGR uses the difference in base-emitter voltages (Vbe) of two bipolar transistors operating at different current densities, combined with a PTAT (Proportional To Absolute Temperature) voltage, to create a temperature-compensated reference. For simplicity and to meet the specified Vref accuracy and drift, a simplified BGR model will be used, focusing on achieving the target Vref and its temperature coefficient.\n\n2.  **Error Amplifier:** This is typically a two-stage operational transconductance amplifier (OTA).\n    *   **Input Stage:** A differential pair (e.g., NPN or PMOS) compares the feedback voltage (from the REF pin) with the internal Vref. To achieve the low input bias current (II(ref)) and high input impedance, a JFET or MOSFET input stage is often preferred, but for a BJT-based design, a high-beta NPN differential pair with appropriate biasing will be used.\n    *   **Second Stage:** A common-emitter or common-source stage provides additional gain.\n    *   **Output Stage:** The error amplifier's output drives the base of the output shunt transistor.\n\n3.  **Output Shunt Transistor:** A large NPN bipolar transistor acts as the shunt element, sinking current from the cathode (K) to the anode (A). Its collector is connected to K, and its emitter to A. The base is driven by the error amplifier.\n\n4.  **Biasing:** Constant current sources are required to bias the differential pair and the second stage of the error amplifier, ensuring stable operation across the wide VKA and IKA range.\n\n5.  **Frequency Compensation:** A compensation capacitor (Cc) is typically used to ensure stability and prevent oscillations, especially given the high gain of the error amplifier and the output shunt transistor. This capacitor creates a dominant pole.\n\n**Component Sizing and Design Considerations:**\n\n*   **Vref (2.495V typical):** The bandgap reference circuit will be designed to produce approximately 2.495V. This involves careful selection of transistor sizes and resistor values. The temperature coefficient will be modeled to achieve the specified \u0394Vref.\n    *   For the BGR, we'll use two NPN transistors with different emitter areas (or current densities) to generate a \u0394Vbe, and sum it with a Vbe to achieve a temperature-compensated voltage.\n    *   To meet the 0.5%, 1%, 2% tolerance, the BGR output will be slightly adjusted. For the netlist, we'll target the typical 2.495V.\n    *   The \u0394Vref over temperature (6mV for C temp, 14mV for I/Q temp) implies a very low temperature coefficient for the BGR. This will be modeled by adjusting the `TC1` and `TC2` parameters of the resistors in the BGR or by using a behavioral voltage source with a temperature-dependent term. For simplicity in this SPICE model, we'll primarily focus on the 25\u00b0C Vref and model the temperature drift behaviorally if needed, or rely on the inherent temperature characteristics of the BJT models.\n\n*   **Error Amplifier:**\n    *   **Input Differential Pair (Q1, Q2):** NPN transistors. To achieve low input bias current (II(ref) max 10mA, but typically much lower, 2-4uA for Iref), the base currents need to be small. This implies high beta transistors. The input impedance will be high due to the differential pair.\n    *   **Current Mirror (Q3, Q4):** Used to bias the differential pair.\n    *   **Second Stage (Q5):** Common emitter amplifier for high gain.\n    *   **Output Driver (Q6):** Drives the base of the shunt transistor.\n    *   **Gain:** The overall open-loop gain of the error amplifier needs to be high to achieve the low output impedance (Zout = 0.2\u03a9). A gain of at least 60-80dB is typical.\n    *   **Input Bias Current (II(ref)):** The base current of the input NPN transistor (Q1) will determine this. With typical NPN beta of 100-200, and a differential pair current of a few microamps, the base current will be in the nanoampere range, well within the 10uA max.\n\n*   **Output Shunt Transistor (Q_shunt):** A large NPN transistor capable of sinking up to 100mA. Its current handling capability will dictate its emitter area. A large `AREA` parameter in the `.model` or multiple parallel transistors would be used in a real design.\n\n*   **Output Impedance (Zout = 0.2\u03a9):** This is a critical specification. The output impedance of a shunt regulator is approximately `1 / (gm_shunt * A_OL)`, where `gm_shunt` is the transconductance of the shunt transistor and `A_OL` is the open-loop gain of the error amplifier. To achieve 0.2\u03a9, with `gm_shunt` around 400mS (for 100mA current), the open-loop gain needs to be very high. This implies a high-gain error amplifier.\n\n*   **Minimum Operating Current (Imin = 0.4mA to 1.0mA):** The quiescent current of the internal circuitry (BGR, error amplifier) must be less than 0.4mA to allow the device to regulate at this minimum shunt current. The biasing current sources will be designed accordingly.\n\n*   **Off-state Current (Ioff = 0.1uA to 1.0uA):** When Vref is grounded, the device should turn off. This implies very low leakage currents in the internal circuitry.\n\n*   **VKA Range (2.5V to 36V):** The circuit must operate correctly over this wide voltage range. This requires careful design of current sources to be relatively independent of VKA.\n\n*   **Frequency Compensation (Cc):** A capacitor (e.g., 10pF-30pF) will be placed between the output of the first stage and the input of the second stage (Miller compensation) to ensure stability.\n\n**Simplified Bandgap Reference Model:**\nInstead of a full BGR, a simplified approach will be used for the SPICE model to meet the Vref and its temperature characteristics. A behavioral voltage source will be used to represent the Vref, allowing for precise control over its value and temperature coefficient. This simplifies the netlist while still meeting the functional requirements.\n\n**ESD Protection:**\nESD diodes are typically placed at the input pins (REF, K) to protect against overvoltage events. These will be included as simple diode models.\n\n**Temperature Dependence:**\nThe temperature dependence of Vref (\u0394Vref) will be modeled by adjusting the `TC1` and `TC2` parameters of the resistors in the BGR or by using a behavioral voltage source with a temperature-dependent term. For the BJT models, the inherent temperature characteristics (`VAF`, `BF`, `IS`, `KF`, `AF`) will contribute to the overall temperature performance.\n\n**Pinout:**\nThe subcircuit will have three terminals: `K` (Cathode), `A` (Anode), and `REF` (Reference).\n\n**Design Steps for SPICE Netlist:**\n\n1.  **Define Models:** Create `.model` statements for NPN, PNP, NMOS, PMOS, and Diodes. These models will have typical parameters for a general-purpose analog process.\n2.  **Bandgap Reference (BGR):**\n    *   Use a combination of BJTs and resistors. A common approach is to use two NPNs with different emitter areas (Q10, Q11) to generate a \u0394Vbe, and sum it with a Vbe (Q12) to create a temperature-compensated voltage.\n    *   Current sources (M_bgr_bias) will bias the BGR.\n    *   A behavioral voltage source `B_VREF` will be used to precisely set the Vref and its temperature coefficient.\n3.  **Error Amplifier:**\n    *   **Input Stage:** NPN differential pair (Q1, Q2) with current mirror load (Q3, Q4) and current source bias (M_diff_bias).\n    *   **Second Stage:** Common emitter amplifier (Q5) with active load (Q6) and current source bias (M_second_bias).\n    *   **Output Stage:** Emitter follower (Q7) to drive the shunt transistor.\n4.  **Output Shunt Transistor:** Large NPN (Q_shunt) connected between K and A, driven by the error amplifier.\n5.  **Biasing:** Current mirrors and current sources (using PMOS or NPN/resistor combinations) to set appropriate currents for each stage.\n6.  **Frequency Compensation:** Capacitor `Ccomp` for stability.\n7.  **ESD Protection:** Diodes `D_esd_k`, `D_esd_ref` from K and REF to A.\n8.  **Resistors and Capacitors:** Sized to achieve desired operating points, gain, and compensation.\n\n**Refinement for Zout and Imin:**\n*   The error amplifier's open-loop gain will be maximized by using high-output impedance current sources and high-gain stages.\n*   The `gm` of the output shunt transistor will be maximized by ensuring it operates with sufficient current.\n*   The quiescent currents of the internal stages will be minimized to meet the `Imin` specification.\n\n**Temperature Drift Modeling:**\nThe `\u0394Vref` specification is crucial. For the BGR, the temperature coefficient of the resistors (`TC1`, `TC2`) and the inherent temperature dependence of the BJT `Vbe` will be used. A behavioral voltage source for Vref can also explicitly include a temperature term: `V = { 2.495 + (TEMP - 25) * 6m / (70 - 0) }` for the C-grade, for example. For this model, we'll rely on the BJT models' inherent temperature characteristics and adjust resistor TCs to approximate the drift.\n\n**Final Check:**\nAfter constructing the netlist, simulations will be run to verify all target electrical specifications, including Vref, Zout, Imin, Ioff, VKA range, and temperature performance. The behavioral sources will be used to fine-tune parameters that are difficult to model precisely with discrete components (e.g., exact Vref and its temperature coefficient)."}}, {"iteration": 2, "netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\TL431__TL432_iter2.cir", "pass_rate_percent": 0.0, "passed_specs": 0, "failed_specs": 0, "unmeasured_specs": 37, "passed_symbols": [], "simulation_errors": ["C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(28): syntax error", "  --> .meas Vref_0_5_pct_tol PARAM FIND V(REF)", "  --> ^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(29): syntax error", "  --> .meas Vref_1_0_pct_tol PARAM FIND V(REF)", "  --> ^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(30): syntax error", "  --> .meas Vref_2_0_pct_tol PARAM FIND V(REF)", "  --> ^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(43): syntax error", "  --> .meas Vout_min_test PARAM FIND V(K)", "  --> ^^^^^"], "shortfalls": ["Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(28): syntax error", "Compiler/Simulation Error:   --> .meas Vref_0_5_pct_tol PARAM FIND V(REF)", "Compiler/Simulation Error:   --> ^^^^^^^", "Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(29): syntax error", "Param 'Vref' violated: Parameter 'Vref' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Vref' violated: Parameter 'Vref' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Vref' violated: Parameter 'Vref' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Vout' violated: Parameter 'Vout' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'TA' violated: Parameter 'TA' was not observed in simulation measurements. (Measured: Unobserved)", "Param '\u0394Vref' violated: Parameter '\u0394Vref' was not observed in simulation measurements. (Measured: Unobserved)"], "improvements": ["Topology refinement: The TL431/TL432 is a precision adjustable shunt regulator. The core of its operation is a voltage reference and an error amplifier that comp..."], "architecture_summary": "The TL431/TL432 is a precision adjustable shunt regulator. The core of its operation is a voltage reference and an error amplifier that compares the output voltage (or a fraction of it) to this internal reference. The output of the error amplifier then drives an output transistor to regulate the cathode-anode voltage (VKA) to maintain the desired output.\n\n**Topology Overview:**\n\n1.  **Voltage Reference (Vref):** A stable 2.5V reference is crucial. This is typically implemented using a bandgap reference circuit. For simplicity and to meet the specified Vref accuracy and temperature drift, a simplified bandgap reference is used, consisting of a PTAT (Proportional To Absolute Temperature) current generator and a CTAT (Complementary To Absolute Temperature) voltage generator, summed to create a temperature-independent reference.\n    *   `Vref_bandgap`: This node represents the output of the bandgap reference.\n    *   `Vref_trim`: A small voltage source is added in series with the bandgap output to allow for trimming the Vref to meet the initial tolerance specifications (0.5%, 1%, 2%). This is modeled as a DC voltage source.\n\n2.  **Error Amplifier:** This is a differential amplifier that compares the voltage at the 'REF' pin (which is typically a divided version of VKA) with the internal Vref.\n    *   **Input Stage:** A differential pair (M1, M2) with a current mirror load (M3, M4) forms the input stage. This provides high input impedance and good common-mode rejection.\n    *   **Second Stage:** A common-source amplifier (M5) with an active load (M6) provides additional gain.\n    *   **Output Stage:** The output of the error amplifier drives the base of the output NPN transistor.\n\n3.  **Output Transistor:** A large NPN transistor (Q1) acts as the shunt regulator. Its collector is connected to the cathode (K), its emitter to the anode (A), and its base is driven by the error amplifier. This transistor sinks current from the cathode to the anode to regulate VKA.\n\n4.  **Bias Circuitry:** A constant current source (Ibias) is used to bias the error amplifier and the bandgap reference. This ensures stable operation across varying supply voltages and temperatures.\n\n5.  **Frequency Compensation:** A compensation capacitor (Ccomp) is added to ensure stability of the feedback loop. This is typically placed between the output of the first stage and the input of the second stage, or across the second stage.\n\n6.  **ESD Protection:** While not explicitly modeled with detailed diodes, the input and output pins would typically have ESD protection structures. For this netlist, the focus is on the core analog functionality.\n\n**Component Sizing and Parameter Justification:**\n\n*   **Vref (Bandgap):**\n    *   The target Vref is 2.5V. The bandgap reference is designed to produce this voltage.\n    *   `Vref_bandgap` is set to 2.495V (typical).\n    *   `Vref_trim` is set to 0V for the typical case, but can be adjusted to simulate the tolerance grades (e.g., +/- 0.5% of 2.5V).\n    *   Temperature drift (`\u0394Vref`) is modeled by the temperature coefficients of the bandgap components and the error amplifier. The bandgap itself is designed to minimize this, but residual drift exists. For this model, the temperature dependence of Vref is implicitly handled by the `.model` statements for transistors and the `.temp` analysis. The typical values of 6mV (C temp) and 14mV (I/Q temp) are challenging to precisely model with a simplified bandgap without detailed process parameters, but the overall temperature behavior will be captured.\n\n*   **Error Amplifier:**\n    *   **Input Differential Pair (M1, M2):**\n        *   W/L ratio: Chosen to provide sufficient transconductance (gm) for gain and to set the input bias current. A typical W/L of 10u/1u is a reasonable starting point for a low-power input stage.\n        *   Current: The bias current for the differential pair is set by `Ibias_diff`. This current is split between M1 and M2.\n    *   **Current Mirror Load (M3, M4):**\n        *   W/L ratio: Matched to M1, M2 for proper current steering.\n    *   **Second Stage (M5, M6):**\n        *   W/L ratio: M5 is typically larger than the input transistors to provide higher gain. M6 acts as an active load. W/L ratios of 20u/1u for M5 and 10u/1u for M6 are common.\n    *   **Compensation Capacitor (Ccomp):**\n        *   Value: Crucial for stability. A typical value for shunt regulators is in the range of 10pF to 100pF. 50pF is chosen as a starting point to ensure stability with a wide range of output loads. This helps achieve the specified `|ZKA|` (output impedance) characteristic.\n\n*   **Output Transistor (Q1):**\n    *   **NPN Transistor:** A large NPN transistor is required to handle the maximum sink current (100mA) and withstand the maximum VKA (36V).\n    *   `BF` (forward beta): A high beta (e.g., 100) is desirable for good current gain.\n    *   `IS` (saturation current): Influences the turn-on characteristics.\n    *   `VA` (Early voltage): Affects output impedance.\n    *   The sizing of Q1 (implicitly through its model parameters) is critical for meeting `Isink` (1mA to 100mA) and `VKA` (2.5V to 36V) specifications.\n\n*   **Output Impedance (`Zout`):**\n    *   The typical `Zout` of 0.2\u03a9 is achieved through the high gain of the error amplifier and the feedback action of the output transistor. The compensation capacitor also plays a role in shaping the impedance at higher frequencies. The chosen transistor sizes and compensation capacitor are aimed at achieving this.\n\n*   **Minimum Operating Current (`Imin`):**\n    *   The bias currents in the bandgap and error amplifier are set to ensure the device can operate down to 0.4mA. `Ibias_total` is designed to be around this value.\n\n*   **Off-state Current (`Ioff`):**\n    *   When Vref is below the internal reference, the device should turn off, and `IKA` should be very low. This is primarily determined by the leakage currents of the transistors, especially the output NPN. The `.model` parameters for `IS` and `ISC` (collector-substrate leakage) contribute to this.\n\n*   **Maximum VKA and IKA:**\n    *   The maximum VKA of 36V and IKA of 100mA are primarily limited by the breakdown voltage and current handling capabilities of the output NPN transistor (Q1) and other internal transistors. The `.model` parameters `VAF`, `IKF`, `ISC`, `ISR`, `BR`, `RC`, `RE`, `RB` are relevant here.\n\n**Refinement for Specific Parameters:**\n\n*   **`Vref` Tolerance:** The `Vref_trim` source can be adjusted to simulate the different grades (0.5%, 1%, 2%). For a typical simulation, it's set to 0V.\n*   **`\u0394Vref` (Temperature Drift):** This is a complex parameter to model accurately without detailed process information. The `.model` parameters `KF`, `AF`, `FC`, `VTO`, `KP`, `GAMMA`, `PHI`, `LAMBDA`, `TOX`, `CJ`, `MJ`, `CJSW`, `MJSW`, `PB`, `XT`, `EG`, `XTI` for MOSFETs and `BF`, `VAF`, `IKF`, `ISC`, `ISR`, `BR`, `RC`, `RE`, `RB`, `CJC`, `CJE`, `TF`, `TR`, `VTN`, `ITF`, `PTF`, `KF`, `AF` for BJTs all contribute to temperature behavior. The chosen models are generic but will exhibit some temperature dependence. Achieving the exact mV drift requires careful tuning of these parameters, which is usually done with process-specific models.\n*   **`|ZKA|`:** This is the dynamic output impedance. It's primarily determined by the transconductance of the output transistor and the open-loop gain of the error amplifier. The compensation capacitor `Ccomp` also affects it at higher frequencies. The chosen `Ccomp` and transistor sizing aim for the 0.2\u03a9 typical value.\n*   **`II(ref)` (Reference Input Current):** This is the bias current drawn by the input differential pair of the error amplifier. The W/L ratios of M1 and M2, and the bias current `Ibias_diff`, determine this. The target is a few microamperes.\n*   **`\u0394Vref / \u0394VKA` (Line Regulation):** This indicates how much Vref changes with VKA. It's a measure of the power supply rejection ratio (PSRR) of the internal reference and the error amplifier. A high gain in the error amplifier helps minimize this.\n\n**Model Parameters:**\n\n*   **NMOS/PMOS:** Generic level 1 models are used. Parameters like `VTO`, `KP`, `LAMBDA` are chosen to represent typical values for a general-purpose analog process. `TOX` and `GAMMA` are included for more realistic behavior.\n*   **NPN/PNP:** Generic models are used with typical `BF`, `VAF`, `IS` values. `CJC`, `CJE` are included for parasitic capacitances.\n\nThis architecture provides a robust foundation for the TL431/TL432, allowing for the simulation of its key electrical characteristics. Fine-tuning of W/L ratios, bias currents, and model parameters would be required with specific process technology data to precisely match all datasheet specifications across temperature and process variations.", "design_rationale": {"summary": "The TL431/TL432 is a precision adjustable shunt regulator. The core of its operation is a voltage reference and an error amplifier that compares the output voltage (or a fraction of it) to this internal reference. The output of the error amplifier then drives an output transistor to regulate the cathode-anode voltage (VKA) to maintain the desired output.\n\n**Topology Overview:**\n\n1.  **Voltage Reference (Vref):** A stable 2.5V reference is crucial. This is typically implemented using a bandgap reference circuit. For simplicity and to meet the specified Vref accuracy and temperature drift, a simplified bandgap reference is used, consisting of a PTAT (Proportional To Absolute Temperature) current generator and a CTAT (Complementary To Absolute Temperature) voltage generator, summed to create a temperature-independent reference.\n    *   `Vref_bandgap`: This node represents the output of the bandgap reference.\n    *   `Vref_trim`: A small voltage source is added in series with the bandgap output to allow for trimming the Vref to meet the initial tolerance specifications (0.5%, 1%, 2%). This is modeled as a DC voltage source.\n\n2.  **Error Amplifier:** This is a differential amplifier that compares the voltage at the 'REF' pin (which is typically a divided version of VKA) with the internal Vref.\n    *   **Input Stage:** A differential pair (M1, M2) with a current mirror load (M3, M4) forms the input stage. This provides high input impedance and good common-mode rejection.\n    *   **Second Stage:** A common-source amplifier (M5) with an active load (M6) provides additional gain.\n    *   **Output Stage:** The output of the error amplifier drives the base of the output NPN transistor.\n\n3.  **Output Transistor:** A large NPN transistor (Q1) acts as the shunt regulator. Its collector is connected to the cathode (K), its emitter to the anode (A), and its base is driven by the error amplifier. This transistor sinks current from the cathode to the anode to regulate VKA.\n\n4.  **Bias Circuitry:** A constant current source (Ibias) is used to bias the error amplifier and the bandgap reference. This ensures stable operation across varying supply voltages and temperatures.\n\n5.  **Frequency Compensation:** A compensation capacitor (Ccomp) is added to ensure stability of the feedback loop. This is typically placed between the output of the first stage and the input of the second stage, or across the second stage.\n\n6.  **ESD Protection:** While not explicitly modeled with detailed diodes, the input and output pins would typically have ESD protection structures. For this netlist, the focus is on the core analog functionality.\n\n**Component Sizing and Parameter Justification:**\n\n*   **Vref (Bandgap):**\n    *   The target Vref is 2.5V. The bandgap reference is designed to produce this voltage.\n    *   `Vref_bandgap` is set to 2.495V (typical).\n    *   `Vref_trim` is set to 0V for the typical case, but can be adjusted to simulate the tolerance grades (e.g., +/- 0.5% of 2.5V).\n    *   Temperature drift (`\u0394Vref`) is modeled by the temperature coefficients of the bandgap components and the error amplifier. The bandgap itself is designed to minimize this, but residual drift exists. For this model, the temperature dependence of Vref is implicitly handled by the `.model` statements for transistors and the `.temp` analysis. The typical values of 6mV (C temp) and 14mV (I/Q temp) are challenging to precisely model with a simplified bandgap without detailed process parameters, but the overall temperature behavior will be captured.\n\n*   **Error Amplifier:**\n    *   **Input Differential Pair (M1, M2):**\n        *   W/L ratio: Chosen to provide sufficient transconductance (gm) for gain and to set the input bias current. A typical W/L of 10u/1u is a reasonable starting point for a low-power input stage.\n        *   Current: The bias current for the differential pair is set by `Ibias_diff`. This current is split between M1 and M2.\n    *   **Current Mirror Load (M3, M4):**\n        *   W/L ratio: Matched to M1, M2 for proper current steering.\n    *   **Second Stage (M5, M6):**\n        *   W/L ratio: M5 is typically larger than the input transistors to provide higher gain. M6 acts as an active load. W/L ratios of 20u/1u for M5 and 10u/1u for M6 are common.\n    *   **Compensation Capacitor (Ccomp):**\n        *   Value: Crucial for stability. A typical value for shunt regulators is in the range of 10pF to 100pF. 50pF is chosen as a starting point to ensure stability with a wide range of output loads. This helps achieve the specified `|ZKA|` (output impedance) characteristic.\n\n*   **Output Transistor (Q1):**\n    *   **NPN Transistor:** A large NPN transistor is required to handle the maximum sink current (100mA) and withstand the maximum VKA (36V).\n    *   `BF` (forward beta): A high beta (e.g., 100) is desirable for good current gain.\n    *   `IS` (saturation current): Influences the turn-on characteristics.\n    *   `VA` (Early voltage): Affects output impedance.\n    *   The sizing of Q1 (implicitly through its model parameters) is critical for meeting `Isink` (1mA to 100mA) and `VKA` (2.5V to 36V) specifications.\n\n*   **Output Impedance (`Zout`):**\n    *   The typical `Zout` of 0.2\u03a9 is achieved through the high gain of the error amplifier and the feedback action of the output transistor. The compensation capacitor also plays a role in shaping the impedance at higher frequencies. The chosen transistor sizes and compensation capacitor are aimed at achieving this.\n\n*   **Minimum Operating Current (`Imin`):**\n    *   The bias currents in the bandgap and error amplifier are set to ensure the device can operate down to 0.4mA. `Ibias_total` is designed to be around this value.\n\n*   **Off-state Current (`Ioff`):**\n    *   When Vref is below the internal reference, the device should turn off, and `IKA` should be very low. This is primarily determined by the leakage currents of the transistors, especially the output NPN. The `.model` parameters for `IS` and `ISC` (collector-substrate leakage) contribute to this.\n\n*   **Maximum VKA and IKA:**\n    *   The maximum VKA of 36V and IKA of 100mA are primarily limited by the breakdown voltage and current handling capabilities of the output NPN transistor (Q1) and other internal transistors. The `.model` parameters `VAF`, `IKF`, `ISC`, `ISR`, `BR`, `RC`, `RE`, `RB` are relevant here.\n\n**Refinement for Specific Parameters:**\n\n*   **`Vref` Tolerance:** The `Vref_trim` source can be adjusted to simulate the different grades (0.5%, 1%, 2%). For a typical simulation, it's set to 0V.\n*   **`\u0394Vref` (Temperature Drift):** This is a complex parameter to model accurately without detailed process information. The `.model` parameters `KF`, `AF`, `FC`, `VTO`, `KP`, `GAMMA`, `PHI`, `LAMBDA`, `TOX`, `CJ`, `MJ`, `CJSW`, `MJSW`, `PB`, `XT`, `EG`, `XTI` for MOSFETs and `BF`, `VAF`, `IKF`, `ISC`, `ISR`, `BR`, `RC`, `RE`, `RB`, `CJC`, `CJE`, `TF`, `TR`, `VTN`, `ITF`, `PTF`, `KF`, `AF` for BJTs all contribute to temperature behavior. The chosen models are generic but will exhibit some temperature dependence. Achieving the exact mV drift requires careful tuning of these parameters, which is usually done with process-specific models.\n*   **`|ZKA|`:** This is the dynamic output impedance. It's primarily determined by the transconductance of the output transistor and the open-loop gain of the error amplifier. The compensation capacitor `Ccomp` also affects it at higher frequencies. The chosen `Ccomp` and transistor sizing aim for the 0.2\u03a9 typical value.\n*   **`II(ref)` (Reference Input Current):** This is the bias current drawn by the input differential pair of the error amplifier. The W/L ratios of M1 and M2, and the bias current `Ibias_diff`, determine this. The target is a few microamperes.\n*   **`\u0394Vref / \u0394VKA` (Line Regulation):** This indicates how much Vref changes with VKA. It's a measure of the power supply rejection ratio (PSRR) of the internal reference and the error amplifier. A high gain in the error amplifier helps minimize this.\n\n**Model Parameters:**\n\n*   **NMOS/PMOS:** Generic level 1 models are used. Parameters like `VTO`, `KP`, `LAMBDA` are chosen to represent typical values for a general-purpose analog process. `TOX` and `GAMMA` are included for more realistic behavior.\n*   **NPN/PNP:** Generic models are used with typical `BF`, `VAF`, `IS` values. `CJC`, `CJE` are included for parasitic capacitances.\n\nThis architecture provides a robust foundation for the TL431/TL432, allowing for the simulation of its key electrical characteristics. Fine-tuning of W/L ratios, bias currents, and model parameters would be required with specific process technology data to precisely match all datasheet specifications across temperature and process variations."}}], "final_netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\TL431__TL432_iter2.cir"}, "knowledge_graph": {"ic_device": {"name": "TL431, TL432", "category": "Precision Programmable Reference", "description": "The TL431 and TL432 devices are three-terminal adjustable shunt regulators, with specified thermal stability over applicable automotive, commercial, and military temperature ranges. The output voltage can be set to any value between Vref (approximately 2.5V) and 36V, with two external resistors. These devices have a typical output impedance of 0.2\u03a9. Active output circuitry provides a very sharp turn-on characteristic, making these devices excellent replacements for Zener diodes in many applications, such as on-board regulation, adjustable power supplies, and switching power supplies. The TL432 device has exactly the same functionality and electrical specifications as the TL431 device, but has different pinouts for the DBV, DBZ, and PK packages. Both the TL431 and TL432 devices are offered in three grades, with initial tolerances (at 25\u00b0C) of 0.5%, 1%, and 2%, for the B, A, and standard grade, respectively. In addition, low output drift versus temperature verifies good stability over the entire temperature range. The TL43xxC devices are characterized for operation from 0\u00b0C to 70\u00b0C, the TL43xxI devices are characterized for operation from \u201340\u00b0C to 85\u00b0C, and the TL43xxQ devices are characterized for operation from \u201340\u00b0C to 125\u00b0C."}, "pins": [], "electrical_parameters": [{"symbol": "Vref", "name": "Reference voltage tolerance at 25\u00b0C (B grade)", "min": null, "typ": null, "max": 0.5, "unit": "%", "test_conditions": "25\u00b0C", "related_pins": [], "category": "Features"}, {"symbol": "Vref", "name": "Reference voltage tolerance at 25\u00b0C (A grade)", "min": null, "typ": null, "max": 1.0, "unit": "%", "test_conditions": "25\u00b0C", "related_pins": [], "category": "Features"}, {"symbol": "Vref", "name": "Reference voltage tolerance at 25\u00b0C (Standard grade)", "min": null, "typ": null, "max": 2.0, "unit": "%", "test_conditions": "25\u00b0C", "related_pins": [], "category": "Features"}, {"symbol": "Vout", "name": "Adjustable output voltage", "min": 2.5, "typ": null, "max": 36.0, "unit": "V", "test_conditions": "Vref to 36V", "related_pins": [], "category": "Features"}, {"symbol": "TA", "name": "Operation temperature range", "min": -40.0, "typ": null, "max": 125.0, "unit": "\u00b0C", "test_conditions": null, "related_pins": [], "category": "Features"}, {"symbol": "\u0394Vref", "name": "Typical temperature drift (TL43xB, C temp)", "min": null, "typ": 6.0, "max": null, "unit": "mV", "test_conditions": "C temp", "related_pins": [], "category": "Features"}, {"symbol": "\u0394Vref", "name": "Typical temperature drift (TL43xB, I temp, Q temp)", "min": null, "typ": 14.0, "max": null, "unit": "mV", "test_conditions": "I temp, Q temp", "related_pins": [], "category": "Features"}, {"symbol": "Zout", "name": "Typical output impedance", "min": null, "typ": 0.2, "max": null, "unit": "\u03a9", "test_conditions": null, "related_pins": [], "category": "Features"}, {"symbol": "Isink", "name": "Sink-current capability", "min": 1.0, "typ": null, "max": 100.0, "unit": "mA", "test_conditions": null, "related_pins": [], "category": "Features"}, {"symbol": "VKA", "name": "Cathode Voltage", "min": null, "typ": null, "max": 37.0, "unit": "V", "test_conditions": null, "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "IKA", "name": "Continuous Cathode Current Range", "min": -100.0, "typ": null, "max": 150.0, "unit": "mA", "test_conditions": null, "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "II(ref)", "name": "Reference Input Current", "min": -0.05, "typ": null, "max": 10.0, "unit": "mA", "test_conditions": null, "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "TJ", "name": "Operating Junction Temperature Range", "min": null, "typ": null, "max": 150.0, "unit": "\u00b0C", "test_conditions": null, "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "Tstg", "name": "Storage Temperature Range", "min": -65.0, "typ": null, "max": 150.0, "unit": "\u00b0C", "test_conditions": null, "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "V(ESD)", "name": "Electrostatic discharge Human body model (HBM)", "min": null, "typ": null, "max": 2000.0, "unit": "V", "test_conditions": "per ANSI/ESDA/JEDEC JS-001", "related_pins": [], "category": "ESD Ratings"}, {"symbol": "V(ESD)", "name": "Electrostatic discharge Charged-device model (CDM)", "min": null, "typ": null, "max": 1000.0, "unit": "V", "test_conditions": "per JEDEC specification JESD22-C101", "related_pins": [], "category": "ESD Ratings"}, {"symbol": "R\u03b8JA", "name": "Junction-to-ambient thermal resistance (8 PINS)", "min": null, "typ": 85.0, "max": null, "unit": "\u00b0C/W", "test_conditions": null, "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JA", "name": "Junction-to-ambient thermal resistance (6 PINS)", "min": null, "typ": 149.0, "max": null, "unit": "\u00b0C/W", "test_conditions": null, "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JA", "name": "Junction-to-ambient thermal resistance (5 PINS)", "min": null, "typ": 97.0, "max": null, "unit": "\u00b0C/W", "test_conditions": null, "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JA", "name": "Junction-to-ambient thermal resistance (3 PINS)", "min": null, "typ": 95.0, "max": null, "unit": "\u00b0C/W", "test_conditions": null, "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JA", "name": "Junction-to-ambient thermal resistance (DCK)", "min": null, "typ": 259.0, "max": null, "unit": "\u00b0C/W", "test_conditions": null, "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JA", "name": "Junction-to-ambient thermal resistance (DBV)", "min": null, "typ": 206.0, "max": null, "unit": "\u00b0C/W", "test_conditions": null, "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JA", "name": "Junction-to-ambient thermal resistance (DBZ)", "min": null, "typ": 206.0, "max": null, "unit": "\u00b0C/W", "test_conditions": null, "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JA", "name": "Junction-to-ambient thermal resistance (LP)", "min": null, "typ": 140.0, "max": null, "unit": "\u00b0C/W", "test_conditions": null, "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JA", "name": "Junction-to-ambient thermal resistance (PK)", "min": null, "typ": 52.0, "max": null, "unit": "\u00b0C/W", "test_conditions": null, "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(top)", "name": "Junction-to-case (top) thermal resistance (8 PINS)", "min": null, "typ": 57.0, "max": null, "unit": "\u00b0C/W", "test_conditions": null, "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(top)", "name": "Junction-to-case (top) thermal resistance (6 PINS)", "min": null, "typ": 65.0, "max": null, "unit": "\u00b0C/W", "test_conditions": null, "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(top)", "name": "Junction-to-case (top) thermal resistance (5 PINS)", "min": null, "typ": 39.0, "max": null, "unit": "\u00b0C/W", "test_conditions": null, "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(top)", "name": "Junction-to-case (top) thermal resistance (3 PINS)", "min": null, "typ": 46.0, "max": null, "unit": "\u00b0C/W", "test_conditions": null, "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(top)", "name": "Junction-to-case (top) thermal resistance (DCK)", "min": null, "typ": 87.0, "max": null, "unit": "\u00b0C/W", "test_conditions": null, "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(top)", "name": "Junction-to-case (top) thermal resistance (DBV)", "min": null, "typ": 131.0, "max": null, "unit": "\u00b0C/W", "test_conditions": null, "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(top)", "name": "Junction-to-case (top) thermal resistance (DBZ)", "min": null, "typ": 76.0, "max": null, "unit": "\u00b0C/W", "test_conditions": null, "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(top)", "name": "Junction-to-case (top) thermal resistance (LP)", "min": null, "typ": 55.0, "max": null, "unit": "\u00b0C/W", "test_conditions": null, "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(top)", "name": "Junction-to-case (top) thermal resistance (PK)", "min": null, "typ": 9.0, "max": null, "unit": "\u00b0C/W", "test_conditions": null, "related_pins": [], "category": "Thermal Information"}, {"symbol": "VKA", "name": "Cathode Voltage", "min": 2.5, "typ": null, "max": 36.0, "unit": "V", "test_conditions": null, "related_pins": [], "category": "Recommended Operating Conditions"}, {"symbol": "IKA", "name": "Continuous Cathode Current Range", "min": 1.0, "typ": null, "max": 100.0, "unit": "mA", "test_conditions": null, "related_pins": [], "category": "Recommended Operating Conditions"}, {"symbol": "TA", "name": "Operating Free-Air Temperature (TL43xxC)", "min": 0.0, "typ": null, "max": 70.0, "unit": "\u00b0C", "test_conditions": null, "related_pins": [], "category": "Recommended Operating Conditions"}, {"symbol": "TA", "name": "Operating Free-Air Temperature (TL43xxI)", "min": -40.0, "typ": null, "max": 85.0, "unit": "\u00b0C", "test_conditions": null, "related_pins": [], "category": "Recommended Operating Conditions"}, {"symbol": "TA", "name": "Operating Free-Air Temperature (TL43xxQ)", "min": -40.0, "typ": null, "max": 125.0, "unit": "\u00b0C", "test_conditions": null, "related_pins": [], "category": "Recommended Operating Conditions"}, {"symbol": "Vref", "name": "Reference Voltage", "min": 2440.0, "typ": 2495.0, "max": 2550.0, "unit": "mV", "test_conditions": "VKA = Vref, IKA = 10mA", "related_pins": [], "category": "Electrical Characteristics, TL431C, TL432C"}, {"symbol": "VI(dev)", "name": "Deviation of reference input voltage over full temperature range (SOT23-3 and TL432 devices)", "min": null, "typ": 6.0, "max": 16.0, "unit": "mV", "test_conditions": "VKA = Vref, IKA = 10mA", "related_pins": [], "category": "Electrical Characteristics, TL431C, TL432C"}, {"symbol": "VI(dev)", "name": "Deviation of reference input voltage over full temperature range (All other devices)", "min": null, "typ": 4.0, "max": 25.0, "unit": "mV", "test_conditions": "VKA = Vref, IKA = 10mA", "related_pins": [], "category": "Electrical Characteristics, TL431C, TL432C"}, {"symbol": "\u0394Vref / \u0394VKA", "name": "Ratio of change in reference voltage to the change in cathode voltage", "min": null, "typ": -1.4, "max": -2.7, "unit": "mV/V", "test_conditions": "IKA = 10mA, \u0394VKA = 10V- Vref", "related_pins": [], "category": "Electrical Characteristics, TL431C, TL432C"}, {"symbol": "\u0394Vref / \u0394VKA", "name": "Ratio of change in reference voltage to the change in cathode voltage", "min": null, "typ": -1.0, "max": -2.0, "unit": "mV/V", "test_conditions": "IKA = 10mA, \u0394VKA = 36V- 10V", "related_pins": [], "category": "Electrical Characteristics, TL431C, TL432C"}, {"symbol": "Iref", "name": "Reference Input Current", "min": null, "typ": 2.0, "max": 4.0, "unit": "\u00b5A", "test_conditions": "IKA = 10mA, R1 = 10k\u2126, R2 = \u221e", "related_pins": [], "category": "Electrical Characteristics, TL431C, TL432C"}, {"symbol": "II(dev)", "name": "Deviation of reference input current over full temperature range", "min": null, "typ": 0.4, "max": 1.2, "unit": "\u00b5A", "test_conditions": "IKA = 10mA, R1 = 10k\u2126, R2 = \u221e", "related_pins": [], "category": "Electrical Characteristics, TL431C, TL432C"}, {"symbol": "Imin", "name": "Minimum cathode current for regulation", "min": 0.4, "typ": null, "max": 1.0, "unit": "mA", "test_conditions": "VKA = Vref", "related_pins": [], "category": "Electrical Characteristics, TL431C, TL432C"}, {"symbol": "Ioff", "name": "Off-state cathode current", "min": null, "typ": 0.1, "max": 1.0, "unit": "\u00b5A", "test_conditions": "VKA = 36V, Vref = 0", "related_pins": [], "category": "Electrical Characteristics, TL431C, TL432C"}, {"symbol": "|ZKA|", "name": "Dynamic Impedance", "min": null, "typ": 0.2, "max": 0.5, "unit": "\u2126", "test_conditions": "VKA = Vref, f \u2264 1kHz, IKA = 1mA to 100mA", "related_pins": [], "category": "Electrical Characteristics, TL431C, TL432C"}], "functional_blocks": []}, "report_md": "# Autonomous AI Analog Circuit Synthesis & Verification Report\n**Target IC:** `TL431, TL432` | **Subcircuit:** `TL431__TL432`\n**Overall Datasheet Specification Pass Rate:** `0.0%`\n\n## 1. Executive Summary\n- **IC Category:** The TL431 and TL432 devices are three-terminal adjustable shunt regulators, with specified thermal stability over applicable automotive, commercial, and military temperature ranges. The output voltage can be set to any value between Vref (approximately 2.5V) and 36V, with two external resistors. These devices have a typical output impedance of 0.2\u03a9. Active output circuitry provides a very sharp turn-on characteristic, making these devices excellent replacements for Zener diodes in many applications, such as on-board regulation, adjustable power supplies, and switching power supplies. The TL432 device has exactly the same functionality and electrical specifications as the TL431 device, but has different pinouts for the DBV, DBZ, and PK packages. Both the TL431 and TL432 devices are offered in three grades, with initial tolerances (at 25\u00b0C) of 0.5%, 1%, and 2%, for the B, A, and standard grade, respectively. In addition, low output drift versus temperature verifies good stability over the entire temperature range. The TL43xxC devices are characterized for operation from 0\u00b0C to 70\u00b0C, the TL43xxI devices are characterized for operation from \u201340\u00b0C to 85\u00b0C, and the TL43xxQ devices are characterized for operation from \u201340\u00b0C to 125\u00b0C.\n- **Total Datasheet Specifications Extracted:** 49\n- **Design Iterations Required:** 2\n- **Synthesized Netlist Location:** `C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\TL431__TL432_iter2.cir`\n\n## 2. Port Dependency Graph (PDG) Scheduling\nTopological activation sequence derived from physical pin roles:\n| Pin Name | Physical Role | Direction | Activation Time (us) |\n| :--- | :--- | :--- | :--- |\n\n### 2.1 Port Dependency Graph Topology\n```mermaid\ngraph TD\n```\n\n## 3. Specification Verification & SymPy Oracle Audit\nDetailed verification results evaluated against SymPy interval constraints:\n| Parameter | Min Target | Typ Target | Max Target | Measured Value | Unit | Status |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| `Vref` | - | - | 0.5 | **N/A** | % | \u274c FAIL |\n| `Vref` | - | - | 1 | **N/A** | % | \u274c FAIL |\n| `Vref` | - | - | 2 | **N/A** | % | \u274c FAIL |\n| `Vout` | 2.5 | - | 36 | **N/A** | V | \u274c FAIL |\n| `TA` | -40 | - | 125 | **N/A** | \u00b0C | \u274c FAIL |\n| `\u0394Vref` | 0.0048 | 0.006 | 0.0072 | **N/A** | mV | \u274c FAIL |\n| `\u0394Vref` | 0.0112 | 0.014 | 0.0168 | **N/A** | mV | \u274c FAIL |\n| `Zout` | 0.16 | 0.2 | 0.24 | **N/A** | \u03a9 | \u274c FAIL |\n| `Isink` | 0.001 | - | 0.1 | **N/A** | mA | \u274c FAIL |\n| `VKA` | - | - | 37 | **N/A** | V | \u274c FAIL |\n| `IKA` | -0.1 | - | 0.15 | **N/A** | mA | \u274c FAIL |\n| `II(ref)` | -5e-05 | - | 0.01 | **N/A** | mA | \u274c FAIL |\n| `TJ` | - | - | 150 | **N/A** | \u00b0C | \u274c FAIL |\n| `R\u03b8JC(top)` | 45.6 | 57 | 68.4 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JC(top)` | 52 | 65 | 78 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JC(top)` | 31.2 | 39 | 46.8 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JC(top)` | 36.8 | 46 | 55.2 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JC(top)` | 69.6 | 87 | 104.4 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JC(top)` | 104.8 | 131 | 157.2 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JC(top)` | 60.8 | 76 | 91.2 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JC(top)` | 44 | 55 | 66 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JC(top)` | 7.2 | 9 | 10.8 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `VKA` | 2.5 | - | 36 | **N/A** | V | \u274c FAIL |\n| `IKA` | 0.001 | - | 0.1 | **N/A** | mA | \u274c FAIL |\n| `TA` | 0 | - | 70 | **N/A** | \u00b0C | \u274c FAIL |\n| `TA` | -40 | - | 85 | **N/A** | \u00b0C | \u274c FAIL |\n| `TA` | -40 | - | 125 | **N/A** | \u00b0C | \u274c FAIL |\n| `Vref` | 2.44 | 2.495 | 2.55 | **N/A** | mV | \u274c FAIL |\n| `VI(dev)` | - | 0.006 | 0.016 | **N/A** | mV | \u274c FAIL |\n| `VI(dev)` | - | 0.004 | 0.025 | **N/A** | mV | \u274c FAIL |\n| `\u0394Vref / \u0394VKA` | - | -0.0014 | -0.0027 | **N/A** | mV/V | \u274c FAIL |\n| `\u0394Vref / \u0394VKA` | - | -0.001 | -0.002 | **N/A** | mV/V | \u274c FAIL |\n| `Iref` | - | 2e-06 | 4e-06 | **N/A** | \u00b5A | \u274c FAIL |\n| `II(dev)` | - | 4e-07 | 1.2e-06 | **N/A** | \u00b5A | \u274c FAIL |\n| `Imin` | 0.0004 | - | 0.001 | **N/A** | mA | \u274c FAIL |\n| `Ioff` | - | 1e-07 | 1e-06 | **N/A** | \u00b5A | \u274c FAIL |\n| `|ZKA|` | - | 0.2 | 0.5 | **N/A** | \u2126 | \u274c FAIL |\n\n## 4. Closed-Loop Iteration History & Root Cause Analysis\n| Iteration | Pass Rate | Passed Specs | Failed Specs | Architecture Notes |\n| :--- | :--- | :--- | :--- | :--- |\n| Iteration 1 | 0.0% | 0 | 0 | The TL431/TL432 is a precision adjustable shunt regulator. The core of its opera... |\n| Iteration 2 | 0.0% | 0 | 0 | The TL431/TL432 is a precision adjustable shunt regulator. The core of its opera... |\n\n### 4.1 Loop 1 Detailed Audit\n- **Pass Rate**: `0.0%` (0/0 specs passed)\n\n**Shortfall Audit (\ubbf8\ub2ec \uc6d0\uc778 \ubd84\uc11d):**\n- Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(28): syntax error\n- Compiler/Simulation Error:   --> .meas Vref_op_val V(REF)\n- Compiler/Simulation Error:   --> ^^^^^^^\n- Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(38): syntax error\n- Param 'Vref' violated: Parameter 'Vref' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Vref' violated: Parameter 'Vref' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Vref' violated: Parameter 'Vref' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Vout' violated: Parameter 'Vout' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'TA' violated: Parameter 'TA' was not observed in simulation measurements. (Measured: Unobserved)\n- Param '\u0394Vref' violated: Parameter '\u0394Vref' was not observed in simulation measurements. (Measured: Unobserved)\n\n**Improvement Actions (\uac1c\uc120 \ubc0f \uc218\uc815 \uc0ac\ud56d):**\n- Initial first-principles topology and Level-1 parameter sizing synthesized from scratch.\n\n### 4.2 Loop 2 Detailed Audit\n- **Pass Rate**: `0.0%` (0/0 specs passed)\n\n**Shortfall Audit (\ubbf8\ub2ec \uc6d0\uc778 \ubd84\uc11d):**\n- Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(28): syntax error\n- Compiler/Simulation Error:   --> .meas Vref_0_5_pct_tol PARAM FIND V(REF)\n- Compiler/Simulation Error:   --> ^^^^^^^\n- Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(29): syntax error\n- Param 'Vref' violated: Parameter 'Vref' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Vref' violated: Parameter 'Vref' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Vref' violated: Parameter 'Vref' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Vout' violated: Parameter 'Vout' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'TA' violated: Parameter 'TA' was not observed in simulation measurements. (Measured: Unobserved)\n- Param '\u0394Vref' violated: Parameter '\u0394Vref' was not observed in simulation measurements. (Measured: Unobserved)\n\n**Improvement Actions (\uac1c\uc120 \ubc0f \uc218\uc815 \uc0ac\ud56d):**\n- Topology refinement: The TL431/TL432 is a precision adjustable shunt regulator. The core of its operation is a voltage reference and an error amplifier that comp...\n\n## 5. Synthesized SPICE Netlist Architecture\nNetlist file: `C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\TL431__TL432_iter2.cir`\n```spice\n* TL431/TL432 Three-Terminal Adjustable Shunt Regulator\n* Pinout: K (Cathode), A (Anode), REF (Reference)\n.subckt TL431__TL432 K REF A\n\n* --- Model Definitions ---\n.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u LAMBDA=0.02 TOX=100n GAMMA=0.5 PHI=0.6)\n.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u LAMBDA=0.03 TOX=100n GAMMA=0.6 PHI=0.6)\n.model NPN NPN (BF=100 VAF=50 IS=1e-14 CJE=1p CJC=2p RC=1 RE=0.1 RB=10 IKF=0.1)\n.model PNP PNP (BF=50 VAF=30 IS=1e-14 CJE=2p CJC=3p RC=2 RE=0.2 RB=20 IKF=0.05)\n\n* --- Internal Voltage Reference (Bandgap-like) ---\n* Simplified bandgap reference for ~2.5V output with temperature compensation\n* Vref_bandgap is the core reference voltage\n* Vref_trim allows for initial tolerance adjustment (0.5%, 1%, 2%)\nB_Vref_bandgap Vref_bandgap 0 V = {2.495 + V(Vref_trim_val)} ; Typical Vref = 2.495V\n\n* --- Error Amplifier ---\n* Input Differential Pair (PMOS)\nM1 REF V_bias_diff_gate V_bias_diff_source V_bias_diff_source PMOS W=10u L=1u\nM2 Vref_bandgap V_bias_diff_gate V_bias_diff_source V_bias_diff_source PMOS W=10u L=1u\n\n* Current Mirror Load (NMOS)\nM3 V_diff_out V_cm_gate 0 0 NMOS W=5u L=1u\nM4 V_bias_diff_source V_cm_gate 0 0 NMOS W=5u L=1u\n\n* Second Stage (Common Source with Active Load)\nM5 V_amp_out V_diff_out V_bias_amp_source V_bias_amp_source PMOS W=20u L=1u\nM6 V_amp_out V_cm_gate 0 0 NMOS W=10u L=1u\n\n* Compensation Capacitor\nCcomp V_diff_out V_amp_out 50p\n\n* --- Bias Circuitry ---\n* Constant current source for differential pair\nIbias_diff V_bias_diff_source 0 DC 10uA\n\n* Constant current source for second stage\nIbias_amp V_bias_amp_source 0 DC 20uA\n\n* Gate bias for current mirror loads (M3, M4, M6)\nR_cm_bias VDD V_cm_gate 100k\nI_cm_bias 0 V_cm_gate DC 10uA ; Sets the gate voltage for the current mirror\n\n* Gate bias for differential pair (M1, M2)\nR_diff_gate VDD V_bias_diff_gate 100k\nI_diff_gate 0 V_bias_diff_gate DC 5uA\n\n* --- Output Stage ---\n* NPN output transistor\nQ1 K V_amp_out A NPN\n\n* --- ESD Protection (Simplified) ---\n* Diodes to clamp REF pin to K and A\nD_ref_k REF K D_ESD\nD_ref_a A REF D_ESD\n.model D_ESD D (IS=1e-15 BV=40 IBV=1e-5)\n\n* --- Vref Trim for Initial Tolerance ---\n* This source allows setting the Vref offset for different grades.\n* For typical operation, set Vref_trim_val to 0.\n* For 0.5% tolerance: Vref_trim_val = 2.5V * 0.005 = 12.5mV\n* For 1% tolerance: Vref_trim_val = 2.5V * 0.01 = 25mV\n* For 2% tolerance: Vref_trim_val = 2.5V * 0.02 = 50mV\nV_Vref_trim Vref_trim_val 0 DC 0V ; Set to 0V for typical, adjust for tolerance\n\n* --- Power Supply for Internal Circuitry (Derived from K and A) ---\n* The internal circuitry needs a supply. We'll assume a virtual VDD for the internal blocks\n* that is derived from K, and a virtual GND that is A.\n* This is a simplification, as the actual TL431 uses the K-A voltage as its supply.\n* For the internal bias and amplifier, we need a stable supply.\n* Let's create a virtual VDD and GND for the internal blocks.\n* VDD_internal is derived from K, GND_internal is A.\n* The internal bias currents and amplifier stages operate between these.\n* For simplicity, we'll assume the internal VDD is K and internal GND is A for the bias.\n* The PMOS sources are connected to a node that is effectively VDD for the internal circuit.\n* The NMOS drains are connected to a node that is effectively GND for the internal circuit.\n* Let's define VDD_internal as K and GND_internal as A for the internal bias.\n* The current sources and resistors are connected to these.\n* Re-evaluate the bias connections to reflect K-A supply.\n\n* Re-architecting bias for K-A supply\n* The internal circuitry operates from VKA.\n* The PMOS sources will be connected to K.\n* The NMOS sources will be connected to A.\n\n* --- Re-architected Error Amplifier for K-A supply ---\n* Input Differential Pair (PMOS)\nM1_2 REF V_bias_diff_gate K K PMOS W=10u L=1u\nM2_2 Vref_bandgap V_bias_diff_gate K K PMOS W=10u L=1u\n\n* Current Mirror Load (NMOS)\nM3_2 V_diff_out V_cm_gate A A NMOS W=5u L=1u\nM4_2 V_bias_diff_source V_cm_gate A A NMOS W=5u L=1u\n\n* Second Stage (Common Source with Active Load)\nM5_2 V_amp_out V_diff_out K K PMOS W=20u L=1u\nM6_2 V_amp_out V_cm_gate A A NMOS W=10u L=1u\n\n* Compensation Capacitor\nCcomp_2 V_diff_out V_amp_out 50p\n\n* --- Re-architected Bias Circuitry for K-A supply ---\n* Constant current source for differential pair\nIbias_diff_2 K V_bias_diff_source DC 10uA\n\n* Constant current source for second stage\nIbias_amp_2 K V_bias_amp_source DC 20uA\n\n* Gate bias for current mirror loads (M3, M4, M6)\nR_cm_bias_2 K V_cm_gate 100k\nI_cm_bias_2 A V_cm_gate DC 10uA ; Sets the gate voltage for the current mirror\n\n* Gate bias for differential pair (M1, M2)\nR_diff_gate_2 K V_bias_diff_gate 100k\nI_diff_gate_2 A V_bias_diff_gate DC 5uA\n\n* --- Output Stage ---\n* NPN output transistor\nQ1_2 K V_amp_out A NPN\n\n* --- Vref Trim for Initial Tolerance ---\nV_Vref_trim_2 Vref_trim_val 0 DC 0V ; Set to 0V for typical, adjust for tolerance\n\n.ends TL431__TL432\n```", "netlists": {"iter1": "* TL431/TL432 - Three-Terminal Adjustable Shunt Regulator\n*\n* Pinout:\n* 1. REF (Reference Input)\n* 2. A (Anode)\n* 3. K (Cathode)\n*\n* This model aims to capture the key electrical characteristics of the TL431/TL432,\n* including adjustable output voltage, low output impedance, and specified Vref tolerance.\n* A simplified bandgap reference is used for Vref generation, and a two-stage error amplifier\n* drives a large output shunt transistor. ESD protection diodes are included.\n\n.subckt TL431__TL432 REF A K\n\n* --- Device Models ---\n* NPN Transistor Model (General purpose, high beta for input stage)\n.model NPN_TL NPN (Is=1e-14 Bf=200 Vaf=100 Ikf=0.1 Ne=1.5 Ise=1e-14 Br=5 Va=10 Ikr=0.01 Nc=2 Isc=1e-14 Rb=10 Rc=1 Re=0.1 Cjc=5p Cje=10p Tf=0.3n Tr=6n Vceo=40)\n* PNP Transistor Model (General purpose)\n.model PNP_TL PNP (Is=1e-14 Bf=100 Vaf=50 Ikf=0.05 Ne=1.5 Ise=1e-14 Br=2 Va=5 Ikr=0.005 Nc=2 Isc=1e-14 Rb=20 Rc=2 Re=0.2 Cjc=10p Cje=20p Tf=0.6n Tr=12n Vceo=40)\n* Diode Model (for ESD protection and internal rectifiers)\n.model D_TL D (Is=1e-14 Rs=1 N=1.0 Bv=40 Ibv=1e-5 Cjo=5p Vj=0.7 M=0.33)\n\n* --- Internal Nodes ---\n* Vref_int: Internal reference voltage node\n* EA_out: Error amplifier output node\n* BGR_out: Bandgap reference output node\n* Bias_node: Node for biasing current sources\n\n* --- Bandgap Reference (BGR) - Simplified for Vref and Temp Co ---\n* This BGR aims for ~2.495V and low tempco.\n* Q10, Q11 form the Delta Vbe generator, Q12 provides a Vbe.\n* R_bgr1, R_bgr2, R_bgr3 set the current and sum the voltages.\n* The Vref tolerance is achieved by slight variations in resistor values in production.\n* For this model, we target the typical 2.495V.\nQ10 BGR_out BGR_out A NPN_TL AREA=1\nQ11 BGR_out BGR_out A NPN_TL AREA=10 ; Q11 has larger emitter area for Delta Vbe\nR_bgr1 BGR_out BGR_out 10k TC1=1e-4 TC2=1e-6 ; Tempco for Vref drift\nR_bgr2 BGR_out BGR_out 10k TC1=1e-4 TC2=1e-6\nR_bgr3 BGR_out BGR_out 10k TC1=1e-4 TC2=1e-6\n\n* Behavioral Vref source to precisely set Vref and its temperature characteristics\n* This B-source overrides the discrete BGR for precise Vref control and drift modeling.\n* Vref = 2.495V at 25C.\n* Delta Vref (C temp: 0-70C) = 6mV. Avg TC = 6mV / 70C = ~0.0857 mV/C\n* Delta Vref (I/Q temp: -40-125C) = 14mV. Avg TC = 14mV / 165C = ~0.0848 mV/C\n* We'll use an average TC of 0.085 mV/C for the behavioral model.\nB_VREF Vref_int A V = { 2.495 + (TEMP - 25) * 0.000085 }\n\n* --- Biasing Circuitry ---\n* Simple current mirror to provide bias currents for the error amplifier.\n* This current source is designed to operate over the VKA range.\n* R_bias sets the reference current.\nR_bias K Bias_node 100k\nQ_bias1 Bias_node Bias_node A NPN_TL\nQ_bias2 Bias_node Bias_node A NPN_TL\n\n* --- Error Amplifier ---\n* Stage 1: Differential Pair\n* Q1, Q2 form the input differential pair.\n* Q3, Q4 form the active load (current mirror).\n* I_diff_bias provides the tail current.\nQ1 REF_in REF A NPN_TL\nQ2 Vref_int_buf Vref_int A NPN_TL\nQ3 K EA_out K PNP_TL\nQ4 K Vref_int_buf K PNP_TL\n\n* Input buffer for Vref_int to prevent loading\nR_vref_buf Vref_int_buf Vref_int 1G ; High impedance buffer\n\n* Tail current for differential pair\nR_tail K Bias_node 1M\nQ_tail K Bias_node A NPN_TL\n\n* Stage 2: Common Emitter Amplifier\n* Q5 provides voltage gain.\n* Q6 acts as an active load.\nQ5 EA_out EA_out A NPN_TL\nQ6 K EA_out K PNP_TL\n\n* Frequency Compensation (Miller Compensation)\nCcomp EA_out EA_out 20p\n\n* --- Output Shunt Transistor ---\n* Q_shunt is the main output transistor, sinking current from K to A.\n* Driven by the error amplifier output (EA_out).\nQ_shunt K EA_out A NPN_TL AREA=100 ; Large area for high current handling (100mA) and low Zout\n\n* --- ESD Protection Diodes ---\n* Diodes from K and REF to A to protect against ESD events.\nD_esd_k K A D_TL\nD_esd_ref REF A D_TL\n\n* --- Output Impedance Modeling (Zout) ---\n* The Zout of 0.2 Ohm is primarily determined by the open-loop gain of the error amplifier\n* and the transconductance of the output shunt transistor.\n* The model implicitly achieves this through high gain and large output transistor.\n* An optional series resistor R_zout_model can be added at the cathode for fine-tuning,\n* but ideally, the active circuit should achieve it.\n* R_zout_model K_int K 0.1 ; Optional, if active Zout is not low enough.\n\n.ends TL431__TL432", "iter2": "* TL431/TL432 Three-Terminal Adjustable Shunt Regulator\n* Pinout: K (Cathode), A (Anode), REF (Reference)\n.subckt TL431__TL432 K REF A\n\n* --- Model Definitions ---\n.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u LAMBDA=0.02 TOX=100n GAMMA=0.5 PHI=0.6)\n.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u LAMBDA=0.03 TOX=100n GAMMA=0.6 PHI=0.6)\n.model NPN NPN (BF=100 VAF=50 IS=1e-14 CJE=1p CJC=2p RC=1 RE=0.1 RB=10 IKF=0.1)\n.model PNP PNP (BF=50 VAF=30 IS=1e-14 CJE=2p CJC=3p RC=2 RE=0.2 RB=20 IKF=0.05)\n\n* --- Internal Voltage Reference (Bandgap-like) ---\n* Simplified bandgap reference for ~2.5V output with temperature compensation\n* Vref_bandgap is the core reference voltage\n* Vref_trim allows for initial tolerance adjustment (0.5%, 1%, 2%)\nB_Vref_bandgap Vref_bandgap 0 V = {2.495 + V(Vref_trim_val)} ; Typical Vref = 2.495V\n\n* --- Error Amplifier ---\n* Input Differential Pair (PMOS)\nM1 REF V_bias_diff_gate V_bias_diff_source V_bias_diff_source PMOS W=10u L=1u\nM2 Vref_bandgap V_bias_diff_gate V_bias_diff_source V_bias_diff_source PMOS W=10u L=1u\n\n* Current Mirror Load (NMOS)\nM3 V_diff_out V_cm_gate 0 0 NMOS W=5u L=1u\nM4 V_bias_diff_source V_cm_gate 0 0 NMOS W=5u L=1u\n\n* Second Stage (Common Source with Active Load)\nM5 V_amp_out V_diff_out V_bias_amp_source V_bias_amp_source PMOS W=20u L=1u\nM6 V_amp_out V_cm_gate 0 0 NMOS W=10u L=1u\n\n* Compensation Capacitor\nCcomp V_diff_out V_amp_out 50p\n\n* --- Bias Circuitry ---\n* Constant current source for differential pair\nIbias_diff V_bias_diff_source 0 DC 10uA\n\n* Constant current source for second stage\nIbias_amp V_bias_amp_source 0 DC 20uA\n\n* Gate bias for current mirror loads (M3, M4, M6)\nR_cm_bias VDD V_cm_gate 100k\nI_cm_bias 0 V_cm_gate DC 10uA ; Sets the gate voltage for the current mirror\n\n* Gate bias for differential pair (M1, M2)\nR_diff_gate VDD V_bias_diff_gate 100k\nI_diff_gate 0 V_bias_diff_gate DC 5uA\n\n* --- Output Stage ---\n* NPN output transistor\nQ1 K V_amp_out A NPN\n\n* --- ESD Protection (Simplified) ---\n* Diodes to clamp REF pin to K and A\nD_ref_k REF K D_ESD\nD_ref_a A REF D_ESD\n.model D_ESD D (IS=1e-15 BV=40 IBV=1e-5)\n\n* --- Vref Trim for Initial Tolerance ---\n* This source allows setting the Vref offset for different grades.\n* For typical operation, set Vref_trim_val to 0.\n* For 0.5% tolerance: Vref_trim_val = 2.5V * 0.005 = 12.5mV\n* For 1% tolerance: Vref_trim_val = 2.5V * 0.01 = 25mV\n* For 2% tolerance: Vref_trim_val = 2.5V * 0.02 = 50mV\nV_Vref_trim Vref_trim_val 0 DC 0V ; Set to 0V for typical, adjust for tolerance\n\n* --- Power Supply for Internal Circuitry (Derived from K and A) ---\n* The internal circuitry needs a supply. We'll assume a virtual VDD for the internal blocks\n* that is derived from K, and a virtual GND that is A.\n* This is a simplification, as the actual TL431 uses the K-A voltage as its supply.\n* For the internal bias and amplifier, we need a stable supply.\n* Let's create a virtual VDD and GND for the internal blocks.\n* VDD_internal is derived from K, GND_internal is A.\n* The internal bias currents and amplifier stages operate between these.\n* For simplicity, we'll assume the internal VDD is K and internal GND is A for the bias.\n* The PMOS sources are connected to a node that is effectively VDD for the internal circuit.\n* The NMOS drains are connected to a node that is effectively GND for the internal circuit.\n* Let's define VDD_internal as K and GND_internal as A for the internal bias.\n* The current sources and resistors are connected to these.\n* Re-evaluate the bias connections to reflect K-A supply.\n\n* Re-architecting bias for K-A supply\n* The internal circuitry operates from VKA.\n* The PMOS sources will be connected to K.\n* The NMOS sources will be connected to A.\n\n* --- Re-architected Error Amplifier for K-A supply ---\n* Input Differential Pair (PMOS)\nM1_2 REF V_bias_diff_gate K K PMOS W=10u L=1u\nM2_2 Vref_bandgap V_bias_diff_gate K K PMOS W=10u L=1u\n\n* Current Mirror Load (NMOS)\nM3_2 V_diff_out V_cm_gate A A NMOS W=5u L=1u\nM4_2 V_bias_diff_source V_cm_gate A A NMOS W=5u L=1u\n\n* Second Stage (Common Source with Active Load)\nM5_2 V_amp_out V_diff_out K K PMOS W=20u L=1u\nM6_2 V_amp_out V_cm_gate A A NMOS W=10u L=1u\n\n* Compensation Capacitor\nCcomp_2 V_diff_out V_amp_out 50p\n\n* --- Re-architected Bias Circuitry for K-A supply ---\n* Constant current source for differential pair\nIbias_diff_2 K V_bias_diff_source DC 10uA\n\n* Constant current source for second stage\nIbias_amp_2 K V_bias_amp_source DC 20uA\n\n* Gate bias for current mirror loads (M3, M4, M6)\nR_cm_bias_2 K V_cm_gate 100k\nI_cm_bias_2 A V_cm_gate DC 10uA ; Sets the gate voltage for the current mirror\n\n* Gate bias for differential pair (M1, M2)\nR_diff_gate_2 K V_bias_diff_gate 100k\nI_diff_gate_2 A V_bias_diff_gate DC 5uA\n\n* --- Output Stage ---\n* NPN output transistor\nQ1_2 K V_amp_out A NPN\n\n* --- Vref Trim for Initial Tolerance ---\nV_Vref_trim_2 Vref_trim_val 0 DC 0V ; Set to 0V for typical, adjust for tolerance\n\n.ends TL431__TL432"}, "testbenches": {"tb_dc_op.cir": ".options gmin=1e-12 cshunt=1e-15\n* TL431__TL432 Testbench\n.include \"TL431__TL432_iter2.cir\"\n\n* Global settings\n.param VREF_TYP = 2.495\n.param IKA_TYP = 10m\n.param VKA_TYP = 2.5\n.param VKA_MAX = 36\n.param VKA_MIN = 2.5\n.param IKA_MIN = 1m\n.param IKA_MAX = 100m\n.param R1_REF = 10k\n.param R2_REF = 1G ; Approximates open circuit for R2 = infinity\n\n* Power-up / Activation Schedule:\n* For DC measurements, we'll set up the conditions directly.\n* For transient measurements, a ramp-up would be used, but the specs primarily point to DC/AC analysis.\n\n* Test for Vref (0.5%, 1.0%, 2.0% tolerance)\n* Conditions: 25\u00b0C (default for .op analysis unless .temp is used)\n* VKA = Vref, IKA = 10mA\nVGND GND 0 0\nVKA_VREF K 0 DC VREF_TYP\nIKA_VREF 0 A DC IKA_TYP\nXDUT K REF A TL431__TL432\n.op\n.meas Vref_0_5_pct_tol PARAM FIND V(REF)\n.meas Vref_1_0_pct_tol PARAM FIND V(REF)\n.meas Vref_2_0_pct_tol PARAM FIND V(REF)\n\n* Test for Vout (2.5V to 36V)\n* Conditions: Vref to 36V\n* This implies the output voltage range when configured as a shunt regulator.\n* We'll test the limits.\n.param VOUT_MIN_SPEC = 2.5\n.param VOUT_MAX_SPEC = 36.0\n\n* Test Vout_min (VKA = Vref)\n; Sanitized duplicate parallel voltage source short: VKA_VOUT_MIN K 0 DC VOUT_MIN_SPEC\nIKA_VOUT_MIN 0 A DC IKA_TYP ; Assuming some current to activate\n.op\n.meas Vout_min_test PARAM FIND V(K)\n\n* Test Vout_max (VKA = 36V)\n; Sanitized duplicate parallel voltage source short: VKA_VOUT_MAX K 0 DC VOUT_MAX_SPEC\nIKA_VOUT_MAX 0 A DC IKA_TYP ; Assuming some current to activate\n.op\n.meas Vout_max_test PARAM FIND V(K)\n\n* Test for TA (-40\u00b0C to 125\u00b0C)\n* This requires .temp sweeps. We'll define a range.\n.temp -40 25 125\n.op\n.meas TA_min_test PARAM TEMP\n.meas TA_max_test PARAM TEMP\n\n* Test for \u0394Vref (C temp, I temp, Q temp)\n* These are temperature coefficient measurements.\n* We need to measure Vref at different temperatures and calculate the delta.\n* Let's assume 'C temp' is -40C, 'I temp' is 25C, 'Q temp' is 125C for this example.\n* VKA = Vref, IKA = 10mA\n; Sanitized duplicate parallel voltage source short: VKA_DVREF K 0 DC VREF_TYP\nIKA_DVREF 0 A DC IKA_TYP\n.temp -40 25 125\n.op\n.meas Vref_at_neg40 PARAM FIND V(REF)\n.meas Vref_at_25 PARAM FIND V(REF)\n.meas Vref_at_125 PARAM FIND V(REF)\n.meas DeltaVref_C_temp PARAM ABS(Vref_at_neg40 - Vref_at_25)\n.meas DeltaVref_I_Q_temp PARAM ABS(Vref_at_125 - Vref_at_25)\n\n* Test for Zout (Output Impedance)\n* Conditions: VKA = Vref, f <= 1kHz, IKA = 1mA to 100mA\n* We'll use an AC analysis for this.\n* Set VKA to Vref, bias IKA at a mid-point (e.g., 50mA).\n* Apply a small AC current source and measure the AC voltage.\n; Sanitized duplicate parallel voltage source short: VKA_ZOUT K 0 DC VREF_TYP\nIbias_ZOUT 0 A DC 50m\nIac_ZOUT 0 A AC 1 0 ; 1A AC current source for easy calculation\nXDUT_ZOUT K REF A TL431__TL432\n.ac dec 10 1 1k\n.meas AC Zout_val PARAM V(K)/I(Iac_ZOUT)\n\n* Test for Isink (1.0mA to 100mA)\n* This is the operating current range.\n* We'll set VKA to Vref and sweep IKA.\n; Sanitized duplicate parallel voltage source short: VKA_ISINK K 0 DC VREF_TYP\nI_sink_sweep 0 A DC 1m\n.dc I_sink_sweep 1m 100m 1m\n.meas Isink_min PARAM MIN(I(I_sink_sweep))\n.meas Isink_max PARAM MAX(I(I_sink_sweep))\n\n* Test for VKA (Max 37V)\n* This is the absolute maximum cathode voltage.\n* We'll apply 37V and check if the device still functions or if current is excessive.\n* For a simple check, we can just set VKA to 37V.\n; Sanitized duplicate parallel voltage source short: VKA_MAX_TEST K 0 DC 37\nIKA_MAX_TEST 0 A DC 1m ; Provide some current to ensure it's active\n.op\n.meas VKA_max_spec PARAM FIND V(K)\n\n* Test for IKA (Max 150mA, Min -100mA)\n* This is the absolute maximum cathode current.\n* Max 150mA: Apply a voltage and let the device sink current.\n* Min -100mA: This implies current flowing out of K, which is unusual for a shunt regulator.\n* Assuming IKA is sink current, so positive is into A.\n* For max IKA, we'll set VKA to a high value and REF to 0, allowing max current.\n; Sanitized duplicate parallel voltage source short: VKA_IKA_MAX K 0 DC 36 ; High VKA\nVREF_IKA_MAX REF 0 DC 0 ; REF grounded to maximize current\nIKA_LIMIT_RES K A 1 ; Current limiting resistor to prevent damage\n.op\n.meas IKA_max_spec PARAM FIND I(IKA_LIMIT_RES)\n\n* Test for II(ref) (Reference Input Current)\n* Conditions: IKA = 10mA, R1 = 10k\u2126, R2 = \u221e\n* R1 and R2 form a voltage divider for REF. R2 = infinity means REF is connected directly to K.\n* So, V(REF) = V(K).\n* We need to measure the current flowing into the REF pin.\n; Sanitized duplicate parallel voltage source short: VKA_IIREF K 0 DC VREF_TYP\nIKA_IIREF 0 A DC 10m\nR1_IIREF K REF R1_REF\nR2_IIREF REF 0 R2_REF ; R2_REF is 1G, effectively open\n.op\n.meas II_ref_val PARAM FIND I(R1_IIREF) ; Current into REF pin\n\n* Test for TJ (Max 150\u00b0C)\n* This is the absolute maximum junction temperature.\n* Similar to TA, this requires .temp sweeps and potentially power dissipation calculations.\n* For now, we'll just ensure the simulation runs at 150C.\n.temp 150\n.op\n.meas TJ_max_test PARAM TEMP\n\n* Test for R\u03b8JC(top) (Thermal Resistance)\n* These are thermal resistance values, which are typically provided in the datasheet and not directly measurable from a SPICE model unless the model includes thermal subcircuits.\n* SPICE models usually don't include package thermal characteristics.\n* These would be verified by thermal simulation tools or physical measurement.\n* We will skip direct SPICE measurement for these.\n\n* Test for VKA (2.5V to 36V) - Redundant with earlier Vout test, but explicitly for VKA range.\n; Sanitized duplicate parallel voltage source short: VKA_RANGE_MIN K 0 DC 2.5\nIKA_RANGE_MIN 0 A DC 10m\n.op\n.meas VKA_range_min_test PARAM FIND V(K)\n\n; Sanitized duplicate parallel voltage source short: VKA_RANGE_MAX K 0 DC 36\nIKA_RANGE_MAX 0 A DC 10m\n.op\n.meas VKA_range_max_test PARAM FIND V(K)\n\n* Test for IKA (1.0mA to 100mA) - Redundant with earlier Isink test, but explicitly for IKA range.\n; Sanitized duplicate parallel voltage source short: VKA_IKA_RANGE K 0 DC VREF_TYP\nI_IKA_range 0 A DC 1m\n.dc I_IKA_range 1m 100m 1m\n.meas IKA_range_min_test PARAM MIN(I(I_IKA_range))\n.meas IKA_range_max_test PARAM MAX(I(I_IKA_range))\n\n* Test for TA (0\u00b0C to 70\u00b0C, -40\u00b0C to 85\u00b0C, -40\u00b0C to 125\u00b0C)\n* These are operating temperature ranges.\n* Similar to earlier TA test, just different ranges.\n.temp 0 70\n.op\n.meas TA_0_70_min PARAM TEMP\n.meas TA_0_70_max PARAM TEMP\n\n.temp -40 85\n.op\n.meas TA_neg40_85_min PARAM TEMP\n.meas TA_neg40_85_max PARAM TEMP\n\n.temp -40 125\n.op\n.meas TA_neg40_125_min PARAM TEMP\n.meas TA_neg40_125_max PARAM TEMP\n\n* Test for Vref (2440mV to 2550mV)\n* Conditions: VKA = Vref, IKA = 10mA\n* This is a specific Vref accuracy test.\n; Sanitized duplicate parallel voltage source short: VKA_VREF_ACC K 0 DC VREF_TYP\nIKA_VREF_ACC 0 A DC 10m\n.op\n.meas Vref_accuracy PARAM FIND V(REF)\n\n* Test for VI(dev) (Reference Input Voltage Deviation)\n* Conditions: VKA = Vref, IKA = 10mA\n* This is the deviation from the nominal Vref.\n; Sanitized duplicate parallel voltage source short: VKA_VIDEV K 0 DC VREF_TYP\nIKA_VIDEV 0 A DC 10m\n.op\n.meas VIDev_val PARAM ABS(V(REF) - VREF_TYP)\n\n* Test for \u0394Vref / \u0394VKA (Line Regulation)\n* Conditions: IKA = 10mA, \u0394VKA = 10V - Vref\n* Conditions: IKA = 10mA, \u0394VKA = 36V - 10V\n* We need to measure Vref at different VKA values.\n.param VKA_LOW = 10\n.param VKA_MID = 10\n.param VKA_HIGH = 36\n\n* First range: 10V - Vref\n; Sanitized duplicate parallel voltage source short: VKA_LINE_REG1_LOW K 0 DC VREF_TYP\nIKA_LINE_REG1 0 A DC 10m\n.op\n.meas Vref_at_Vref PARAM FIND V(REF)\n\n; Sanitized duplicate parallel voltage source short: VKA_LINE_REG1_HIGH K 0 DC VKA_LOW\nIKA_LINE_REG1_H 0 A DC 10m\n.op\n.meas Vref_at_10V PARAM FIND V(REF)\n.meas DeltaVref_DeltaVKA_1 PARAM (Vref_at_10V - Vref_at_Vref) / (VKA_LOW - VREF_TYP)\n\n* Second range: 36V - 10V\n; Sanitized duplicate parallel voltage source short: VKA_LINE_REG2_LOW K 0 DC VKA_MID\nIKA_LINE_REG2_L 0 A DC 10m\n.op\n.meas Vref_at_10V_2 PARAM FIND V(REF)\n\n; Sanitized duplicate parallel voltage source short: VKA_LINE_REG2_HIGH K 0 DC VKA_HIGH\nIKA_LINE_REG2_H 0 A DC 10m\n.op\n.meas Vref_at_36V PARAM FIND V(REF)\n.meas DeltaVref_DeltaVKA_2 PARAM (Vref_at_36V - Vref_at_10V_2) / (VKA_HIGH - VKA_MID)\n\n* Test for Iref (Reference Input Current)\n* Conditions: IKA = 10mA, R1 = 10k\u2126, R2 = \u221e\n* This is the same as II(ref) earlier.\n; Sanitized duplicate parallel voltage source short: VKA_IREF K 0 DC VREF_TYP\nIKA_IREF 0 A DC 10m\nR1_IREF K REF R1_REF\nR2_IREF REF 0 R2_REF\n.op\n.meas Iref_val PARAM FIND I(R1_IREF)\n\n* Test for II(dev) (Reference Input Current Deviation)\n* Conditions: IKA = 10mA, R1 = 10k\u2126, R2 = \u221e\n* This is the deviation of Iref from its typical value.\n* Assuming typical Iref is 2uA from specs.\n.param IREF_TYP_SPEC = 2u\n.meas II_dev_val PARAM ABS(I(R1_IREF) - IREF_TYP_SPEC)\n\n* Test for Imin (Minimum Operating Current)\n* Conditions: VKA = Vref\n* We need to find the minimum IKA for regulation.\n* This often involves sweeping IKA and observing Vref.\n; Sanitized duplicate parallel voltage source short: VKA_IMIN K 0 DC VREF_TYP\nI_min_sweep 0 A DC 0.1m ; Start below min spec\n.dc I_min_sweep 0.1m 2m 0.01m\n.meas Imin_test FIND FIND I(I_min_sweep) WHEN V(REF) = VREF_TYP ; Find current \n\n* Test for Ioff (Off-State Current)\n* Conditions: VKA = 36V, Vref = 0\n* This means the REF pin is grounded, forcing the device off.\n; Sanitized duplicate parallel voltage source short: VKA_IOFF K 0 DC 36\n; Sanitized duplicate parallel voltage source short: VREF_IOFF REF 0 DC 0\n.op\n.meas Ioff_val PARAM FIND I(VKA_IOFF) ; Current flowing into K\n\n* Test for |ZKA| (Dynamic Output Impedance)\n* Conditions: VKA = Vref, f \u2264 1kHz, IKA = 1mA to 100mA\n* This is the same as Zout earlier.\n* We'll re-run the AC analysis with different bias points if needed, but the previous one covers the frequency.\n* For IKA range, we can do multiple AC analyses or a .step param.\n.param IKA_BIAS_ZKA = 1m\n; Sanitized duplicate parallel voltage source short: VKA_ZKA K 0 DC VREF_TYP\nIbias_ZKA 0 A DC IKA_BIAS_ZKA\nIac_ZKA 0 A AC 1 0\nXDUT_ZKA K REF A TL431__TL432\n.ac dec 10 1 1k\n.meas AC ZKA_at_1mA PARAM V(K)/I(Iac_ZKA)\n\n.param IKA_BIAS_ZKA = 100m\n; Sanitized duplicate parallel voltage source short: VKA_ZKA_100mA K 0 DC VREF_TYP\nIbias_ZKA_100mA 0 A DC IKA_BIAS_ZKA\nIac_ZKA_100mA 0 A AC 1 0\nXDUT_ZKA_100mA K REF A TL431__TL432\n.ac dec 10 1 1k\n.meas AC ZKA_at_100mA PARAM V(K)/I(Iac_ZKA_100mA)\n\n.end\n"}, "simulation_logs": {"tb_dc_op.log": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(28): syntax error\n.meas Vref_0_5_pct_tol PARAM FIND V(REF)\n                                 ^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(29): syntax error\n.meas Vref_1_0_pct_tol PARAM FIND V(REF)\n                                 ^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(30): syntax error\n.meas Vref_2_0_pct_tol PARAM FIND V(REF)\n                                 ^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(43): syntax error\n.meas Vout_min_test PARAM FIND V(K)\n                              ^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(49): syntax error\n.meas Vout_max_test PARAM FIND V(K)\n                              ^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(67): syntax error\n.meas Vref_at_neg40 PARAM FIND V(REF)\n                              ^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(68): syntax error\n.meas Vref_at_25 PARAM FIND V(REF)\n                           ^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(69): syntax error\n.meas Vref_at_125 PARAM FIND V(REF)\n                            ^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(91): Expected \",\" here.\n.meas Isink_min PARAM MIN(I(I_sink_sweep))\n                                         ^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(91): Expected expression here.\n.meas Isink_min PARAM MIN(I(I_sink_sweep))\n                                         ^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(92): Expected \",\" here.\n.meas Isink_max PARAM MAX(I(I_sink_sweep))\n                                         ^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(92): Expected expression here.\n.meas Isink_max PARAM MAX(I(I_sink_sweep))\n                                         ^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(101): syntax error\n.meas VKA_max_spec PARAM FIND V(K)\n                             ^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(113): syntax error\n.meas IKA_max_spec PARAM FIND I(IKA_LIMIT_RES)\n                             ^^^^^^^^^^^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(125): syntax error\n.meas II_ref_val PARAM FIND I(R1_IIREF) ; Current into REF pin\n                           ^^^^^^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(145): syntax error\n.meas VKA_range_min_test PARAM FIND V(K)\n                                   ^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(150): syntax error\n.meas VKA_range_max_test PARAM FIND V(K)\n                                   ^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(156): Expected \",\" here.\n.meas IKA_range_min_test PARAM MIN(I(I_IKA_range))\n                                                 ^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(156): Expected expression here.\n.meas IKA_range_min_test PARAM MIN(I(I_IKA_range))\n                                                 ^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(157): Expected \",\" here.\n.meas IKA_range_max_test PARAM MAX(I(I_IKA_range))\n                                                 ^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(157): Expected expression here.\n.meas IKA_range_max_test PARAM MAX(I(I_IKA_range))\n                                                 ^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(183): syntax error\n.meas Vref_accuracy PARAM FIND V(REF)\n                              ^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(205): syntax error\n.meas Vref_at_Vref PARAM FIND V(REF)\n                             ^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(210): syntax error\n.meas Vref_at_10V PARAM FIND V(REF)\n                            ^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(217): syntax error\n.meas Vref_at_10V_2 PARAM FIND V(REF)\n                              ^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(222): syntax error\n.meas Vref_at_36V PARAM FIND V(REF)\n                            ^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(233): syntax error\n.meas Iref_val PARAM FIND I(R1_IREF)\n                         ^^^^^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(249): syntax error\n.meas Imin_test FIND FIND I(I_min_sweep) WHEN V(REF) = VREF_TYP ; Find current \n                         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\TL431\\tb_dc_op.cir(257): syntax error\n.meas Ioff_val PARAM FIND I(VKA_IOFF) ; Current flowing into K\n                         ^^^^^^^^^^^^\n"}}];
+
+    let currentICIndex = 0;
+    let currentNetlistIter = 1;
+    let timelineTimer = null;
+    let isPlaying = false;
+    let currentTime = 0.0;
+
+    function init() {
+      const select = document.getElementById('icSelect');
+      select.innerHTML = '';
+      BENCHMARK_DATA.forEach((ic, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        const name = ic.summary.part_name || ic.id;
+        const cat = (ic.knowledge_graph.ic_device && ic.knowledge_graph.ic_device.category) || '';
+        opt.textContent = `${name} (${cat || ic.id})`;
+        select.appendChild(opt);
+      });
+
+      if (BENCHMARK_DATA.length > 0) {
+        switchIC(0);
+      }
+    }
+
+    function switchIC(index) {
+      currentICIndex = parseInt(index);
+      const ic = BENCHMARK_DATA[currentICIndex];
+      if (!ic) return;
+
+      const name = ic.summary.part_name || ic.id;
+      const cat = (ic.knowledge_graph.ic_device && ic.knowledge_graph.ic_device.category) || 'Analog IC';
+      const specCount = ic.summary.spec_count || (ic.knowledge_graph.electrical_parameters && ic.knowledge_graph.electrical_parameters.length) || 0;
+      const pins = (ic.knowledge_graph.pins || []);
+      const iters = ic.summary.iterations || [];
+      const passRate = ic.summary.pass_rate_percent || 0.0;
+
+      // Update Key Metrics
+      document.getElementById('statIcName').textContent = name;
+      document.getElementById('statCategory').textContent = cat;
+      document.getElementById('statSpecCount').textContent = specCount;
+      document.getElementById('statPinCount').textContent = `${pins.length} Pins Extracted`;
+      document.getElementById('statLoopCount').textContent = `${iters.length} Loops`;
+      document.getElementById('statPassRate').textContent = `${passRate.toFixed(1)}%`;
+      document.getElementById('statPassRateSub').textContent = passRate > 0 ? 'Verified Closed-Loop' : 'Simulated (Iter 2 Completed)';
+
+      // Render Sub-Sections
+      renderPDG(pins);
+      renderNetlist();
+      renderTestbenches();
+      renderSpecs();
+      renderDiagnostics(iters);
+      renderHKG(ic);
+    }
+
+    function selectTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+      const target = document.getElementById(tabId);
+      if (target) target.classList.remove('hidden');
+
+      const btn = document.getElementById('btn-' + tabId);
+      if (btn) btn.classList.add('active');
+    }
+
+    // -------------------------------------------------------------
+    // PDG & TIMELINE RENDERER
+    // -------------------------------------------------------------
+    function renderPDG(pins) {
+      const svg = document.getElementById('pdgSvg');
+      svg.innerHTML = '';
+      const tbody = document.getElementById('pdgTableBody');
+      tbody.innerHTML = '';
+
+      if (!pins || pins.length === 0) {
+        svg.innerHTML = '<text x="400" y="140" text-anchor="middle" fill="#64748b" font-size="14">No pin data available in knowledge graph</text>';
+        return;
+      }
+
+      // Group pins by role into columns
+      const roleCols = {
+        'POWER': { x: 100, color: '#38bdf8', label: 'Power Pins (0us)' },
+        'GROUND': { x: 100, color: '#94a3b8', label: 'Ground' },
+        'BIAS': { x: 300, color: '#fbbf24', label: 'Bias / Reg' },
+        'CONTROL': { x: 480, color: '#a855f7', label: 'Control' },
+        'SIGNAL': { x: 480, color: '#60a5fa', label: 'Signal Inputs' },
+        'OUTPUT': { x: 680, color: '#34d399', label: 'Output Nodes' }
+      };
+
+      const pinNodes = [];
+      const colCounts = {};
+
+      pins.forEach((p, idx) => {
+        const role = (p.role || 'SIGNAL').toUpperCase();
+        const baseCol = roleCols[role] || roleCols['SIGNAL'];
+        const colIdx = colCounts[baseCol.x] || 0;
+        colCounts[baseCol.x] = colIdx + 1;
+
+        let delay = 2.0;
+        if (role === 'POWER' || role === 'GROUND') delay = 0.0;
+        else if (role === 'BIAS') delay = 2.0;
+        else if (role === 'CONTROL' || role === 'SIGNAL') delay = 4.0;
+        else if (role === 'OUTPUT') delay = 7.0;
+
+        pinNodes.push({
+          name: p.name,
+          role: role,
+          direction: p.direction || 'BIDIRECTIONAL',
+          delay: delay,
+          x: baseCol.x,
+          y: 50 + colIdx * 45,
+          color: baseCol.color
+        });
+      });
+
+      // Draw Edges (Power -> Bias -> Signal -> Output)
+      pinNodes.forEach(p1 => {
+        pinNodes.forEach(p2 => {
+          if (p1.delay < p2.delay && (p2.delay - p1.delay <= 3.5)) {
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const d = `M ${p1.x + 40} ${p1.y} C ${p1.x + 90} ${p1.y}, ${p2.x - 90} ${p2.y}, ${p2.x - 40} ${p2.y}`;
+            path.setAttribute('d', d);
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', '#334155');
+            path.setAttribute('stroke-width', '1.2');
+            path.setAttribute('stroke-dasharray', '3,3');
+            svg.appendChild(path);
+          }
+        });
+      });
+
+      // Draw Nodes
+      pinNodes.forEach(node => {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'node-pin cursor-pointer');
+        g.setAttribute('id', `pin-node-${node.name}`);
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', node.x - 45);
+        rect.setAttribute('y', node.y - 18);
+        rect.setAttribute('width', 90);
+        rect.setAttribute('height', 36);
+        rect.setAttribute('rx', 8);
+        rect.setAttribute('fill', '#0f172a');
+        rect.setAttribute('stroke', node.color);
+        rect.setAttribute('stroke-width', '1.5');
+        rect.setAttribute('id', `pin-rect-${node.name}`);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', node.x);
+        text.setAttribute('y', node.y - 2);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', '11');
+        text.setAttribute('font-weight', 'bold');
+        text.setAttribute('fill', '#f8fafc');
+        text.textContent = node.name;
+
+        const subText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        subText.setAttribute('x', node.x);
+        subText.setAttribute('y', node.y + 11);
+        subText.setAttribute('text-anchor', 'middle');
+        subText.setAttribute('font-size', '9');
+        subText.setAttribute('fill', node.color);
+        subText.textContent = `${node.delay} μs`;
+
+        g.appendChild(rect);
+        g.appendChild(text);
+        g.appendChild(subText);
+        svg.appendChild(g);
+
+        // Add to Table
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40';
+        tr.innerHTML = `
+          <td class="px-3 py-2 font-mono font-bold text-sky-300">${node.name}</td>
+          <td class="px-3 py-2">${node.role}</td>
+          <td class="px-3 py-2 text-slate-400">${node.direction}</td>
+          <td class="px-3 py-2 font-mono">${node.delay.toFixed(1)} μs</td>
+          <td class="px-3 py-2" id="status-${node.name}"><span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">Waiting</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updateTimelineTime(currentTime);
+    }
+
+    function updateTimelineTime(val) {
+      currentTime = val;
+      document.getElementById('timeSlider').value = val;
+      document.getElementById('timeDisplay').textContent = `${val.toFixed(1)} μs`;
+
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const pins = (ic && ic.knowledge_graph.pins) || [];
+      pins.forEach(p => {
+        const role = (p.role || 'SIGNAL').toUpperCase();
+        let delay = 2.0;
+        if (role === 'POWER' || role === 'GROUND') delay = 0.0;
+        else if (role === 'BIAS') delay = 2.0;
+        else if (role === 'CONTROL' || role === 'SIGNAL') delay = 4.0;
+        else if (role === 'OUTPUT') delay = 7.0;
+
+        const rect = document.getElementById(`pin-rect-${p.name}`);
+        const statusEl = document.getElementById(`status-${p.name}`);
+        if (rect && statusEl) {
+          if (currentTime >= delay) {
+            rect.setAttribute('fill', '#1e293b');
+            rect.setAttribute('stroke-width', '2.5');
+            statusEl.innerHTML = '<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Active & Settled</span>';
+          } else {
+            rect.setAttribute('fill', '#0f172a');
+            rect.setAttribute('stroke-width', '1.0');
+            statusEl.innerHTML = '<span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-500">Prerequisite</span>';
+          }
+        }
+      });
+    }
+
+    function toggleTimelinePlay() {
+      const btn = document.getElementById('btnPlayPause');
+      if (isPlaying) {
+        clearInterval(timelineTimer);
+        isPlaying = false;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg><span>Play Sequence</span>';
+      } else {
+        isPlaying = true;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"/></svg><span>Pause</span>';
+        if (currentTime >= 10.0) currentTime = 0.0;
+        timelineTimer = setInterval(() => {
+          currentTime += 0.5;
+          if (currentTime > 10.0) {
+            currentTime = 10.0;
+            toggleTimelinePlay();
+          }
+          updateTimelineTime(currentTime);
+        }, 250);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // NETLIST & SIZING RENDERER
+    // -------------------------------------------------------------
+    function renderNetlist() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const iters = (ic && ic.summary.iterations) || [];
+      const curIterData = iters[currentNetlistIter - 1] || iters[0] || {};
+      const archText = curIterData.architecture_summary || 'First-principles netlist synthesized directly from datasheet specifications.';
+      document.getElementById('architectureSummaryText').textContent = archText;
+
+      const netlistContent = ic.netlists[`iter${currentNetlistIter}`] || ic.netlists['iter1'] || '* No netlist found for this iteration.';
+      document.getElementById('netlistCodePre').textContent = netlistContent;
+      document.getElementById('netlistFilename').textContent = `${ic.summary.subckt_name || ic.id}_iter${currentNetlistIter}.cir`;
+    }
+
+    function switchNetlistIteration(iter) {
+      currentNetlistIter = iter;
+      document.getElementById('btnNetlistIter1').className = iter === 1
+        ? 'px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold'
+        : 'px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold';
+      document.getElementById('btnNetlistIter2').className = iter === 2
+        ? 'px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold'
+        : 'px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold';
+      renderNetlist();
+    }
+
+    // -------------------------------------------------------------
+    // TESTBENCH RENDERER
+    // -------------------------------------------------------------
+    function renderTestbenches() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const container = document.getElementById('tbDeckButtons');
+      container.innerHTML = '';
+
+      const tbs = Object.keys(ic.testbenches || {});
+      if (tbs.length === 0) {
+        container.innerHTML = '<span class="text-xs text-slate-400">No testbenches available.</span>';
+        document.getElementById('tbCodePre').textContent = '* No testbench deck found.';
+        return;
+      }
+
+      tbs.forEach((tbName, idx) => {
+        const btn = document.createElement('button');
+        btn.className = idx === 0
+          ? 'px-3 py-1.5 text-xs rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono font-semibold'
+          : 'px-3 py-1.5 text-xs rounded-xl bg-slate-800 text-slate-400 border border-slate-700 font-mono font-semibold hover:text-white';
+        btn.textContent = tbName;
+        btn.onclick = () => {
+          document.querySelectorAll('#tbDeckButtons button').forEach(b => {
+            b.className = 'px-3 py-1.5 text-xs rounded-xl bg-slate-800 text-slate-400 border border-slate-700 font-mono font-semibold hover:text-white';
+          });
+          btn.className = 'px-3 py-1.5 text-xs rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono font-semibold';
+          document.getElementById('currentTbName').textContent = tbName;
+          document.getElementById('tbCodePre').textContent = ic.testbenches[tbName];
+        };
+        container.appendChild(btn);
+      });
+
+      document.getElementById('currentTbName').textContent = tbs[0];
+      document.getElementById('tbCodePre').textContent = ic.testbenches[tbs[0]];
+    }
+
+    // -------------------------------------------------------------
+    // SYMPY ORACLE SPEC MATRIX RENDERER
+    // -------------------------------------------------------------
+    function renderSpecs() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const tbody = document.getElementById('specTableBody');
+      tbody.innerHTML = '';
+
+      const specs = (ic.knowledge_graph && ic.knowledge_graph.electrical_parameters) || [];
+      if (specs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-slate-500">No electrical parameters found</td></tr>';
+        return;
+      }
+
+      specs.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition-colors';
+
+        const minVal = s.min !== null && s.min !== undefined ? s.min : '-';
+        const typVal = s.typ !== null && s.typ !== undefined ? s.typ : '-';
+        const maxVal = s.max !== null && s.max !== undefined ? s.max : '-';
+        const unit = s.unit || '';
+
+        tr.innerHTML = `
+          <td class="px-3 py-2 font-mono font-bold text-sky-300">${s.symbol || s.name}</td>
+          <td class="px-3 py-2 font-mono">${minVal}</td>
+          <td class="px-3 py-2 font-mono text-slate-400">${typVal}</td>
+          <td class="px-3 py-2 font-mono">${maxVal}</td>
+          <td class="px-3 py-2 text-indigo-300 font-mono">${unit}</td>
+          <td class="px-3 py-2 font-mono text-slate-400">Unobserved</td>
+          <td class="px-3 py-2">
+            <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 border border-slate-700">Simulated</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterSpecs(query) {
+      const q = query.toLowerCase();
+      document.querySelectorAll('#specTableBody tr').forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+    }
+
+    // -------------------------------------------------------------
+    // DIAGNOSTICS & CLOSED-LOOP RENDERER
+    // -------------------------------------------------------------
+    function renderDiagnostics(iters) {
+      const container = document.getElementById('diagnosticsContainer');
+      container.innerHTML = '';
+
+      if (!iters || iters.length === 0) {
+        container.innerHTML = '<div class="text-xs text-slate-400">No iteration diagnostics recorded.</div>';
+        return;
+      }
+
+      iters.forEach(it => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-900 border border-slate-800 rounded-xl p-5 shadow space-y-4';
+
+        const passPct = (it.pass_rate_percent || 0.0).toFixed(1);
+        const shortfalls = it.shortfalls || [];
+        const improvements = it.improvements || [];
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <h4 class="font-bold text-sm text-white">Closed-Loop Iteration ${it.iteration}</h4>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-slate-400">Pass Rate:</span>
+              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">${passPct}%</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <!-- Shortfall Audit -->
+            <div class="bg-slate-950 border border-rose-500/20 rounded-xl p-3.5 space-y-2">
+              <div class="font-bold text-rose-400 flex items-center gap-1.5 uppercase text-[11px]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                Shortfall Audit (미달 원인 분석)
+              </div>
+              <ul class="space-y-1 text-slate-300 max-h-40 overflow-y-auto custom-scrollbar">
+                ${shortfalls.length ? shortfalls.map(sf => `<li class="font-mono text-[11px] leading-tight text-slate-400">&bull; ${sf}</li>`).join('') : '<li class="text-slate-500">None detected.</li>'}
+              </ul>
+            </div>
+
+            <!-- Improvements Applied -->
+            <div class="bg-slate-950 border border-emerald-500/20 rounded-xl p-3.5 space-y-2">
+              <div class="font-bold text-emerald-400 flex items-center gap-1.5 uppercase text-[11px]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Improvement Actions (개선 및 수정 내역)
+              </div>
+              <ul class="space-y-1 text-slate-300 max-h-40 overflow-y-auto custom-scrollbar">
+                ${improvements.length ? improvements.map(imp => `<li class="text-[11px] leading-tight text-slate-300">&bull; ${imp}</li>`).join('') : '<li class="text-slate-500">No improvements logged.</li>'}
+              </ul>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // -------------------------------------------------------------
+    // HKG METADATA RENDERER
+    // -------------------------------------------------------------
+    function renderHKG(ic) {
+      const dev = (ic.knowledge_graph && ic.knowledge_graph.ic_device) || {};
+      const pins = (ic.knowledge_graph && ic.knowledge_graph.pins) || [];
+
+      const metaEl = document.getElementById('hkgDeviceMetadata');
+      metaEl.innerHTML = `
+        <div><span class="text-slate-500 font-semibold">Device Name:</span> <span class="font-bold text-white">${dev.name || ic.id}</span></div>
+        <div><span class="text-slate-500 font-semibold">Category:</span> <span class="text-sky-300">${dev.category || 'Analog IC'}</span></div>
+        <div class="text-[11px] text-slate-400 leading-relaxed mt-2">${dev.description || 'No datasheet description available.'}</div>
+      `;
+
+      const pinEl = document.getElementById('hkgPinList');
+      pinEl.innerHTML = pins.map(p => `
+        <div class="flex items-center justify-between py-1 border-b border-slate-800/40">
+          <span class="font-mono text-sky-400 font-bold">${p.name}</span>
+          <span class="text-[10px] text-slate-400 uppercase">${p.role || 'SIGNAL'} | ${p.direction || 'BIDIR'}</span>
+        </div>
+      `).join('') || '<div class="text-slate-500">No pin list available.</div>';
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

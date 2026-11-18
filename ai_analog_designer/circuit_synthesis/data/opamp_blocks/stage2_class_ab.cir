@@ -1,0 +1,14 @@
+* 블록: 2단 - class-AB 출력단 (플로팅 제어 포함)
+* 단자: VDD VSS GN GP NB PB OUT
+* GN 은 아래 출력 소자(NMOS)의 게이트, GP 는 위 출력 소자(PMOS)의 게이트. 서로 다른 노드여야 한다.
+* 평소 전류는 출력 소자와 플로팅 소자의 축소 복제를 쌓아 만든 전압(vabn, vabp)으로 정한다.
+XMB9  vabn PB   VDD  VDD  pfet_06v0 w=24u l=2u
+XMAN2 vabn vabn nan  VSS  nfet_06v0 w=5u l=1u
+XMAN1 nan  nan  VSS  VSS  nfet_06v0 w=8.6u l=1u
+XMB10 vabp NB   VSS  VSS  nfet_06v0 w=11.5u l=2u
+XMAP2 vabp vabp nap  VDD  pfet_06v0 w=10u l=1u
+XMAP1 nap  nap  VDD  VDD  pfet_06v0 w=10.7u l=0.7u
+XMAN  GP   vabn GN   VSS  nfet_06v0 w=5u l=1u
+XMAP  GN   vabp GP   VDD  pfet_06v0 w=10u l=1u
+XMON  OUT  GN   VSS  VSS  nfet_06v0 w=43u l=1u m=3
+XMOP  OUT  GP   VDD  VDD  pfet_06v0 w=40u l=0.7u m=4

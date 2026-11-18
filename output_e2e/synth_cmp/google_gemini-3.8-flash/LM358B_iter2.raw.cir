@@ -1,0 +1,83 @@
+* TI LM358B Dual Operational Amplifier SPICE Macromodel
+* High-Convergence, High-Fidelity Implementation
+
+.subckt LM358_CHANNEL INP INN OUT VCC VEE
+.param PI=3.141592653589793
+.param GBW=1.2e6
+.param SR=0.5e6
+.param C_COMP=20e-12
+.param I_TAIL={SR*C_COMP}
+.param GM_IN={2*PI*GBW*C_COMP}
+.param AOL_DB=103
+.param AOL_LIN={10**(AOL_DB/20)}
+.param R_INT={AOL_LIN/GM_IN}
+
+* Input Bias & Offset
+I_BIAS_P INP VEE 10n
+I_BIAS_N INN VEE 10.5n
+R_IN_DIFF INP INN 10MEG
+C_IN_DIFF INP INN 1.5p
+R_IN_CMP INP VEE 4000MEG
+R_IN_CMN INN VEE 4000MEG
+C_IN_CMP INP VEE 2p
+C_IN_CMN INN VEE 2p
+
+* Input Offset Voltage
+V_OS INP INP_INT 0.3m
+
+* Common-Mode & Supply Rejection Modeling
+* CMRR ~ 94 dB (20uV/V), PSRR ~ 100 dB (10uV/V)
+E_CM V_CM 0 VALUE = { 0.5 * (V(INP_INT) + V(INN)) }
+E_SUP V_SUP 0 VALUE = { V(VCC) - V(VEE) }
+E_ERR INP_INT INP_CORR VALUE = { (V(V_CM) - 2.5) * 20u + (V(V_SUP) - 5.0) * 10u }
+
+* Input Common Mode Range Limiter (VEE to VCC - 1.5V)
+* Smooth limiting of differential voltage when outside common mode range
+B_DIFF VIN_LIM 0 V = { (V(INP_CORR) - V(INN)) * 
++ (0.5 + 0.5 * tanh((V(V_CM) - V(VEE) + 0.1) / 0.1)) *
++ (0.5 + 0.5 * tanh((V(VCC) - 1.5 - V(V_CM) + 0.1) / 0.1)) }
+
+* Transconductance & Slew-Rate Limiting Stage
+* Max differential current clamped to +/- I_TAIL (10uA)
+G_IN 0 N_GAIN VALUE = { I_TAIL * tanh((GM_IN / I_TAIL) * V(VIN_LIM)) }
+R_GAIN N_GAIN 0 {R_INT}
+C_COMP N_GAIN 0 {C_COMP}
+
+* High Frequency Non-Dominant Pole (fp2 ~ 4.5 MHz for 56 deg phase margin)
+R_P2 N_GAIN N_P2 10k
+C_P2 N_P2 0 3.536p
+
+* Output Voltage Clamping & Saturation Limits
+* Vmax = VCC - 1.4V, Vmin = VEE + 5mV (unloaded)
+* Intermediate linear voltage representation:
+E_INT V_INT 0 VALUE = { V(N_P2) + 0.5 * (V(VCC) + V(VEE)) }
+
+* Output Buffer with Drive and Current Limiting
+* Sourcing limit ~ 40mA, Sinking limit ~ 30mA (standard), drops smoothly near VEE
+B_VOUT V_DRIVE 0 V = {
++ V(VEE) + 0.005 + 
++ (V(VCC) - 1.4 - V(VEE) - 0.005) * 
++ (0.5 + 0.5 * tanh((V(V_INT) - 0.5*(V(VCC)+V(VEE))) / (0.5*(V(VCC)-V(VEE)-1.405) + 1e-6)))
++ }
+
+* Output Impedance and Current Limiting
+R_OUT_INT V_DRIVE N_SENSE 300
+R_OUT_EXT N_SENSE OUT 10
+
+* Sourcing and Sinking Dynamic Clamp via Soft Feedback
+B_ISC N_SENSE 0 I = {
++ 0.040 * tanh(max(0, (V(N_SENSE) - V(OUT) - 0.4) / 0.05)) -
++ 0.030 * tanh(max(0, (V(OUT) - V(N_SENSE) - 0.3) / 0.05))
++ }
+
+* Quiescent Current Branch (300uA per channel at 5V, ~400uA at 36V)
+B_IQ VCC VEE I = { 285u + 3.2u * (V(VCC) - V(VEE)) }
+.ends LM358_CHANNEL
+
+* Top-Level Subcircuit for LM358B Dual Operational Amplifier
+.subckt LM358B OUT1 IN1 IN1_P V IN2_P IN2 OUT2 V_P
+* Channel 1
+X_U1 IN1_P IN1 OUT1 V_P V LM358_CHANNEL
+* Channel 2
+X_U2 IN2_P IN2 OUT2 V_P V LM358_CHANNEL
+.ends LM358B

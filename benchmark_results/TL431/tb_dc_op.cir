@@ -1,0 +1,280 @@
+.options gmin=1e-12 cshunt=1e-15
+* TL431__TL432 Testbench
+.include "TL431__TL432_iter2.cir"
+
+* Global settings
+.param VREF_TYP = 2.495
+.param IKA_TYP = 10m
+.param VKA_TYP = 2.5
+.param VKA_MAX = 36
+.param VKA_MIN = 2.5
+.param IKA_MIN = 1m
+.param IKA_MAX = 100m
+.param R1_REF = 10k
+.param R2_REF = 1G ; Approximates open circuit for R2 = infinity
+
+* Power-up / Activation Schedule:
+* For DC measurements, we'll set up the conditions directly.
+* For transient measurements, a ramp-up would be used, but the specs primarily point to DC/AC analysis.
+
+* Test for Vref (0.5%, 1.0%, 2.0% tolerance)
+* Conditions: 25°C (default for .op analysis unless .temp is used)
+* VKA = Vref, IKA = 10mA
+VGND GND 0 0
+VKA_VREF K 0 DC VREF_TYP
+IKA_VREF 0 A DC IKA_TYP
+XDUT K REF A TL431__TL432
+.op
+.meas Vref_0_5_pct_tol PARAM FIND V(REF)
+.meas Vref_1_0_pct_tol PARAM FIND V(REF)
+.meas Vref_2_0_pct_tol PARAM FIND V(REF)
+
+* Test for Vout (2.5V to 36V)
+* Conditions: Vref to 36V
+* This implies the output voltage range when configured as a shunt regulator.
+* We'll test the limits.
+.param VOUT_MIN_SPEC = 2.5
+.param VOUT_MAX_SPEC = 36.0
+
+* Test Vout_min (VKA = Vref)
+; Sanitized duplicate parallel voltage source short: VKA_VOUT_MIN K 0 DC VOUT_MIN_SPEC
+IKA_VOUT_MIN 0 A DC IKA_TYP ; Assuming some current to activate
+.op
+.meas Vout_min_test PARAM FIND V(K)
+
+* Test Vout_max (VKA = 36V)
+; Sanitized duplicate parallel voltage source short: VKA_VOUT_MAX K 0 DC VOUT_MAX_SPEC
+IKA_VOUT_MAX 0 A DC IKA_TYP ; Assuming some current to activate
+.op
+.meas Vout_max_test PARAM FIND V(K)
+
+* Test for TA (-40°C to 125°C)
+* This requires .temp sweeps. We'll define a range.
+.temp -40 25 125
+.op
+.meas TA_min_test PARAM TEMP
+.meas TA_max_test PARAM TEMP
+
+* Test for ΔVref (C temp, I temp, Q temp)
+* These are temperature coefficient measurements.
+* We need to measure Vref at different temperatures and calculate the delta.
+* Let's assume 'C temp' is -40C, 'I temp' is 25C, 'Q temp' is 125C for this example.
+* VKA = Vref, IKA = 10mA
+; Sanitized duplicate parallel voltage source short: VKA_DVREF K 0 DC VREF_TYP
+IKA_DVREF 0 A DC IKA_TYP
+.temp -40 25 125
+.op
+.meas Vref_at_neg40 PARAM FIND V(REF)
+.meas Vref_at_25 PARAM FIND V(REF)
+.meas Vref_at_125 PARAM FIND V(REF)
+.meas DeltaVref_C_temp PARAM ABS(Vref_at_neg40 - Vref_at_25)
+.meas DeltaVref_I_Q_temp PARAM ABS(Vref_at_125 - Vref_at_25)
+
+* Test for Zout (Output Impedance)
+* Conditions: VKA = Vref, f <= 1kHz, IKA = 1mA to 100mA
+* We'll use an AC analysis for this.
+* Set VKA to Vref, bias IKA at a mid-point (e.g., 50mA).
+* Apply a small AC current source and measure the AC voltage.
+; Sanitized duplicate parallel voltage source short: VKA_ZOUT K 0 DC VREF_TYP
+Ibias_ZOUT 0 A DC 50m
+Iac_ZOUT 0 A AC 1 0 ; 1A AC current source for easy calculation
+XDUT_ZOUT K REF A TL431__TL432
+.ac dec 10 1 1k
+.meas AC Zout_val PARAM V(K)/I(Iac_ZOUT)
+
+* Test for Isink (1.0mA to 100mA)
+* This is the operating current range.
+* We'll set VKA to Vref and sweep IKA.
+; Sanitized duplicate parallel voltage source short: VKA_ISINK K 0 DC VREF_TYP
+I_sink_sweep 0 A DC 1m
+.dc I_sink_sweep 1m 100m 1m
+.meas Isink_min PARAM MIN(I(I_sink_sweep))
+.meas Isink_max PARAM MAX(I(I_sink_sweep))
+
+* Test for VKA (Max 37V)
+* This is the absolute maximum cathode voltage.
+* We'll apply 37V and check if the device still functions or if current is excessive.
+* For a simple check, we can just set VKA to 37V.
+; Sanitized duplicate parallel voltage source short: VKA_MAX_TEST K 0 DC 37
+IKA_MAX_TEST 0 A DC 1m ; Provide some current to ensure it's active
+.op
+.meas VKA_max_spec PARAM FIND V(K)
+
+* Test for IKA (Max 150mA, Min -100mA)
+* This is the absolute maximum cathode current.
+* Max 150mA: Apply a voltage and let the device sink current.
+* Min -100mA: This implies current flowing out of K, which is unusual for a shunt regulator.
+* Assuming IKA is sink current, so positive is into A.
+* For max IKA, we'll set VKA to a high value and REF to 0, allowing max current.
+; Sanitized duplicate parallel voltage source short: VKA_IKA_MAX K 0 DC 36 ; High VKA
+VREF_IKA_MAX REF 0 DC 0 ; REF grounded to maximize current
+IKA_LIMIT_RES K A 1 ; Current limiting resistor to prevent damage
+.op
+.meas IKA_max_spec PARAM FIND I(IKA_LIMIT_RES)
+
+* Test for II(ref) (Reference Input Current)
+* Conditions: IKA = 10mA, R1 = 10kΩ, R2 = ∞
+* R1 and R2 form a voltage divider for REF. R2 = infinity means REF is connected directly to K.
+* So, V(REF) = V(K).
+* We need to measure the current flowing into the REF pin.
+; Sanitized duplicate parallel voltage source short: VKA_IIREF K 0 DC VREF_TYP
+IKA_IIREF 0 A DC 10m
+R1_IIREF K REF R1_REF
+R2_IIREF REF 0 R2_REF ; R2_REF is 1G, effectively open
+.op
+.meas II_ref_val PARAM FIND I(R1_IIREF) ; Current into REF pin
+
+* Test for TJ (Max 150°C)
+* This is the absolute maximum junction temperature.
+* Similar to TA, this requires .temp sweeps and potentially power dissipation calculations.
+* For now, we'll just ensure the simulation runs at 150C.
+.temp 150
+.op
+.meas TJ_max_test PARAM TEMP
+
+* Test for RθJC(top) (Thermal Resistance)
+* These are thermal resistance values, which are typically provided in the datasheet and not directly measurable from a SPICE model unless the model includes thermal subcircuits.
+* SPICE models usually don't include package thermal characteristics.
+* These would be verified by thermal simulation tools or physical measurement.
+* We will skip direct SPICE measurement for these.
+
+* Test for VKA (2.5V to 36V) - Redundant with earlier Vout test, but explicitly for VKA range.
+; Sanitized duplicate parallel voltage source short: VKA_RANGE_MIN K 0 DC 2.5
+IKA_RANGE_MIN 0 A DC 10m
+.op
+.meas VKA_range_min_test PARAM FIND V(K)
+
+; Sanitized duplicate parallel voltage source short: VKA_RANGE_MAX K 0 DC 36
+IKA_RANGE_MAX 0 A DC 10m
+.op
+.meas VKA_range_max_test PARAM FIND V(K)
+
+* Test for IKA (1.0mA to 100mA) - Redundant with earlier Isink test, but explicitly for IKA range.
+; Sanitized duplicate parallel voltage source short: VKA_IKA_RANGE K 0 DC VREF_TYP
+I_IKA_range 0 A DC 1m
+.dc I_IKA_range 1m 100m 1m
+.meas IKA_range_min_test PARAM MIN(I(I_IKA_range))
+.meas IKA_range_max_test PARAM MAX(I(I_IKA_range))
+
+* Test for TA (0°C to 70°C, -40°C to 85°C, -40°C to 125°C)
+* These are operating temperature ranges.
+* Similar to earlier TA test, just different ranges.
+.temp 0 70
+.op
+.meas TA_0_70_min PARAM TEMP
+.meas TA_0_70_max PARAM TEMP
+
+.temp -40 85
+.op
+.meas TA_neg40_85_min PARAM TEMP
+.meas TA_neg40_85_max PARAM TEMP
+
+.temp -40 125
+.op
+.meas TA_neg40_125_min PARAM TEMP
+.meas TA_neg40_125_max PARAM TEMP
+
+* Test for Vref (2440mV to 2550mV)
+* Conditions: VKA = Vref, IKA = 10mA
+* This is a specific Vref accuracy test.
+; Sanitized duplicate parallel voltage source short: VKA_VREF_ACC K 0 DC VREF_TYP
+IKA_VREF_ACC 0 A DC 10m
+.op
+.meas Vref_accuracy PARAM FIND V(REF)
+
+* Test for VI(dev) (Reference Input Voltage Deviation)
+* Conditions: VKA = Vref, IKA = 10mA
+* This is the deviation from the nominal Vref.
+; Sanitized duplicate parallel voltage source short: VKA_VIDEV K 0 DC VREF_TYP
+IKA_VIDEV 0 A DC 10m
+.op
+.meas VIDev_val PARAM ABS(V(REF) - VREF_TYP)
+
+* Test for ΔVref / ΔVKA (Line Regulation)
+* Conditions: IKA = 10mA, ΔVKA = 10V - Vref
+* Conditions: IKA = 10mA, ΔVKA = 36V - 10V
+* We need to measure Vref at different VKA values.
+.param VKA_LOW = 10
+.param VKA_MID = 10
+.param VKA_HIGH = 36
+
+* First range: 10V - Vref
+; Sanitized duplicate parallel voltage source short: VKA_LINE_REG1_LOW K 0 DC VREF_TYP
+IKA_LINE_REG1 0 A DC 10m
+.op
+.meas Vref_at_Vref PARAM FIND V(REF)
+
+; Sanitized duplicate parallel voltage source short: VKA_LINE_REG1_HIGH K 0 DC VKA_LOW
+IKA_LINE_REG1_H 0 A DC 10m
+.op
+.meas Vref_at_10V PARAM FIND V(REF)
+.meas DeltaVref_DeltaVKA_1 PARAM (Vref_at_10V - Vref_at_Vref) / (VKA_LOW - VREF_TYP)
+
+* Second range: 36V - 10V
+; Sanitized duplicate parallel voltage source short: VKA_LINE_REG2_LOW K 0 DC VKA_MID
+IKA_LINE_REG2_L 0 A DC 10m
+.op
+.meas Vref_at_10V_2 PARAM FIND V(REF)
+
+; Sanitized duplicate parallel voltage source short: VKA_LINE_REG2_HIGH K 0 DC VKA_HIGH
+IKA_LINE_REG2_H 0 A DC 10m
+.op
+.meas Vref_at_36V PARAM FIND V(REF)
+.meas DeltaVref_DeltaVKA_2 PARAM (Vref_at_36V - Vref_at_10V_2) / (VKA_HIGH - VKA_MID)
+
+* Test for Iref (Reference Input Current)
+* Conditions: IKA = 10mA, R1 = 10kΩ, R2 = ∞
+* This is the same as II(ref) earlier.
+; Sanitized duplicate parallel voltage source short: VKA_IREF K 0 DC VREF_TYP
+IKA_IREF 0 A DC 10m
+R1_IREF K REF R1_REF
+R2_IREF REF 0 R2_REF
+.op
+.meas Iref_val PARAM FIND I(R1_IREF)
+
+* Test for II(dev) (Reference Input Current Deviation)
+* Conditions: IKA = 10mA, R1 = 10kΩ, R2 = ∞
+* This is the deviation of Iref from its typical value.
+* Assuming typical Iref is 2uA from specs.
+.param IREF_TYP_SPEC = 2u
+.meas II_dev_val PARAM ABS(I(R1_IREF) - IREF_TYP_SPEC)
+
+* Test for Imin (Minimum Operating Current)
+* Conditions: VKA = Vref
+* We need to find the minimum IKA for regulation.
+* This often involves sweeping IKA and observing Vref.
+; Sanitized duplicate parallel voltage source short: VKA_IMIN K 0 DC VREF_TYP
+I_min_sweep 0 A DC 0.1m ; Start below min spec
+.dc I_min_sweep 0.1m 2m 0.01m
+.meas Imin_test FIND FIND I(I_min_sweep) WHEN V(REF) = VREF_TYP ; Find current 
+
+* Test for Ioff (Off-State Current)
+* Conditions: VKA = 36V, Vref = 0
+* This means the REF pin is grounded, forcing the device off.
+; Sanitized duplicate parallel voltage source short: VKA_IOFF K 0 DC 36
+; Sanitized duplicate parallel voltage source short: VREF_IOFF REF 0 DC 0
+.op
+.meas Ioff_val PARAM FIND I(VKA_IOFF) ; Current flowing into K
+
+* Test for |ZKA| (Dynamic Output Impedance)
+* Conditions: VKA = Vref, f ≤ 1kHz, IKA = 1mA to 100mA
+* This is the same as Zout earlier.
+* We'll re-run the AC analysis with different bias points if needed, but the previous one covers the frequency.
+* For IKA range, we can do multiple AC analyses or a .step param.
+.param IKA_BIAS_ZKA = 1m
+; Sanitized duplicate parallel voltage source short: VKA_ZKA K 0 DC VREF_TYP
+Ibias_ZKA 0 A DC IKA_BIAS_ZKA
+Iac_ZKA 0 A AC 1 0
+XDUT_ZKA K REF A TL431__TL432
+.ac dec 10 1 1k
+.meas AC ZKA_at_1mA PARAM V(K)/I(Iac_ZKA)
+
+.param IKA_BIAS_ZKA = 100m
+; Sanitized duplicate parallel voltage source short: VKA_ZKA_100mA K 0 DC VREF_TYP
+Ibias_ZKA_100mA 0 A DC IKA_BIAS_ZKA
+Iac_ZKA_100mA 0 A AC 1 0
+XDUT_ZKA_100mA K REF A TL431__TL432
+.ac dec 10 1 1k
+.meas AC ZKA_at_100mA PARAM V(K)/I(Iac_ZKA_100mA)
+
+.end

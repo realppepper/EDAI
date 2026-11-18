@@ -1,0 +1,515 @@
+{
+  "ic": "LM386",
+  "datasheet": "testcases/lm386.pdf",
+  "reference_package": "D/P 8-pin (SOIC-8 LM386M-1 / PDIP-8 LM386N-1)",
+  "reference_conditions": "over operating free-air temperature range (unless otherwise noted); VS = 6 V test conditions per row",
+  "pins": [
+    {
+      "name": "GAIN1",
+      "aliases": [
+        "GAIN",
+        "GAIN 1",
+        "GAIN_1",
+        "G1"
+      ],
+      "number": "1",
+      "role": "FEEDBACK",
+      "direction": "BIDIRECTIONAL",
+      "page": 3,
+      "evidence": "GAIN 1 – Gain setting pin"
+    },
+    {
+      "name": "-INPUT",
+      "aliases": [
+        "–INPUT",
+        "−INPUT",
+        "- INPUT",
+        "IN-",
+        "-IN",
+        "INV INPUT",
+        "VIN-"
+      ],
+      "number": "2",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "page": 3,
+      "evidence": "–INPUT 2 I Inverting input"
+    },
+    {
+      "name": "+INPUT",
+      "aliases": [
+        "+ INPUT",
+        "IN+",
+        "+IN",
+        "NONINV INPUT",
+        "VIN+"
+      ],
+      "number": "3",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "page": 3,
+      "evidence": "+INPUT 3 I Noninverting input"
+    },
+    {
+      "name": "GND",
+      "aliases": [
+        "GROUND",
+        "VSS",
+        "V-"
+      ],
+      "number": "4",
+      "role": "GROUND",
+      "direction": "GROUND",
+      "page": 3,
+      "evidence": "GND 4 P Ground reference"
+    },
+    {
+      "name": "VOUT",
+      "aliases": [
+        "OUT",
+        "OUTPUT",
+        "VO"
+      ],
+      "number": "5",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "page": 3,
+      "evidence": "VOUT 5 O Output"
+    },
+    {
+      "name": "VS",
+      "aliases": [
+        "VCC",
+        "V+",
+        "VDD",
+        "SUPPLY"
+      ],
+      "number": "6",
+      "role": "POWER",
+      "direction": "POWER",
+      "page": 3,
+      "evidence": "VS 6 P Power supply voltage"
+    },
+    {
+      "name": "BYPASS",
+      "aliases": [
+        "BYP",
+        "CBYPASS"
+      ],
+      "number": "7",
+      "role": "BIAS",
+      "direction": "OUTPUT",
+      "page": 3,
+      "evidence": "BYPASS 7 O Bypass decoupling path"
+    },
+    {
+      "name": "GAIN8",
+      "aliases": [
+        "GAIN",
+        "GAIN 8",
+        "GAIN_8",
+        "G8"
+      ],
+      "number": "8",
+      "role": "FEEDBACK",
+      "direction": "BIDIRECTIONAL",
+      "page": 3,
+      "evidence": "GAIN 8 – Gain setting pin"
+    }
+  ],
+  "dependencies": [
+    {
+      "source": "VS",
+      "target": "VOUT",
+      "type": "POWER_FEED",
+      "evidence": "VS 'Power supply voltage'; 'the output automatically biases to one-half the supply voltage'",
+      "page": 1
+    },
+    {
+      "source": "GND",
+      "target": "VOUT",
+      "type": "POWER_FEED",
+      "evidence": "GND 'Ground reference' is the supply return",
+      "page": 3
+    },
+    {
+      "source": "VS",
+      "target": "BYPASS",
+      "type": "POWER_FEED",
+      "evidence": "Reasoning: BYPASS 'Bypass decoupling path' (pin 7) is an internal bias node derived from VS (front-page schematic shows BYPASS 7 on the internal resistor network); exact topology not stated in text",
+      "page": 1
+    },
+    {
+      "source": "+INPUT",
+      "target": "VOUT",
+      "type": "SIGNAL_PATH",
+      "evidence": "+INPUT 'Noninverting input' -> VOUT 'Output' (single amplifier)",
+      "page": 3
+    },
+    {
+      "source": "-INPUT",
+      "target": "VOUT",
+      "type": "SIGNAL_PATH",
+      "evidence": "–INPUT 'Inverting input' -> VOUT 'Output' (single amplifier)",
+      "page": 3
+    },
+    {
+      "source": "GAIN1",
+      "target": "VOUT",
+      "type": "FEEDBACK_LOOP",
+      "evidence": "'addition of an external resistor and capacitor between pins 1 and 8 increases the gain to any value from 20 to 200'",
+      "page": 1
+    },
+    {
+      "source": "GAIN8",
+      "target": "VOUT",
+      "type": "FEEDBACK_LOOP",
+      "evidence": "'addition of an external resistor and capacitor between pins 1 and 8 increases the gain to any value from 20 to 200'",
+      "page": 1
+    },
+    {
+      "source": "BYPASS",
+      "target": "VOUT",
+      "type": "BIAS_FEED",
+      "evidence": "BYPASS 'Bypass decoupling path'; PSRR spec'd with CBYPASS = 10 μF referred to output",
+      "page": 5
+    }
+  ],
+  "timing": [
+    {
+      "symbol": "BW",
+      "name": "Bandwidth",
+      "value": 300,
+      "unit": "kHz",
+      "page": 5,
+      "evidence": "BW Bandwidth VS = 6 V, Pins 1 and 8 Open 300 kHz"
+    }
+  ],
+  "specs": [
+    {
+      "symbol": "VS",
+      "name": "Operating Supply Voltage",
+      "category": "ELECTRICAL",
+      "min": 4,
+      "typ": null,
+      "max": 12,
+      "unit": "V",
+      "conditions": "LM386N-1, -3, LM386M-1, LM386MM-1",
+      "page": 5,
+      "evidence": "VS Operating Supply Voltage LM386N-1, -3, LM386M-1, LM386MM-1 4 12 V"
+    },
+    {
+      "symbol": "IQ",
+      "name": "Quiescent Current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 4,
+      "max": 8,
+      "unit": "mA",
+      "conditions": "VS = 6 V, VIN = 0",
+      "page": 5,
+      "evidence": "IQ Quiescent Current VS = 6 V, VIN = 0 4 8 mA"
+    },
+    {
+      "symbol": "POUT",
+      "name": "Output Power",
+      "category": "ELECTRICAL",
+      "min": 250,
+      "typ": 325,
+      "max": null,
+      "unit": "mW",
+      "conditions": "VS = 6 V, RL = 8 Ω, THD = 10% (LM386N-1, LM386M-1, LM386MM-1)",
+      "page": 5,
+      "evidence": "POUT Output Power VS = 6 V, RL = 8 Ω, THD = 10% (LM386N-1, LM386M-1, LM386MM-1) 250 325 mW"
+    },
+    {
+      "symbol": "AV",
+      "name": "Voltage Gain",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 26,
+      "max": null,
+      "unit": "dB",
+      "conditions": "VS = 6 V, f = 1 kHz",
+      "page": 5,
+      "evidence": "AV Voltage Gain VS = 6 V, f = 1 kHz 26 dB"
+    },
+    {
+      "symbol": "AV",
+      "name": "Voltage Gain",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 46,
+      "max": null,
+      "unit": "dB",
+      "conditions": "VS = 6 V, f = 1 kHz, 10 µF from Pin 1 to 8",
+      "page": 5,
+      "evidence": "10 µF from Pin 1 to 8 46"
+    },
+    {
+      "symbol": "BW",
+      "name": "Bandwidth",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 300,
+      "max": null,
+      "unit": "kHz",
+      "conditions": "VS = 6 V, Pins 1 and 8 Open",
+      "page": 5,
+      "evidence": "BW Bandwidth VS = 6 V, Pins 1 and 8 Open 300 kHz"
+    },
+    {
+      "symbol": "THD",
+      "name": "Total Harmonic Distortion",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.2,
+      "max": null,
+      "unit": "%",
+      "conditions": "VS = 6 V, RL = 8 Ω, POUT = 125 mW, f = 1 kHz, Pins 1 and 8 Open",
+      "page": 5,
+      "evidence": "THD Total Harmonic Distortion VS = 6 V, RL = 8 Ω, POUT = 125 mW f = 1 kHz, Pins 1 and 8 Open 0.2%"
+    },
+    {
+      "symbol": "PSRR",
+      "name": "Power Supply Rejection Ratio",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 50,
+      "max": null,
+      "unit": "dB",
+      "conditions": "VS = 6 V, f = 1 kHz, CBYPASS = 10 μF, Pins 1 and 8 Open, Referred to Output",
+      "page": 5,
+      "evidence": "PSRR Power Supply Rejection Ratio VS = 6 V, f = 1 kHz, CBYPASS = 10 μF Pins 1 and 8 Open, Referred to Output 50 dB"
+    },
+    {
+      "symbol": "RIN",
+      "name": "Input Resistance",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 50,
+      "max": null,
+      "unit": "kΩ",
+      "conditions": "",
+      "page": 5,
+      "evidence": "RIN Input Resistance 50 kΩ"
+    },
+    {
+      "symbol": "IBIAS",
+      "name": "Input Bias Current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 250,
+      "max": null,
+      "unit": "nA",
+      "conditions": "VS = 6 V, Pins 2 and 3 Open",
+      "page": 5,
+      "evidence": "IBIAS Input Bias Current VS = 6 V, Pins 2 and 3 Open 250 nA"
+    },
+    {
+      "symbol": "VCC",
+      "name": "Supply Voltage",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 15,
+      "unit": "V",
+      "conditions": "LM386N-1/-3, LM386M-1",
+      "page": 4,
+      "evidence": "Supply Voltage, VCC LM386N-1/-3, LM386M-1 15 V"
+    },
+    {
+      "symbol": "PD",
+      "name": "Package Dissipation",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 1.25,
+      "unit": "W",
+      "conditions": "LM386N",
+      "page": 4,
+      "evidence": "Package Dissipation LM386N 1.25 W"
+    },
+    {
+      "symbol": "PD",
+      "name": "Package Dissipation",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 0.73,
+      "unit": "W",
+      "conditions": "LM386M",
+      "page": 4,
+      "evidence": "LM386M 0.73"
+    },
+    {
+      "symbol": "VI",
+      "name": "Input Voltage",
+      "category": "ABS_MAX",
+      "min": -0.4,
+      "typ": null,
+      "max": 0.4,
+      "unit": "V",
+      "conditions": "",
+      "page": 4,
+      "evidence": "Input Voltage, VI –0.4 0.4 V"
+    },
+    {
+      "symbol": "Tstg",
+      "name": "Storage temperature",
+      "category": "ABS_MAX",
+      "min": -65,
+      "typ": null,
+      "max": 150,
+      "unit": "°C",
+      "conditions": "",
+      "page": 4,
+      "evidence": "Storage temperature, Tstg –65 150 °C"
+    },
+    {
+      "symbol": "V(ESD) HBM",
+      "name": "Electrostatic discharge, human-body model",
+      "category": "ESD",
+      "min": null,
+      "typ": 1000,
+      "max": null,
+      "unit": "V",
+      "conditions": "HBM per ANSI/ESDA/JEDEC JS-001; printed ±1000",
+      "page": 4,
+      "evidence": "Human-body model (HBM), per ANSI/ESDA/JEDEC JS-001(1) ±1000 V"
+    },
+    {
+      "symbol": "V(ESD) CDM",
+      "name": "Electrostatic discharge, charged-device model",
+      "category": "ESD",
+      "min": null,
+      "typ": 1000,
+      "max": null,
+      "unit": "V",
+      "conditions": "CDM per JEDEC JESD22-C101; printed ±1000",
+      "page": 4,
+      "evidence": "Charged-device model (CDM), per JEDEC specification JESD22-C101(2) ±1000"
+    },
+    {
+      "symbol": "VCC",
+      "name": "Supply Voltage",
+      "category": "RECOMMENDED",
+      "min": 4,
+      "typ": null,
+      "max": 12,
+      "unit": "V",
+      "conditions": "LM386N-1/-3, LM386M-1 (non-N-4 row)",
+      "page": 4,
+      "evidence": "VCC Supply Voltage 4 12 V"
+    },
+    {
+      "symbol": "",
+      "name": "Speaker Impedance",
+      "category": "RECOMMENDED",
+      "min": 4,
+      "typ": null,
+      "max": null,
+      "unit": "Ω",
+      "conditions": "value in MIN column",
+      "page": 4,
+      "evidence": "Speaker Impedance 4 Ω"
+    },
+    {
+      "symbol": "VI",
+      "name": "Analog input voltage",
+      "category": "RECOMMENDED",
+      "min": -0.4,
+      "typ": null,
+      "max": 0.4,
+      "unit": "V",
+      "conditions": "",
+      "page": 4,
+      "evidence": "VI Analog input voltage –0.4 0.4 V"
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating free-air temperature",
+      "category": "RECOMMENDED",
+      "min": 0,
+      "typ": null,
+      "max": 70,
+      "unit": "°C",
+      "conditions": "",
+      "page": 4,
+      "evidence": "TA Operating free-air temperature 0 70 °C"
+    },
+    {
+      "symbol": "RθJA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 115.7,
+      "max": null,
+      "unit": "°C/W",
+      "conditions": "D (SOIC) 8 pins",
+      "page": 4,
+      "evidence": "RθJA Junction-to-ambient thermal resistance 115.7 169.3 53.4 °C/W (D column)"
+    },
+    {
+      "symbol": "RθJA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 53.4,
+      "max": null,
+      "unit": "°C/W",
+      "conditions": "P (PDIP) 8 pins",
+      "page": 4,
+      "evidence": "RθJA Junction-to-ambient thermal resistance 115.7 169.3 53.4 °C/W (P column)"
+    },
+    {
+      "symbol": "RθJC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 59.7,
+      "max": null,
+      "unit": "°C/W",
+      "conditions": "D (SOIC)",
+      "page": 4,
+      "evidence": "RθJC(top) Junction-to-case (top) thermal resistance 59.7 73.1 42.1 °C/W"
+    },
+    {
+      "symbol": "RθJB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 56.2,
+      "max": null,
+      "unit": "°C/W",
+      "conditions": "D (SOIC)",
+      "page": 4,
+      "evidence": "RθJB Junction-to-board thermal resistance 56.2 100.2 30.6 °C/W"
+    },
+    {
+      "symbol": "ψJT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 12.4,
+      "max": null,
+      "unit": "°C/W",
+      "conditions": "D (SOIC)",
+      "page": 4,
+      "evidence": "ψJT Junction-to-top characterization parameter 12.4 9.2 19.0 °C/W"
+    },
+    {
+      "symbol": "ψJB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 55.6,
+      "max": null,
+      "unit": "°C/W",
+      "conditions": "D (SOIC)",
+      "page": 4,
+      "evidence": "ψJB Junction-to-board characterization parameter 55.6 99.1 50.5 °C/W"
+    }
+  ],
+  "notes": "Datasheet SNAS545D. Reference variant LM386N-1/LM386M-1; LM386N-3 (POUT 500/700 mW @9V) and LM386N-4 (VS 5-18 V, POUT 700/1000 mW @16V, ABS_MAX VCC 22 V, RECOMMENDED VCC 5-18 V) rows and LM386MM-1 package dissipation (0.595 W) are excluded. Two pins are both named 'GAIN' (pins 1 and 8) in the pin table; stored as GAIN1/GAIN8 with alias 'GAIN'. Pin figure caption reads 'D Package 8-Pin MSOP' (datasheet error; D is SOIC). Pin table TYPE for GAIN is '–' (stored BIDIRECTIONAL), BYPASS is 'O' (role BIAS, direction OUTPUT). The 'VS Operating Supply Voltage' row appears in the Electrical Characteristics table (tagged ELECTRICAL) although it duplicates RECOMMENDED. THD printed '0.2%' -> typ 0.2 unit %. Electrical table header says 'over operating free-air temperature range' with no explicit TA=25°C. Only timing-type spec is BW 300 kHz (no slew rate / turn-on time tabulated). ESD table is a 2017+ addition; ABS_MAX lacks TJ/soldering rows in this revision. Text file contains control chars."
+}

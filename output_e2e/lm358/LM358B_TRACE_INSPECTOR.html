@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Execution Trace &amp; Debug Inspector — LM358B</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    body {
+      background-color: #090d16;
+      color: #f8fafc;
+      font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 custom-scrollbar">
+  <div class="max-w-6xl mx-auto space-y-6">
+
+    <!-- Header -->
+    <header class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-sky-500/10 border border-sky-500/30 rounded-xl text-sky-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+          </div>
+          <div>
+            <h1 class="text-xl font-bold text-white flex items-center gap-2">
+              Execution Trace &amp; Sub-Process Debugger
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 font-mono">
+                COMPLETED
+              </span>
+            </h1>
+            <p class="text-xs text-slate-400 mt-0.5">Target: <strong class="text-sky-300">LM358B</strong> | Total Elapsed: <span class="font-mono">178600.0 ms</span> | Spans: 10</p>
+          </div>
+        </div>
+      </div>
+      <div>
+        <button onclick="window.print()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-xl border border-slate-700">Print / Save Log</button>
+      </div>
+    </header>
+
+    <!-- Trace Spans Timeline -->
+    <div class="space-y-4" id="spansContainer">
+    </div>
+
+  </div>
+
+  <script>
+    const TRACE = {"target_name": "LM358B", "total_duration_ms": 178599.99, "status": "COMPLETED", "span_count": 10, "spans": [{"phase": 1, "name": "Phase 1: Knowledge Ingestion & HKG Construction", "start_time": 1792588067.7735562, "end_time": 1792588078.0557306, "duration_ms": 10282.17, "status": "SUCCESS", "inputs": {"datasheet_pdf_path": "testcases/lm358.pdf", "user_prompt": null, "max_pages": 12}, "outputs": {"part_name": "LM358B", "pins_count": 8, "specifications_count": 260, "pins": ["OUT1", "IN1", "IN1_P", "V", "IN2_P", "IN2", "OUT2", "V_P"]}, "events": [], "error": null}, {"phase": 2, "name": "Phase 2: Port Dependency Graph (PDG) & Timing Schedule", "start_time": 1792588078.056732, "end_time": 1792588078.2640774, "duration_ms": 207.35, "status": "SUCCESS", "inputs": {"pins_count": 8}, "outputs": {"pin_schedule_us": {"V": 0.0, "V_P": 0.0, "IN1": 2.0, "IN1_P": 2.0, "IN2_P": 2.0, "IN2": 2.0, "OUT1": 6.0, "OUT2": 6.0}, "levels_count": 3, "fidelity_score_pct": 85.7, "fidelity_status": "TRUSTWORTHY"}, "events": [], "error": null}, {"phase": 3, "name": "Phase 3: AI Netlist Synthesis (Loop 1)", "start_time": 1792588078.2640774, "end_time": 1792588164.3610308, "duration_ms": 86096.95, "status": "SUCCESS", "inputs": {"iteration": 1, "subckt_name": "LM358B", "user_prompt": null}, "outputs": {"netlist_path": "C:\\Users\\Sera\\GensparkCode\\analogverifier\\output_e2e\\lm358\\LM358B_iter1.cir", "subcircuit_name": "LM358B", "netlist_line_count": 150}, "events": [], "error": null}, {"phase": 4, "name": "Phase 4: Deterministic Testbench Fixtures (Loop 1)", "start_time": 1792588164.3620312, "end_time": 1792588164.5108454, "duration_ms": 148.81, "status": "SUCCESS", "inputs": {"netlist": "LM358B_iter1.cir", "fixtures": 55}, "outputs": {"fixtures": 7, "measured": 0, "coverage_pct": 0.0}, "events": [], "error": null}, {"phase": 5, "name": "Phase 5: LTspice Evaluation (Loop 1)", "start_time": 1792588164.5118296, "end_time": 1792588164.5118296, "duration_ms": 0.0, "status": "SUCCESS", "inputs": {"measured": 0}, "outputs": {"pass_rate_percent": 0.0, "coverage_pct": 0.0, "passed_specs": 0, "failed_specs": 0}, "events": [], "error": null}, {"phase": 6, "name": "Phase 6: Closed-Loop Diagnostics (Loop 1)", "start_time": 1792588164.5118296, "end_time": 1792588164.5118296, "duration_ms": 0.0, "status": "SUCCESS", "inputs": {"pass_rate_percent": 0.0}, "outputs": {"shortfalls_count": 6, "improvements_count": 1}, "events": [], "error": null}, {"phase": 3, "name": "Phase 3: AI Netlist Synthesis (Loop 2)", "start_time": 1792588164.5118296, "end_time": 1792588246.337604, "duration_ms": 81825.77, "status": "SUCCESS", "inputs": {"iteration": 2, "subckt_name": "LM358B", "user_prompt": null}, "outputs": {"netlist_path": "C:\\Users\\Sera\\GensparkCode\\analogverifier\\output_e2e\\lm358\\LM358B_iter2.cir", "subcircuit_name": "LM358B", "netlist_line_count": 264}, "events": [], "error": null}, {"phase": 4, "name": "Phase 4: Deterministic Testbench Fixtures (Loop 2)", "start_time": 1792588246.337604, "end_time": 1792588246.3417442, "duration_ms": 4.14, "status": "SUCCESS", "inputs": {"netlist": "LM358B_iter2.cir", "fixtures": 55}, "outputs": {"fixtures": 7, "measured": 0, "coverage_pct": 0.0}, "events": [], "error": null}, {"phase": 5, "name": "Phase 5: LTspice Evaluation (Loop 2)", "start_time": 1792588246.3417442, "end_time": 1792588246.3417442, "duration_ms": 0.0, "status": "SUCCESS", "inputs": {"measured": 0}, "outputs": {"pass_rate_percent": 0.0, "coverage_pct": 0.0, "passed_specs": 0, "failed_specs": 0}, "events": [], "error": null}, {"phase": 6, "name": "Phase 6: Closed-Loop Diagnostics (Loop 2)", "start_time": 1792588246.3417442, "end_time": 1792588246.3417442, "duration_ms": 0.0, "status": "SUCCESS", "inputs": {"pass_rate_percent": 0.0}, "outputs": {"shortfalls_count": 6, "improvements_count": 1}, "events": [], "error": null}]};
+
+    function render() {
+      const container = document.getElementById('spansContainer');
+      container.innerHTML = '';
+
+      TRACE.spans.forEach((span, idx) => {
+        const card = document.createElement('div');
+        const isErr = span.status === 'ERROR';
+        const isWarn = span.status === 'WARNING';
+        const borderColor = isErr ? 'border-rose-500/50' : (isWarn ? 'border-amber-500/50' : 'border-slate-800');
+        const headerBg = isErr ? 'bg-rose-950/20' : 'bg-slate-900/80';
+
+        card.className = `bg-slate-900 border ${borderColor} rounded-2xl overflow-hidden shadow transition-all`;
+
+        const badgeClass = isErr ? 'bg-rose-500/20 text-rose-300 border-rose-500/40' : (isWarn ? 'bg-amber-500/20 text-amber-300 border-amber-500/40' : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40');
+
+        card.innerHTML = `
+          <div class="${headerBg} p-4 border-b border-slate-800 flex items-center justify-between cursor-pointer" onclick="toggleSpan(${idx})">
+            <div class="flex items-center gap-3">
+              <span class="w-6 h-6 rounded-full flex items-center justify-center font-bold text-xs bg-slate-800 text-slate-300">${span.phase}</span>
+              <div>
+                <h3 class="font-bold text-sm text-white flex items-center gap-2">
+                  ${span.name}
+                  <span class="text-[10px] uppercase font-mono px-2 py-0.5 rounded-md border ${badgeClass}">${span.status}</span>
+                </h3>
+              </div>
+            </div>
+            <div class="flex items-center gap-4 text-xs font-mono text-slate-400">
+              <span>${span.duration_ms} ms</span>
+              <svg id="chevron-${idx}" class="w-4 h-4 transform transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+            </div>
+          </div>
+
+          <div id="body-${idx}" class="p-5 space-y-4 text-xs">
+            ${span.error ? `
+              <div class="bg-rose-950/30 border border-rose-500/40 rounded-xl p-4 space-y-2">
+                <div class="font-bold text-rose-400 flex items-center gap-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  [${span.error.type}] ${span.error.message}
+                </div>
+                ${span.error.remediation_hint ? `
+                  <div class="text-amber-300/90 bg-amber-500/10 p-2.5 rounded-lg border border-amber-500/20">
+                    <strong>Suggested Remediation:</strong> ${span.error.remediation_hint}
+                  </div>
+                ` : ''}
+                <pre class="bg-slate-950 p-3 rounded-lg font-mono text-[11px] text-rose-300 overflow-x-auto max-h-48">${span.error.traceback}</pre>
+              </div>
+            ` : ''}
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="bg-slate-950 border border-slate-800 rounded-xl p-3">
+                <h4 class="font-bold uppercase text-[10px] text-slate-500 mb-1">Inputs</h4>
+                <pre class="font-mono text-[11px] text-slate-300 overflow-x-auto max-h-40">${JSON.stringify(span.inputs, null, 2)}</pre>
+              </div>
+              <div class="bg-slate-950 border border-slate-800 rounded-xl p-3">
+                <h4 class="font-bold uppercase text-[10px] text-slate-500 mb-1">Outputs</h4>
+                <pre class="font-mono text-[11px] text-slate-300 overflow-x-auto max-h-40">${JSON.stringify(span.outputs, null, 2)}</pre>
+              </div>
+            </div>
+
+            ${span.events && span.events.length > 0 ? `
+              <div class="bg-slate-950 border border-slate-800 rounded-xl p-3">
+                <h4 class="font-bold uppercase text-[10px] text-slate-500 mb-2">Internal Step Events (${span.events.length})</h4>
+                <div class="space-y-1 font-mono text-[11px]">
+                  ${span.events.map(ev => `
+                    <div class="flex items-start gap-2 text-slate-400">
+                      <span class="text-slate-600">[${ev.time_str}]</span>
+                      <span class="text-sky-400">[${ev.type}]</span>
+                      <span class="text-slate-300">${ev.message}</span>
+                    </div>
+                  `).join('')}
+                </div>
+              </div>
+            ` : ''}
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    function toggleSpan(idx) {
+      const body = document.getElementById(`body-${idx}`);
+      const chevron = document.getElementById(`chevron-${idx}`);
+      if (body.classList.contains('hidden')) {
+        body.classList.remove('hidden');
+        chevron.classList.remove('rotate-180');
+      } else {
+        body.classList.add('hidden');
+        chevron.classList.add('rotate-180');
+      }
+    }
+
+    window.onload = render;
+  </script>
+</body>
+</html>

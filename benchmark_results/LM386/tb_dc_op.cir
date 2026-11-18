@@ -1,0 +1,138 @@
+.options gmin=1e-12 cshunt=1e-15
+* LM386 Testbench for Specification Verification
+
+.include "LM386_iter2.cir"
+
+* Voltage Sources for DUT Pins
+V_GND GND 0 0
+V_BYPASS BYPASS 0 PULSE(0 0 10u 1n 1n 100m 200m) ; Activated at 10us
+V_GAIN1 GAIN1 0 DC 0
+V_GAIN8 GAIN8 0 DC 0
+V_IN_INV IN_INV 0 DC 0
+V_IN_NONINV IN_NONINV 0 DC 0
+V_VS VS 0 DC 0
+V_VOUT_LOAD VOUT_LOAD 0 DC 0 ; Placeholder for VOUT load
+
+* Power-up sequencing for VS (VCC)
+; Sanitized duplicate parallel voltage source short: V_VS_PULSE VS 0 PULSE(0 6V 0 1n 1n 100m 200m) ; VS activated at 0us (GND is 0us, VS is part of VCC)
+
+* Input stimulus for various measurements
+* For IQ, AV, RIN, IBIAS, POUT measurements, we will use different input configurations.
+* The following setup is a general one, specific measurements will override or adjust these.
+
+* Initial setup for DC measurements (IQ, IBIAS)
+* VS = 6V, VIN = 0 for IQ
+* Pins 2 and 3 Open for IBIAS (achieved by setting V_IN_INV and V_IN_NONINV to high impedance or floating, but for DC bias, 0V is common)
+
+* Activation Schedule (as per PDG)
+* GND: 0.00 us (V_GND)
+* BYPASS: 10.00 us (V_BYPASS pulse)
+* GAIN: 15.00 us (GAIN1, GAIN8 are DC, so they are effectively "on" from start, but their effect is only relevant after VS is stable)
+* __INPUT: 17.00 us (V_IN_NONINV, V_IN_INV will be set for specific tests)
+* VOUT: 18.00 us (VOUT is an output, its behavior is observed after this time)
+
+* DUT Instance
+XDUT GAIN1 IN_INV IN_NONINV GND VOUT VS BYPASS GAIN8 LM386
+
+* Load for VOUT (e.g., speaker impedance)
+R_LOAD VOUT 0 8 ; Default 8 Ohm speaker load
+
+* Simulation commands
+.tran 0 200ms 0 100ns UIC
+
+* MEASUREMENTS
+
+* VCC / VS related measurements (These are input conditions, not measured from DUT)
+* VCC: Min=None, Typ=None, Max=15.0 V | Conditions: LM386N-1/-3, LM386M-1
+* VCC: Min=None, Typ=None, Max=22.0 V | Conditions: LM386N-4
+* VCC: Min=4.0, Typ=None, Max=12.0 V | Conditions: None
+* VCC: Min=5.0, Typ=None, Max=18.0 V | Conditions: LM386N-4
+* VS: Min=4.0, Typ=None, Max=12.0 V | Conditions: LM386N-1, -3, LM386M-1, LM386MM-1
+* VS: Min=5.0, Typ=None, Max=18.0 V | Conditions: LM386N-4
+* These are input conditions, not directly measurable from the DUT's output.
+* We will set VS to typical values for other measurements.
+
+* VI: Min=-0.4, Typ=None, Max=0.4 V | Desc:  | Conditions: None
+* This is an input condition, not a measurement from the DUT. We will ensure input signals are within this range.
+
+* Speaker Impedance: Min=4.0, Typ=None, Max=None Ω | Desc:  | Conditions: None
+* This is a load condition, not a measurement from the DUT. R_LOAD is set to 8 Ohm.
+
+* TA, RθJC, RθJB, ψJT, ψJB are thermal characteristics, not directly measurable in a standard electrical SPICE simulation.
+* These would require thermal modeling or external analysis.
+
+* IQ: Min=None, Typ=4.0, Max=8.0 mA | Conditions: VS = 6 V, VIN = 0
+.param VS_IQ = 6V
+; Sanitized duplicate parallel voltage source short: V_VS_IQ VS 0 DC {VS_IQ}
+; Sanitized duplicate parallel voltage source short: V_IN_INV_IQ IN_INV 0 DC 0
+; Sanitized duplicate parallel voltage source short: V_IN_NONINV_IQ IN_NONINV 0 DC 0
+.meas tran IQ_AVG AVG -I(V_VS_IQ) from=100ms to=200ms
+
+* POUT: Min=250.0, Typ=325.0, Max=None mW | Conditions: VS = 6 V, RL = 8 Ω, THD = 10% (LM386N-1, LM386M-1, LM386MM-1)
+* POUT: Min=500.0, Typ=700.0, Max=None mW | Conditions: VS = 9 V, RL = 8 Ω, THD = 10% (LM386N-3)
+* POUT: Min=700.0, Typ=1000.0, Max=None mW | Conditions: VS = 16 V, RL = 32 Ω, THD = 10% (LM386N-4)
+* To measure POUT, we need an AC input and calculate power into the load. THD requires Fourier analysis, which is complex in LTspice .meas.
+* We will measure average power into the load.
+* Setup for POUT (VS=6V, RL=8Ohm, f=1kHz, input to achieve output swing)
+.param VS_POUT1 = 6V
+.param RL_POUT1 = 8
+.param F_POUT = 1k
+.param VIN_POUT1 = 0.01 ; Adjust this for desired output swing
+; Sanitized duplicate parallel voltage source short: V_VS_POUT1 VS 0 DC {VS_POUT1}
+R_LOAD_POUT1 VOUT 0 {RL_POUT1}
+; Sanitized duplicate parallel voltage source short: V_IN_NONINV_POUT1 IN_NONINV 0 SINE(0 {VIN_POUT1} {F_POUT})
+; Sanitized duplicate parallel voltage source short: V_IN_INV_POUT1 IN_INV 0 DC 0
+.meas tran VOUT_RMS_POUT1 RMS V(VOUT) from=100ms to=200ms
+.meas tran POUT1_AVG PARAM (VOUT_RMS_POUT1*VOUT_RMS_POUT1)/RL_POUT1
+
+* AV: Min=None, Typ=26.0, Max=None dB | Conditions: VS = 6 V, f = 1 kHz
+* AV: Min=None, Typ=46.0, Max=None dB | Conditions: 10 µF from Pin 1 to 8
+* Setup for AV (VS=6V, f=1kHz, small signal input)
+.param VS_AV = 6V
+.param F_AV = 1k
+.param VIN_AV = 1m ; Small signal input
+; Sanitized duplicate parallel voltage source short: V_VS_AV VS 0 DC {VS_AV}
+; Sanitized duplicate parallel voltage source short: V_IN_NONINV_AV IN_NONINV 0 SINE(0 {VIN_AV} {F_AV})
+; Sanitized duplicate parallel voltage source short: V_IN_INV_AV IN_INV 0 DC 0
+R_LOAD_AV VOUT 0 8 ; Typical load
+.meas tran VOUT_RMS_AV RMS V(VOUT) from=100ms to=200ms
+.meas tran AV_GAIN_LIN PARAM VOUT_RMS_AV/VIN_AV
+.meas tran AV_GAIN_DB PARAM 20*log10(AV_GAIN_LIN)
+
+* AV with 10uF from Pin 1 to 8
+C_GAIN GAIN1 GAIN8 10u
+.param VS_AV_CAP = 6V
+.param F_AV_CAP = 1k
+.param VIN_AV_CAP = 1m
+; Sanitized duplicate parallel voltage source short: V_VS_AV_CAP VS 0 DC {VS_AV_CAP}
+; Sanitized duplicate parallel voltage source short: V_IN_NONINV_AV_CAP IN_NONINV 0 SINE(0 {VIN_AV_CAP} {F_AV_CAP})
+; Sanitized duplicate parallel voltage source short: V_IN_INV_AV_CAP IN_INV 0 DC 0
+R_LOAD_AV_CAP VOUT 0 8
+.meas tran VOUT_RMS_AV_CAP RMS V(VOUT) from=100ms to=200ms
+.meas tran AV_GAIN_LIN_CAP PARAM VOUT_RMS_AV_CAP/VIN_AV_CAP
+.meas tran AV_GAIN_DB_CAP PARAM 20*log10(AV_GAIN_LIN_CAP)
+
+* RIN: Min=None, Typ=50.0, Max=None kΩ | Conditions: None
+* To measure input resistance, apply a small AC voltage and measure current.
+* This requires a separate AC analysis or a specific transient setup.
+* For transient, apply a small voltage step and measure current.
+.param VS_RIN = 6V
+.param VIN_STEP = 10m
+; Sanitized duplicate parallel voltage source short: V_VS_RIN VS 0 DC {VS_RIN}
+; Sanitized duplicate parallel voltage source short: V_IN_NONINV_RIN IN_NONINV 0 PULSE(0 {VIN_STEP} 100ms 1n 1n 10m 20m)
+; Sanitized duplicate parallel voltage source short: V_IN_INV_RIN IN_INV 0 DC 0
+.meas tran I_IN_NONINV_AVG AVG I(V_IN_NONINV_RIN) from=110ms to=120ms
+.meas tran RIN_NONINV PARAM VIN_STEP/I_IN_NONINV_AVG
+
+* IBIAS: Min=None, Typ=250.0, Max=None nA | Conditions: VS = 6 V, Pins 2 and 3 Open
+* "Open" pins in SPICE means no connection. We can measure current into the pins if they are connected to a voltage source.
+* To simulate "open" for IBIAS, we can connect them to a very high impedance or a voltage source with a series resistor.
+* For simplicity, we'll connect them to 0V and measure the current, assuming the model correctly represents input bias current.
+.param VS_IBIAS = 6V
+; Sanitized duplicate parallel voltage source short: V_VS_IBIAS VS 0 DC {VS_IBIAS}
+; Sanitized duplicate parallel voltage source short: V_IN_INV_IBIAS IN_INV 0 DC 0
+; Sanitized duplicate parallel voltage source short: V_IN_NONINV_IBIAS IN_NONINV 0 DC 0
+.meas tran IBIAS_INV AVG I(V_IN_INV_IBIAS) from=100ms to=200ms
+.meas tran IBIAS_NONINV AVG I(V_IN_NONINV_IBIAS) from=100ms to=200ms
+
+.end

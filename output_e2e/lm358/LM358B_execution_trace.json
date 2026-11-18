@@ -1,0 +1,216 @@
+{
+  "target_name": "LM358B",
+  "total_duration_ms": 178598.77,
+  "status": "COMPLETED",
+  "span_count": 10,
+  "spans": [
+    {
+      "phase": 1,
+      "name": "Phase 1: Knowledge Ingestion & HKG Construction",
+      "start_time": 1792588067.7735562,
+      "end_time": 1792588078.0557306,
+      "duration_ms": 10282.17,
+      "status": "SUCCESS",
+      "inputs": {
+        "datasheet_pdf_path": "testcases/lm358.pdf",
+        "user_prompt": null,
+        "max_pages": 12
+      },
+      "outputs": {
+        "part_name": "LM358B",
+        "pins_count": 8,
+        "specifications_count": 260,
+        "pins": [
+          "OUT1",
+          "IN1",
+          "IN1_P",
+          "V",
+          "IN2_P",
+          "IN2",
+          "OUT2",
+          "V_P"
+        ]
+      },
+      "events": [],
+      "error": null
+    },
+    {
+      "phase": 2,
+      "name": "Phase 2: Port Dependency Graph (PDG) & Timing Schedule",
+      "start_time": 1792588078.056732,
+      "end_time": 1792588078.2640774,
+      "duration_ms": 207.35,
+      "status": "SUCCESS",
+      "inputs": {
+        "pins_count": 8
+      },
+      "outputs": {
+        "pin_schedule_us": {
+          "V": 0.0,
+          "V_P": 0.0,
+          "IN1": 2.0,
+          "IN1_P": 2.0,
+          "IN2_P": 2.0,
+          "IN2": 2.0,
+          "OUT1": 6.0,
+          "OUT2": 6.0
+        },
+        "levels_count": 3,
+        "fidelity_score_pct": 85.7,
+        "fidelity_status": "TRUSTWORTHY"
+      },
+      "events": [],
+      "error": null
+    },
+    {
+      "phase": 3,
+      "name": "Phase 3: AI Netlist Synthesis (Loop 1)",
+      "start_time": 1792588078.2640774,
+      "end_time": 1792588164.3610308,
+      "duration_ms": 86096.95,
+      "status": "SUCCESS",
+      "inputs": {
+        "iteration": 1,
+        "subckt_name": "LM358B",
+        "user_prompt": null
+      },
+      "outputs": {
+        "netlist_path": "C:\\Users\\Sera\\GensparkCode\\analogverifier\\output_e2e\\lm358\\LM358B_iter1.cir",
+        "subcircuit_name": "LM358B",
+        "netlist_line_count": 150
+      },
+      "events": [],
+      "error": null
+    },
+    {
+      "phase": 4,
+      "name": "Phase 4: Deterministic Testbench Fixtures (Loop 1)",
+      "start_time": 1792588164.3620312,
+      "end_time": 1792588164.5108454,
+      "duration_ms": 148.81,
+      "status": "SUCCESS",
+      "inputs": {
+        "netlist": "LM358B_iter1.cir",
+        "fixtures": 55
+      },
+      "outputs": {
+        "fixtures": 7,
+        "measured": 0,
+        "coverage_pct": 0.0
+      },
+      "events": [],
+      "error": null
+    },
+    {
+      "phase": 5,
+      "name": "Phase 5: LTspice Evaluation (Loop 1)",
+      "start_time": 1792588164.5118296,
+      "end_time": 1792588164.5118296,
+      "duration_ms": 0.0,
+      "status": "SUCCESS",
+      "inputs": {
+        "measured": 0
+      },
+      "outputs": {
+        "pass_rate_percent": 0.0,
+        "coverage_pct": 0.0,
+        "passed_specs": 0,
+        "failed_specs": 0
+      },
+      "events": [],
+      "error": null
+    },
+    {
+      "phase": 6,
+      "name": "Phase 6: Closed-Loop Diagnostics (Loop 1)",
+      "start_time": 1792588164.5118296,
+      "end_time": 1792588164.5118296,
+      "duration_ms": 0.0,
+      "status": "SUCCESS",
+      "inputs": {
+        "pass_rate_percent": 0.0
+      },
+      "outputs": {
+        "shortfalls_count": 6,
+        "improvements_count": 1
+      },
+      "events": [],
+      "error": null
+    },
+    {
+      "phase": 3,
+      "name": "Phase 3: AI Netlist Synthesis (Loop 2)",
+      "start_time": 1792588164.5118296,
+      "end_time": 1792588246.337604,
+      "duration_ms": 81825.77,
+      "status": "SUCCESS",
+      "inputs": {
+        "iteration": 2,
+        "subckt_name": "LM358B",
+        "user_prompt": null
+      },
+      "outputs": {
+        "netlist_path": "C:\\Users\\Sera\\GensparkCode\\analogverifier\\output_e2e\\lm358\\LM358B_iter2.cir",
+        "subcircuit_name": "LM358B",
+        "netlist_line_count": 264
+      },
+      "events": [],
+      "error": null
+    },
+    {
+      "phase": 4,
+      "name": "Phase 4: Deterministic Testbench Fixtures (Loop 2)",
+      "start_time": 1792588246.337604,
+      "end_time": 1792588246.3417442,
+      "duration_ms": 4.14,
+      "status": "SUCCESS",
+      "inputs": {
+        "netlist": "LM358B_iter2.cir",
+        "fixtures": 55
+      },
+      "outputs": {
+        "fixtures": 7,
+        "measured": 0,
+        "coverage_pct": 0.0
+      },
+      "events": [],
+      "error": null
+    },
+    {
+      "phase": 5,
+      "name": "Phase 5: LTspice Evaluation (Loop 2)",
+      "start_time": 1792588246.3417442,
+      "end_time": 1792588246.3417442,
+      "duration_ms": 0.0,
+      "status": "SUCCESS",
+      "inputs": {
+        "measured": 0
+      },
+      "outputs": {
+        "pass_rate_percent": 0.0,
+        "coverage_pct": 0.0,
+        "passed_specs": 0,
+        "failed_specs": 0
+      },
+      "events": [],
+      "error": null
+    },
+    {
+      "phase": 6,
+      "name": "Phase 6: Closed-Loop Diagnostics (Loop 2)",
+      "start_time": 1792588246.3417442,
+      "end_time": 1792588246.3417442,
+      "duration_ms": 0.0,
+      "status": "SUCCESS",
+      "inputs": {
+        "pass_rate_percent": 0.0
+      },
+      "outputs": {
+        "shortfalls_count": 6,
+        "improvements_count": 1
+      },
+      "events": [],
+      "error": null
+    }
+  ]
+}

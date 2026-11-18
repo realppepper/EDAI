@@ -1,0 +1,102 @@
+.options gmin=1e-12 cshunt=1e-15
+* LM386 Testbench for THD and ESD Verification
+
+* Subcircuit Inclusion
+.include "LM386_iter2.cir"
+
+* Global Ground Definition
+VGND GND 0 0
+
+* Power Supply for VS
+VSUP VS 0 PWL(0 0 16.99u 0 17u 6V) ; VS = 6V for THD, activated at 17us
+
+* DUT Instantiation
+XDUT GAIN1 IN_INV IN_NONINV GND VOUT VS BYPASS GAIN8 LM386
+
+* Port Dependency Graph Activation Schedule
+* GND is connected to 0 by VGND
+* BYPASS: 10.00 us
+VBYPASS BYPASS 0 PWL(0 0 9.99u 0 10u 0) ; BYPASS pin connected to GND
+
+* GAIN: 15.00 us
+* For THD, Pins 1 and 8 Open. This means no connection to GAIN1 and GAIN8.
+* We will leave GAIN1 and GAIN8 floating as per the specification.
+
+* INPUT: 17.00 us
+* For THD, f = 1 kHz, POUT = 125 mW, RL = 8 Ohm.
+* Pout = Vout^2 / R_L => Vout = sqrt(Pout * R_L) = sqrt(0.125 * 8) = sqrt(1) = 1V RMS
+* Peak Vout = 1V * sqrt(2) = 1.414V
+* Assuming a gain of 20 (26dB) for LM386 with pins 1 and 8 open.
+* Vin_peak = Vout_peak / Gain = 1.414V / 20 = 0.0707V
+* Let's use a sine wave input for IN_NONINV. IN_INV is grounded.
+VIN_NONINV IN_NONINV 0 SINE(0 0.0707 1k 0 0) AC 0.0707
+* Input stimulus activation at 17us. We'll use a switch for this.
+* The SINE source will be active from the start, but the connection to IN_NONINV will be delayed.
+* This is a common way to implement delayed input in LTspice.
+* Let's use a voltage source with a series switch.
+V_IN_SRC IN_NONINV_SRC 0 SINE(0 0.0707 1k 0 0)
+SW_IN IN_NONINV IN_NONINV_SRC SW_CTRL 0 SW
+.model SW SW(Ron=1 Roff=1G Vt=0.5 Vh=0.1)
+VSW_CTRL SW_CTRL 0 PWL(0 0 16.99u 0 17u 1)
+
+* VOUT: 18.00 us
+* VOUT is the output of the amplifier, it will naturally follow the input and power-up.
+* For THD, RL = 8 Ohm.
+RL VOUT 0 8
+
+* ESD Specification: Charged-device model (CDM), per JEDEC specification JESD22-C101
+* CDM is typically tested by charging the device and then discharging it through a low impedance path.
+* This is a destructive test and cannot be directly simulated in a standard SPICE transient analysis.
+* SPICE models do not inherently include ESD protection structures or their breakdown characteristics.
+* Therefore, we cannot directly verify the 1000V CDM specification with a standard SPICE simulation.
+* We will include a placeholder measurement for documentation purposes, but it will not yield a meaningful result.
+* A more advanced simulation environment with dedicated ESD models would be required.
+* For the purpose of this exercise, we will simulate a high voltage pulse on a pin to represent an ESD event,
+* though this is not a true CDM simulation. We will apply it to IN_NONINV as an example.
+* This is a symbolic representation, not a physical CDM test.
+VESD_IN_NONINV IN_NONINV_ESD 0 PULSE(0 1000 100u 1n 1n 10n 20n)
+RES_ESD IN_NONINV IN_NONINV_ESD 100 ; Representative series resistance for ESD event
+* This ESD simulation is illustrative and does not represent a true CDM test.
+* It's a symbolic representation of a high voltage stress.
+
+* Simulation Directive
+.tran 0.5n 300u
+
+* MEASUREMENT DIRECTIVES
+
+* THD Measurement: VS = 6 V, RL = 8 Ω, POUT = 125 mW, f = 1 kHz, Pins 1 and 8 Open
+* LTspice does not have a direct THD measurement function.
+* We need to perform an FFT on the output voltage and then calculate THD.
+* This requires a longer simulation time to capture multiple cycles for accurate FFT.
+* Let's simulate for 5ms to capture 5 cycles of 1kHz signal.
+.tran 0.5n 5ms
+* To calculate THD, we typically need to export the data and use an external tool (like MATLAB, Python, or even LTspice's built-in FFT viewer).
+* For automated batch verification, we can try to extract peak values of harmonics, but it's complex.
+* A common approach in LTspice for automated THD is to use .four directive, but it's not a direct .meas command.
+* Since the request is for .meas commands, we will simulate the output and note that THD calculation
+* would typically be done post-processing or visually in LTspice's FFT viewer.
+* We can measure the fundamental frequency's amplitude and then try to measure harmonic amplitudes.
+* This is a simplification as true THD requires summing squares of harmonic amplitudes.
+
+* Let's measure the peak output voltage to confirm power output.
+.meas tran VOUT_PEAK MAX V(VOUT) from=4ms to=5ms
+.meas tran VOUT_RMS PARAM VOUT_PEAK/sqrt(2)
+.meas tran POUT_CALC PARAM VOUT_RMS*VOUT_RMS/8
+
+* For THD, we need to capture the output waveform and perform FFT.
+* LTspice's .four command can be used for FFT, but it's not a .meas command for direct extraction.
+* We will provide a placeholder for THD, acknowledging the limitation of direct .meas for THD.
+* A common workaround for automated THD in LTspice is to use a behavioral source to implement a THD calculation,
+* but this is beyond simple .meas directives.
+* For the purpose of this exercise, we will assume an external script would process the .raw file for THD.
+* We can measure the fundamental frequency's amplitude using .meas.
+.meas tran VOUT_FUND_PEAK MAX V(VOUT) from=4ms to=4.001ms ; Approx one cycle peak
+.meas tran VOUT_FUND_RMS PARAM VOUT_FUND_PEAK/sqrt(2)
+
+* ESD Measurement: Min=None, Typ=None, Max=1000.0 V
+* As discussed, direct CDM simulation is not possible with standard SPICE.
+* The applied pulse on IN_NONINV_ESD is a symbolic representation.
+* We can measure the peak voltage seen at the IN_NONINV pin during this event.
+.meas tran ESD_IN_NONINV_PEAK MAX V(IN_NONINV) from=100u to=120u
+
+.end

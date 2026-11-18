@@ -1,0 +1,1327 @@
+{
+  "ic_device": {
+    "name": "OPA134",
+    "category": "Audio operational amplifier",
+    "description": "Ultra-low distortion, low-noise FET-input operational amplifier fully specified for audio applications",
+    "package": "D (SOIC, 8) / P (PDIP, 8)"
+  },
+  "pins": [
+    {
+      "name": "NC",
+      "pin_number": "1",
+      "role": "NC",
+      "direction": "NC",
+      "description": "Do not connect these pins",
+      "page": 3,
+      "evidence": "Do not connect these pins"
+    },
+    {
+      "name": "-IN",
+      "pin_number": "2",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Inverting input",
+      "page": 3,
+      "evidence": "Inverting input"
+    },
+    {
+      "name": "+IN",
+      "pin_number": "3",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Noninverting input",
+      "page": 3,
+      "evidence": "Noninverting input"
+    },
+    {
+      "name": "V-",
+      "pin_number": "4",
+      "role": "POWER",
+      "direction": "POWER",
+      "description": "Negative power supply",
+      "page": 3,
+      "evidence": "Negative power supply"
+    },
+    {
+      "name": "NC",
+      "pin_number": "5",
+      "role": "NC",
+      "direction": "NC",
+      "description": "Do not connect these pins",
+      "page": 3,
+      "evidence": "Do not connect these pins"
+    },
+    {
+      "name": "OUT",
+      "pin_number": "6",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "description": "Output",
+      "page": 3,
+      "evidence": "Output"
+    },
+    {
+      "name": "V+",
+      "pin_number": "7",
+      "role": "POWER",
+      "direction": "POWER",
+      "description": "Positive power supply",
+      "page": 3,
+      "evidence": "Positive power supply"
+    },
+    {
+      "name": "NC",
+      "pin_number": "8",
+      "role": "NC",
+      "direction": "NC",
+      "description": "No internal connection; float this pin",
+      "page": 3,
+      "evidence": "No internal connection. Float this pin."
+    }
+  ],
+  "port_dependencies": [
+    {
+      "source": "V+",
+      "target": "OUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "Positive supply required for output operation"
+    },
+    {
+      "source": "V-",
+      "target": "OUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "Negative supply required for output operation"
+    },
+    {
+      "source": "+IN",
+      "target": "OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "Noninverting input drives output of same amplifier"
+    },
+    {
+      "source": "-IN",
+      "target": "OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "Inverting input drives output of same amplifier"
+    }
+  ],
+  "functional_blocks": [
+    {
+      "name": "OPA134 amplifier core",
+      "type": "FET-input operational amplifier",
+      "description": "True FET input stage with compensation, unity-gain stable, ultra-low distortion audio op amp",
+      "input_ports": [
+        "+IN",
+        "-IN",
+        "V+",
+        "V-"
+      ],
+      "output_ports": [
+        "OUT"
+      ]
+    }
+  ],
+  "electrical_parameters": [
+    {
+      "symbol": "VS",
+      "name": "Supply voltage, (V+) \u2013 (V\u2013), Single supply",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 36,
+      "unit": "V",
+      "test_conditions": "",
+      "page": 5,
+      "evidence": "VS | Supply voltage, (V+) \u2013 (V\u2013) | Single supply | 36{MAX} | V",
+      "related_pins": [
+        "V+",
+        "V-"
+      ]
+    },
+    {
+      "symbol": "Input voltage",
+      "name": "Input voltage",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "",
+      "page": 5,
+      "evidence": "Input voltage(2) | (V\u2013) \u2013 0.5{MIN} | (V+) + 0.5{MAX} | V",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "Input current",
+      "name": "Input current",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 10.0,
+      "unit": "mA",
+      "test_conditions": "",
+      "page": 5,
+      "evidence": "Input current(2) | \u00b110{MAX} | mA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "ISC",
+      "name": "Output short-circuit",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "",
+      "test_conditions": "Continuous",
+      "page": 5,
+      "evidence": "ISC | Output short-circuit(3) | Continuous",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating temperature",
+      "category": "ABS_MAX",
+      "min": -40,
+      "typ": null,
+      "max": 125,
+      "unit": "\u00b0C",
+      "test_conditions": "",
+      "page": 5,
+      "evidence": "TA | Operating temperature | \u201340{MIN} | 125{MAX} | \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "TJ",
+      "name": "Junction temperature",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": "",
+      "page": 5,
+      "evidence": "TJ | Junction temperature | 150{MAX} | \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "Tstg",
+      "name": "Storage temperature",
+      "category": "ABS_MAX",
+      "min": -55,
+      "typ": null,
+      "max": 125,
+      "unit": "\u00b0C",
+      "test_conditions": "",
+      "page": 5,
+      "evidence": "Tstg | Storage temperature | \u201355{MIN} | 125{MAX} | \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge, Human-body model (HBM)",
+      "category": "ESD",
+      "min": null,
+      "typ": null,
+      "max": 2000,
+      "unit": "V",
+      "test_conditions": "OPA134 in SOIC and PDIP Packages, and OPA2134 in PDIP Package, per ANSI/ESDA/JEDEC JS-001",
+      "page": 5,
+      "evidence": "OPA134 in SOIC and PDIP Packages... Human-body model (HBM)... \u00b12000{MAX} | V",
+      "related_pins": []
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge, Human-body model (HBM)",
+      "category": "ESD",
+      "min": null,
+      "typ": null,
+      "max": 2000,
+      "unit": "V",
+      "test_conditions": "OPA2134 in SOIC Package, per ANSI/ESDA/JEDEC JS-001",
+      "page": 5,
+      "evidence": "OPA2134 in SOIC Package Human-body model (HBM)... \u00b12000{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge, Charged-device model (CDM)",
+      "category": "ESD",
+      "min": null,
+      "typ": null,
+      "max": 500,
+      "unit": "V",
+      "test_conditions": "OPA2134 in SOIC Package, per JEDEC specification JESD22-C101",
+      "page": 5,
+      "evidence": "Charged-device model (CDM), per JEDEC specification JESD22-C101(2) | \u00b1500{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge, Human-body model (HBM)",
+      "category": "ESD",
+      "min": null,
+      "typ": null,
+      "max": 2000,
+      "unit": "V",
+      "test_conditions": "OPA4134 in SOIC Package, per ANSI/ESDA/JEDEC JS-001",
+      "page": 5,
+      "evidence": "OPA4134 in SOIC Package ... Human-body model (HBM)... \u00b12000{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge, Charged-device model (CDM)",
+      "category": "ESD",
+      "min": null,
+      "typ": null,
+      "max": 200,
+      "unit": "V",
+      "test_conditions": "OPA4134 in SOIC Package, per JEDEC specification JESD22-C101",
+      "page": 5,
+      "evidence": "Charged-device model (CDM), per JEDEC specification JESD22-C101(2) | \u00b1200{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "VS",
+      "name": "Supply voltage, (V+) \u2013 (V\u2013), Dual supply",
+      "category": "RECOMMENDED",
+      "min": 2.5,
+      "typ": 15,
+      "max": 18,
+      "unit": "V",
+      "test_conditions": "\u00b1 supplies",
+      "page": 5,
+      "evidence": "Dual supply | \u00b12.5{MIN} | \u00b115{NOM} | \u00b118{MAX}",
+      "related_pins": [
+        "V+",
+        "V-"
+      ]
+    },
+    {
+      "symbol": "VS",
+      "name": "Supply voltage, (V+) \u2013 (V\u2013), Single supply",
+      "category": "RECOMMENDED",
+      "min": 5,
+      "typ": 30,
+      "max": 36,
+      "unit": "V",
+      "test_conditions": "",
+      "page": 5,
+      "evidence": "Single supply | 5{MIN} | 30{NOM} | 36{MAX}",
+      "related_pins": [
+        "V+",
+        "V-"
+      ]
+    },
+    {
+      "symbol": "TA",
+      "name": "Ambient temperature",
+      "category": "RECOMMENDED",
+      "min": -40,
+      "typ": null,
+      "max": 85,
+      "unit": "\u00b0C",
+      "test_conditions": "",
+      "page": 5,
+      "evidence": "TA | Ambient temperature | \u201340{MIN} | +85{MAX} | \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 160,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA134, D (SOIC), 8 pins",
+      "page": 6,
+      "evidence": "R\u03b8JA | Junction-to-ambient thermal resistance | 160",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 73,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA134, P (PDIP), 8 pins",
+      "page": 6,
+      "evidence": "R\u03b8JA | Junction-to-ambient thermal resistance | 160 | 73",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 75,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA134, D (SOIC), 8 pins",
+      "page": 6,
+      "evidence": "R\u03b8JC(top) | Junction-to-case (top) thermal resistance | 75",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 50,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA134, P (PDIP), 8 pins",
+      "page": 6,
+      "evidence": "R\u03b8JC(top) | Junction-to-case (top) thermal resistance | 75 | 50",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 60,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA134, D (SOIC), 8 pins",
+      "page": 6,
+      "evidence": "R\u03b8JB | Junction-to-board thermal resistance | 60",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 36,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA134, P (PDIP), 8 pins",
+      "page": 6,
+      "evidence": "R\u03b8JB | Junction-to-board thermal resistance | 60 | 36",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03a8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA134, D (SOIC), 8 pins",
+      "page": 6,
+      "evidence": "\u03a8JT | Junction-to-top characterization parameter | 9",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03a8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 17,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA134, P (PDIP), 8 pins",
+      "page": 6,
+      "evidence": "\u03a8JT | Junction-to-top characterization parameter | 9 | 17",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03a8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 50,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA134, D (SOIC), 8 pins",
+      "page": 6,
+      "evidence": "\u03a8JB | Junction-to-board characterization parameter | 50",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03a8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 35,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA134, P (PDIP), 8 pins",
+      "page": 6,
+      "evidence": "\u03a8JB | Junction-to-board characterization parameter | 50 | 35",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA134, D (SOIC) and P (PDIP), N/A",
+      "page": 6,
+      "evidence": "R\u03b8JC(bot) | Junction-to-case (bottom) thermal resistance | N/A | N/A",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 160,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA2134, D (SOIC), 8 pins",
+      "page": 6,
+      "evidence": "R\u03b8JA | Junction-to-ambient thermal resistance | 160",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 71,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA2134, P (PDIP), 8 pins",
+      "page": 6,
+      "evidence": "R\u03b8JA | Junction-to-ambient thermal resistance | 160 | 71",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 75,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA2134, D (SOIC), 8 pins",
+      "page": 6,
+      "evidence": "R\u03b8JC(top) | Junction-to-case (top) thermal resistance | 75",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 50,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA2134, P (PDIP), 8 pins",
+      "page": 6,
+      "evidence": "R\u03b8JC(top) | Junction-to-case (top) thermal resistance | 75 | 50",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 60,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA2134, D (SOIC), 8 pins",
+      "page": 6,
+      "evidence": "R\u03b8JB | Junction-to-board thermal resistance | 60",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 36,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA2134, P (PDIP), 8 pins",
+      "page": 6,
+      "evidence": "R\u03b8JB | Junction-to-board thermal resistance | 60 | 36",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03a8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA2134, D (SOIC), 8 pins",
+      "page": 6,
+      "evidence": "\u03a8JT | Junction-to-top characterization parameter | 9",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03a8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 16,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA2134, P (PDIP), 8 pins",
+      "page": 6,
+      "evidence": "\u03a8JT | Junction-to-top characterization parameter | 9 | 16",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03a8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 50,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA2134, D (SOIC), 8 pins",
+      "page": 6,
+      "evidence": "\u03a8JB | Junction-to-board characterization parameter | 50",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03a8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 35,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA2134, P (PDIP), 8 pins",
+      "page": 6,
+      "evidence": "\u03a8JB | Junction-to-board characterization parameter | 50 | 35",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA2134, D (SOIC) and P (PDIP), N/A",
+      "page": 6,
+      "evidence": "R\u03b8JC(bot) | Junction-to-case (bottom) thermal resistance | N/A | N/A",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 97,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA4134, D (SOIC), 14 pins",
+      "page": 6,
+      "evidence": "R\u03b8JA | Junction-to-ambient thermal resistance | 97",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 56,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA4134, D (SOIC), 14 pins",
+      "page": 6,
+      "evidence": "R\u03b8JC(top) | Junction-to-case (top) thermal resistance | 56",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 53,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA4134, D (SOIC), 14 pins",
+      "page": 6,
+      "evidence": "R\u03b8JB | Junction-to-board thermal resistance | 53",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03a8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 19,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA4134, D (SOIC), 14 pins",
+      "page": 6,
+      "evidence": "\u03a8JT | Junction-to-top characterization parameter | 19",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03a8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 46,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA4134, D (SOIC), 14 pins",
+      "page": 6,
+      "evidence": "\u03a8JB | Junction-to-board characterization parameter | 46",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "OPA4134, D (SOIC), N/A",
+      "page": 6,
+      "evidence": "R\u03b8JC(bot) | Junction-to-case (bottom) thermal resistance | N/A",
+      "related_pins": []
+    },
+    {
+      "symbol": "THD+N",
+      "name": "Total harmonic distortion plus noise",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 8e-05,
+      "max": null,
+      "unit": "%",
+      "test_conditions": "TA = 25C, VS = \u00b115V, f = 1kHz, G = 1, RL = 2k\u03a9, VO = 3Vrms",
+      "page": 7,
+      "evidence": "THD+N f = 1kHz, G = 1, RL = 2k\u03a9 0.00008",
+      "related_pins": [
+        "IN+",
+        "IN-",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "THD+N",
+      "name": "Total harmonic distortion plus noise",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.00015,
+      "max": null,
+      "unit": "%",
+      "test_conditions": "TA = 25C, VS = \u00b115V, f = 1kHz, G = 1, RL = 600\u03a9, VO = 3Vrms",
+      "page": 7,
+      "evidence": "RL = 600\u03a9 0.00015",
+      "related_pins": [
+        "IN+",
+        "IN-",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": null,
+      "name": "Intermodulation distortion",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -98,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "f = 1kHz, G = 1, VO = 1VPP",
+      "page": 7,
+      "evidence": "Intermodulation distortion \u201398 dB",
+      "related_pins": [
+        "IN+",
+        "IN-",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": null,
+      "name": "Headroom",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 21.3,
+      "max": null,
+      "unit": "dBu",
+      "test_conditions": "THD < 0.01%, RL = 2k\u03a9, VS = 18V",
+      "page": 7,
+      "evidence": "Headroom(1) THD < 0.01%, RL = 2k\u03a9, VS = 18V 21.3 dBu",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "GBW",
+      "name": "Gain bandwidth product",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 8,
+      "max": null,
+      "unit": "MHz",
+      "test_conditions": "TA = 25C, VS = \u00b115V",
+      "page": 7,
+      "evidence": "GBW Gain bandwidth product 8 MHz",
+      "related_pins": [
+        "IN+",
+        "IN-",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "SR",
+      "name": "Slew rate",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 20,
+      "max": null,
+      "unit": "V/\u03bcs",
+      "test_conditions": "TA = 25C, VS = \u00b115V",
+      "page": 7,
+      "evidence": "SR Slew rate(2) \u00b120 V/\u03bcs",
+      "related_pins": [
+        "IN+",
+        "IN-",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": null,
+      "name": "Settling time (0.1%)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.7,
+      "max": null,
+      "unit": "\u03bcs",
+      "test_conditions": "10V step, G = 1, CL = 100pF, to 0.1%",
+      "page": 7,
+      "evidence": "0.1% 0.7 \u03bcs",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": null,
+      "name": "Settling time (0.01%)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1,
+      "max": null,
+      "unit": "\u03bcs",
+      "test_conditions": "10V step, G = 1, CL = 100pF, to 0.01%",
+      "page": 7,
+      "evidence": "0.01% 1 \u03bcs",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "FPBW",
+      "name": "Full power bandwidth",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1.3,
+      "max": null,
+      "unit": "MHz",
+      "test_conditions": "TA = 25C, VS = \u00b115V",
+      "page": 7,
+      "evidence": "FPBW Full power bandwidth 1.3 MHz",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": null,
+      "name": "Overload recovery time",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.6,
+      "max": null,
+      "unit": "\u00b5s",
+      "test_conditions": "VIN \u00d7 G = VS",
+      "page": 7,
+      "evidence": "Overload recovery time VIN \u00d7 G = VS 0.6 \u00b5s",
+      "related_pins": [
+        "IN+",
+        "IN-",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": null,
+      "name": "Input voltage noise",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1.2,
+      "max": null,
+      "unit": "\u00b5Vrms",
+      "test_conditions": "f = 20Hz to 20kHz",
+      "page": 7,
+      "evidence": "Input voltage noise f = 20Hz to 20kHz 1.2 \u00b5Vrms",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "en",
+      "name": "Input voltage noise density",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 8,
+      "max": null,
+      "unit": "nV/\u221aHz",
+      "test_conditions": "f = 1kHz",
+      "page": 7,
+      "evidence": "en Input voltage noise density f = 1kHz 8 nV/\u221aHz",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "In",
+      "name": "Input current noise density",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 3,
+      "max": null,
+      "unit": "fA/\u221aHz",
+      "test_conditions": "f = 1kHz",
+      "page": 7,
+      "evidence": "In Input current noise density f = 1kHz 3 fA/\u221aHz",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VOS",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1,
+      "max": 3.5,
+      "unit": "mV",
+      "test_conditions": "TA = 25C, VS = \u00b115V",
+      "page": 7,
+      "evidence": "VOS Input offset voltage \u00b11 \u00b13.5 mV",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "dVOS/dT",
+      "name": "Input offset voltage drift",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 2,
+      "max": null,
+      "unit": "\u03bcV/\u00b0C",
+      "test_conditions": "TA = \u201340\u00b0C to +85\u00b0C",
+      "page": 7,
+      "evidence": "dVOS/dT Input offset voltage drift \u00b12 \u03bcV/\u00b0C",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "PSRR",
+      "name": "Power-supply rejection ratio",
+      "category": "ELECTRICAL",
+      "min": 90,
+      "typ": 106,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "5V \u2264 VS \u2264 36V",
+      "page": 7,
+      "evidence": "PSRR 5V \u2264 VS \u2264 36V 90 106 dB",
+      "related_pins": [
+        "V+",
+        "V-"
+      ]
+    },
+    {
+      "symbol": null,
+      "name": "Channel separation (dual, quad)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 128,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "DC, RL = 2k\u03a9",
+      "page": 7,
+      "evidence": "DC, RL = 2k\u03a9 128 dB",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": null,
+      "name": "Channel separation (dual, quad)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 126,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "f = 20kHz, RL = 2k\u03a9",
+      "page": 7,
+      "evidence": "f = 20kHz, RL = 2k\u03a9 126 dB",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 5,
+      "max": 100,
+      "unit": "pA",
+      "test_conditions": "TA = 25C, See Section 5.8",
+      "page": 7,
+      "evidence": "IB Input bias current \u00b15 \u00b1100 pA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 5,
+      "unit": "nA",
+      "test_conditions": "TA = \u201340\u00b0C to +85\u00b0C",
+      "page": 7,
+      "evidence": "TA = \u201340\u00b0C to +85\u00b0C \u00b15 nA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 2,
+      "max": 50,
+      "unit": "pA",
+      "test_conditions": "TA = 25C",
+      "page": 7,
+      "evidence": "IOS Input offset current \u00b12 \u00b150 pA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VCM",
+      "name": "Common-mode voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 13,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "TA = 25C, VS = \u00b115V",
+      "page": 7,
+      "evidence": "VCM (V\u2013) + 2.5 \u00b113 (V+) \u2013 3.5 V",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "category": "ELECTRICAL",
+      "min": 86,
+      "typ": 100,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "\u201312.5V \u2264 VCM \u2264 11.5V",
+      "page": 7,
+      "evidence": "CMRR 86 100 dB",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 90,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "TA = \u201340\u00b0C to +85\u00b0C",
+      "page": 7,
+      "evidence": "TA = \u201340\u00b0C to +85\u00b0C 90 dB",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": null,
+      "name": "Input impedance, differential",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1013,
+      "max": null,
+      "unit": "\u03a9 || pF",
+      "test_conditions": "differential: 1013 \u03a9 || 8 pF",
+      "page": 7,
+      "evidence": "Differential 1013 || 8 \u03a9 || pF",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": null,
+      "name": "Input impedance, common-mode",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1013,
+      "max": null,
+      "unit": "\u03a9 || pF",
+      "test_conditions": "\u201312.5V \u2264 VCM \u2264 11.5V; 1013 \u03a9 || 6 pF",
+      "page": 7,
+      "evidence": "Common-mode 1013 || 6 \u03a9 || pF",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "AOL",
+      "name": "Open-loop voltage gain",
+      "category": "ELECTRICAL",
+      "min": 104,
+      "typ": 120,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "RL = 10k\u03a9, \u201314.5V \u2264 VO \u2264 13.8V",
+      "page": 7,
+      "evidence": "RL = 10k\u03a9 104 120 dB",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "AOL",
+      "name": "Open-loop voltage gain",
+      "category": "ELECTRICAL",
+      "min": 104,
+      "typ": 120,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "RL = 2k\u03a9, \u201313.8V \u2264 VO \u2264 13.5V",
+      "page": 7,
+      "evidence": "RL = 2k\u03a9 104 120 dB",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VO",
+      "name": "Voltage output",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "Positive, RL = 10k\u03a9, TA = 25C, VS = \u00b115V, RL = 2k\u03a9 connected to midsupply, VCM = VOUT = midsupply",
+      "page": 8,
+      "evidence": "Positive | (V+) \u2013 1.2{MIN} RL = 10k\u03a9",
+      "related_pins": [
+        "OUT",
+        "V+"
+      ]
+    },
+    {
+      "symbol": "VO",
+      "name": "Voltage output",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "Negative, RL = 10k\u03a9, TA = 25C, VS = \u00b115V, RL = 2k\u03a9 connected to midsupply, VCM = VOUT = midsupply",
+      "page": 8,
+      "evidence": "Negative | (V\u2013) + 0.5{MAX} RL = 10k\u03a9",
+      "related_pins": [
+        "OUT",
+        "V-"
+      ]
+    },
+    {
+      "symbol": "VO",
+      "name": "Voltage output",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "Positive, RL = 2k\u03a9, TA = 25C, VS = \u00b115V, RL = 2k\u03a9 connected to midsupply, VCM = VOUT = midsupply",
+      "page": 8,
+      "evidence": "Positive | (V+) \u2013 1.5{MIN} RL = 2k\u03a9",
+      "related_pins": [
+        "OUT",
+        "V+"
+      ]
+    },
+    {
+      "symbol": "VO",
+      "name": "Voltage output",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "Negative, RL = 2k\u03a9, TA = 25C, VS = \u00b115V, RL = 2k\u03a9 connected to midsupply, VCM = VOUT = midsupply",
+      "page": 8,
+      "evidence": "Negative | (V\u2013) + 1.2{MAX} RL = 2k\u03a9",
+      "related_pins": [
+        "OUT",
+        "V-"
+      ]
+    },
+    {
+      "symbol": "ISC",
+      "name": "Short-circuit current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 36,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "Sourcing, TA = 25C, VS = \u00b115V, RL = 2k\u03a9 connected to midsupply, VCM = VOUT = midsupply",
+      "page": 8,
+      "evidence": "Sourcing | 36{TYP} ISC | Short-circuit current",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "ISC",
+      "name": "Short-circuit current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -30,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "Sinking, TA = 25C, VS = \u00b115V, RL = 2k\u03a9 connected to midsupply, VCM = VOUT = midsupply",
+      "page": 8,
+      "evidence": "Sinking | \u201330{TYP}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "ZO",
+      "name": "Output impedance",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.01,
+      "max": null,
+      "unit": "\u03a9",
+      "test_conditions": "Closed-loop, f = 10kHz, TA = 25C, VS = \u00b115V, RL = 2k\u03a9 connected to midsupply, VCM = VOUT = midsupply",
+      "page": 8,
+      "evidence": "Closed-loop(4) | 0.01{TYP} ZO | Output impedance",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "ZO",
+      "name": "Output impedance",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 10,
+      "max": null,
+      "unit": "\u03a9",
+      "test_conditions": "Open-loop, f = 10kHz, TA = 25C, VS = \u00b115V, RL = 2k\u03a9 connected to midsupply, VCM = VOUT = midsupply",
+      "page": 8,
+      "evidence": "Open-loop | 10{TYP}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": null,
+      "name": "Capacitive load drive",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": null,
+      "test_conditions": "Stable operation, TA = 25C, VS = \u00b115V, RL = 2k\u03a9 connected to midsupply, VCM = VOUT = midsupply",
+      "page": 8,
+      "evidence": "Capacitive load drive | Stable operation | See Typical Characteristics",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IQ",
+      "name": "Quiescent current (per amplifier)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 4,
+      "max": 5,
+      "unit": "mA",
+      "test_conditions": "IO = 0mA, TA = 25C, VS = \u00b115V, RL = 2k\u03a9 connected to midsupply, VCM = VOUT = midsupply",
+      "page": 8,
+      "evidence": "IQ | Quiescent current (per amplifier) IO = 0mA | 4{TYP} | 5{MAX} | mA",
+      "related_pins": [
+        "V+",
+        "V-"
+      ]
+    }
+  ],
+  "provenance": {
+    "pin_pages": [
+      1,
+      3,
+      4
+    ],
+    "spec_pages": [
+      5,
+      6,
+      7,
+      8,
+      22
+    ],
+    "func_pages": [
+      13,
+      15
+    ],
+    "failed_spec_pages": [],
+    "source_file": "opa2134.pdf"
+  }
+}

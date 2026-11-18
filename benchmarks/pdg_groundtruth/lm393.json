@@ -1,0 +1,661 @@
+{
+  "ic": "LM393",
+  "datasheet": "testcases/lm393.pdf",
+  "reference_package": "D/P 8-pin (SOIC-8/PDIP-8), LM393 (without A/B suffix) - Electrical Characteristics table 5.8",
+  "reference_conditions": "VCC = 5V (unless otherwise noted), TA = 25°C or full range (0°C to 70°C for LM393) as per row; switching 5.11 at VCC = 5V, TA = 25°C",
+  "pins": [
+    {
+      "name": "1OUT",
+      "aliases": [
+        "OUT1",
+        "OUTA",
+        "OUT A",
+        "OUTPUT1",
+        "OUTPUT A"
+      ],
+      "number": "1",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "page": 3,
+      "evidence": "1OUT 1 1 Output Output pin of comparator 1"
+    },
+    {
+      "name": "1IN-",
+      "aliases": [
+        "1IN–",
+        "1IN−",
+        "IN1-",
+        "-IN A",
+        "INA-",
+        "INVERTING INPUT 1"
+      ],
+      "number": "2",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "page": 3,
+      "evidence": "1IN– 2 2 Input Negative input pin of comparator 1"
+    },
+    {
+      "name": "1IN+",
+      "aliases": [
+        "IN1+",
+        "+IN A",
+        "INA+",
+        "NON-INVERTING INPUT 1"
+      ],
+      "number": "3",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "page": 3,
+      "evidence": "1IN+ 3 3 Input Positive input pin of comparator 1"
+    },
+    {
+      "name": "GND",
+      "aliases": [
+        "V-",
+        "V–",
+        "VEE",
+        "VSS"
+      ],
+      "number": "4",
+      "role": "GROUND",
+      "direction": "GROUND",
+      "page": 3,
+      "evidence": "GND 4 4 — Ground"
+    },
+    {
+      "name": "2IN+",
+      "aliases": [
+        "IN2+",
+        "+IN B",
+        "INB+",
+        "NON-INVERTING INPUT 2"
+      ],
+      "number": "5",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "page": 3,
+      "evidence": "2IN+ 5 5 Input Positive input pin of comparator 2"
+    },
+    {
+      "name": "2IN-",
+      "aliases": [
+        "2IN–",
+        "2IN−",
+        "IN2-",
+        "-IN B",
+        "INB-",
+        "INVERTING INPUT 2"
+      ],
+      "number": "6",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "page": 3,
+      "evidence": "2IN- 6 6 Input Negative input pin of comparator 2"
+    },
+    {
+      "name": "2OUT",
+      "aliases": [
+        "OUT2",
+        "OUTB",
+        "OUT B",
+        "OUTPUT2",
+        "OUTPUT B"
+      ],
+      "number": "7",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "page": 3,
+      "evidence": "2OUT 7 7 Output Output pin of comparator 2"
+    },
+    {
+      "name": "VCC",
+      "aliases": [
+        "V+",
+        "VDD",
+        "VS",
+        "VCC+"
+      ],
+      "number": "8",
+      "role": "POWER",
+      "direction": "POWER",
+      "page": 3,
+      "evidence": "VCC 8 8 — Positive Supply"
+    }
+  ],
+  "dependencies": [
+    {
+      "source": "VCC",
+      "target": "1OUT",
+      "type": "POWER_FEED",
+      "evidence": "VCC 'Positive Supply' powers both comparators",
+      "page": 3
+    },
+    {
+      "source": "VCC",
+      "target": "2OUT",
+      "type": "POWER_FEED",
+      "evidence": "VCC 'Positive Supply' powers both comparators",
+      "page": 3
+    },
+    {
+      "source": "GND",
+      "target": "1OUT",
+      "type": "POWER_FEED",
+      "evidence": "GND 'Ground' is supply return; open-collector output sinks to GND",
+      "page": 3
+    },
+    {
+      "source": "GND",
+      "target": "2OUT",
+      "type": "POWER_FEED",
+      "evidence": "GND 'Ground' is supply return; open-collector output sinks to GND",
+      "page": 3
+    },
+    {
+      "source": "1IN+",
+      "target": "1OUT",
+      "type": "SIGNAL_PATH",
+      "evidence": "Positive input pin of comparator 1 -> Output pin of comparator 1",
+      "page": 3
+    },
+    {
+      "source": "1IN-",
+      "target": "1OUT",
+      "type": "SIGNAL_PATH",
+      "evidence": "Negative input pin of comparator 1 -> Output pin of comparator 1",
+      "page": 3
+    },
+    {
+      "source": "2IN+",
+      "target": "2OUT",
+      "type": "SIGNAL_PATH",
+      "evidence": "Positive input pin of comparator 2 -> Output pin of comparator 2",
+      "page": 3
+    },
+    {
+      "source": "2IN-",
+      "target": "2OUT",
+      "type": "SIGNAL_PATH",
+      "evidence": "Negative input pin of comparator 2 -> Output pin of comparator 2",
+      "page": 3
+    }
+  ],
+  "timing": [
+    {
+      "symbol": "tresp",
+      "name": "Response time, 100mV input step with 5mV overdrive",
+      "value": 1.3,
+      "unit": "µs",
+      "page": 10,
+      "evidence": "Response time RL connected to 5V through 5.1kΩ, CL = 15pF(1) (2) 100mV input step with 5mV overdrive 1.3 µs"
+    },
+    {
+      "symbol": "tresp",
+      "name": "Response time, TTL-level input step",
+      "value": 0.3,
+      "unit": "µs",
+      "page": 10,
+      "evidence": "TTL-level input step 0.3"
+    }
+  ],
+  "specs": [
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 2,
+      "max": 5,
+      "unit": "mV",
+      "conditions": "VCC = 5V to 30V, VIC = VICR min, VO = 1.4V, 25°C",
+      "page": 8,
+      "evidence": "VIO Input offset voltage VCC = 5V to 30V, VIC = VICR min, VO = 1.4V 25°C ... 2 5 mV"
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 9,
+      "unit": "mV",
+      "conditions": "VCC = 5V to 30V, VIC = VICR min, VO = 1.4V, Full range",
+      "page": 8,
+      "evidence": "Full range 9 9 (LM393 column max 9)"
+    },
+    {
+      "symbol": "IIO",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 5,
+      "max": 50,
+      "unit": "nA",
+      "conditions": "VO = 1.4V, 25°C; VCC = 5V, LM393 column (LM293/LM393)",
+      "page": 8,
+      "evidence": "IIO Input offset current VO = 1.4V 25°C 3 25 5 50 nA"
+    },
+    {
+      "symbol": "IIO",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 250,
+      "unit": "nA",
+      "conditions": "VO = 1.4V, Full range; VCC = 5V, LM393 column (LM293/LM393)",
+      "page": 8,
+      "evidence": "Full range 100 250"
+    },
+    {
+      "symbol": "IIB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -25,
+      "max": -250,
+      "unit": "nA",
+      "conditions": "VO = 1.4V, 25°C; VCC = 5V, LM393 column (LM293/LM393)",
+      "page": 8,
+      "evidence": "IIB Input bias current VO = 1.4V 25°C –25 –100 –25 –250 nA"
+    },
+    {
+      "symbol": "IIB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -400,
+      "unit": "nA",
+      "conditions": "VO = 1.4V, Full range; VCC = 5V, LM393 column (LM293/LM393)",
+      "page": 8,
+      "evidence": "Full range –300 –400"
+    },
+    {
+      "symbol": "VICR",
+      "name": "Common-mode input-voltage range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "conditions": "25°C; min '0 to VCC – 1.5' (expression, null); VCC = 5V, LM393 column (LM293/LM393)",
+      "page": 8,
+      "evidence": "VICR Common-mode input-voltage range(2) 25°C 0 to VCC – 1.5 V"
+    },
+    {
+      "symbol": "VICR",
+      "name": "Common-mode input-voltage range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "conditions": "Full range; min '0 to VCC – 2' (expression, null); VCC = 5V, LM393 column (LM293/LM393)",
+      "page": 8,
+      "evidence": "Full range 0 to VCC – 2"
+    },
+    {
+      "symbol": "AVD",
+      "name": "Large-signal differential-voltage amplification",
+      "category": "ELECTRICAL",
+      "min": 50,
+      "typ": 200,
+      "max": null,
+      "unit": "V/mV",
+      "conditions": "VCC = 15V, VO = 1.4V to 11.4V, RL ≥ 15kΩ to VCC, 25°C",
+      "page": 8,
+      "evidence": "AVD Large-signal differential-voltage amplification VCC = 15V, VO = 1.4V to 11.4V, RL ≥ 15kΩ to VCC 25°C 50 200 50 200 V/mV"
+    },
+    {
+      "symbol": "IOH",
+      "name": "High-level output current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": 50,
+      "unit": "nA",
+      "conditions": "VOH = 5V, VID = 1V, 25°C",
+      "page": 8,
+      "evidence": "IOH High-level output current VOH = 5V VID = 1V 25°C 0.1 0.1 50 nA"
+    },
+    {
+      "symbol": "IOH",
+      "name": "High-level output current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 1,
+      "unit": "µA",
+      "conditions": "VOH = 30V, VID = 1V, Full range",
+      "page": 8,
+      "evidence": "VOH = 30V VID = 1V Full range 1 1 µA"
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 130,
+      "max": 400,
+      "unit": "mV",
+      "conditions": "IOL = 4mA, VID = –1V, 25°C; VCC = 5V, LM393 column (LM293/LM393)",
+      "page": 8,
+      "evidence": "VOL Low-level output voltage IOL = 4mA, VID = –1V 25°C 150 400 130 400 mV"
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 700,
+      "unit": "mV",
+      "conditions": "IOL = 4mA, VID = –1V, Full range",
+      "page": 8,
+      "evidence": "Full range 700 700"
+    },
+    {
+      "symbol": "IOL",
+      "name": "Low-level output current",
+      "category": "ELECTRICAL",
+      "min": 6,
+      "typ": null,
+      "max": null,
+      "unit": "mA",
+      "conditions": "VOL = 1.5V, VID = –1V, 25°C",
+      "page": 8,
+      "evidence": "IOL Low-level output current VOL = 1.5V, VID = –1V 25°C 6 6 mA"
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.45,
+      "max": 1,
+      "unit": "mA",
+      "conditions": "RL = ∞, VCC = 5V, 25°C; VCC = 5V, LM393 column (LM293/LM393)",
+      "page": 8,
+      "evidence": "ICC Supply current RL = ∞ VCC = 5V 25°C 0.8 1 0.45 1 mA"
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.55,
+      "max": 2.5,
+      "unit": "mA",
+      "conditions": "RL = ∞, VCC = 30V, Full range; VCC = 5V, LM393 column (LM293/LM393)",
+      "page": 8,
+      "evidence": "VCC = 30V Full range 2.5 0.55 2.5"
+    },
+    {
+      "symbol": "tresp",
+      "name": "Response time",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1.3,
+      "max": null,
+      "unit": "µs",
+      "conditions": "VCC = 5V, TA = 25°C, RL to 5V through 5.1kΩ, CL = 15pF, 100mV input step with 5mV overdrive",
+      "page": 10,
+      "evidence": "Response time RL connected to 5V through 5.1kΩ, CL = 15pF(1) (2) 100mV input step with 5mV overdrive 1.3 µs"
+    },
+    {
+      "symbol": "tresp",
+      "name": "Response time",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.3,
+      "max": null,
+      "unit": "µs",
+      "conditions": "VCC = 5V, TA = 25°C, RL to 5V through 5.1kΩ, CL = 15pF, TTL-level input step",
+      "page": 10,
+      "evidence": "TTL-level input step 0.3"
+    },
+    {
+      "symbol": "VCC",
+      "name": "Supply voltage",
+      "category": "ABS_MAX",
+      "min": -0.3,
+      "typ": null,
+      "max": 36,
+      "unit": "V",
+      "conditions": "Non-B Versions",
+      "page": 4,
+      "evidence": "VCC Supply voltage(2) Non-B Versions –0.3 36 V"
+    },
+    {
+      "symbol": "VID",
+      "name": "Differential input voltage",
+      "category": "ABS_MAX",
+      "min": -36,
+      "typ": null,
+      "max": 36,
+      "unit": "V",
+      "conditions": "Non-B Versions",
+      "page": 4,
+      "evidence": "VID Differential input voltage(3) Non-B Versions -36 36 V"
+    },
+    {
+      "symbol": "VI",
+      "name": "Input voltage (either input)",
+      "category": "ABS_MAX",
+      "min": -0.3,
+      "typ": null,
+      "max": 36,
+      "unit": "V",
+      "conditions": "Non-B Versions",
+      "page": 4,
+      "evidence": "VI Input voltage (either input) Non-B Versions –0.3 36 V"
+    },
+    {
+      "symbol": "IIK",
+      "name": "Input current",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": -50,
+      "unit": "mA",
+      "conditions": "",
+      "page": 4,
+      "evidence": "IIK Input current(5) -50 mA"
+    },
+    {
+      "symbol": "VO",
+      "name": "Output voltage",
+      "category": "ABS_MAX",
+      "min": -0.3,
+      "typ": null,
+      "max": 36,
+      "unit": "V",
+      "conditions": "Non-B Versions",
+      "page": 4,
+      "evidence": "VO Output voltage Non-B Versions –0.3 36 V"
+    },
+    {
+      "symbol": "IO",
+      "name": "Output current",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 20,
+      "unit": "mA",
+      "conditions": "Non-B Versions",
+      "page": 4,
+      "evidence": "IO Output current Non-B Versions 20 mA"
+    },
+    {
+      "symbol": "ISC",
+      "name": "Duration of output short circuit to ground",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "",
+      "conditions": "value 'Unlimited'",
+      "page": 4,
+      "evidence": "ISC Duration of output short circuit to ground(4) Unlimited"
+    },
+    {
+      "symbol": "TJ",
+      "name": "Operating virtual-junction temperature",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 150,
+      "unit": "°C",
+      "conditions": "",
+      "page": 4,
+      "evidence": "TJ Operating virtual-junction temperature 150 °C"
+    },
+    {
+      "symbol": "Tstg",
+      "name": "Storage temperature",
+      "category": "ABS_MAX",
+      "min": -65,
+      "typ": null,
+      "max": 150,
+      "unit": "°C",
+      "conditions": "",
+      "page": 4,
+      "evidence": "Tstg Storage temperature –65 150 °C"
+    },
+    {
+      "symbol": "VS",
+      "name": "Supply voltage, VS = (V+) – (V–)",
+      "category": "RECOMMENDED",
+      "min": 2,
+      "typ": null,
+      "max": 30,
+      "unit": "V",
+      "conditions": "non-V devices",
+      "page": 4,
+      "evidence": "Supply voltage, VS = (V+) – (V–) non-V devices 2 30 V"
+    },
+    {
+      "symbol": "VIVR",
+      "name": "Input voltage range",
+      "category": "RECOMMENDED",
+      "min": 0,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "conditions": "non-B devices; max '(V+) – 2.0' (expression)",
+      "page": 4,
+      "evidence": "Input voltage range, VIVR non-B devices 0 (V+) – 2.0 V"
+    },
+    {
+      "symbol": "TA",
+      "name": "Ambient temperature",
+      "category": "RECOMMENDED",
+      "min": 0,
+      "typ": null,
+      "max": 70,
+      "unit": "°C",
+      "conditions": "LM393, LM393A",
+      "page": 4,
+      "evidence": "Ambient temperature, TA ... LM393, LM393A 0 70"
+    },
+    {
+      "symbol": "RθJA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 148.5,
+      "max": null,
+      "unit": "°C/W",
+      "conditions": "D (SOIC) 8 pins",
+      "page": 5,
+      "evidence": "RθJA Junction-to-ambient thermal resistance 148.5 114.9 200.6 193.7 197.9 96.9 °C/W (D column)"
+    },
+    {
+      "symbol": "RθJA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 114.9,
+      "max": null,
+      "unit": "°C/W",
+      "conditions": "P (PDIP) 8 pins",
+      "page": 5,
+      "evidence": "RθJA Junction-to-ambient thermal resistance 148.5 114.9 200.6 ... °C/W (P column)"
+    },
+    {
+      "symbol": "RθJC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 90.2,
+      "max": null,
+      "unit": "°C/W",
+      "conditions": "D (SOIC)",
+      "page": 5,
+      "evidence": "RθJC(top) Junction-to-case (top) thermal resistance 90.2 93.8 89.6 82.9 119.2 119.0 °C/W"
+    },
+    {
+      "symbol": "RθJB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 91.8,
+      "max": null,
+      "unit": "°C/W",
+      "conditions": "D (SOIC)",
+      "page": 5,
+      "evidence": "RθJB Junction-to-board thermal resistance 91.8 77.7 131.3 115.5 115.4 63.1 °C/W"
+    },
+    {
+      "symbol": "ψJT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 38.5,
+      "max": null,
+      "unit": "°C/W",
+      "conditions": "D (SOIC)",
+      "page": 5,
+      "evidence": "ψJT Junction-to-top characterization parameter 38.5 60.4 22.1 20.8 19.4 12.4 °C/W"
+    },
+    {
+      "symbol": "ψJB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 91.1,
+      "max": null,
+      "unit": "°C/W",
+      "conditions": "D (SOIC)",
+      "page": 5,
+      "evidence": "ψJB Junction-to-board characterization parameter 91.1 76.7 129.6 113.9 113.7 63.0 °C/W"
+    },
+    {
+      "symbol": "V(ESD) HBM",
+      "name": "Electrostatic discharge, human body model",
+      "category": "ESD",
+      "min": null,
+      "typ": 2000,
+      "max": null,
+      "unit": "V",
+      "conditions": "HBM per ANSI/ESDA/JEDEC JS-001; printed ±2000",
+      "page": 5,
+      "evidence": "Human body model (HBM), per ANSI/ESDA/JEDEC JS-001(1) ±2000 V"
+    },
+    {
+      "symbol": "V(ESD) CDM",
+      "name": "Electrostatic discharge, charged-device model",
+      "category": "ESD",
+      "min": null,
+      "typ": 1000,
+      "max": null,
+      "unit": "V",
+      "conditions": "CDM per JEDEC JESD22-C101; printed ±1000",
+      "page": 5,
+      "evidence": "Charged-device model (CDM), per JEDEC specification JESD22-C101(2) ±1000"
+    }
+  ],
+  "notes": "Datasheet SLCS005AH covers LM393B/LM2903B/LM193/LM293/LM293A/LM393/LM393A/LM2903/LM2903V. Reference variant is plain LM393 (section 5.8, page 8; column shared 'LM293 / LM393'); LM193 column, LM393A (5.9), LM393B (5.5) and LM2903 tables are excluded. Switching 5.11 (page 10) applies to LM193/LM293/LM393/LM2903 non-B versions. IOL '6' assigned to MIN column based on word x-position (right-aligned with other MIN values). VIO full-range row shows only max. VICR values are expressions ('0 to VCC – 1.5', '0 to VCC – 2') -> null. IIB printed negative (–25 typ, –250 max). ABS_MAX/RECOMMENDED rows use Non-B / non-V values. Outputs are open-collector (pull-up required; RL 5.1kΩ in switching test). Pin table spells '1IN–' (en-dash) but '2IN-' (hyphen). The 8-pin D/P pinout is identical for all variants; DSG thermal pad not part of the reference package. LM393B has separate switching table 5.7 (page 7) with tPHL/tPLH which is not included."
+}

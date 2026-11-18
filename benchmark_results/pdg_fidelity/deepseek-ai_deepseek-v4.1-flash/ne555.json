@@ -1,0 +1,405 @@
+{
+  "ic": "ne555",
+  "model": "deepseek-ai/deepseek-v4.1-flash",
+  "llm_seconds": 23.9,
+  "llm_calls": [
+    {
+      "ts": 1792564321.9498725,
+      "tag": "hkg_specs_p7",
+      "provider": "nim",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 2.45,
+      "total_s": 10.69,
+      "completion_tokens": 741,
+      "prompt_tokens": 884,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792564327.5699615,
+      "tag": "hkg_specs_p4",
+      "provider": "nim",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 2.46,
+      "total_s": 16.44,
+      "completion_tokens": 1181,
+      "prompt_tokens": 913,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792564331.2618368,
+      "tag": "hkg_pins",
+      "provider": "nim",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 4.43,
+      "total_s": 20.13,
+      "completion_tokens": 1259,
+      "prompt_tokens": 2953,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792564331.8782878,
+      "tag": "hkg_specs_p6",
+      "provider": "nim",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 5.15,
+      "total_s": 20.66,
+      "completion_tokens": 1923,
+      "prompt_tokens": 1406,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792564334.9814992,
+      "tag": "hkg_specs_p5",
+      "provider": "nim",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 3.08,
+      "total_s": 23.78,
+      "completion_tokens": 1928,
+      "prompt_tokens": 1277,
+      "finish_reason": "stop"
+    }
+  ],
+  "groundtruth_comparison": {
+    "ic": "NE555",
+    "score": 92.8,
+    "pins": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 8,
+      "pred": 8,
+      "gt": 8,
+      "role_accuracy": 0.875,
+      "missing": [],
+      "extra": [],
+      "role_errors": [
+        {
+          "pin": "CONT",
+          "pred": "CONTROL",
+          "gt": "REFERENCE"
+        }
+      ]
+    },
+    "dependencies_full_pdg": {
+      "precision": 1.0,
+      "recall": 0.538,
+      "f1": 0.7,
+      "tp": 7,
+      "pred": 7,
+      "gt": 13,
+      "missing": [
+        [
+          "CONT",
+          "DISCH"
+        ],
+        [
+          "GND",
+          "DISCH"
+        ],
+        [
+          "GND",
+          "OUT"
+        ],
+        [
+          "THRES",
+          "DISCH"
+        ],
+        [
+          "TRIG",
+          "DISCH"
+        ],
+        [
+          "VCC",
+          "CONT"
+        ]
+      ],
+      "spurious": []
+    },
+    "dependencies_datasheet_only": {
+      "precision": 1.0,
+      "recall": 0.538,
+      "f1": 0.7,
+      "tp": 7,
+      "pred": 7,
+      "gt": 13
+    },
+    "schedule_consistency": {
+      "ratio": 1.0,
+      "checked": 13,
+      "violations": []
+    },
+    "spec_rows": {
+      "precision": 0.98,
+      "recall": 0.98,
+      "f1": 0.98,
+      "tp": 49,
+      "pred": 50,
+      "gt": 50
+    },
+    "electrical_spec_recall": 1.0,
+    "spec_value_accuracy": 0.906,
+    "spec_category_accuracy": 1.0,
+    "category_confusion": {
+      "ELECTRICAL": {
+        "ELECTRICAL": 32
+      },
+      "ABS_MAX": {
+        "ABS_MAX": 7
+      },
+      "ESD": {
+        "ESD": 2
+      },
+      "RECOMMENDED": {
+        "RECOMMENDED": 3
+      },
+      "THERMAL": {
+        "THERMAL": 5
+      }
+    },
+    "nonelectrical_leak_rate": 0.0,
+    "timing": {
+      "recall": 1.0,
+      "items": [
+        {
+          "symbol": "tr",
+          "found": true
+        },
+        {
+          "symbol": "tf",
+          "found": true
+        }
+      ],
+      "pdg_timing_specs": {
+        "turnon_settling_us": null,
+        "propagation_delay_us": null,
+        "slew_rate_v_us": null,
+        "bandwidth_mhz": null,
+        "sources": {}
+      },
+      "pdg_uses_datasheet_delay": false
+    }
+  },
+  "provenance_audit": {
+    "mode": "groundtruth_free_provenance",
+    "fidelity_score_pct": 81.0,
+    "status": "ACCEPTABLE",
+    "pin_provenance": {
+      "pins": 8,
+      "grounded": 8,
+      "grounded_pct": 100.0,
+      "ungrounded": []
+    },
+    "spec_provenance": {
+      "specs": 50,
+      "grounded": 48,
+      "grounded_pct": 96.0,
+      "by_category": {
+        "ABS_MAX": 7,
+        "ESD": 2,
+        "RECOMMENDED": 3,
+        "THERMAL": 6,
+        "ELECTRICAL": 32
+      },
+      "ungrounded_examples": [
+        {
+          "symbol": "VI",
+          "category": "ABS_MAX",
+          "page": 4,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "R\u03b8JC(bot)",
+          "category": "THERMAL",
+          "page": 5,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        }
+      ]
+    },
+    "topological_validity": {
+      "is_dag": true,
+      "unreachable_outputs": [],
+      "isolated_pins": []
+    },
+    "edge_origin": {
+      "edges": 15,
+      "datasheet_derived": 7,
+      "rule_injected": 8,
+      "datasheet_pct": 46.7
+    },
+    "timing_grounding": {
+      "delay_grounded_edges": 0,
+      "grounded_pct": 0.0,
+      "timing_specs_used": {
+        "turnon_settling_us": null,
+        "propagation_delay_us": null,
+        "slew_rate_v_us": null,
+        "bandwidth_mhz": null,
+        "sources": {}
+      }
+    },
+    "edge_details": [
+      {
+        "from": "GND",
+        "to": "RESET",
+        "delay_us": 5.0,
+        "type": "TO_CONTROL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Control threshold settling"
+      },
+      {
+        "from": "GND",
+        "to": "CONT",
+        "delay_us": 5.0,
+        "type": "TO_CONTROL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Control threshold settling"
+      },
+      {
+        "from": "TRIG",
+        "to": "OUT",
+        "delay_us": 50.0,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "TRIG < \u00bd CONT sets output high and discharge open"
+      },
+      {
+        "from": "RESET",
+        "to": "OUT",
+        "delay_us": 50.0,
+        "type": "CONTROL_GATE",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "Active low reset input forces output and discharge low"
+      },
+      {
+        "from": "RESET",
+        "to": "DISCH",
+        "delay_us": 50.0,
+        "type": "CONTROL_GATE",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "Active low reset input forces output and discharge low"
+      },
+      {
+        "from": "RESET",
+        "to": "TRIG",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "RESET",
+        "to": "THRES",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "CONT",
+        "to": "OUT",
+        "delay_us": 50.0,
+        "type": "FEEDBACK_LOOP",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "Controls comparator thresholds, Outputs 2/3 \u00d7 VCC"
+      },
+      {
+        "from": "CONT",
+        "to": "TRIG",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "CONT",
+        "to": "THRES",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "THRES",
+        "to": "OUT",
+        "delay_us": 50.0,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "THRES > CONT sets output low and discharge low"
+      },
+      {
+        "from": "VCC",
+        "to": "OUT",
+        "delay_us": 50.0,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "Operation is specified for supplies of 5V to 15V"
+      },
+      {
+        "from": "VCC",
+        "to": "DISCH",
+        "delay_us": 50.0,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "Maximum output sink and discharge sink current are greater for higher VCC"
+      },
+      {
+        "from": "VCC",
+        "to": "RESET",
+        "delay_us": 5.0,
+        "type": "TO_CONTROL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Control threshold settling"
+      },
+      {
+        "from": "VCC",
+        "to": "CONT",
+        "delay_us": 5.0,
+        "type": "TO_CONTROL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Control threshold settling"
+      }
+    ],
+    "pin_coverage": {
+      "coverage_pct": 100.0
+    }
+  },
+  "schedule_us": {
+    "GND": 0.0,
+    "VCC": 0.0,
+    "RESET": 5.0,
+    "CONT": 5.0,
+    "DISCH": 55.0,
+    "TRIG": 7.0,
+    "THRES": 7.0,
+    "OUT": 57.0
+  }
+}

@@ -1,0 +1,105 @@
+
+.subckt XX555_PRECISION_TIMERS CONT DISCH GND NC OUT RESET THRES TRIG VCC
+
+* --- Model Definitions ---
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u GAMMA=0.5 PHI=0.6 LAMBDA=0.01)
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.5 PHI=0.6 LAMBDA=0.01)
+.model QNPN NPN (IS=1e-14 BF=100 VAF=100 IKF=0.1 ISE=1e-13 NE=1.3 BR=10 VAR=100 IKR=0.01 ISC=1e-13 NC=1.2 RB=10 RC=1 RE=0.1 CJE=1p CJC=0.5p TF=0.3n TR=6n)
+.model QPNP PNP (IS=1e-14 BF=50 VAF=50 IKF=0.05 ISE=1e-13 NE=1.3 BR=5 VAR=50 IKR=0.005 ISC=1e-13 NC=1.2 RB=20 RC=2 RE=0.2 CJE=2p CJC=1p TF=0.6n TR=12n)
+
+* --- Internal Voltage Divider for Reference Levels ---
+* R1, R2, R3 form a voltage divider to create 2/3 VCC and 1/3 VCC.
+* CONT pin is connected to the 2/3 VCC node.
+R1 VCC cont_node 5k
+R2 cont_node trig_ref 5k
+R3 trig_ref GND 5k
+
+* --- Threshold Comparator (Comp1): THRES vs CONT (2/3 VCC) ---
+* Output drives the Reset (R) input of the SR Flip-Flop
+* If THRES > CONT, Comp1_out goes high (resets FF)
+M1 comp1_out_n THRES comp1_src GND NMOS W=100u L=1u
+M2 comp1_out_n CONT comp1_src GND NMOS W=100u L=1u
+M3 VCC comp1_out_n VCC comp1_load PMOS W=50u L=1u
+M4 VCC CONT VCC comp1_load PMOS W=50u L=1u
+* Current source for differential pair
+M9 comp1_src comp1_bias GND GND NMOS W=20u L=1u
+M10 VCC comp1_bias VCC VCC PMOS W=40u L=1u
+* Output stage to drive FF reset
+M13 comp1_out comp1_out_n GND GND NMOS W=20u L=1u
+M14 VCC comp1_out_n VCC comp1_out PMOS W=40u L=1u
+
+* --- Trigger Comparator (Comp2): TRIG vs 1/3 VCC (trig_ref) ---
+* Output drives the Set (S) input of the SR Flip-Flop
+* If TRIG < trig_ref, Comp2_out goes high (sets FF)
+M5 comp2_out_n trig_ref comp2_src GND NMOS W=100u L=1u
+M6 comp2_out_n TRIG comp2_src GND NMOS W=100u L=1u
+M7 VCC comp2_out_n VCC comp2_load PMOS W=50u L=1u
+M8 VCC trig_ref VCC comp2_load PMOS W=50u L=1u
+* Current source for differential pair
+M11 comp2_src comp2_bias GND GND NMOS W=20u L=1u
+M12 VCC comp2_bias VCC VCC PMOS W=40u L=1u
+* Output stage to drive FF set
+M15 comp2_out comp2_out_n GND GND NMOS W=20u L=1u
+M16 VCC comp2_out_n VCC comp2_out PMOS W=40u L=1u
+
+* --- Bias for Comparators ---
+* Simple current mirror for bias
+M_BIAS_NMOS_REF comp1_bias VCC GND GND NMOS W=10u L=1u
+M_BIAS_NMOS_OUT comp2_bias comp1_bias GND GND NMOS W=10u L=1u
+R_BIAS VCC comp1_bias 100k ; Sets reference current
+
+* --- SR Flip-Flop (NAND-based with active low inputs) ---
+* Set (S) input: comp2_out (active high, from TRIG comparator)
+* Reset (R) input: ff_reset_in (active high, from THRES comparator OR RESET)
+* Q output: ff_q_out
+* Q_bar output: ff_q_bar_out
+
+* NAND1: (S_in AND Q_bar_in)' = Q_out
+M21 ff_q_out ff_set_in ff_q_bar_out GND NMOS W=10u L=1u
+M22 ff_q_out ff_q_bar_out ff_q_bar_out GND NMOS W=10u L=1u ; This is incorrect for NAND, should be series
+M21_a ff_q_out ff_set_in ff_q_bar_out GND NMOS W=10u L=1u
+M21_b ff_q_out ff_q_bar_out GND GND NMOS W=10u L=1u ; Corrected NAND structure
+M23 VCC ff_q_out VCC ff_set_in PMOS W=20u L=1u
+M24 VCC ff_q_out VCC ff_q_bar_out PMOS W=20u L=1u
+
+* NAND2: (R_in AND Q_in)' = Q_bar_out
+M25 ff_q_bar_out ff_reset_in ff_q_out GND NMOS W=10u L=1u
+M26 ff_q_bar_out ff_q_out GND GND NMOS W=10u L=1u ; Corrected NAND structure
+M27 VCC ff_q_bar_out VCC ff_reset_in PMOS W=20u L=1u
+M28 VCC ff_q_bar_out VCC ff_q_out PMOS W=20u L=1u
+
+* Input logic for FF Set (S)
+* comp2_out is active high when TRIG < 1/3 VCC
+B_FF_SET ff_set_in GND V = { V(comp2_out) }
+
+* Input logic for FF Reset (R)
+* ff_reset_in is active high when THRES > 2/3 VCC OR RESET is low
+* RESET is active low, so invert it first
+M29 reset_inv RESET GND GND NMOS W=10u L=1u
+M30 VCC RESET VCC reset_inv PMOS W=20u L=1u
+* Combine comp1_out (THRES > 2/3 VCC) and inverted RESET
+B_FF_RESET ff_reset_in GND V = { V(comp1_out) | V(reset_inv) }
+
+* --- Output Driver ---
+* Driven by ff_q_out (Q output of FF)
+* High current push-pull stage
+Q_OUT_PNP VCC out_drv_p OUT QPNP ; Sourcing
+Q_OUT_NPN OUT out_drv_n GND QNPN ; Sinking
+
+* Inverter to drive PNP base (active low for sourcing)
+M_OUT_INV_N out_drv_p ff_q_out GND GND NMOS W=50u L=1u
+M_OUT_INV_P VCC ff_q_out VCC out_drv_p PMOS W=100u L=1u
+
+* Buffer to drive NPN base (active high for sinking)
+M_OUT_BUF_N out_drv_n ff_q_out GND GND NMOS W=50u L=1u
+M_OUT_BUF_P VCC ff_q_out VCC out_drv_n PMOS W=100u L=1u
+
+* --- Discharge Transistor ---
+* Driven by ff_q_bar_out (Q-bar output of FF)
+* Open collector NPN transistor
+Q_DISCH DISCH ff_q_bar_out GND QNPN ; Sized for 8mA with low Vce_sat
+
+* --- NC Pin ---
+* No internal connection, left floating.
+
+.ends XX555_PRECISION_TIMERS

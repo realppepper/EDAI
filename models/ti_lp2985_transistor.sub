@@ -1,0 +1,77 @@
+* TI LP2985-3.3 Transistor Model - JFET Preregulated Architecture
+.subckt LP2985_33 VIN GND ON_OFF BYPASS VOUT
+
+.model QNPN NPN (IS=1e-15 BF=200 VAF=150 CJC=1p CJE=2p TF=0.3n TR=6n)
+.model QPNP PNP (IS=1e-15 BF=100 VAF=80 CJC=2p CJE=4p TF=0.5n TR=10n)
+.model MNMOS NMOS (LEVEL=1 VTO=0.70 KP=120u LAMBDA=0.005)
+.model MPMOS PMOS (LEVEL=1 VTO=-0.70 KP=60u LAMBDA=0.005)
+.model MPASS PMOS (LEVEL=1 VTO=-0.75 KP=80u W=16000u L=1u LAMBDA=0.005)
+.model JCCS NJF (VTO=-1.5 BETA=5u LAMBDA=0.001)
+
+* 1. Enable / Shutdown & Logic Control
+R_en_pd ON_OFF GND 1MEG
+R_en1 ON_OFF N_EN_B 130k
+R_en2 N_EN_B GND 68k
+Q_en N_EN_C N_EN_B GND QNPN
+R_en_c VIN N_EN_C 680k
+M_en_p V_BIAS_EN N_EN_C VIN VIN MPMOS W=60u L=1u
+R_bias_bleed V_BIAS_EN GND 5MEG
+R_gate_off VIN N_GATE 2MEG
+
+* Master Bias Branch with JFET constant current
+J_bias V_BIAS_EN N_BIAS_N N_BIAS_N JCCS
+M_bias_diode N_BIAS_N N_BIAS_N GND GND MNMOS W=20u L=2u
+
+* Internal Preregulated Rail (~2.4V) for Bandgap with JFET constant current
+J_pz V_BIAS_EN N_PZ N_PZ JCCS
+C_pz N_PZ GND 470n
+Q_pz1 N_PZ  N_PZ  N_PZ1 QNPN
+Q_pz2 N_PZ1 N_PZ1 N_PZ2 QNPN
+Q_pz3 N_PZ2 N_PZ2 N_PZ3 QNPN
+Q_pz4 N_PZ3 N_PZ3 GND   QNPN
+Q_pbuf V_BIAS_EN N_PZ V_PREREG QNPN
+R_pbuf_load V_PREREG GND 80k
+
+* 2. Bandgap Reference Core (V_BG = 1.230V)
+M_bg_l1 N_BG_C1 N_BG_C1 V_PREREG V_PREREG MPMOS W=40u L=2u
+M_bg_l2 N_BG_C2 N_BG_C1 V_PREREG V_PREREG MPMOS W=40u L=2u
+
+Q_bg1 N_BG_C1 N_BG_CORE N_BG_E1 QNPN
+Q_bg2 N_BG_C2 N_BG_CORE N_BG_E2 QNPN 8
+
+R_bg_dvbe N_BG_E2 N_BG_E1 780
+R_bg_sum N_BG_E1 GND 15k
+
+Q_bg_drv1 N_BG_DRV_C N_BG_C2 GND QNPN
+R_bg_drvc V_PREREG N_BG_DRV_C 80k
+Q_bg_out V_PREREG N_BG_DRV_C N_BG_CORE QNPN
+R_bg_load N_BG_CORE GND 100k
+C_bg_comp N_BG_DRV_C N_BG_C2 30p
+
+R_byp_int N_BG_CORE BYPASS 100k
+
+* 3. Differential Error Amplifier with High Gain
+M_ea_tail N_EA_TAIL N_BIAS_N GND GND MNMOS W=35u L=2u
+M_ea_ref N_GATE  BYPASS N_EA_TAIL GND MNMOS W=80u L=1u
+M_ea_fb  N_EA_C1 V_FB   N_EA_TAIL GND MNMOS W=80u L=1u
+
+R_deg1 VIN N_DEG1 2.5k
+R_deg2 VIN N_DEG2 2.5k
+M_ea_l1 N_EA_C1 N_EA_C1 N_DEG1 VIN MPMOS W=50u L=1.5u
+M_ea_l2 N_GATE  N_EA_C1 N_DEG2 VIN MPMOS W=50u L=1.5u
+
+C_gate_comp N_GATE VIN 20p
+R_gate_damp N_GATE N_GATE_D 500
+C_gate_damp N_GATE_D VIN 20p
+
+* 4. Power Pass Transistor & Short-Circuit Protection
+R_SENSE VIN N_PASS_S 1.40
+M_PASS VOUT N_GATE N_PASS_S N_PASS_S MPASS
+Q_CL N_GATE N_PASS_S VIN QPNP
+
+* 5. Feedback Resistor Divider Network
+R_FB1 VOUT V_FB 208.2k
+R_FB2 V_FB GND 100k
+C_FF VOUT V_FB 100p
+
+.ends LP2985_33

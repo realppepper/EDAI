@@ -1,0 +1,501 @@
+{
+  "ic": "opa2134",
+  "model": "deepseek-ai/deepseek-v4.1-flash",
+  "llm_seconds": 32.5,
+  "llm_calls": [
+    {
+      "ts": 1792564342.5035002,
+      "tag": "hkg_specs_p5",
+      "provider": "nim",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "attempt": 1,
+      "status": "http_429",
+      "total_s": 0.64,
+      "error": "HTTP 429: {\"status\":429,\"title\":\"Too Many Requests\"}"
+    },
+    {
+      "ts": 1792564344.8368874,
+      "tag": "hkg_specs_p22",
+      "provider": "nim",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 2.77,
+      "total_s": 2.82,
+      "completion_tokens": 9,
+      "prompt_tokens": 582,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792564353.3535116,
+      "tag": "hkg_specs_p8",
+      "provider": "nim",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 2.81,
+      "total_s": 11.37,
+      "completion_tokens": 1219,
+      "prompt_tokens": 755,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792564353.3692544,
+      "tag": "hkg_specs_p6",
+      "provider": "nim",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 3.12,
+      "total_s": 11.45,
+      "completion_tokens": 658,
+      "prompt_tokens": 999,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792564355.1093209,
+      "tag": "hkg_pins",
+      "provider": "nim",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 3.12,
+      "total_s": 13.27,
+      "completion_tokens": 748,
+      "prompt_tokens": 3185,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792564367.413003,
+      "tag": "hkg_specs_p5",
+      "provider": "nim",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "attempt": 2,
+      "status": "ok",
+      "ttft_s": 1.95,
+      "total_s": 22.91,
+      "completion_tokens": 1604,
+      "prompt_tokens": 1074,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792564374.3248832,
+      "tag": "hkg_specs_p7",
+      "provider": "nim",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 2.87,
+      "total_s": 32.37,
+      "completion_tokens": 3541,
+      "prompt_tokens": 1190,
+      "finish_reason": "stop"
+    }
+  ],
+  "groundtruth_comparison": {
+    "ic": "OPA2134",
+    "score": 68.0,
+    "pins": {
+      "precision": 0.875,
+      "recall": 0.875,
+      "f1": 0.875,
+      "tp": 7,
+      "pred": 8,
+      "gt": 8,
+      "role_accuracy": 0.571,
+      "missing": [
+        "OUT B"
+      ],
+      "extra": [
+        "NC_8"
+      ],
+      "role_errors": [
+        {
+          "pin": "OUT A",
+          "pred": "NC",
+          "gt": "OUTPUT"
+        },
+        {
+          "pin": "+IN B",
+          "pred": "NC",
+          "gt": "SIGNAL"
+        },
+        {
+          "pin": "-IN B",
+          "pred": "OUTPUT",
+          "gt": "SIGNAL"
+        }
+      ]
+    },
+    "dependencies_full_pdg": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "tp": 0,
+      "pred": 4,
+      "gt": 8,
+      "missing": [
+        [
+          "+IN A",
+          "OUT A"
+        ],
+        [
+          "+IN B",
+          "OUT B"
+        ],
+        [
+          "-IN A",
+          "OUT A"
+        ],
+        [
+          "-IN B",
+          "OUT B"
+        ],
+        [
+          "V+",
+          "OUT A"
+        ],
+        [
+          "V+",
+          "OUT B"
+        ],
+        [
+          "V-",
+          "OUT A"
+        ],
+        [
+          "V-",
+          "OUT B"
+        ]
+      ],
+      "spurious": [
+        [
+          "+IN A",
+          "-IN B"
+        ],
+        [
+          "-IN A",
+          "-IN B"
+        ],
+        [
+          "V+",
+          "-IN B"
+        ],
+        [
+          "V-",
+          "-IN B"
+        ]
+      ]
+    },
+    "dependencies_datasheet_only": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "tp": 0,
+      "pred": 4,
+      "gt": 8
+    },
+    "schedule_consistency": {
+      "ratio": 0.0,
+      "checked": 4,
+      "violations": [
+        [
+          "+IN A",
+          "OUT A"
+        ],
+        [
+          "-IN A",
+          "OUT A"
+        ],
+        [
+          "V-",
+          "OUT A"
+        ],
+        [
+          "V+",
+          "OUT A"
+        ]
+      ]
+    },
+    "spec_rows": {
+      "precision": 0.914,
+      "recall": 0.914,
+      "f1": 0.914,
+      "tp": 53,
+      "pred": 58,
+      "gt": 58
+    },
+    "electrical_spec_recall": 0.897,
+    "spec_value_accuracy": 0.79,
+    "spec_category_accuracy": 1.0,
+    "category_confusion": {
+      "ABS_MAX": {
+        "ABS_MAX": 7
+      },
+      "ESD": {
+        "ESD": 3
+      },
+      "RECOMMENDED": {
+        "RECOMMENDED": 3
+      },
+      "THERMAL": {
+        "THERMAL": 5
+      },
+      "ELECTRICAL": {
+        "ELECTRICAL": 35
+      }
+    },
+    "nonelectrical_leak_rate": 0.0,
+    "timing": {
+      "recall": 1.0,
+      "items": [
+        {
+          "symbol": "GBW",
+          "found": true
+        },
+        {
+          "symbol": "SR",
+          "found": true
+        },
+        {
+          "symbol": "ts",
+          "found": true
+        },
+        {
+          "symbol": "ts",
+          "found": true
+        },
+        {
+          "symbol": "FPBW",
+          "found": true
+        },
+        {
+          "symbol": "tOR",
+          "found": true
+        }
+      ],
+      "pdg_timing_specs": {
+        "turnon_settling_us": 1.0,
+        "propagation_delay_us": null,
+        "slew_rate_v_us": 20.0,
+        "bandwidth_mhz": 1.3,
+        "sources": {
+          "bandwidth_mhz": "FPBW",
+          "slew_rate_v_us": "SR",
+          "turnon_settling_us": "Settling time"
+        }
+      },
+      "pdg_uses_datasheet_delay": true
+    }
+  },
+  "provenance_audit": {
+    "mode": "groundtruth_free_provenance",
+    "fidelity_score_pct": 83.6,
+    "status": "ACCEPTABLE",
+    "pin_provenance": {
+      "pins": 8,
+      "grounded": 8,
+      "grounded_pct": 100.0,
+      "ungrounded": []
+    },
+    "spec_provenance": {
+      "specs": 58,
+      "grounded": 49,
+      "grounded_pct": 84.5,
+      "by_category": {
+        "ABS_MAX": 7,
+        "ESD": 5,
+        "RECOMMENDED": 3,
+        "THERMAL": 6,
+        "ELECTRICAL": 37
+      },
+      "ungrounded_examples": [
+        {
+          "symbol": "VIN",
+          "category": "ABS_MAX",
+          "page": 5,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "ISC",
+          "category": "ABS_MAX",
+          "page": 5,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "R\u03b8JC(bot)",
+          "category": "THERMAL",
+          "page": 6,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "VCM",
+          "category": "ELECTRICAL",
+          "page": 7,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "Differential",
+          "category": "ELECTRICAL",
+          "page": 7,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "Common-mode",
+          "category": "ELECTRICAL",
+          "page": 7,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "VO",
+          "category": "ELECTRICAL",
+          "page": 8,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "VO",
+          "category": "ELECTRICAL",
+          "page": 8,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "Capacitive load drive",
+          "category": "ELECTRICAL",
+          "page": 8,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        }
+      ]
+    },
+    "topological_validity": {
+      "is_dag": true,
+      "unreachable_outputs": [],
+      "isolated_pins": []
+    },
+    "edge_origin": {
+      "edges": 8,
+      "datasheet_derived": 4,
+      "rule_injected": 4,
+      "datasheet_pct": 50.0
+    },
+    "timing_grounding": {
+      "delay_grounded_edges": 4,
+      "grounded_pct": 50.0,
+      "timing_specs_used": {
+        "turnon_settling_us": 1.0,
+        "propagation_delay_us": null,
+        "slew_rate_v_us": 20.0,
+        "bandwidth_mhz": 1.3,
+        "sources": {
+          "bandwidth_mhz": "FPBW",
+          "slew_rate_v_us": "SR",
+          "turnon_settling_us": "Settling time"
+        }
+      }
+    },
+    "edge_details": [
+      {
+        "from": "NIN",
+        "to": "OUT",
+        "delay_us": 1.0,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": "Settling time",
+        "condition": "Inverting input drives output of same channel"
+      },
+      {
+        "from": "PIN",
+        "to": "OUT",
+        "delay_us": 1.0,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": "Settling time",
+        "condition": "Noninverting input drives output of same channel"
+      },
+      {
+        "from": "V_N",
+        "to": "OUT",
+        "delay_us": 1.0,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": "Settling time",
+        "condition": "Negative supply must be applied for output to function"
+      },
+      {
+        "from": "V_N",
+        "to": "NIN",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "V_N",
+        "to": "PIN",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "V_P",
+        "to": "OUT",
+        "delay_us": 1.0,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": "Settling time",
+        "condition": "Positive supply must be applied for output to function"
+      },
+      {
+        "from": "V_P",
+        "to": "NIN",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "V_P",
+        "to": "PIN",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      }
+    ],
+    "pin_coverage": {
+      "coverage_pct": 100.0
+    }
+  },
+  "schedule_us": {
+    "NC": 0.0,
+    "V_N": 0.0,
+    "NC_5": 0.0,
+    "V_P": 0.0,
+    "NC_8": 0.0,
+    "NIN": 2.0,
+    "PIN": 2.0,
+    "OUT": 3.0
+  }
+}

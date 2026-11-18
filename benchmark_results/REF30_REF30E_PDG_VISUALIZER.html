@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Port Dependency Graph (PDG) — REF30/REF30E</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    body { background: #090d16; color: #f8fafc; font-family: ui-sans-serif, system-ui, sans-serif; }
+    .node-pin { transition: all 0.3s ease; }
+    .node-pin:hover { transform: scale(1.08); }
+  </style>
+</head>
+<body class="p-6 min-h-screen">
+  <div class="max-w-5xl mx-auto space-y-6">
+
+    <header class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold text-white flex items-center gap-2">
+          Port Dependency Graph (PDG) Visualizer
+          <span class="text-xs px-2.5 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/30">REF30/REF30E</span>
+        </h1>
+        <p class="text-xs text-slate-400 mt-1">Datasheet Source: <span class="font-mono text-slate-300">ref30e.pdf</span> | Extracted Pins: 3</p>
+      </div>
+
+      <!-- Timeline Controls -->
+      <div class="flex items-center gap-3 bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl text-xs">
+        <button onclick="togglePlay()" id="btnPlay" class="text-sky-400 font-bold hover:text-sky-300 flex items-center gap-1">
+          <span>Play &sigma;(p)</span>
+        </button>
+        <input type="range" id="slider" min="0" max="150.0" step="3.0" value="0" oninput="setTime(parseFloat(this.value))" class="w-32 accent-sky-400">
+        <span id="timeVal" class="font-mono text-sky-300 font-bold w-16 text-right">0.0 &mu;s</span>
+      </div>
+    </header>
+
+    <!-- Graph Container -->
+    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 flex items-center justify-center min-h-[340px] shadow-inner overflow-x-auto">
+      <svg class="w-full h-full text-slate-200" viewBox="0 0 920 340" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <marker id="pdg-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+  </marker>
+  <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+    <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#38bdf8" flood-opacity="0.15"/>
+  </filter>
+</defs>
+<!-- Column Stage Labels -->
+  <text x="130" y="24" text-anchor="middle" font-size="10" font-weight="bold" fill="#64748b" letter-spacing="1">1. POWER &amp; GROUND</text>
+  <text x="380" y="24" text-anchor="middle" font-size="10" font-weight="bold" fill="#64748b" letter-spacing="1">2. BIAS &amp; REFERENCE</text>
+  <text x="610" y="24" text-anchor="middle" font-size="10" font-weight="bold" fill="#64748b" letter-spacing="1">3. SIGNAL &amp; CONTROL</text>
+  <text x="820" y="24" text-anchor="middle" font-size="10" font-weight="bold" fill="#64748b" letter-spacing="1">4. OUTPUT &amp; STABILIZATION</text>
+<path d="M 185 55 C 475.0 55, 475.0 55, 765 55" fill="none" stroke="#334155" stroke-width="1.6" stroke-dasharray="4,3" marker-end="url(#pdg-arr)"><title>IN &rarr; OUT | &delta;=120.0&mu;s (REF30, To 0.1% with CL = 1µF)</title></path>
+<path d="M 185 111 C 475.0 111, 475.0 55, 765 55" fill="none" stroke="#334155" stroke-width="1.6" stroke-dasharray="4,3" marker-end="url(#pdg-arr)"><title>GND &rarr; OUT | &delta;=50.0&mu;s (Regulation & Closed-Loop Settling)</title></path>
+<g class="node-pin" id="node-IN">
+  <rect x="75" y="33" width="110" height="44" rx="10" fill="#0f172a" stroke="#38bdf8" stroke-width="1.8" filter="url(#glow)"/>
+  <text x="130" y="51" text-anchor="middle" font-size="11" font-weight="bold" fill="#f8fafc">IN</text>
+  <text x="130" y="67" text-anchor="middle" font-size="9" fill="#38bdf8" font-family="monospace">&sigma;=0.0 &mu;s</text>
+</g>
+<g class="node-pin" id="node-OUT">
+  <rect x="765" y="33" width="110" height="44" rx="10" fill="#0f172a" stroke="#34d399" stroke-width="1.8" filter="url(#glow)"/>
+  <text x="820" y="51" text-anchor="middle" font-size="11" font-weight="bold" fill="#f8fafc">OUT</text>
+  <text x="820" y="67" text-anchor="middle" font-size="9" fill="#34d399" font-family="monospace">&sigma;=120.0 &mu;s</text>
+</g>
+<g class="node-pin" id="node-GND">
+  <rect x="75" y="89" width="110" height="44" rx="10" fill="#0f172a" stroke="#94a3b8" stroke-width="1.8" filter="url(#glow)"/>
+  <text x="130" y="107" text-anchor="middle" font-size="11" font-weight="bold" fill="#f8fafc">GND</text>
+  <text x="130" y="123" text-anchor="middle" font-size="9" fill="#94a3b8" font-family="monospace">&sigma;=0.0 &mu;s</text>
+</g>
+</svg>
+    </div>
+
+    <!-- Activation Schedule Table -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Topological Settling Sequence &sigma;(p)</h3>
+      <table class="w-full text-xs text-left">
+        <thead class="text-slate-400 uppercase text-[10px] border-b border-slate-800">
+          <tr>
+            <th class="py-2">Pin Name</th>
+            <th class="py-2">Physical Role</th>
+            <th class="py-2">Direction</th>
+            <th class="py-2">Settling Delay</th>
+            <th class="py-2">State</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800 text-slate-300" id="tableBody">
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    const PINS = [{"name": "IN", "role": "POWER", "direction": "INPUT", "description": "Input supply voltage", "nominal_voltage": null, "voltage_range": {"min": null, "max": null, "typ": null}, "load_capacitance_uf": null}, {"name": "OUT", "role": "OUTPUT", "direction": "OUTPUT", "description": "Reference output voltage", "nominal_voltage": null, "voltage_range": {"min": null, "max": null, "typ": null}, "load_capacitance_uf": null}, {"name": "GND", "role": "GROUND", "direction": "INPUT", "description": "Ground", "nominal_voltage": null, "voltage_range": {"min": null, "max": null, "typ": null}, "load_capacitance_uf": null}];
+    const SCHED = {"IN": 0.0, "GND": 0.0, "OUT": 0.00011999999999999999};
+    let curTime = 0.0;
+    let timer = null;
+
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+      PINS.forEach(p => {
+        const delay = SCHED[p.name] || 0.0;
+        const d_us = delay * 1e6;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="py-2 font-mono font-bold text-sky-400">${p.name}</td>
+          <td class="py-2">${p.role || 'SIGNAL'}</td>
+          <td class="py-2 text-slate-400">${p.direction || 'INPUT'}</td>
+          <td class="py-2 font-mono">${d_us.toFixed(1)} &mu;s</td>
+          <td class="py-2" id="state-${p.name}">Waiting</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      setTime(0.0);
+    }
+
+    function setTime(val) {
+      curTime = val;
+      document.getElementById('slider').value = val;
+      document.getElementById('timeVal').textContent = `${val.toFixed(1)} μs`;
+
+      PINS.forEach(p => {
+        const delay = (SCHED[p.name] || 0.0) * 1e6;
+        const stateEl = document.getElementById(`state-${p.name}`);
+        const nodeG = document.getElementById(`node-${p.name}`);
+        if (curTime >= delay) {
+          if (stateEl) stateEl.innerHTML = '<span class="text-emerald-400 font-bold">Active & Settled</span>';
+          if (nodeG) nodeG.querySelector('rect').setAttribute('fill', '#1e293b');
+        } else {
+          if (stateEl) stateEl.innerHTML = '<span class="text-slate-500">Waiting</span>';
+          if (nodeG) nodeG.querySelector('rect').setAttribute('fill', '#0f172a');
+        }
+      });
+    }
+
+    function togglePlay() {
+      const btn = document.getElementById('btnPlay');
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+        btn.textContent = 'Play σ(p)';
+      } else {
+        btn.textContent = 'Pause';
+        if (curTime >= 150.0) curTime = 0.0;
+        timer = setInterval(() => {
+          curTime += 3.0;
+          if (curTime > 150.0) {
+            curTime = 150.0;
+            togglePlay();
+          }
+          setTime(curTime);
+        }, 200);
+      }
+    }
+
+    window.onload = renderTable;
+  </script>
+</body>
+</html>

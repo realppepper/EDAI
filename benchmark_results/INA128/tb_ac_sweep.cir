@@ -1,0 +1,206 @@
+.options gmin=1e-12 cshunt=1e-15
+* LTspice Testbench for INA12X Specifications
+
+* Subcircuit Inclusion
+.include "INA12X_iter2.cir"
+
+* Power Supplies and Grounding
+V_pos V_pos 0 DC 15V
+V_neg V_neg 0 DC -15V
+VGND 0 0 0
+
+* Power-up / Activation Schedule
+* V_ (V_pos, V_neg) at 0.00 us
+* RG at 5.00 us
+* REF at 7.00 us
+* VIN_ (VIN_P, VIN_N) at 7.00 us
+* VO at 8.00 us (output is driven by DUT, not a source)
+
+* DUT Instance
+XDUT REF RG V_ V_ VIN_ VIN_ VO INA12X
+
+* --- PSRR Measurements ---
+* PSRR is typically measured by varying the supply voltage and observing the change in output voltage.
+* We will use a small AC ripple on the DC supply for AC analysis.
+* For DC PSRR, we would sweep the DC supply and measure the output offset.
+* Given the AC analysis directive, we'll focus on AC PSRR.
+
+* Common setup for PSRR: G=1 (RG open or very large), V_in = 0V (or common mode).
+* We'll use a large RG for G=1, and a small RG for other gains.
+* For PSRR, we'll apply an AC signal to the positive supply and measure the output.
+* Then repeat for the negative supply.
+
+* PSRR (V_pos variation)
+* Conditions: VS = ±2.25V to ±18V. Let's use ±15V nominal.
+* Apply 1V AC to V_pos, keep V_neg stable.
+* Set VIN_P = VIN_N = 0V (or common mode).
+* Set REF = 0V.
+
+* PSRR for G=1 (RG open/large)
+* .param RG_val_G1 = 1Meg ; Large resistance for G=1
+* .param RG_val_G10 = 4.94k ; For G=10 (INA12x datasheet typically uses 4.94k for G=10)
+* .param RG_val_G100 = 499 ; For G=100
+* .param RG_val_G1000 = 49.9 ; For G=1000
+
+* Test 1: PSRR, G=1, V_pos variation
+V_pos_ac V_pos_ac 0 DC 15V AC 1V
+V_neg_psrr1 V_neg_psrr1 0 DC -15V
+V_ref_psrr1 REF_pin 0 DC 0V
+V_in_p_psrr1 VIN_P 0 DC 0V
+V_in_n_psrr1 VIN_N 0 DC 0V
+R_G_psrr1 RG_pin RG_pin_node 1Meg ; G=1
+R_G_psrr1_node RG_pin_node 0 1Meg ; Connect RG to 0 for G=1 (or leave open)
+
+XDUT_PSRR1 REF_pin RG_pin V_pos_ac V_neg_psrr1 VIN_P VIN_N VO_psrr1 INA12X
+
+.ac dec 20 1 100Meg
+.meas AC PSRR_pos_G1_SHE_INA12xP_U_typ FIND V(VO_psrr1) AT 1k ; Typ 0.2 uV/V, 1kHz
+.meas AC PSRR_pos_G1_SHE_INA12xP_U_max FIND V(VO_psrr1) AT 1k ; Max 1.0 uV/V, 1kHz
+.meas AC PSRR_pos_G1_SHE_INA12xPA_UA_typ FIND V(VO_psrr1) AT 1k ; Typ 2.0 uV/V, 1kHz
+.meas AC PSRR_pos_G1_FRE_INA12xU_typ FIND V(VO_psrr1) AT 1k ; Typ 0.1 uV/V, 1kHz
+.meas AC PSRR_pos_G1_FRE_INA12xU_max FIND V(VO_psrr1) AT 1k ; Max 0.4 uV/V, 1kHz
+.meas AC PSRR_pos_G1_FRE_INA12xUA_typ FIND V(VO_psrr1) AT 1k ; Typ 0.8 uV/V, 1kHz
+
+* Test 2: PSRR, G=1, V_neg variation
+V_pos_psrr2 V_pos_psrr2 0 DC 15V
+V_neg_ac V_neg_ac 0 DC -15V AC 1V
+V_ref_psrr2 REF_pin_psrr2 0 DC 0V
+V_in_p_psrr2 VIN_P_psrr2 0 DC 0V
+V_in_n_psrr2 VIN_N_psrr2 0 DC 0V
+R_G_psrr2 RG_pin_psrr2 RG_pin_psrr2_node 1Meg ; G=1
+R_G_psrr2_node RG_pin_psrr2_node 0 1Meg
+
+XDUT_PSRR2 REF_pin_psrr2 RG_pin_psrr2 V_pos_psrr2 V_neg_ac VIN_P_psrr2 VIN_N_psrr2 VO_psrr2 INA12X
+
+.meas AC PSRR_neg_G1_SHE_INA12xP_U_typ FIND V(VO_psrr2) AT 1k ; Typ 0.2 uV/V, 1kHz
+.meas AC PSRR_neg_G1_SHE_INA12xP_U_max FIND V(VO_psrr2) AT 1k ; Max 1.0 uV/V, 1kHz
+.meas AC PSRR_neg_G1_SHE_INA12xPA_UA_typ FIND V(VO_psrr2) AT 1k ; Typ 2.0 uV/V, 1kHz
+.meas AC PSRR_neg_G1_FRE_INA12xU_typ FIND V(VO_psrr2) AT 1k ; Typ 0.1 uV/V, 1kHz
+.meas AC PSRR_neg_G1_FRE_INA12xU_max FIND V(VO_psrr2) AT 1k ; Max 0.4 uV/V, 1kHz
+.meas AC PSRR_neg_G1_FRE_INA12xUA_typ FIND V(VO_psrr2) AT 1k ; Typ 0.8 uV/V, 1kHz
+
+* Note: The datasheet specifies PSRR in uV/V. The AC analysis directly gives Vout/Vin_supply.
+* So, the measured voltage V(VO_psrrX) is already in V/V. We need to convert to uV/V.
+* For example, .meas AC PSRR_pos_G1_SHE_INA12xP_U_typ_uV_V PARAM V(VO_psrr1)*1e6
+
+* PSRR / G (Output referred PSRR)
+* This implies dividing the output PSRR by the gain G.
+* We need to simulate for different gains. Let's pick G=10 for example.
+* RG for G=10: 4.94k (assuming typical INA12x values)
+
+* Test 3: PSRR / G, G=10, V_pos variation
+V_pos_ac_G10 V_pos_ac_G10 0 DC 15V AC 1V
+V_neg_psrr_G10 V_neg_psrr_G10 0 DC -15V
+V_ref_psrr_G10 REF_pin_G10 0 DC 0V
+V_in_p_psrr_G10 VIN_P_G10 0 DC 0V
+V_in_n_psrr_G10 VIN_N_G10 0 DC 0V
+R_G_psrr_G10 RG_pin_G10 RG_pin_G10_node 4.94k ; G=10
+R_G_psrr_G10_node RG_pin_G10_node 0 4.94k
+
+XDUT_PSRR_G10 REF_pin_G10 RG_pin_G10 V_pos_ac_G10 V_neg_psrr_G10 VIN_P_G10 VIN_N_G10 VO_psrr_G10 INA12X
+
+.meas AC PSRR_pos_G10_SHE_INA12xP_U_typ_div_G PARAM V(VO_psrr_G10)*1e6/10 AT 1k ; Typ 20.0 uV/V, 1kHz
+.meas AC PSRR_pos_G10_SHE_INA12xP_U_max_div_G PARAM V(VO_psrr_G10)*1e6/10 AT 1k ; Max 100.0 uV/V, 1kHz
+.meas AC PSRR_pos_G10_SHE_INA12xPA_UA_typ_div_G PARAM V(VO_psrr_G10)*1e6/10 AT 1k ; Typ 200.0 uV/V, 1kHz
+.meas AC PSRR_pos_G10_FRE_INA12xU_typ_div_G PARAM V(VO_psrr_G10)*1e6/10 AT 1k ; Typ 1.0 uV/V, 1kHz
+.meas AC PSRR_pos_G10_FRE_INA12xU_max_div_G PARAM V(VO_psrr_G10)*1e6/10 AT 1k ; Max 3.2 uV/V, 1kHz
+.meas AC PSRR_pos_G10_FRE_INA12xUA_typ_div_G PARAM V(VO_psrr_G10)*1e6/10 AT 1k ; Typ 6.4 uV/V, 1kHz
+
+* Test 4: PSRR / G, G=10, V_neg variation
+V_pos_psrr_G10_neg V_pos_psrr_G10_neg 0 DC 15V
+V_neg_ac_G10 V_neg_ac_G10 0 DC -15V AC 1V
+V_ref_psrr_G10_neg REF_pin_G10_neg 0 DC 0V
+V_in_p_psrr_G10_neg VIN_P_G10_neg 0 DC 0V
+V_in_n_psrr_G10_neg VIN_N_G10_neg 0 DC 0V
+R_G_psrr_G10_neg RG_pin_G10_neg RG_pin_G10_neg_node 4.94k ; G=10
+R_G_psrr_G10_neg_node RG_pin_G10_neg_node 0 4.94k
+
+XDUT_PSRR_G10_neg REF_pin_G10_neg RG_pin_G10_neg V_pos_psrr_G10_neg V_neg_ac_G10 VIN_P_G10_neg VIN_N_G10_neg VO_psrr_G10_neg INA12X
+
+.meas AC PSRR_neg_G10_SHE_INA12xP_U_typ_div_G PARAM V(VO_psrr_G10_neg)*1e6/10 AT 1k ; Typ 20.0 uV/V, 1kHz
+.meas AC PSRR_neg_G10_SHE_INA12xP_U_max_div_G PARAM V(VO_psrr_G10_neg)*1e6/10 AT 1k ; Max 100.0 uV/V, 1kHz
+.meas AC PSRR_neg_G10_SHE_INA12xPA_UA_typ_div_G PARAM V(VO_psrr_G10_neg)*1e6/10 AT 1k ; Typ 200.0 uV/V, 1kHz
+.meas AC PSRR_neg_G10_FRE_INA12xU_typ_div_G PARAM V(VO_psrr_G10_neg)*1e6/10 AT 1k ; Typ 1.0 uV/V, 1kHz
+.meas AC PSRR_neg_G10_FRE_INA12xU_max_div_G PARAM V(VO_psrr_G10_neg)*1e6/10 AT 1k ; Max 3.2 uV/V, 1kHz
+.meas AC PSRR_neg_G10_FRE_INA12xUA_typ_div_G PARAM V(VO_psrr_G10_neg)*1e6/10 AT 1k ; Typ 6.4 uV/V, 1kHz
+
+* --- CMRR Measurements ---
+* CMRR is measured by applying a common-mode voltage to both inputs and observing the output.
+* Conditions: ΔRS = 1 kΩ, VCM = ±13 V.
+* We'll use a DC sweep for VCM and measure the output change.
+* Then calculate CMRR = 20 * log10 (VCM_change / Vout_change * Gain).
+* Or, apply an AC common-mode signal and measure the AC output.
+* Given the AC analysis directive, we'll use AC common-mode.
+
+* Common-mode voltage source
+V_CM VCM 0 AC 1V ; Apply 1V AC common mode
+R_S_P VIN_P_cm VCM 500 ; Total 1kΩ differential source resistance
+R_S_N VIN_N_cm VCM 500
+
+* Test 5: CMRR, G=1
+V_pos_cm1 V_pos_cm1 0 DC 15V
+V_neg_cm1 V_neg_cm1 0 DC -15V
+V_ref_cm1 REF_pin_cm1 0 DC 0V
+R_G_cm1 RG_pin_cm1 RG_pin_cm1_node 1Meg ; G=1
+R_G_cm1_node RG_pin_cm1_node 0 1Meg
+
+XDUT_CMRR1 REF_pin_cm1 RG_pin_cm1 V_pos_cm1 V_neg_cm1 VIN_P_cm VIN_N_cm VO_cm1 INA12X
+
+.meas AC CMRR_G1_SHE_INA12xP_U_min PARAM 20*log10(1/V(VO_cm1)) AT 1k ; Min 80.0 dB
+.meas AC CMRR_G1_SHE_INA12xP_U_typ PARAM 20*log10(1/V(VO_cm1)) AT 1k ; Typ 86.0 dB
+.meas AC CMRR_G1_SHE_INA12xPA_UA_min PARAM 20*log10(1/V(VO_cm1)) AT 1k ; Min 73.0 dB
+.meas AC CMRR_G1_FRE_INA12xU_min PARAM 20*log10(1/V(VO_cm1)) AT 1k ; Min 90.0 dB
+.meas AC CMRR_G1_FRE_INA12xU_typ PARAM 20*log10(1/V(VO_cm1)) AT 1k ; Typ 100.0 dB
+.meas AC CMRR_G1_FRE_INA12xUA_min PARAM 20*log10(1/V(VO_cm1)) AT 1k ; Min 83.0 dB
+
+* Test 6: CMRR, G=10
+V_pos_cm10 V_pos_cm10 0 DC 15V
+V_neg_cm10 V_neg_cm10 0 DC -15V
+V_ref_cm10 REF_pin_cm10 0 DC 0V
+R_G_cm10 RG_pin_cm10 RG_pin_cm10_node 4.94k ; G=10
+R_G_cm10_node RG_pin_cm10_node 0 4.94k
+
+XDUT_CMRR10 REF_pin_cm10 RG_pin_cm10 V_pos_cm10 V_neg_cm10 VIN_P_cm VIN_N_cm VO_cm10 INA12X
+
+.meas AC CMRR_G10_SHE_INA12xP_U_min PARAM 20*log10(1/(V(VO_cm10)/10)) AT 1k ; Min 100.0 dB (Vout/Vcm / G)
+.meas AC CMRR_G10_SHE_INA12xP_U_typ PARAM 20*log10(1/(V(VO_cm10)/10)) AT 1k ; Typ 106.0 dB
+.meas AC CMRR_G10_SHE_INA12xPA_UA_min PARAM 20*log10(1/(V(VO_cm10)/10)) AT 1k ; Min 93.0 dB
+.meas AC CMRR_G10_FRE_INA12xU_min PARAM 20*log10(1/(V(VO_cm10)/10)) AT 1k ; Min 110.0 dB
+.meas AC CMRR_G10_FRE_INA12xU_typ PARAM 20*log10(1/(V(VO_cm10)/10)) AT 1k ; Typ 120.0 dB
+.meas AC CMRR_G10_FRE_INA12xUA_min PARAM 20*log10(1/(V(VO_cm10)/10)) AT 1k ; Min 103.0 dB
+
+* Test 7: CMRR, G=100
+V_pos_cm100 V_pos_cm100 0 DC 15V
+V_neg_cm100 V_neg_cm100 0 DC -15V
+V_ref_cm100 REF_pin_cm100 0 DC 0V
+R_G_cm100 RG_pin_cm100 RG_pin_cm100_node 499 ; G=100
+R_G_cm100_node RG_pin_cm100_node 0 499
+
+XDUT_CMRR100 REF_pin_cm100 RG_pin_cm100 V_pos_cm100 V_neg_cm100 VIN_P_cm VIN_N_cm VO_cm100 INA12X
+
+.meas AC CMRR_G100_SHE_INA12xP_U_min PARAM 20*log10(1/(V(VO_cm100)/100)) AT 1k ; Min 120.0 dB
+.meas AC CMRR_G100_SHE_INA12xP_U_typ PARAM 20*log10(1/(V(VO_cm100)/100)) AT 1k ; Typ 125.0 dB
+.meas AC CMRR_G100_SHE_INA12xPA_UA_min PARAM 20*log10(1/(V(VO_cm100)/100)) AT 1k ; Min 110.0 dB
+.meas AC CMRR_G100_FRE_INA12xU_min PARAM 20*log10(1/(V(VO_cm100)/100)) AT 1k ; Min 130.0 dB
+.meas AC CMRR_G100_FRE_INA12xU_typ PARAM 20*log10(1/(V(VO_cm100)/100)) AT 1k ; Typ 140.0 dB
+.meas AC CMRR_G100_FRE_INA12xUA_min PARAM 20*log10(1/(V(VO_cm100)/100)) AT 1k ; Min 120.0 dB
+
+* Test 8: CMRR, G=1000
+V_pos_cm1000 V_pos_cm1000 0 DC 15V
+V_neg_cm1000 V_neg_cm1000 0 DC -15V
+V_ref_cm1000 REF_pin_cm1000 0 DC 0V
+R_G_cm1000 RG_pin_cm1000 RG_pin_cm1000_node 49.9 ; G=1000
+R_G_cm1000_node RG_pin_cm1000_node 0 49.9
+
+XDUT_CMRR1000 REF_pin_cm1000 RG_pin_cm1000 V_pos_cm1000 V_neg_cm1000 VIN_P_cm VIN_N_cm VO_cm1000 INA12X
+
+.meas AC CMRR_G1000_SHE_INA12xP_U_min PARAM 20*log10(1/(V(VO_cm1000)/1000)) AT 1k ; Min 120.0 dB
+.meas AC CMRR_G1000_SHE_INA12xP_U_typ PARAM 20*log10(1/(V(VO_cm1000)/1000)) AT 1k ; Typ 130.0 dB
+.meas AC CMRR_G1000_SHE_INA12xPA_UA_min PARAM 20*log10(1/(V(VO_cm1000)/1000)) AT 1k ; Min 110.0 dB
+.meas AC CMRR_G1000_FRE_INA12xU_min PARAM 20*log10(1/(V(VO_cm1000)/1000)) AT 1k ; Min 140.0 dB
+.meas AC CMRR_G1000_FRE_INA12xU_typ PARAM 20*log10(1/(V(VO_cm1000)/1000)) AT 1k ; Typ 145.0 dB
+
+* Simulation Control
+.ac dec 20 1 100Meg
+
+.end

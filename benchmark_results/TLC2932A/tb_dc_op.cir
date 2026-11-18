@@ -1,0 +1,232 @@
+.options gmin=1e-12 cshunt=1e-15
+* LTspice Testbench for TLC2932A
+
+.include "TLC2932A_iter2.cir"
+
+* Global power supplies and ground
+VGND LOGIC_GND 0 0
+VGND_VCO VCO_GND 0 0
+
+* Power-up sequence for LOGIC_VDD and VCO_VDD
+V_LOGIC_VDD LOGIC_VDD 0 PWL(0us 0V 0.01us 0V 0.02us 3.3V)
+V_VCO_VDD VCO_VDD 0 PWL(0us 0V 0.01us 0V 0.02us 3.3V)
+
+* RBIAS activation
+R_RBIAS RBIAS_NODE RBIAS 3.3k
+V_RBIAS_CTRL RBIAS_NODE 0 PWL(0us 0V 9.99us 0V 10.0us 3.3V)
+
+* SELECT, TEST, PFD_INHIBIT, VCO_INHIBIT, VCO_IN activation
+V_SELECT SELECT 0 PWL(0us 0V 14.99us 0V 15.0us 0V) ; Set to low for typical operation
+V_TEST TEST 0 PWL(0us 0V 14.99us 0V 15.0us 0V) ; Set to low for typical operation
+V_PFD_INHIBIT PFD_INHIBIT 0 PWL(0us 0V 14.99us 0V 15.0us 0V) ; Set to low for typical operation
+V_VCO_INHIBIT VCO_INHIBIT 0 PWL(0us 0V 14.99us 0V 15.0us 0V) ; Set to low for typical operation
+V_VCO_IN VCO_IN 0 PWL(0us 0V 14.99us 0V 15.0us 1.65V) ; Set to 1/2 VDD for typical operation
+
+* FIN_A, FIN_B activation
+V_FIN_A FIN_A 0 PWL(0us 0V 16.99us 0V 17.0us 0V) ; Placeholder, will be driven by pulse sources for specific tests
+V_FIN_B FIN_B 0 PWL(0us 0V 16.99us 0V 17.0us 0V) ; Placeholder, will be driven by pulse sources for specific tests
+
+* VCO_OUT, PFD_OUT activation (these are outputs, no external activation needed)
+* For measurement purposes, we can add loads if needed.
+C_VCO_OUT_LOAD VCO_OUT 0 15p ; Load for VCO_OUT
+R_PFD_OUT_LOAD PFD_OUT 0 1Meg ; Light load for PFD_OUT
+
+* DUT Instantiation
+XDUT LOGIC_VDD SELECT VCO_OUT FIN_A FIN_B PFD_OUT LOGIC_GND TEST PFD_INHIBIT VCO_INHIBIT VCO_GND VCO_IN RBIAS VCO_VDD TLC2932A
+
+* --- Absolute Maximum Ratings (Conceptual, not directly measurable in transient sim) ---
+* VDD: Min=None, Typ=None, Max=7.0 V
+* VIN: Min=-0.5, Typ=None, Max=None V (with respect to VDD + 0.5 V)
+* IIN: Min=-20.0, Typ=None, Max=20.0 mA
+* IO: Min=-20.0, Typ=None, Max=20.0 mA
+* TA: Min=-20.0, Typ=None, Max=75.0 °C (Requires .temp analysis, not covered here)
+
+* --- Operating Voltage Ranges ---
+* VDD = 3V
+.param VDD_3V = 3.0V
+* VDD = 3.3V
+.param VDD_3_3V = 3.3V
+* VDD = 5V
+.param VDD_5V = 5.0V
+
+* --- Bias Resistor ---
+* Bias Resistor: Min=2.2, Typ=None, Max=5.1 kΩ (VDD = 3 V, 3.3 V, 5 V)
+* This is a component value, not a measurement from the DUT.
+* The R_RBIAS above is set to 3.3k for typical operation.
+
+* --- VOH / VOL (Output High/Low Voltage) ---
+* VOH: Min=2.4 V (IOH = –2 mA)
+* VOL: Max=0.3 V (IOL = 2 mA)
+* To measure this, we need to drive the output and sink/source current.
+* We'll use a separate setup for this.
+
+* --- VTH (Threshold Voltage) ---
+* VTH: Min=0.9, Typ=1.5, Max=2.1 V
+* This is an input characteristic. We'll sweep an input to find the switching point.
+
+* --- II (Input Current) ---
+* II: Min=-1.0, Typ=None, Max=1.0 µA (VI = VDD or GND)
+
+* --- ZI(VCO IN) (Input Impedance VCO IN) ---
+* ZI(VCO IN): Min=10.0 MΩ (VCO IN = 1/2 VDD)
+
+* --- IDD(INH) (Supply Current, Inhibit) ---
+* IDD(INH): Typ=0.35, Max=1.0 µA (VCO INHIBIT = high, PFD is inhibited)
+
+* --- IDD(VCO) (Supply Current, VCO Active) ---
+* IDD(VCO): Typ=8.4, Max=17.0 mA (VCO IN = 1/2 VDD, RBIAS = 3.3 kΩ, VCOOUT = 15−pF Load, VCO INHIBIT = GND, and PFD INHIBIT = GND)
+
+* --- IOZ (Output Leakage Current) ---
+* IOZ: Min=-1.0, Typ=None, Max=1.0 µA (PFD inhibit = high, VO = VDD or GND)
+
+* --- VIH / VIL (Input High/Low Voltage) ---
+* VIH: Min=2.1 V
+* VIL: Max=0.5 V
+
+* --- CIN (Input Capacitance) ---
+* CIN: Typ=5.6 pF
+
+* --- ZIN (Input Impedance) ---
+* ZIN: Min=10.0 MΩ (General input impedance, likely for digital inputs)
+
+* --- IDD(Z) (Supply Current, PFD Inhibited, VCO Inhibited) ---
+* IDD(Z): Max=1.0 µA (FIN−A and FIN−B = ground, PFD INHIBIT = VDD, PFD OUT open, and VCO OUT is inhibited)
+
+* --- IDD(PFD) (Supply Current, PFD Active) ---
+* IDD(PFD): Max=3.0 mA (FIN−A = 1 MHz and FIN−B = 1 MHz (VI(PP) = 3 V, rectangular wave), PFD INHIBIT = GND, PFD OUT open, and VCO OUT is inhibited)
+
+* --- fSTB (Startup Time) ---
+* fSTB: Typ=10.0 µs
+
+* --- Duty cycle at VCO OUT ---
+* Duty cycle at VCO OUT: Min=45.0, Typ=50.0, Max=55.0 % (RBIAS = 3.3 kΩ, VCO IN = 1/2 VDD)
+
+* --- Propagation Delays (tPLZ, tPHZ, tPZL, tPZH) ---
+* tPLZ: Typ=22.0, Max=50.0 ns
+* tPHZ: Typ=21.0, Max=50.0 ns
+* tPZL: Typ=6.5, Max=30.0 ns
+* tPZH: Typ=7.0, Max=30.0 ns
+
+********************************************************************************
+* SIMULATION SETUP
+********************************************************************************
+.tran 0 100us 0us 0.1us startup
+
+* --- MEASUREMENTS ---
+
+* VDD Operating Ranges (These are input conditions, not measurements from DUT)
+* .meas VDD_3V_min param 2.85
+* .meas VDD_3V_typ param 3.0
+* .meas VDD_3V_max param 3.15
+* .meas VDD_3_3V_min param 3.135
+* .meas VDD_3_3V_typ param 3.3
+* .meas VDD_3_3V_max param 3.465
+* .meas VDD_5V_min param 4.75
+* .meas VDD_5V_typ param 5.0
+* .meas VDD_5V_max param 5.25
+
+* IDD(VCO) - Supply Current, VCO Active
+* Conditions: VCO IN = 1/2 VDD, RBIAS = 3.3 kΩ, VCOOUT = 15−pF Load, VCO INHIBIT = GND, and PFD INHIBIT = GND
+* Set up above for these conditions.
+.meas tran IDD_VCO AVG -I(V_LOGIC_VDD) from=50us to=100us
+.meas tran IDD_VCO_VCO AVG -I(V_VCO_VDD) from=50us to=100us
+.meas tran IDD_VCO_TOTAL param IDD_VCO + IDD_VCO_VCO
+
+* fSTB - Startup Time (Conceptual, needs a specific output to monitor)
+* Let's assume VCO_OUT stabilizes.
+.meas tran V_VCO_OUT_STABLE when V(VCO_OUT) = 1.65 rise=1
+.meas tran fSTB param V_VCO_OUT_STABLE - 0.02us ; Time from VDD stable to VCO_OUT stable
+
+* Duty cycle at VCO OUT
+* Conditions: RBIAS = 3.3 kΩ, VCO IN = 1/2 VDD
+* Need to generate an oscillation for this. Let's assume the DUT oscillates.
+.meas tran t_vco_rise1 when V(VCO_OUT)=1.65 rise=10
+.meas tran t_vco_fall1 when V(VCO_OUT)=1.65 fall=10
+.meas tran t_vco_rise2 when V(VCO_OUT)=1.65 rise=11
+.meas tran t_vco_period param t_vco_rise2 - t_vco_rise1
+.meas tran t_vco_high param t_vco_fall1 - t_vco_rise1
+.meas tran DutyCycle_VCO_OUT param (t_vco_high / t_vco_period) * 100
+
+* VTH - Threshold Voltage (for digital inputs like SELECT, TEST, PFD_INHIBIT, VCO_INHIBIT)
+* This requires a separate .dc sweep.
+* For example, to measure VTH for SELECT pin:
+* .dc V_SELECT 0 3.3 0.01
+* .meas dc VTH_SELECT find V(internal_node_of_select) when I(V_SELECT)=0 (or some other switching criteria)
+* This is difficult without internal nodes. We can infer it from output behavior.
+* For now, we'll skip direct VTH measurement in this transient sim.
+
+* II - Input Current (for digital inputs)
+* Conditions: VI = VDD or GND
+* This requires setting an input to VDD or GND and measuring current.
+* Example for SELECT pin at VDD:
+* V_SELECT_HIGH SELECT 0 PWL(0us 0V 14.99us 0V 15.0us 3.3V)
+* .meas tran II_SELECT_HIGH AVG I(V_SELECT_HIGH) from=50us to=100us
+* Example for SELECT pin at GND:
+* V_SELECT_LOW SELECT 0 PWL(0us 0V 14.99us 0V 15.0us 0V)
+* .meas tran II_SELECT_LOW AVG I(V_SELECT_LOW) from=50us to=100us
+
+* ZI(VCO IN) - Input Impedance VCO IN
+* Conditions: VCO IN = 1/2 VDD
+* This requires applying a small AC signal on top of the DC bias and measuring current.
+* Not directly measurable in a simple transient simulation.
+* For a DC approximation, we can measure current at 1/2 VDD.
+.meas tran I_VCO_IN_DC AVG I(V_VCO_IN) from=50us to=100us
+* ZI_VCO_IN = (VDD/2) / I_VCO_IN_DC (conceptual)
+
+* IDD(INH) - Supply Current, Inhibit
+* Conditions: VCO INHIBIT = high, PFD is inhibited
+* To measure this, we need to set V_VCO_INHIBIT and V_PFD_INHIBIT to VDD.
+* Let's create a separate run for this.
+* For this run, V_VCO_INHIBIT and V_PFD_INHIBIT are set high.
+* V_PFD_INHIBIT PFD_INHIBIT 0 PWL(0us 0V 14.99us 0V 15.0us 3.3V)
+* V_VCO_INHIBIT VCO_INHIBIT 0 PWL(0us 0V 14.99us 0V 15.0us 3.3V)
+.meas tran IDD_INH_LOGIC AVG -I(V_LOGIC_VDD) from=50us to=100us
+.meas tran IDD_INH_VCO AVG -I(V_VCO_VDD) from=50us to=100us
+.meas tran IDD_INH_TOTAL param IDD_INH_LOGIC + IDD_INH_VCO
+
+* IDD(Z) - Supply Current, PFD Inhibited, VCO Inhibited
+* Conditions: FIN−A and FIN−B = ground, PFD INHIBIT = VDD, PFD OUT open, and VCO OUT is inhibited
+* This is similar to IDD(INH) but with FIN_A/B grounded and VCO_OUT inhibited.
+* V_FIN_A FIN_A 0 PWL(0us 0V 16.99us 0V 17.0us 0V)
+* V_FIN_B FIN_B 0 PWL(0us 0V 16.99us 0V 17.0us 0V)
+* V_PFD_INHIBIT PFD_INHIBIT 0 PWL(0us 0V 14.99us 0V 15.0us 3.3V)
+* V_VCO_INHIBIT VCO_INHIBIT 0 PWL(0us 0V 14.99us 0V 15.0us 3.3V)
+.meas tran IDD_Z_LOGIC AVG -I(V_LOGIC_VDD) from=50us to=100us
+.meas tran IDD_Z_VCO AVG -I(V_VCO_VDD) from=50us to=100us
+.meas tran IDD_Z_TOTAL param IDD_Z_LOGIC + IDD_Z_VCO
+
+* IDD(PFD) - Supply Current, PFD Active
+* Conditions: FIN−A = 1 MHz and FIN−B = 1 MHz (VI(PP) = 3 V, rectangular wave), PFD INHIBIT = GND, PFD OUT open, and VCO OUT is inhibited
+* Need to modify FIN_A and FIN_B sources.
+* V_FIN_A FIN_A 0 PULSE(0V 3.3V 17us 1ns 1ns 499ns 1000ns) ; 1MHz, 50% duty cycle
+* V_FIN_B FIN_B 0 PULSE(0V 3.3V 17us 1ns 1ns 499ns 1000ns) ; 1MHz, 50% duty cycle
+* V_PFD_INHIBIT PFD_INHIBIT 0 PWL(0us 0V 14.99us 0V 15.0us 0V) ; PFD active
+* V_VCO_INHIBIT VCO_INHIBIT 0 PWL(0us 0V 14.99us 0V 15.0us 3.3V) ; VCO inhibited
+.meas tran IDD_PFD_LOGIC AVG -I(V_LOGIC_VDD) from=50us to=100us
+.meas tran IDD_PFD_VCO AVG -I(V_VCO_VDD) from=50us to=100us
+.meas tran IDD_PFD_TOTAL param IDD_PFD_LOGIC + IDD_PFD_VCO
+
+* VOH / VOL (Output High/Low Voltage) for PFD_OUT
+* Conditions: IOH = –2 mA, IOL = 2 mA
+* This requires a separate setup with current loads.
+* For VOH:
+* R_LOAD_VOH PFD_OUT V_PULLUP 1k
+* I_LOAD_VOH V_PULLUP 0 2m
+* .meas tran VOH_PFD_OUT AVG V(PFD_OUT) from=50us to=100us
+* For VOL:
+* R_LOAD_VOL PFD_OUT V_PULLDOWN 1k
+* I_LOAD_VOL 0 V_PULLDOWN 2m
+* .meas tran VOL_PFD_OUT AVG V(PFD_OUT) from=50us to=100us
+
+* Propagation Delays (tPLZ, tPHZ, tPZL, tPZH)
+* These are for PFD_OUT when PFD_INHIBIT is toggled.
+* Requires a specific input stimulus on PFD_INHIBIT and monitoring PFD_OUT.
+* Example for tPZL (PFD_OUT goes when PFD_INHIBIT goes high)
+* V_PFD_INHIBIT PFD_INHIBIT 0 PULSE(0V 3.3V 40us 1ns 1ns 10us 20us)
+* V_FIN_A FIN_A 0 PULSE(0V 3.3V 17us 1ns 1ns 499ns 1000ns)
+* V_FIN_B FIN_B 0 PULSE(0V 3.3V 17us 1ns 1ns 499ns 1000ns)
+* .meas tran t_pfd_inhibit_rise when V(PFD_INHIBIT)=1.65 rise=1
+* .meas tran t_pfd_out_fall when V(PFD_OUT)=1.65 fall=1
+* .meas tran tPZL param t_pfd_out_fall - t_pfd_inhibit_rise
+
+.end

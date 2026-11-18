@@ -1,0 +1,168 @@
+{
+  "mode": "groundtruth_free_provenance",
+  "benchmark_framework": "ParseBench (https://github.com/run-llama/ParseBench.git)",
+  "fidelity_score_pct": 78.8,
+  "status": "ACCEPTABLE",
+  "pin_provenance": {
+    "pins": 6,
+    "grounded": 6,
+    "grounded_pct": 100.0,
+    "ungrounded": []
+  },
+  "spec_provenance": {
+    "specs": 34,
+    "grounded": 29,
+    "grounded_pct": 85.3,
+    "by_category": {
+      "ABS_MAX": 14,
+      "ESD": 2,
+      "THERMAL": 18
+    },
+    "ungrounded_examples": [
+      {
+        "symbol": "VICM",
+        "category": "ABS_MAX",
+        "page": 10,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VICM",
+        "category": "ABS_MAX",
+        "page": 10,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VID",
+        "category": "ABS_MAX",
+        "page": 10,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VID",
+        "category": "ABS_MAX",
+        "page": 10,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "ISC",
+        "category": "ABS_MAX",
+        "page": 10,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      }
+    ]
+  },
+  "topological_validity": {
+    "is_dag": true,
+    "unreachable_outputs": [],
+    "isolated_pins": []
+  },
+  "edge_origin": {
+    "edges": 8,
+    "datasheet_derived": 4,
+    "rule_injected": 4,
+    "datasheet_pct": 50.0
+  },
+  "timing_grounding": {
+    "delay_grounded_edges": 0,
+    "grounded_pct": 0.0,
+    "timing_specs_used": {
+      "turnon_settling_us": null,
+      "propagation_delay_us": null,
+      "slew_rate_v_us": null,
+      "bandwidth_mhz": null,
+      "sources": {}
+    }
+  },
+  "edge_details": [
+    {
+      "from": "IN",
+      "to": "OUT",
+      "delay_us": 50.0,
+      "type": "SIGNAL_PATH",
+      "origin": "datasheet",
+      "delay_source": null,
+      "condition": "input change"
+    },
+    {
+      "from": "IN_P",
+      "to": "OUT",
+      "delay_us": 50.0,
+      "type": "SIGNAL_PATH",
+      "origin": "datasheet",
+      "delay_source": null,
+      "condition": "input change"
+    },
+    {
+      "from": "VCC",
+      "to": "OUT",
+      "delay_us": 50.0,
+      "type": "POWER_FEED",
+      "origin": "datasheet",
+      "delay_source": null,
+      "condition": "supply active"
+    },
+    {
+      "from": "VCC",
+      "to": "IN",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "VCC",
+      "to": "IN_P",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "VCC_P",
+      "to": "OUT",
+      "delay_us": 50.0,
+      "type": "POWER_FEED",
+      "origin": "datasheet",
+      "delay_source": null,
+      "condition": "supply active"
+    },
+    {
+      "from": "VCC_P",
+      "to": "IN",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "VCC_P",
+      "to": "IN_P",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    }
+  ],
+  "pin_coverage": {
+    "coverage_pct": 100.0
+  },
+  "parsebench_audit": {
+    "engine": "ParseBench Content Faithfulness",
+    "grounded_ratio": 0.926,
+    "is_dag": true
+  }
+}

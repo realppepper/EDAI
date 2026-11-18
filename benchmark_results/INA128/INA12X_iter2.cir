@@ -1,0 +1,123 @@
+* INA12X Low-Power, General-Purpose Instrumentation Amplifier
+*
+* Pinout:
+* 1: REF (Reference input)
+* 2: RG (Gain setting pin)
+* 3: V- (Negative supply)
+* 4: V+ (Positive supply)
+* 5: VIN- (Negative input)
+* 6: VIN+ (Positive input)
+* 7: VO (Output)
+*
+.subckt INA12X REF RG V_ V_ VIN_ VIN_ VO
+
+* --- Global Parameters and Models ---
+.param VCC_POS = 15V
+.param VCC_NEG = -15V
+.param RG_INTERNAL = 24.7k ; Internal resistor for gain setting (R1, R2)
+.param R_DIFF_GAIN = 10k ; Resistors for differential amplifier (R3, R4, R5, R6)
+.param OPAMP_GBW = 20Meg ; Gain-Bandwidth Product for op-amps
+.param OPAMP_SR = 10V/us ; Slew Rate for op-amps
+.param OPAMP_VOS = 10uV ; Input offset voltage for op-amps
+.param OPAMP_IBIAS = 10nA ; Input bias current for op-amps
+.param OPAMP_CMRR_DB = 120 ; CMRR in dB for op-amps
+.param OPAMP_PSRR_DB = 100 ; PSRR in dB for op-amps
+
+* Simplified NMOS and PMOS models for behavioral op-amps
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u W=10u L=1u)
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u W=20u L=1u)
+.model DMOD D (IS=1e-14 N=1) ; Diode model for ESD protection
+
+* --- Internal Nodes ---
+.nodeset V(V_POS) = {VCC_POS}
+.nodeset V(V_NEG) = {VCC_NEG}
+.nodeset V(RG_FB) = 0
+.nodeset V(A1_OUT) = 0
+.nodeset V(A2_OUT) = 0
+.nodeset V(A3_OUT) = 0
+
+* --- Power Supply Connections ---
+V_POS V_ V_POS DC {VCC_POS}
+V_NEG V_NEG V_ DC {VCC_NEG}
+
+* --- ESD Protection Diodes (Simplified) ---
+D_ESD_VINP_POS VIN_ V_ DMOD
+D_ESD_VINP_NEG V_ VIN_ DMOD
+D_ESD_VINN_POS VIN_ V_ DMOD
+D_ESD_VINN_NEG V_ VIN_ DMOD
+
+* --- Op-Amp Subcircuit Definition (Behavioral Model) ---
+* This subcircuit models a generic op-amp with configurable parameters.
+* It includes input offset, input bias current, high input impedance,
+* finite gain, bandwidth, slew rate, and output limits.
+* Pins: IN_P IN_N OUT VCC VEE
+.ends
+.subckt OPAMP IN_P IN_N OUT VCC VEE
+* Input differential stage with high input impedance and offset
+R_IN_P IN_P IN_P_INT 10G
+C_IN_P IN_P_INT 0 2pF
+R_IN_N IN_N IN_N_INT 10G
+C_IN_N IN_N_INT 0 2pF
+
+* Input offset voltage
+V_OFFSET IN_N_INT IN_N_OFFSET DC {OPAMP_VOS}
+
+* Input bias current (simplified as current sources to ground)
+I_BIAS_P IN_P_INT 0 DC {OPAMP_IBIAS}
+I_BIAS_N IN_N_OFFSET 0 DC {OPAMP_IBIAS}
+
+* Gain stage with bandwidth and slew rate limiting
+* E_GAIN models the open-loop gain and input common-mode range
+E_GAIN GAIN_NODE 0 VALUE = { LIMIT( (V(IN_P_INT) - V(IN_N_OFFSET)) * 1e6, V(VEE) + 0.5, V(VCC) - 0.5 ) }
+
+* Slew rate limiting and dominant pole compensation
+R_COMP GAIN_NODE COMP_NODE 1k
+C_COMP COMP_NODE 0 {1/(2*PI*OPAMP_GBW*1k)} ; Compensation capacitor for GBW
+G_SR_POS 0 COMP_NODE VALUE = { IF(V(COMP_NODE) > V(GAIN_NODE), (V(COMP_NODE) - V(GAIN_NODE)) / 1k, 0) }
+G_SR_NEG COMP_NODE 0 VALUE = { IF(V(COMP_NODE) < V(GAIN_NODE), (V(GAIN_NODE) - V(COMP_NODE)) / 1k, 0) }
+* Slew rate current source
+I_SR_POS VCC COMP_NODE DC {OPAMP_SR * C_COMP}
+I_SR_NEG COMP_NODE VEE DC {OPAMP_SR * C_COMP}
+
+* Output buffer
+E_OUT OUT_BUF 0 VALUE = {V(COMP_NODE)}
+R_OUT OUT_BUF OUT 100 ; Output resistance
+.ends OPAMP
+
+
+* --- Instrumentation Amplifier Core ---
+
+* Input Buffer Op-Amps (A1 and A2)
+* A1: Non-inverting input connected to VIN+, inverting input connected to RG_FB
+* X_A1 VIN_ VIN_P_FB A1_OUT V_ V_ OPAMP
+* A2: Non-inverting input connected to VIN-, inverting input connected to RG_FB
+* X_A2 VIN_ VIN_N_FB A2_OUT V_ V_ OPAMP
+
+* Gain Setting Resistors
+* R_RG_A1 A1_OUT RG_FB {RG_INTERNAL}
+* R_RG_A2 A2_OUT RG_FB {RG_INTERNAL}
+* External RG resistor connection
+* R_EXT_RG RG RG_FB 1 ; Placeholder for external RG. User connects RG pin to ground or another resistor.
+
+* Differential Amplifier Stage (A3)
+* Inputs to A3 are the outputs of A1 and A2
+* A3 is configured as a unity-gain differential amplifier
+* Input resistors
+* R_A3_IN_P A1_OUT A3_IN_P {R_DIFF_GAIN}
+* R_A3_IN_N A2_OUT A3_IN_N {R_DIFF_GAIN}
+
+* Feedback resistors
+* R_A3_FB_P A3_IN_P A3_OUT {R_DIFF_GAIN}
+* R_A3_FB_N A3_IN_N REF_NODE {R_DIFF_GAIN}
+
+* Reference input
+* V_REF REF_NODE REF DC 0 ; REF pin is connected to the reference node of A3
+
+* A3 Op-Amp
+* X_A3 A3_IN_P A3_IN_N A3_OUT V_ V_ OPAMP
+
+* Output Buffer (part of A3's output stage, but explicitly shown for clarity)
+* The output of A3_OUT is the final output VO
+* R_OUT_BUFFER A3_OUT VO 10 ; Small output resistance
+
+* .ends INA12X

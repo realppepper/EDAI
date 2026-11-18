@@ -1,0 +1,279 @@
+{
+  "ic": "lm317",
+  "model": "z-ai/glm-5.3-flash",
+  "llm_seconds": 29.7,
+  "llm_calls": [
+    {
+      "ts": 1792590099.9803731,
+      "tag": "hkg_specs_p14",
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 1.19,
+      "total_s": 1.23,
+      "completion_tokens": 21,
+      "prompt_tokens": 770,
+      "cost_usd": 7.245e-05,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.0001
+    },
+    {
+      "ts": 1792590100.807015,
+      "tag": "hkg_specs_p28",
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 1.48,
+      "total_s": 1.54,
+      "completion_tokens": 20,
+      "prompt_tokens": 993,
+      "cost_usd": 9.237e-05,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.0002
+    },
+    {
+      "ts": 1792590101.4811308,
+      "tag": "hkg_pins",
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 1.79,
+      "total_s": 4.74,
+      "completion_tokens": 503,
+      "prompt_tokens": 2457,
+      "cost_usd": 0.00062005,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.0008
+    },
+    {
+      "ts": 1792590106.333639,
+      "tag": "hkg_specs_p6",
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 3.67,
+      "total_s": 9.03,
+      "completion_tokens": 1019,
+      "prompt_tokens": 1020,
+      "cost_usd": 0.000517772,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.0013
+    },
+    {
+      "ts": 1792590119.4297252,
+      "tag": "hkg_specs_p8",
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 1.33,
+      "total_s": 21.18,
+      "completion_tokens": 3084,
+      "prompt_tokens": 1689,
+      "cost_usd": 0.000439651599,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.004
+    },
+    {
+      "ts": 1792590126.4634929,
+      "tag": "hkg_specs_p7",
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 0.98,
+      "total_s": 28.71,
+      "completion_tokens": 4463,
+      "prompt_tokens": 1174,
+      "cost_usd": 0.000583918234,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.0048
+    }
+  ],
+  "groundtruth_comparison": {
+    "ic": "LM317",
+    "score": 82.9,
+    "pins": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 3,
+      "pred": 3,
+      "gt": 3,
+      "role_accuracy": 1.0,
+      "missing": [],
+      "extra": [],
+      "role_errors": []
+    },
+    "dependencies_full_pdg": {
+      "precision": 0.667,
+      "recall": 1.0,
+      "f1": 0.8,
+      "tp": 2,
+      "pred": 3,
+      "gt": 2,
+      "missing": [],
+      "spurious": [
+        [
+          "INPUT",
+          "ADJUST"
+        ]
+      ]
+    },
+    "dependencies_datasheet_only": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 2,
+      "pred": 2,
+      "gt": 2
+    },
+    "schedule_consistency": {
+      "ratio": 1.0,
+      "checked": 2,
+      "violations": []
+    },
+    "spec_rows": {
+      "precision": 0.422,
+      "recall": 0.75,
+      "f1": 0.54,
+      "tp": 27,
+      "pred": 64,
+      "gt": 36
+    },
+    "electrical_spec_recall": 0.632,
+    "spec_value_accuracy": 0.884,
+    "spec_category_accuracy": 1.0,
+    "category_confusion": {
+      "ELECTRICAL": {
+        "ELECTRICAL": 12
+      },
+      "ABS_MAX": {
+        "ABS_MAX": 4
+      },
+      "RECOMMENDED": {
+        "RECOMMENDED": 4
+      },
+      "THERMAL": {
+        "THERMAL": 7
+      }
+    },
+    "nonelectrical_leak_rate": 0.0,
+    "timing": {
+      "recall": null,
+      "items": [],
+      "pdg_timing_specs": {
+        "turnon_settling_us": null,
+        "propagation_delay_us": null,
+        "slew_rate_v_us": null,
+        "bandwidth_mhz": null,
+        "sources": {}
+      },
+      "pdg_uses_datasheet_delay": false
+    }
+  },
+  "provenance_audit": {
+    "mode": "groundtruth_free_provenance",
+    "fidelity_score_pct": 84.2,
+    "status": "ACCEPTABLE",
+    "pin_provenance": {
+      "pins": 3,
+      "grounded": 3,
+      "grounded_pct": 100.0,
+      "ungrounded": []
+    },
+    "spec_provenance": {
+      "specs": 64,
+      "grounded": 62,
+      "grounded_pct": 96.9,
+      "by_category": {
+        "ABS_MAX": 4,
+        "ESD": 3,
+        "RECOMMENDED": 4,
+        "THERMAL": 34,
+        "ELECTRICAL": 19
+      },
+      "ungrounded_examples": [
+        {
+          "symbol": "Power dissipation",
+          "category": "ABS_MAX",
+          "page": 6,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "R\u03b8JC(bot)",
+          "category": "THERMAL",
+          "page": 7,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        }
+      ]
+    },
+    "topological_validity": {
+      "is_dag": true,
+      "unreachable_outputs": [],
+      "isolated_pins": []
+    },
+    "edge_origin": {
+      "edges": 3,
+      "datasheet_derived": 2,
+      "rule_injected": 1,
+      "datasheet_pct": 66.7
+    },
+    "timing_grounding": {
+      "delay_grounded_edges": 0,
+      "grounded_pct": 0.0,
+      "timing_specs_used": {
+        "turnon_settling_us": null,
+        "propagation_delay_us": null,
+        "slew_rate_v_us": null,
+        "bandwidth_mhz": null,
+        "sources": {}
+      }
+    },
+    "edge_details": [
+      {
+        "from": "ADJUST",
+        "to": "OUTPUT",
+        "delay_us": 50.0,
+        "type": "FEEDBACK_LOOP",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "OUTPUT pin sources current to make OUTPUT 1.25V greater than ADJUST"
+      },
+      {
+        "from": "INPUT",
+        "to": "OUTPUT",
+        "delay_us": 50.0,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "Requires up to 3V headroom (VI - VO) to operate in regulation"
+      },
+      {
+        "from": "INPUT",
+        "to": "ADJUST",
+        "delay_us": 50.0,
+        "type": "POWER_FEED",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Default output settling (no datasheet timing)"
+      }
+    ],
+    "pin_coverage": {
+      "coverage_pct": 100.0
+    }
+  },
+  "schedule_us": {
+    "INPUT": 0.0,
+    "ADJUST": 50.0,
+    "OUTPUT": 100.0
+  }
+}

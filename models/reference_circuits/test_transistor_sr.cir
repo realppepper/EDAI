@@ -1,0 +1,26 @@
+* Test Transistor-Level LM741 Slew Rate Testbench
+.include "models/lm741_transistor.sub"
+
+Vcc 7 0 DC 15
+Vee 4 0 DC -15
+
+* Input step: -10V to +10V pulse
+Vin 3 0 PULSE(-10 10 5u 10n 10n 50u 100u)
+
+* Follower: in- (pin 2) tied to out (pin 6)
+X1 3 2 7 4 6 LM741_BJT
+
+RL 6 0 2k
+CL 6 0 100p
+
+.tran 0 110u 0 50n
+
+.meas tran t_r1 when V(6)=-5.0 rise=1
+.meas tran t_r2 when V(6)=5.0 rise=1
+.meas tran SR_pos param 10.0 / ((t_r2 - t_r1) * 1e6)
+
+.meas tran t_f1 when V(6)=5.0 fall=1
+.meas tran t_f2 when V(6)=-5.0 fall=1
+.meas tran SR_neg param 10.0 / ((t_f2 - t_f1) * 1e6)
+
+.end

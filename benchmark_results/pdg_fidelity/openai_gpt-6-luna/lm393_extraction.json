@@ -1,0 +1,2369 @@
+{
+  "ic_device": {
+    "name": "LM393B, LM2903B, LM193, LM293, LM293A, LM393, LM393A, LM2903, LM2903V",
+    "category": "Dual comparator",
+    "description": "Two independent voltage comparators designed to operate from a single power supply over a wide range of voltages.",
+    "package": "SOIC (8)"
+  },
+  "pins": [
+    {
+      "name": "1OUT",
+      "pin_number": "1",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "description": "Output pin of comparator 1",
+      "page": 3,
+      "evidence": "Output pin of comparator 1"
+    },
+    {
+      "name": "1IN\u2212",
+      "pin_number": "2",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Negative input pin of comparator 1",
+      "page": 3,
+      "evidence": "Negative input pin of comparator 1"
+    },
+    {
+      "name": "1IN+",
+      "pin_number": "3",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Positive input pin of comparator 1",
+      "page": 3,
+      "evidence": "Positive input pin of comparator 1"
+    },
+    {
+      "name": "GND",
+      "pin_number": "4",
+      "role": "GROUND",
+      "direction": "GROUND",
+      "description": "Ground",
+      "page": 3,
+      "evidence": "Ground"
+    },
+    {
+      "name": "2IN+",
+      "pin_number": "5",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Positive input pin of comparator 2",
+      "page": 3,
+      "evidence": "Positive input pin of comparator 2"
+    },
+    {
+      "name": "2IN\u2212",
+      "pin_number": "6",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Negative input pin of comparator 2",
+      "page": 3,
+      "evidence": "Negative input pin of comparator 2"
+    },
+    {
+      "name": "2OUT",
+      "pin_number": "7",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "description": "Output pin of comparator 2",
+      "page": 3,
+      "evidence": "Output pin of comparator 2"
+    },
+    {
+      "name": "VCC",
+      "pin_number": "8",
+      "role": "POWER",
+      "direction": "POWER",
+      "description": "Positive Supply",
+      "page": 3,
+      "evidence": "Positive Supply"
+    }
+  ],
+  "port_dependencies": [
+    {
+      "source": "VCC",
+      "target": "1OUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "Supply pin to comparator 1 output."
+    },
+    {
+      "source": "VCC",
+      "target": "2OUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "Supply pin to comparator 2 output."
+    },
+    {
+      "source": "GND",
+      "target": "1OUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "Ground pin to comparator 1 output."
+    },
+    {
+      "source": "GND",
+      "target": "2OUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "Ground pin to comparator 2 output."
+    },
+    {
+      "source": "1IN\u2212",
+      "target": "1OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "Comparator 1 input affects its own output."
+    },
+    {
+      "source": "1IN+",
+      "target": "1OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "Comparator 1 input affects its own output."
+    },
+    {
+      "source": "2IN+",
+      "target": "2OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "Comparator 2 input affects its own output."
+    },
+    {
+      "source": "2IN\u2212",
+      "target": "2OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "Comparator 2 input affects its own output."
+    }
+  ],
+  "functional_blocks": [
+    {
+      "name": "Comparator 1",
+      "type": "Voltage comparator",
+      "description": "Compares its positive and negative inputs and drives output 1OUT.",
+      "input_ports": [
+        "1IN+",
+        "1IN\u2212"
+      ],
+      "output_ports": [
+        "1OUT"
+      ]
+    },
+    {
+      "name": "Comparator 2",
+      "type": "Voltage comparator",
+      "description": "Compares its positive and negative inputs and drives output 2OUT.",
+      "input_ports": [
+        "2IN+",
+        "2IN\u2212"
+      ],
+      "output_ports": [
+        "2OUT"
+      ]
+    }
+  ],
+  "electrical_parameters": [
+    {
+      "symbol": "VCC",
+      "name": "Supply voltage",
+      "category": "ABS_MAX",
+      "min": -0.3,
+      "typ": null,
+      "max": 36,
+      "unit": "V",
+      "test_conditions": "Non-B versions; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "Non-B Versions | 36{MAX}",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "VCC",
+      "name": "Supply voltage",
+      "category": "ABS_MAX",
+      "min": -0.3,
+      "typ": null,
+      "max": 38,
+      "unit": "V",
+      "test_conditions": "B versions only; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "B Versions Only | 38{MAX}",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "VID",
+      "name": "Differential input voltage",
+      "category": "ABS_MAX",
+      "min": -36,
+      "typ": null,
+      "max": 36,
+      "unit": "V",
+      "test_conditions": "Non-B versions; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "Non-B Versions | -36{MIN} | 36{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2013"
+      ]
+    },
+    {
+      "symbol": "VID",
+      "name": "Differential input voltage",
+      "category": "ABS_MAX",
+      "min": -38,
+      "typ": null,
+      "max": 38,
+      "unit": "V",
+      "test_conditions": "B versions only; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "B Versions Only | -38{MIN} | 38{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2013"
+      ]
+    },
+    {
+      "symbol": "VI",
+      "name": "Input voltage (either input)",
+      "category": "ABS_MAX",
+      "min": -0.3,
+      "typ": null,
+      "max": 36,
+      "unit": "V",
+      "test_conditions": "Non-B versions; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "Non-B Versions | 36{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2013"
+      ]
+    },
+    {
+      "symbol": "VI",
+      "name": "Input voltage (either input)",
+      "category": "ABS_MAX",
+      "min": -0.3,
+      "typ": null,
+      "max": 38,
+      "unit": "V",
+      "test_conditions": "B versions only; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "B Versions Only | 38{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2013"
+      ]
+    },
+    {
+      "symbol": "IIK",
+      "name": "Input current",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": -50,
+      "unit": "mA",
+      "test_conditions": "Over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "IIK | Input current(5) | -50{MAX} | mA",
+      "related_pins": [
+        "IN+",
+        "IN\u2013"
+      ]
+    },
+    {
+      "symbol": "VO",
+      "name": "Output voltage",
+      "category": "ABS_MAX",
+      "min": -0.3,
+      "typ": null,
+      "max": 36,
+      "unit": "V",
+      "test_conditions": "Non-B versions; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "Non-B Versions | 36{MAX}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VO",
+      "name": "Output voltage",
+      "category": "ABS_MAX",
+      "min": -0.3,
+      "typ": null,
+      "max": 38,
+      "unit": "V",
+      "test_conditions": "B versions only; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "B Versions Only | 38{MAX}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IO",
+      "name": "Output current",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 20,
+      "unit": "mA",
+      "test_conditions": "Non-B versions; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "Non-B Versions | 20{MAX}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IO",
+      "name": "Output current",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 25,
+      "unit": "mA",
+      "test_conditions": "B versions only; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "B Versions Only | 25{MAX}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "ISC",
+      "name": "Duration of output short circuit to ground",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "",
+      "test_conditions": "Unlimited; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "ISC | Duration of output short circuit to ground(4) | Unlimited",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "TJ",
+      "name": "Operating virtual-junction temperature",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": "Over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "TJ | Operating virtual-junction temperature | 150{MAX} | \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "Tstg",
+      "name": "Storage temperature",
+      "category": "ABS_MAX",
+      "min": -65,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": "Over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "Tstg Storage temperature | \u201365{MIN} | 150{MAX} | \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "VS",
+      "name": "Supply voltage, VS = (V+) \u2013 (V\u2013)",
+      "category": "RECOMMENDED",
+      "min": 2,
+      "typ": null,
+      "max": 30,
+      "unit": "V",
+      "test_conditions": "Non-V devices; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "non-V devices | 2{MIN} | 30{MAX}",
+      "related_pins": [
+        "V+",
+        "V\u2013"
+      ]
+    },
+    {
+      "symbol": "VS",
+      "name": "Supply voltage, VS = (V+) \u2013 (V\u2013)",
+      "category": "RECOMMENDED",
+      "min": 2,
+      "typ": null,
+      "max": 32,
+      "unit": "V",
+      "test_conditions": "V devices; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "V devices | 2{MIN} | 32{MAX} | V",
+      "related_pins": [
+        "V+",
+        "V\u2013"
+      ]
+    },
+    {
+      "symbol": "VS",
+      "name": "Supply voltage, VS = (V+) \u2013 (V\u2013)",
+      "category": "RECOMMENDED",
+      "min": 2,
+      "typ": null,
+      "max": 36,
+      "unit": "V",
+      "test_conditions": "B version devices; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "\"B\" version devices | 2{MIN} | 36{MAX}",
+      "related_pins": [
+        "V+",
+        "V\u2013"
+      ]
+    },
+    {
+      "symbol": "VIVR",
+      "name": "Input voltage range",
+      "category": "RECOMMENDED",
+      "min": 0,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "Non-B devices; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "non-B devices | 0{MIN} | (V+) \u2013 2.0{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2013"
+      ]
+    },
+    {
+      "symbol": "VIVR",
+      "name": "Input voltage range",
+      "category": "RECOMMENDED",
+      "min": -0.1,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "B version devices; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "\"B\" version devices | \u20130.1{MIN}",
+      "related_pins": [
+        "IN+",
+        "IN\u2013"
+      ]
+    },
+    {
+      "symbol": "TA",
+      "name": "Ambient temperature",
+      "category": "RECOMMENDED",
+      "min": -55,
+      "typ": null,
+      "max": 125,
+      "unit": "\u00b0C",
+      "test_conditions": "LM193; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "LM193 | \u201355{MIN} | 125{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "TA",
+      "name": "Ambient temperature",
+      "category": "RECOMMENDED",
+      "min": -40,
+      "typ": null,
+      "max": 125,
+      "unit": "\u00b0C",
+      "test_conditions": "LM2903, LM2903V, LM2903AV, LM2903B; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "LM2903, LM2903V, LM2903AV, LM2903B | \u201340{MIN} | 125{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "TA",
+      "name": "Ambient temperature",
+      "category": "RECOMMENDED",
+      "min": -40,
+      "typ": null,
+      "max": 85,
+      "unit": "\u00b0C",
+      "test_conditions": "LM393B; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "LM393B | \u201340{MIN} | 85{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "TA",
+      "name": "Ambient temperature",
+      "category": "RECOMMENDED",
+      "min": -25,
+      "typ": null,
+      "max": 85,
+      "unit": "\u00b0C",
+      "test_conditions": "LM293, LM293A; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "LM293, LM293A | \u201325{MIN} | 85{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "TA",
+      "name": "Ambient temperature",
+      "category": "RECOMMENDED",
+      "min": 0,
+      "typ": null,
+      "max": 70,
+      "unit": "\u00b0C",
+      "test_conditions": "LM393, LM393A; over operating free-air temperature range (unless otherwise noted)",
+      "page": 4,
+      "evidence": "LM393, LM393A | 0{MIN} | 70{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 148.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; D (SOIC), 8 pins",
+      "page": 5,
+      "evidence": "R\u03b8JA Junction-to-ambient thermal resistance | 148.5",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 114.9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; P (PDIP), 8 pins",
+      "page": 5,
+      "evidence": "R\u03b8JA Junction-to-ambient thermal resistance | 114.9",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 200.6,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; PW (TSSOP), 8 pins",
+      "page": 5,
+      "evidence": "R\u03b8JA Junction-to-ambient thermal resistance | 200.6",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 193.7,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; DGK (VSSOP), 8 pins",
+      "page": 5,
+      "evidence": "R\u03b8JA Junction-to-ambient thermal resistance | 193.7",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 197.9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; DDF (SOT-23), 8 pins",
+      "page": 5,
+      "evidence": "R\u03b8JA Junction-to-ambient thermal resistance | 197.9",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 96.9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; DSG (WSON), 8 pins",
+      "page": 5,
+      "evidence": "R\u03b8JA Junction-to-ambient thermal resistance | 96.9",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 90.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; D (SOIC), 8 pins",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) Junction-to-case (top) thermal resistance | 90.2",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 93.8,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; P (PDIP), 8 pins",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) Junction-to-case (top) thermal resistance | 93.8",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 89.6,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; PW (TSSOP), 8 pins",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) Junction-to-case (top) thermal resistance | 89.6",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 82.9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; DGK (VSSOP), 8 pins",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) Junction-to-case (top) thermal resistance | 82.9",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 119.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; DDF (SOT-23), 8 pins",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) Junction-to-case (top) thermal resistance | 119.2",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 119.0,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; DSG (WSON), 8 pins",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) Junction-to-case (top) thermal resistance | 119.0",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 91.8,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; D (SOIC), 8 pins",
+      "page": 5,
+      "evidence": "R\u03b8JB Junction-to-board thermal resistance | 91.8",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 77.7,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; P (PDIP), 8 pins",
+      "page": 5,
+      "evidence": "R\u03b8JB Junction-to-board thermal resistance | 77.7",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 131.3,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; PW (TSSOP), 8 pins",
+      "page": 5,
+      "evidence": "R\u03b8JB Junction-to-board thermal resistance | 131.3",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 115.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; DGK (VSSOP), 8 pins",
+      "page": 5,
+      "evidence": "R\u03b8JB Junction-to-board thermal resistance | 115.5",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 115.4,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; DDF (SOT-23), 8 pins",
+      "page": 5,
+      "evidence": "R\u03b8JB Junction-to-board thermal resistance | 115.4",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 63.1,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; DSG (WSON), 8 pins",
+      "page": 5,
+      "evidence": "R\u03b8JB Junction-to-board thermal resistance | 63.1",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 38.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; D (SOIC), 8 pins",
+      "page": 5,
+      "evidence": "\u03c8JT Junction-to-top characterization parameter | 38.5",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 60.4,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; P (PDIP), 8 pins",
+      "page": 5,
+      "evidence": "\u03c8JT Junction-to-top characterization parameter | 60.4",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 22.1,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; PW (TSSOP), 8 pins",
+      "page": 5,
+      "evidence": "\u03c8JT Junction-to-top characterization parameter | 22.1",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 20.8,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; DGK (VSSOP), 8 pins",
+      "page": 5,
+      "evidence": "\u03c8JT Junction-to-top characterization parameter | 20.8",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 19.4,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; DDF (SOT-23), 8 pins",
+      "page": 5,
+      "evidence": "\u03c8JT Junction-to-top characterization parameter | 19.4",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 12.4,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; DSG (WSON), 8 pins",
+      "page": 5,
+      "evidence": "\u03c8JT Junction-to-top characterization parameter | 12.4",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 91.1,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; D (SOIC), 8 pins",
+      "page": 5,
+      "evidence": "\u03c8JB Junction-to-board characterization parameter | 91.1",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 76.7,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; P (PDIP), 8 pins",
+      "page": 5,
+      "evidence": "\u03c8JB Junction-to-board characterization parameter | 76.7",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 129.6,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; PW (TSSOP), 8 pins",
+      "page": 5,
+      "evidence": "\u03c8JB Junction-to-board characterization parameter | 129.6",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 113.9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; DGK (VSSOP), 8 pins",
+      "page": 5,
+      "evidence": "\u03c8JB Junction-to-board characterization parameter | 113.9",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 113.7,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; DDF (SOT-23), 8 pins",
+      "page": 5,
+      "evidence": "\u03c8JB Junction-to-board characterization parameter | 113.7",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 63.0,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; DSG (WSON), 8 pins",
+      "page": 5,
+      "evidence": "\u03c8JB Junction-to-board characterization parameter | 63.0",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; D (SOIC), 8 pins; printed value: -",
+      "page": 5,
+      "evidence": "R\u03b8JC(bot) Junction-to-case (bottom) thermal resistance | -",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; P (PDIP), 8 pins; printed value: -",
+      "page": 5,
+      "evidence": "R\u03b8JC(bot) Junction-to-case (bottom) thermal resistance | -",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; PW (TSSOP), 8 pins; printed value: -",
+      "page": 5,
+      "evidence": "R\u03b8JC(bot) Junction-to-case (bottom) thermal resistance | -",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; DGK (VSSOP), 8 pins; printed value: -",
+      "page": 5,
+      "evidence": "R\u03b8JC(bot) Junction-to-case (bottom) thermal resistance | -",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; DDF (SOT-23), 8 pins; printed value: -",
+      "page": 5,
+      "evidence": "R\u03b8JC(bot) Junction-to-case (bottom) thermal resistance | -",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 37.8,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMx93x, LM2903x; DSG (WSON), 8 pins",
+      "page": 5,
+      "evidence": "R\u03b8JC(bot) Junction-to-case (bottom) thermal resistance | 37.8",
+      "related_pins": []
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Human body model (HBM), per ANSI/ESDA/JEDEC JS-001(1)",
+      "category": "ESD",
+      "min": null,
+      "typ": null,
+      "max": 2000,
+      "unit": "V",
+      "test_conditions": "Electrostatic discharge; printed rating: \u00b12000",
+      "page": 5,
+      "evidence": "Human body model (HBM), per ANSI/ESDA/JEDEC JS-001(1) | \u00b12000",
+      "related_pins": []
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Charged-device model (CDM), per JEDEC specification JESD22-C101(2)",
+      "category": "ESD",
+      "min": null,
+      "typ": null,
+      "max": 1000,
+      "unit": "V",
+      "test_conditions": "Electrostatic discharge; printed rating: \u00b11000",
+      "page": 5,
+      "evidence": "Charged-device model (CDM), per JEDEC specification JESD22-C101(2) | \u00b11000",
+      "related_pins": []
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": -2.5,
+      "typ": 0.37,
+      "max": 2.5,
+      "unit": "mV",
+      "test_conditions": "LM393B; VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; VS = 5 to 36V",
+      "page": 6,
+      "evidence": "VS = 5 to 36V | \u20132.5 | \u00b10.37 | 2.5",
+      "related_pins": [
+        "IN+",
+        "IN\u2013"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": -4,
+      "typ": null,
+      "max": 4,
+      "unit": "mV",
+      "test_conditions": "LM393B; VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; VS = 5 to 36V, TA = \u201340\u00b0C to +85\u00b0C",
+      "page": 6,
+      "evidence": "VS = 5 to 36V, TA = \u201340\u00b0C to +85\u00b0C | -4 | 4",
+      "related_pins": [
+        "IN+",
+        "IN\u2013"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage, DGK package only",
+      "category": "ELECTRICAL",
+      "min": -3.5,
+      "typ": 0.37,
+      "max": 3.5,
+      "unit": "mV",
+      "test_conditions": "LM393B; VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; VS = 5 to 36V; DGK package only",
+      "page": 6,
+      "evidence": "Input offset voltage, DGK package only | VS = 5 to 36V | \u20133.5 | \u00b10.37 | 3.5",
+      "related_pins": [
+        "IN+",
+        "IN\u2013"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage, DGK package only",
+      "category": "ELECTRICAL",
+      "min": -5,
+      "typ": null,
+      "max": 5,
+      "unit": "mV",
+      "test_conditions": "LM393B; VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; VS = 5 to 36V, TA = \u201340\u00b0C to +85\u00b0C; DGK package only",
+      "page": 6,
+      "evidence": "VS = 5 to 36V, TA = \u201340\u00b0C to +85\u00b0C | \u20135 | 5",
+      "related_pins": [
+        "IN+",
+        "IN\u2013"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -3.5,
+      "max": -25,
+      "unit": "nA",
+      "test_conditions": "LM393B; VS = 5V, VCM = (V\u2013); TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "\u20133.5 | \u201325 | nA; Input bias current",
+      "related_pins": [
+        "IN+",
+        "IN\u2013"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -50,
+      "unit": "nA",
+      "test_conditions": "LM393B; TA = \u201340\u00b0C to +85\u00b0C",
+      "page": 6,
+      "evidence": "TA = \u201340\u00b0C to +85\u00b0C | \u201350 | nA",
+      "related_pins": [
+        "IN+",
+        "IN\u2013"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": -10,
+      "typ": 0.5,
+      "max": 10,
+      "unit": "nA",
+      "test_conditions": "LM393B; VS = 5V, VCM = (V\u2013); TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "\u201310 | \u00b10.5 | 10 | nA; Input offset current",
+      "related_pins": [
+        "IN+",
+        "IN\u2013"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": -25,
+      "typ": null,
+      "max": 25,
+      "unit": "nA",
+      "test_conditions": "LM393B; TA = \u201340\u00b0C to +85\u00b0C",
+      "page": 6,
+      "evidence": "TA = \u201340\u00b0C to +85\u00b0C | \u201325 | 25",
+      "related_pins": [
+        "IN+",
+        "IN\u2013"
+      ]
+    },
+    {
+      "symbol": "VCM",
+      "name": "Common mode range (1)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "LM393B; VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; VS = 3 to 36V; lower limit (V\u2013), upper limit (V+) \u2013 1.5",
+      "page": 6,
+      "evidence": "VS = 3 to 36V | (V\u2013) | (V+) \u2013 1.5 | V",
+      "related_pins": [
+        "IN+",
+        "IN\u2013"
+      ]
+    },
+    {
+      "symbol": "AVD",
+      "name": "Large signal differential voltage amplification",
+      "category": "ELECTRICAL",
+      "min": 50,
+      "typ": 200,
+      "max": null,
+      "unit": "V/mV",
+      "test_conditions": "LM393B; VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; VS = 15V, VO = 1.4V to 11.4V; RL \u2265 15k to (V+)",
+      "page": 6,
+      "evidence": "VS = 15V, VO = 1.4V to 11.4V; RL \u2265 15k to (V+) | 50 | 200",
+      "related_pins": [
+        "IN+",
+        "IN\u2013",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low level output Voltage (swing from (V\u2013))",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 110,
+      "max": 400,
+      "unit": "mV",
+      "test_conditions": "LM393B; VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; ISINK \u2264 4mA, VID = -1V",
+      "page": 6,
+      "evidence": "ISINK \u2264 4mA, VID = -1V | 110 | 400",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low level output Voltage (swing from (V\u2013))",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 550,
+      "unit": "mV",
+      "test_conditions": "LM393B; TA = \u201340\u00b0C to +85\u00b0C; ISINK \u2264 4mA, VID = -1V",
+      "page": 6,
+      "evidence": "TA = \u201340\u00b0C to +85\u00b0C | 550 | mV",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IOH-LKG",
+      "name": "High-level output leakage current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": 20,
+      "unit": "nA",
+      "test_conditions": "LM393B; VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; (V+) = VO = 5V; VID = 1V",
+      "page": 6,
+      "evidence": "(V+) = VO = 5V; VID = 1V | 0.1 | 20",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IOH-LKG",
+      "name": "High-level output leakage current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.3,
+      "max": 50,
+      "unit": "nA",
+      "test_conditions": "LM393B; VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; (V+) = VO = 36V; VID = 1V",
+      "page": 6,
+      "evidence": "(V+) = VO = 36V; VID = 1V | 0.3 | 50",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IOL",
+      "name": "Low level output current",
+      "category": "ELECTRICAL",
+      "min": 6,
+      "typ": 21,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "LM393B; VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; VOL = 1.5V; VID = -1V; VS = 5V",
+      "page": 6,
+      "evidence": "VOL = 1.5V; VID = -1V; VS = 5V | 6 | 21",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IQ",
+      "name": "Quiescent current (all comparators)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 400,
+      "max": 600,
+      "unit": "\u00b5A",
+      "test_conditions": "LM393B; VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; VS = 5V, no load",
+      "page": 6,
+      "evidence": "VS = 5V, no load | 400 | 600",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "IQ",
+      "name": "Quiescent current (all comparators)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 550,
+      "max": 800,
+      "unit": "\u00b5A",
+      "test_conditions": "LM393B; VS = 36V, no load, TA = \u201340\u00b0C to +85\u00b0C",
+      "page": 6,
+      "evidence": "VS = 36V, no load, TA = \u201340\u00b0C to +85\u00b0C | 550 | 800",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 2,
+      "max": 5,
+      "unit": "mV",
+      "test_conditions": "LM393, TA = 25\u00b0C, VCC = 5V to 30V, VIC = VICR min, VO = 1.4V",
+      "page": 8,
+      "evidence": "VCC = 5V to 30V, VIC = VICR min, VO = 1.4V | 25\u00b0C | 2{TYP} | 5{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2212",
+        "OUT",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 9,
+      "unit": "mV",
+      "test_conditions": "LM393, full temperature range, VIC = VICR min, VO = 1.4V",
+      "page": 8,
+      "evidence": "Full range | 9 | 9{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2212",
+        "OUT",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "IIO",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 5,
+      "max": 50,
+      "unit": "nA",
+      "test_conditions": "LM393, TA = 25\u00b0C, VCC = 5V, VO = 1.4V",
+      "page": 8,
+      "evidence": "25\u00b0C | 3 | 25 | 5{TYP} | 50{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2212",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IIO",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 250,
+      "unit": "nA",
+      "test_conditions": "LM393, full temperature range, VCC = 5V, VO = 1.4V",
+      "page": 8,
+      "evidence": "Full range | 100 | 250{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2212",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IIB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -25,
+      "max": -250,
+      "unit": "nA",
+      "test_conditions": "LM393, TA = 25\u00b0C, VCC = 5V, VO = 1.4V",
+      "page": 8,
+      "evidence": "25\u00b0C | \u201325 \u2013100 | \u201325{TYP} \u2013250{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "IIB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -400,
+      "unit": "nA",
+      "test_conditions": "LM393, full temperature range, VCC = 5V, VO = 1.4V",
+      "page": 8,
+      "evidence": "Full range | \u2013300 | \u2013400{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "VICR",
+      "name": "Common-mode input-voltage range",
+      "category": "ELECTRICAL",
+      "min": 0,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "LM393, TA = 25\u00b0C, VCC = 5V",
+      "page": 8,
+      "evidence": "25\u00b0C | 0 to VCC \u2013 1.5 | 0{MIN} to VCC \u2013 1.5{MIN}",
+      "related_pins": [
+        "IN+",
+        "IN\u2212",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "VICR",
+      "name": "Common-mode input-voltage range",
+      "category": "ELECTRICAL",
+      "min": 0,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "LM393, full temperature range, VCC = 5V",
+      "page": 8,
+      "evidence": "Full range | 0 to VCC \u2013 2 | 0{MIN} to VCC \u2013 2{MIN}",
+      "related_pins": [
+        "IN+",
+        "IN\u2212",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "AVD",
+      "name": "Large-signal differential-voltage amplification",
+      "category": "ELECTRICAL",
+      "min": 50,
+      "typ": 200,
+      "max": null,
+      "unit": "V/mV",
+      "test_conditions": "LM393, TA = 25\u00b0C, VCC = 15V, VO = 1.4V to 11.4V, RL \u2265 15k\u03a9 to VCC",
+      "page": 8,
+      "evidence": "VCC = 15V, VO = 1.4V to 11.4V, RL \u2265 15k\u03a9 to VCC | 25\u00b0C | 50{MIN} 200{TYP}",
+      "related_pins": [
+        "IN+",
+        "IN\u2212",
+        "OUT",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "IOH",
+      "name": "High-level output current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": 50,
+      "unit": "nA",
+      "test_conditions": "LM393, TA = 25\u00b0C, VOH = 5V, VID = 1V",
+      "page": 8,
+      "evidence": "VOH = 5V | VID = 1V | 25\u00b0C | 0.1{TYP} | 50{MAX}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IOH",
+      "name": "High-level output current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 1,
+      "unit": "\u00b5A",
+      "test_conditions": "LM393, full temperature range, VOH = 30V, VID = 1V",
+      "page": 8,
+      "evidence": "VOH = 30V | VID = 1V | Full range | 1{MAX}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 130,
+      "max": 400,
+      "unit": "mV",
+      "test_conditions": "LM393, TA = 25\u00b0C, IOL = 4mA, VID = \u20131V",
+      "page": 8,
+      "evidence": "25\u00b0C | 150 | 400 | 130{TYP} | 400{MAX}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 700,
+      "unit": "mV",
+      "test_conditions": "LM393, full temperature range, IOL = 4mA, VID = \u20131V",
+      "page": 8,
+      "evidence": "Full range | 700 | 700{MAX}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IOL",
+      "name": "Low-level output current",
+      "category": "ELECTRICAL",
+      "min": 6,
+      "typ": null,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "LM393, TA = 25\u00b0C, VOL = 1.5V, VID = \u20131V",
+      "page": 8,
+      "evidence": "VOL = 1.5V, VID = \u20131V | 25\u00b0C | 6 | 6{MIN}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.45,
+      "max": 1,
+      "unit": "mA",
+      "test_conditions": "LM393, TA = 25\u00b0C, VCC = 5V, RL = \u221e",
+      "page": 8,
+      "evidence": "VCC = 5V | 25\u00b0C | 0.8 | 1 | 0.45{TYP} | 1{MAX}",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.55,
+      "max": 2.5,
+      "unit": "mA",
+      "test_conditions": "LM393, full temperature range, VCC = 30V, RL = \u221e",
+      "page": 8,
+      "evidence": "VCC = 30V | Full range | 2.5 | 0.55{TYP} | 2.5{MAX}",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1,
+      "max": 2,
+      "unit": "mV",
+      "test_conditions": "VCC = 5V to 30V, VO = 1.4V, VIC = VICR(min); TA = 25\u00b0C; LM293A and LM393A",
+      "page": 9,
+      "evidence": "VCC = 5V to 30V, VO = 1.4V | 25\u00b0C | 1 | 2",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 4,
+      "unit": "mV",
+      "test_conditions": "VCC = 5V to 30V, VO = 1.4V, VIC = VICR(min); TA = Full range; LM293A and LM393A",
+      "page": 9,
+      "evidence": "VIC = VICR(min) | Full range | 4",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "IIO",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 5,
+      "max": 50,
+      "unit": "nA",
+      "test_conditions": "VO = 1.4V; TA = 25\u00b0C; LM293A and LM393A",
+      "page": 9,
+      "evidence": "25\u00b0C | 5 | 50",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "IIO",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 150,
+      "unit": "nA",
+      "test_conditions": "VO = 1.4V; TA = Full range; LM293A and LM393A",
+      "page": 9,
+      "evidence": "Full range | 150",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "IIB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -25,
+      "max": -250,
+      "unit": "nA",
+      "test_conditions": "VO = 1.4V; TA = 25\u00b0C; LM293A and LM393A",
+      "page": 9,
+      "evidence": "25\u00b0C | \u201325 | \u2013250",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "IIB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -400,
+      "unit": "nA",
+      "test_conditions": "VO = 1.4V; TA = Full range; LM293A and LM393A",
+      "page": 9,
+      "evidence": "Full range | \u2013400",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "VICR",
+      "name": "Common-mode input-voltage range",
+      "category": "ELECTRICAL",
+      "min": 0,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "TA = 25\u00b0C; upper range shown as VCC \u2013 1.5V; LM293A and LM393A",
+      "page": 9,
+      "evidence": "0 to VCC \u2013 1.5 | 25\u00b0C",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "VICR",
+      "name": "Common-mode input-voltage range",
+      "category": "ELECTRICAL",
+      "min": 0,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "TA = Full range; upper range shown as VCC \u2013 2V; LM293A and LM393A",
+      "page": 9,
+      "evidence": "0 to VCC \u2013 2 | Full range",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "AVD",
+      "name": "Large-signal differential-voltage amplification",
+      "category": "ELECTRICAL",
+      "min": 50,
+      "typ": 200,
+      "max": null,
+      "unit": "V/mV",
+      "test_conditions": "VCC = 15V, VO = 1.4V to 11.4V, RL \u2265 15k\u2126 to VCC; TA = 25\u00b0C; LM293A and LM393A",
+      "page": 9,
+      "evidence": "VCC = 15V, VO = 1.4V to 11.4V, RL \u2265 15k\u2126 to VCC | 25\u00b0C | 50 | 200",
+      "related_pins": [
+        "IN+",
+        "IN\u2212",
+        "OUT",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "IOH",
+      "name": "High-level output current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": 50,
+      "unit": "nA",
+      "test_conditions": "VOH = 5V, VID = 1V; TA = 25\u00b0C; LM293A and LM393A",
+      "page": 9,
+      "evidence": "VOH = 5V, VID = 1V | 25\u00b0C | 0.1 | 50",
+      "related_pins": [
+        "OUT",
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "IOH",
+      "name": "High-level output current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 1,
+      "unit": "\u00b5A",
+      "test_conditions": "VOH = 30V, VID = 1V; TA = Full range; LM293A and LM393A",
+      "page": 9,
+      "evidence": "VOH = 30V, VID = 1V | Full range | 1",
+      "related_pins": [
+        "OUT",
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 110,
+      "max": 400,
+      "unit": "mV",
+      "test_conditions": "IOL = 4mA, VID = \u20131V; TA = 25\u00b0C; LM293A and LM393A",
+      "page": 9,
+      "evidence": "IOL = 4mA, VID = \u20131V | 25\u00b0C | 110 | 400",
+      "related_pins": [
+        "OUT",
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 700,
+      "unit": "mV",
+      "test_conditions": "IOL = 4mA, VID = \u20131V; TA = Full range; LM293A and LM393A",
+      "page": 9,
+      "evidence": "Full range | 700",
+      "related_pins": [
+        "OUT",
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "IOL",
+      "name": "Low-level output current",
+      "category": "ELECTRICAL",
+      "min": 6,
+      "typ": null,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "VOL = 1.5V, VID = \u20131V, VCC = 5V; TA = 25\u00b0C; LM293A and LM393A",
+      "page": 9,
+      "evidence": "VOL = 1.5V, VID = \u20131V | 25\u00b0C | 6",
+      "related_pins": [
+        "OUT",
+        "IN+",
+        "IN\u2212",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.6,
+      "max": 1,
+      "unit": "mA",
+      "test_conditions": "RL = \u221e, VCC = 5V; TA = 25\u00b0C; LM293A and LM393A",
+      "page": 9,
+      "evidence": "VCC = 5V | 25\u00b0C | 0.60 | 1",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.72,
+      "max": 2.5,
+      "unit": "mA",
+      "test_conditions": "RL = \u221e, VCC = 30V; TA = Full range; LM293A and LM393A",
+      "page": 9,
+      "evidence": "VCC = 30V | Full range | 0.72 | 2.5",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 2,
+      "max": 7,
+      "unit": "mV",
+      "test_conditions": "LM2903, TA = 25\u00b0C; VCC = 5V to MAX, VO = 1.4V, VIC = VICR(min)",
+      "page": 10,
+      "evidence": "VCC = 5V to MAX, VO = 1.4V, VIC = VICR(min)",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1,
+      "max": 2,
+      "unit": "mV",
+      "test_conditions": "LM2903AV, TA = 25\u00b0C; VCC = 5V to MAX, VO = 1.4V, VIC = VICR(min)",
+      "page": 10,
+      "evidence": "VCC = 5V to MAX, VO = 1.4V, VIC = VICR(min)",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 15,
+      "unit": "mV",
+      "test_conditions": "LM2903, full range (\u221240\u00b0C to 125\u00b0C); VCC = 5V to MAX, VO = 1.4V, VIC = VICR(min)",
+      "page": 10,
+      "evidence": "Full range | 15 | 4{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 4,
+      "unit": "mV",
+      "test_conditions": "LM2903AV; full range; VCC = 5V to MAX, VO = 1.4V, VIC = VICR(min)",
+      "page": 10,
+      "evidence": "Full range | 15 | 4{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "IIO",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 5,
+      "max": 50,
+      "unit": "nA",
+      "test_conditions": "LM2903, TA = 25\u00b0C; VO = 1.4V",
+      "page": 10,
+      "evidence": "25\u00b0C | 5 | 50 | 5{TYP} | 50{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "IIO",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 5,
+      "max": 50,
+      "unit": "nA",
+      "test_conditions": "LM2903AV, TA = 25\u00b0C; VO = 1.4V",
+      "page": 10,
+      "evidence": "25\u00b0C | 5 | 50 | 5{TYP} | 50{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "IIO",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 200,
+      "unit": "nA",
+      "test_conditions": "LM2903, full range; VO = 1.4V",
+      "page": 10,
+      "evidence": "Full range | 200 | 200{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "IIO",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 200,
+      "unit": "nA",
+      "test_conditions": "LM2903AV, full range; VO = 1.4V",
+      "page": 10,
+      "evidence": "Full range | 200 | 200{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "IIB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -25,
+      "max": -250,
+      "unit": "nA",
+      "test_conditions": "LM2903, TA = 25\u00b0C; VO = 1.4V",
+      "page": 10,
+      "evidence": "25\u00b0C | \u201325 \u2013250 | \u201325{TYP} \u2013250{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "IIB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -25,
+      "max": -250,
+      "unit": "nA",
+      "test_conditions": "LM2903AV, TA = 25\u00b0C; VO = 1.4V",
+      "page": 10,
+      "evidence": "25\u00b0C | \u201325 \u2013250 | \u201325{TYP} \u2013250{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "IIB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -500,
+      "unit": "nA",
+      "test_conditions": "LM2903, full range; VO = 1.4V",
+      "page": 10,
+      "evidence": "Full range | \u2013500 | \u2013500{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "IIB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -500,
+      "unit": "nA",
+      "test_conditions": "LM2903AV, full range; VO = 1.4V",
+      "page": 10,
+      "evidence": "Full range | \u2013500 | \u2013500{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN\u2212"
+      ]
+    },
+    {
+      "symbol": "VICR",
+      "name": "Common-mode input-voltage range",
+      "category": "ELECTRICAL",
+      "min": 0,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "LM2903, TA = 25\u00b0C; range 0 to VCC \u2212 1.5V",
+      "page": 10,
+      "evidence": "0 to VCC \u2013 1.5",
+      "related_pins": [
+        "IN+",
+        "IN\u2212",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "VICR",
+      "name": "Common-mode input-voltage range",
+      "category": "ELECTRICAL",
+      "min": 0,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "LM2903AV, TA = 25\u00b0C; range 0 to VCC \u2212 1.5V",
+      "page": 10,
+      "evidence": "0 to VCC \u2013 1.5",
+      "related_pins": [
+        "IN+",
+        "IN\u2212",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "VICR",
+      "name": "Common-mode input-voltage range",
+      "category": "ELECTRICAL",
+      "min": 0,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "LM2903, full range; range 0 to VCC \u2212 2V",
+      "page": 10,
+      "evidence": "0 to VCC \u2013 2",
+      "related_pins": [
+        "IN+",
+        "IN\u2212",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "VICR",
+      "name": "Common-mode input-voltage range",
+      "category": "ELECTRICAL",
+      "min": 0,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "LM2903AV, full range; range 0 to VCC \u2212 2V",
+      "page": 10,
+      "evidence": "0 to VCC \u2013 2",
+      "related_pins": [
+        "IN+",
+        "IN\u2212",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "AVD",
+      "name": "Large-signal differential-voltage amplification",
+      "category": "ELECTRICAL",
+      "min": 25,
+      "typ": 100,
+      "max": null,
+      "unit": "V/mV",
+      "test_conditions": "LM2903, TA = 25\u00b0C; VCC = 15V, VO = 1.4V to 11.4V, RL \u2265 15k\u2126 to VCC",
+      "page": 10,
+      "evidence": "VCC = 15V, VO = 1.4V to 11.4V, RL \u2265 15k\u2126 to VCC",
+      "related_pins": [
+        "IN+",
+        "IN\u2212",
+        "OUT",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "AVD",
+      "name": "Large-signal differential-voltage amplification",
+      "category": "ELECTRICAL",
+      "min": 25,
+      "typ": 100,
+      "max": null,
+      "unit": "V/mV",
+      "test_conditions": "LM2903AV, TA = 25\u00b0C; VCC = 15V, VO = 1.4V to 11.4V, RL \u2265 15k\u2126 to VCC",
+      "page": 10,
+      "evidence": "VCC = 15V, VO = 1.4V to 11.4V, RL \u2265 15k\u2126 to VCC",
+      "related_pins": [
+        "IN+",
+        "IN\u2212",
+        "OUT",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "IOH",
+      "name": "High-level output current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": 50,
+      "unit": "nA",
+      "test_conditions": "LM2903, TA = 25\u00b0C; VOH = 5V, VID = 1V",
+      "page": 10,
+      "evidence": "VOH = 5V, VID = 1V | 25\u00b0C | 0.1 | 50",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IOH",
+      "name": "High-level output current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": 50,
+      "unit": "nA",
+      "test_conditions": "LM2903AV, TA = 25\u00b0C; VOH = 5V, VID = 1V",
+      "page": 10,
+      "evidence": "VOH = 5V, VID = 1V | 25\u00b0C | 0.1 | 50",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IOH",
+      "name": "High-level output current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 1,
+      "unit": "\u00b5A",
+      "test_conditions": "LM2903, full range; VOH = VCC MAX, VID = 1V",
+      "page": 10,
+      "evidence": "VOH = VCC MAX, VID = 1V | Full range | 1",
+      "related_pins": [
+        "OUT",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "IOH",
+      "name": "High-level output current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 1,
+      "unit": "\u00b5A",
+      "test_conditions": "LM2903AV, full range; VOH = VCC MAX, VID = 1V",
+      "page": 10,
+      "evidence": "VOH = VCC MAX, VID = 1V | Full range | 1",
+      "related_pins": [
+        "OUT",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 150,
+      "max": 400,
+      "unit": "mV",
+      "test_conditions": "LM2903, TA = 25\u00b0C; IOL = 4mA, VID = \u22121V",
+      "page": 10,
+      "evidence": "IOL = 4mA, VID = \u20131V, | 25\u00b0C | 150 400",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 150,
+      "max": 400,
+      "unit": "mV",
+      "test_conditions": "LM2903AV, TA = 25\u00b0C; IOL = 4mA, VID = \u22121V",
+      "page": 10,
+      "evidence": "IOL = 4mA, VID = \u20131V, | 25\u00b0C | 150 400",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 700,
+      "unit": "mV",
+      "test_conditions": "LM2903, full range; IOL = 4mA, VID = \u22121V",
+      "page": 10,
+      "evidence": "Full range | 700 | 700{MAX}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 700,
+      "unit": "mV",
+      "test_conditions": "LM2903AV, full range; IOL = 4mA, VID = \u22121V",
+      "page": 10,
+      "evidence": "Full range | 700 | 700{MAX}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IOL",
+      "name": "Low-level output current",
+      "category": "ELECTRICAL",
+      "min": 6,
+      "typ": null,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "LM2903, TA = 25\u00b0C; VOL = 1.5V, VID = \u22121V",
+      "page": 10,
+      "evidence": "VOL = 1.5V, | VID = \u20131V | 25\u00b0C | 6 | 6{MIN}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IOL",
+      "name": "Low-level output current",
+      "category": "ELECTRICAL",
+      "min": 6,
+      "typ": null,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "LM2903AV, TA = 25\u00b0C; VOL = 1.5V, VID = \u22121V",
+      "page": 10,
+      "evidence": "VOL = 1.5V, | VID = \u20131V | 25\u00b0C | 6 | 6{MIN}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.8,
+      "max": 1,
+      "unit": "mA",
+      "test_conditions": "LM2903, TA = 25\u00b0C; VCC = 5V, RL = \u221e",
+      "page": 10,
+      "evidence": "VCC = 5V | 25\u00b0C | 0.8 | 1 | RL = \u221e",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.8,
+      "max": 1,
+      "unit": "mA",
+      "test_conditions": "LM2903AV, TA = 25\u00b0C; VCC = 5V, RL = \u221e",
+      "page": 10,
+      "evidence": "VCC = 5V | 25\u00b0C | 0.8 | 1 | RL = \u221e",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 2.5,
+      "unit": "mA",
+      "test_conditions": "LM2903, full range; VCC = MAX, RL = \u221e",
+      "page": 10,
+      "evidence": "VCC = MAX | Full range | 2.5 | 2.5{MAX}",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 2.5,
+      "unit": "mA",
+      "test_conditions": "LM2903AV, full range; VCC = MAX, RL = \u221e",
+      "page": 10,
+      "evidence": "VCC = MAX | Full range | 2.5 | 2.5{MAX}",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "Response time",
+      "name": "Response time",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1.3,
+      "max": null,
+      "unit": "\u00b5s",
+      "test_conditions": "LM193, LM239, LM393, LM2903, all A and V versions; VCC = 5V, TA = 25\u00b0C; RL connected to 5V through 5.1k\u2126, CL = 15pF, 100mV input step with 5mV overdrive",
+      "page": 10,
+      "evidence": "100mV input step with 5mV overdrive | 1.3",
+      "related_pins": [
+        "IN+",
+        "IN\u2212",
+        "OUT",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "Response time",
+      "name": "Response time",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.3,
+      "max": null,
+      "unit": "\u00b5s",
+      "test_conditions": "LM193, LM239, LM393, LM2903, all A and V versions; VCC = 5V, TA = 25\u00b0C; RL connected to 5V through 5.1k\u2126, CL = 15pF, TTL-level input step",
+      "page": 10,
+      "evidence": "TTL-level input step | 0.3",
+      "related_pins": [
+        "IN+",
+        "IN\u2212",
+        "OUT",
+        "VCC"
+      ]
+    }
+  ],
+  "provenance": {
+    "pin_pages": [
+      1,
+      3
+    ],
+    "spec_pages": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "func_pages": [
+      17
+    ],
+    "failed_spec_pages": [],
+    "source_file": "lm393.pdf"
+  }
+}

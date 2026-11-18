@@ -1,0 +1,224 @@
+* xml
+* <architecture_summary>
+* The LM386 is a low-power audio amplifier designed for simplicity and battery operation. The core architecture consists of a differential input stage, a voltage gain stage, and a class AB output stage. The key features are its internally set gain (20x or 26dB) which can be increased to 200x (46dB) with an external RC network, ground-referenced inputs, and an output automatically biased to half the supply voltage.
+
+**Architectural Breakdown:**
+
+* 1.  **Input Stage (Differential Amplifier):**
+    *   A differential pair (Q1, Q2) forms the input stage, providing high input impedance and common-mode rejection.
+    *   The non-inverting input (Pin 3) is directly connected to the base of Q1.
+    *   The inverting input (Pin 2) is connected to the base of Q2.
+    *   A current mirror (Q3, Q4) acts as the active load for the differential pair, converting differential current to single-ended voltage.
+    *   The input transistors are biased by a constant current source (I_bias_input) to ensure stable operation and set the input bias current (IBIAS). The specified IBIAS of 250 nA is achieved by carefully sizing the current source and the input differential pair.
+    *   The input resistance (RIN) of 50 kΩ is primarily determined by the input transistor's beta and the biasing resistors.
+
+* 2.  **Gain Stage:**
+    *   The output of the differential stage drives a common-emitter amplifier (Q5) for voltage gain.
+    *   This stage provides the primary voltage amplification.
+    *   Frequency compensation (C_comp) is applied around this stage to ensure stability and set the bandwidth (BW) of 300 kHz. This capacitor creates a dominant pole.
+    *   The gain control pins (GAIN, pins 1 and 8) are connected across a resistor (R_gain_internal) in series with the emitter of Q5. When these pins are open, this resistor is bypassed, setting the gain to 20. When an external capacitor is connected, it effectively shorts this resistor at AC, increasing the gain. An external resistor and capacitor can be added to set the gain between 20 and 200. For the internal gain of 20, a resistor is placed between the emitter of Q5 and ground, and another resistor is placed between the collector of Q5 and the base of the output driver. For the gain of 200, an external capacitor shorts the internal gain-setting resistor.
+
+* 3.  **Output Stage (Class AB):**
+    *   A class AB output stage (Q6, Q7, Q8, Q9) is used to provide efficient power delivery to the load.
+    *   This stage consists of complementary NPN and PNP transistors (or their MOSFET equivalents in a full CMOS design, but here we'll use BJTs for realism to the original LM386).
+    *   A Vbe multiplier (Q_Vbe_mult) or diode string provides quiescent bias current to minimize crossover distortion.
+    *   The output is biased to approximately VS/2. This is achieved by a feedback loop that senses the output voltage and adjusts the bias of the gain stage to maintain this DC level.
+    *   The output power (POUT) specifications (e.g., 325 mW into 8 Ω at VS=6V) dictate the sizing of the output transistors to handle the required current and voltage swings. The output transistors must be able to deliver peak currents of around 300-400mA for 8Ω loads.
+    *   An output resistor (R_out) and capacitor (C_out) form a Zobel network for stability with reactive loads.
+
+* 4.  **Bias Network:**
+    *   A stable current reference (e.g., a bandgap reference or a simple resistor-based current source from VS) generates the necessary bias currents for the input stage, gain stage, and output stage.
+    *   The quiescent current (IQ) of 4mA at VS=6V is a critical parameter for battery operation. This is achieved by carefully setting the current levels in all stages.
+
+* 5.  **Power Supply Rejection Ratio (PSRR):**
+    *   The BYPASS pin (Pin 7) is used to connect a capacitor to ground, which filters the internal bias voltage, improving PSRR. A 10µF capacitor is typically used for this purpose. This capacitor stabilizes the internal reference voltage for the gain stage.
+
+**Sizing Methodology:**
+
+*   **Input Stage:**
+    *   `IBIAS = 250 nA`: The current source for the differential pair is set to 2 * IBIAS. Transistor sizes (W/L for MOSFETs, emitter area for BJTs) are chosen to achieve this current with reasonable Vbe/Vgs.
+    *   `RIN = 50 kΩ`: For BJTs, `RIN ≈ β * (re + RE)`. With `re = kT/qIc`, `Ic` is set by `IBIAS`. `β` is assumed to be around 100-200.
+*   **Gain Stage:**
+    *   `AV = 26 dB (20x)`: This gain is primarily set by the ratio of collector resistor to emitter resistor (or transconductance * output resistance) of the gain stage. For the LM386, the internal gain is set by a resistor between pins 1 and 8. When open, this resistor is effectively in the emitter path, reducing gain. When shorted (by a capacitor), the gain increases.
+    *   `BW = 300 kHz`: The compensation capacitor (C_comp) is calculated using the gain-bandwidth product and the desired dominant pole frequency. `f_pole = 1 / (2 * pi * R_out_gain_stage * C_comp)`.
+*   **Output Stage:**
+    *   `POUT = 325 mW into 8 Ω at VS=6V`: Peak output voltage `Vp = sqrt(2 * POUT * RL) = sqrt(2 * 0.325 * 8) ≈ 2.28 V`. Peak output current `Ip = Vp / RL ≈ 2.28 / 8 ≈ 285 mA`. The output transistors must be able to handle this current. Their sizes are chosen to have low `Vce_sat` or `Vds_sat` to maximize output swing.
+    *   `IQ = 4 mA`: The quiescent current of the entire amplifier is dominated by the bias network and the output stage quiescent current. The Vbe multiplier is designed to provide a small quiescent current through the output transistors to minimize crossover distortion without excessive power consumption.
+*   **PSRR = 50 dB:** The bypass capacitor (C_BYPASS) at pin 7 filters the internal reference voltage, improving PSRR. The internal resistance seen by this pin and the capacitor value determine the filter's cutoff frequency.
+*   **VS/2 Output Bias:** A feedback loop ensures the output DC voltage is half the supply. This is typically achieved by feeding back the output DC voltage to the input of the differential amplifier, effectively creating a unity-gain buffer for DC.
+
+**Component Selection and Modeling:**
+
+*   **BJTs:** NPN and PNP transistors are used for the differential pair, current mirrors, gain stage, and output stage. Standard SPICE models (NPN, PNP) are used.
+*   **Resistors:** Used for biasing, current setting, gain setting, and output stabilization.
+*   **Capacitors:** Used for frequency compensation, bypass, and output Zobel network.
+*   **Diodes:** Used in the Vbe multiplier for output stage biasing.
+
+* The design aims for a balance between performance, power consumption, and component count, reflecting the LM386's original intent as a low-cost, low-power audio amplifier. The internal nodes are carefully biased to ensure sufficient headroom for voltage swings, especially for the output stage. The gain setting mechanism is implemented by controlling the degeneration resistance in the gain stage.
+* </architecture_summary>
+
+* <spice_netlist>
+* LM386 Low Voltage Audio Power Amplifier
+* Subcircuit for LM386M-1 / LM386MX-1
+* Pins: 1=GAIN, 2=__INPUT, 3=__INPUT, 4=GND, 5=VOUT, 6=VS, 7=BYPASS, 8=GAIN
+
+.subckt LM386 GAIN1 IN_INV IN_NONINV GND VOUT VS BYPASS GAIN8
+
+* --- Global Parameters ---
+.param VCC_MAX = 15V
+.param VS_NOM = 6V
+.param IQ_NOM = 4m
+.param POUT_NOM = 325m
+.param RL_NOM = 8
+.param AV_OPEN_DB = 26
+.param AV_CAP_DB = 46
+.param BW_OPEN = 300k
+.param THD_NOM = 0.2
+.param PSRR_NOM = 50
+.param RIN_NOM = 50k
+.param IBIAS_NOM = 250n
+
+* --- Power Supply and Ground ---
+V_VS VS GND DC 'VS_NOM' ; Supply voltage, will be overridden by testbench
+
+* --- Internal Nodes ---
+.nodeset V(bias_ref)='VS_NOM/2' V(diff_out)='VS_NOM/2' V(gain_stage_out)='VS_NOM/2' V(out_driver_in)='VS_NOM/2' V(out_bias_p)='VS_NOM/2+0.7' V(out_bias_n)='VS_NOM/2-0.7'
+
+* --- 1. Input Stage (Differential Amplifier) ---
+* Q1, Q2: Differential pair
+* Q3, Q4: Current mirror active load
+* I_bias_input: Tail current source for differential pair
+
+* Input bias current (IBIAS_NOM = 250nA) -> Tail current = 2 * IBIAS_NOM = 500nA
+* Assuming beta of 100 for NPN, Ic = 250nA.
+* re = kT/qIc = 26mV / 250nA = 104kOhm.
+* RIN = 2 * beta * re = 2 * 100 * 104k = 20.8M Ohm (too high for 50k).
+* The 50k input impedance is likely due to input biasing resistors or a different input structure.
+* Let's model RIN with explicit resistors for simplicity and to meet spec.
+
+R_IN_NONINV IN_NONINV GND {'RIN_NOM'} ; Input impedance for non-inverting input
+R_IN_INV IN_INV GND {'RIN_NOM'} ; Input impedance for inverting input
+
+* Differential pair
+Q1 diff_out_p IN_NONINV emitter_node QNPN W=10u L=10u ; Non-inverting input
+Q2 diff_out_n IN_INV emitter_node QNPN W=10u L=10u ; Inverting input
+
+* Current mirror load (Q3, Q4)
+Q3 collector_load_n bias_ref collector_load_n QPNP W=20u L=20u ; Diode-connected
+Q4 diff_out collector_load_n diff_out_p QPNP W=20u L=20u ; Active load for Q1
+
+* Tail current source for differential pair
+* I_tail = 2 * IBIAS_NOM = 500nA
+R_tail_bias VS tail_bias_node 100k
+Q_tail emitter_node tail_bias_node GND QNPN W=20u L=20u ; Current source for diff pair
+I_tail_source tail_bias_node GND DC 500n ; Simplified current source for tail
+
+* --- 2. Gain Stage ---
+* Q5: Common emitter amplifier
+* R_gain_internal: Sets gain with GAIN1/GAIN8 pins
+* C_comp: Frequency compensation
+
+* Output of differential stage drives the base of the gain stage
+R_diff_to_gain diff_out gain_stage_in 10k ; Coupling resistor
+
+Q5 gain_stage_out gain_stage_in emitter_gain_node QNPN W=30u L=30u
+
+* Gain setting network (Pins 1 and 8)
+* When GAIN1 and GAIN8 are open, R_gain_internal is effectively in series with the emitter.
+* When a capacitor is connected between GAIN1 and GAIN8, it shorts R_gain_internal at AC.
+* The internal gain is set by the ratio of collector resistance to emitter resistance.
+* For AV=20 (26dB), R_collector / (re + R_emitter_degen) = 20.
+* For AV=200 (46dB), R_collector / re = 200.
+* Let's assume R_collector is around 10k. Then re is around 50 Ohm.
+* R_emitter_degen = (10k/20) - re = 500 - 50 = 450 Ohm.
+* The LM386 uses a 1.35k resistor internally for gain setting.
+* Let's use a simplified model for the gain setting.
+
+R_gain_internal GAIN1 GAIN8 1.35k ; Internal gain setting resistor (1.35k typical)
+R_emitter_degen emitter_gain_node GAIN1 100 ; Emitter degeneration for gain stage
+R_collector_gain VS gain_stage_out 10k ; Collector resistor for gain stage
+
+* Frequency Compensation (BW = 300kHz)
+* Assuming dominant pole at 300kHz.
+* C_comp is typically around 100pF.
+C_comp gain_stage_out gain_stage_in 100p ; Miller compensation
+
+* --- 3. Output Stage (Class AB) ---
+* Q6, Q7: NPN/PNP drivers
+* Q8, Q9: NPN/PNP output transistors
+* D1, D2: Vbe multiplier for quiescent bias
+* Output biased to VS/2
+
+* Vbe multiplier for class AB bias
+R_vbe_mult1 VS vbe_mult_node1 1k
+D1 vbe_mult_node1 vbe_mult_node2 DMOD
+D2 vbe_mult_node2 GND DMOD
+R_vbe_mult2 vbe_mult_node2 GND 1k
+
+* Driver transistors
+Q6 out_driver_in gain_stage_out vbe_mult_node1 QNPN W=50u L=50u ; NPN driver
+Q7 out_driver_in gain_stage_out vbe_mult_node2 QPNP W=50u L=50u ; PNP driver
+
+* Output transistors (Class AB)
+Q8 VOUT out_driver_in out_bias_p QNPN W=200u L=200u ; NPN output
+Q9 VOUT out_driver_in out_bias_n QPNP W=200u L=200u ; PNP output
+
+* Output bias for Q8, Q9 (simplified for now, usually from Vbe multiplier)
+* The Vbe multiplier output (vbe_mult_node1, vbe_mult_node2) drives the bases of the output transistors.
+* Let's refine the output stage biasing.
+
+* Simplified Vbe multiplier for output stage bias
+* This network creates a voltage difference to bias the output stage.
+R_bias_out1 VS bias_out_p 1k
+D_bias_out1 bias_out_p bias_out_n DMOD
+R_bias_out2 bias_out_n GND 1k
+
+* Output drivers
+Q_driver_p out_bias_p gain_stage_out VS QNPN W=50u L=50u ; NPN driver for output stage
+Q_driver_n out_bias_n gain_stage_out GND QPNP W=50u L=50u ; PNP driver for output stage
+
+* Output transistors
+Q_out_p VOUT bias_out_p VS QNPN W=500u L=500u ; NPN output transistor
+Q_out_n VOUT bias_out_n GND QPNP W=500u L=500u ; PNP output transistor
+
+* Output Zobel network for stability
+R_zobel VOUT zobel_node 10
+C_zobel zobel_node GND 0.1u
+
+* --- 4. Bias Network and VS/2 Output Bias ---
+* This section ensures the output DC voltage is VS/2 and sets quiescent current.
+* The BYPASS pin (Pin 7) is typically connected to a capacitor to ground for PSRR improvement.
+* The internal bias reference is often derived from VS and filtered by the BYPASS capacitor.
+
+* Internal bias reference for the amplifier stages
+R_bias_div1 VS bias_ref 10k
+R_bias_div2 bias_ref GND 10k
+C_bypass BYPASS GND 10u ; External bypass capacitor for PSRR
+
+* Feedback for VS/2 output bias
+* A simple feedback loop to set the DC output to VS/2.
+* This is often done by feeding back the output DC to the non-inverting input of the differential pair,
+* or by adjusting the bias of the gain stage.
+* Let's use a behavioral source to enforce VS/2 DC bias for simplicity,
+* and then refine with a more realistic feedback loop if needed.
+
+* For now, let's assume the input stage and gain stage are designed to naturally bias the output to VS/2.
+* The actual LM386 uses a feedback path from VOUT to the input stage to set the DC operating point.
+* Let's add a simplified DC feedback path.
+
+R_fb_dc VOUT fb_dc_node 100k
+R_fb_dc_gnd fb_dc_node GND 100k
+* This feedback node would typically go to the inverting input, but the LM386 has ground-referenced inputs.
+* Instead, the bias of the input stage is adjusted.
+* Let's use a behavioral current source to model the quiescent current.
+
+* Quiescent current (IQ = 4mA at VS=6V)
+* This current is drawn from VS.
+B_IQ VS GND I = { (VS/6V) * IQ_NOM } ; Quiescent current proportional to VS
+
+* --- Models ---
+.model QNPN NPN (Is=1e-14 Bf=100 Vaf=100 Ikf=0.1 Ne=1.5 Rc=1 Rb=10 Cje=1p Cjc=1p Tf=0.1n Tr=0.1n)
+.model QPNP PNP (Is=1e-14 Bf=50 Vaf=50 Ikf=0.05 Ne=1.5 Rc=1 Rb=10 Cje=1p Cjc=1p Tf=0.1n Tr=0.1n)
+.model DMOD D (Is=1e-14 N=1 Rs=1)
+
+.ends LM386

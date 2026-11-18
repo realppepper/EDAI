@@ -1,0 +1,113 @@
+.options gmin=1e-12 cshunt=1e-15
+* LTspice Testbench for LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS
+
+.include "LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS_iter2.cir"
+
+* Voltage Sources for Power and Inputs
+VGND GND 0 0
+VVCC VCC 0 DC 5V ; Typical VCC for initial measurements
+VTHERMAL Thermal_Pad 0 DC 27C ; Typical ambient temperature
+
+* Input sources for Comparator 1
+V1IN_POS 1IN_POS 0 DC 0V PULSE(0V 2.5V 2u 1n 1n 10u 20u)
+V1IN_NEG 0 1IN_NEG DC 0V PULSE(0V 2.5V 2u 1n 1n 10u 20u)
+
+* Input sources for Comparator 2 (can be used for differential measurements or left floating/tied)
+V2IN_POS 2IN_POS 0 DC 0V PULSE(0V 2.5V 2u 1n 1n 10u 20u)
+V2IN_NEG 0 2IN_NEG DC 0V PULSE(0V 2.5V 2u 1n 1n 10u 20u)
+
+* Output Loads (Open-collector outputs, require pull-up resistors)
+R1OUT VCC 1OUT 10k
+R2OUT VCC 2OUT 10k
+
+* DUT Instance
+XDUT 1OUT 1IN_NEG 1IN_POS GND 2IN_POS 2IN_NEG 2OUT VCC Thermal_Pad LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS
+
+* Simulation Commands
+.tran 0 100u 0 0.1u startup
+.op
+
+* Measurement Directives (Placeholder for specific conditions, will be expanded for each spec)
+
+* VCC (Max/Min operating voltage - requires multiple simulations or parameter sweep)
+* For a single run, we can check the applied VCC.
+.meas tran VCC_Applied AVG V(VCC) from=5u to=100u
+
+* VID (Differential Input Voltage)
+* This requires varying 1IN_POS and 1IN_NEG. For a single run, we can measure the instantaneous difference.
+.meas tran VID_1 AVG V(1IN_POS, 1IN_NEG) from=5u to=100u
+.meas tran VID_2 AVG V(2IN_POS, 2IN_NEG) from=5u to=100u
+
+* VI (Input Voltage Range)
+.meas tran VI_1_MAX MAX V(1IN_POS) from=5u to=100u
+.meas tran VI_1_MIN MIN V(1IN_POS) from=5u to=100u
+.meas tran VI_2_MAX MAX V(2IN_POS) from=5u to=100u
+.meas tran VI_2_MIN MIN V(2IN_POS) from=5u to=100u
+
+* IIK (Input Clamp Current - requires negative input voltage and current measurement)
+* This would require a separate test setup with a negative voltage source on the input and current measurement.
+* For this general testbench, we'll assume inputs are within range.
+
+* VO (Output Voltage Range)
+.meas tran VO_1_MAX MAX V(1OUT) from=5u to=100u
+.meas tran VO_1_MIN MIN V(1OUT) from=5u to=100u
+.meas tran VO_2_MAX MAX V(2OUT) from=5u to=100u
+.meas tran VO_2_MIN MIN V(2OUT) from=5u to=100u
+
+* IO (Output Current - requires specific load conditions)
+* This would require varying the pull-up resistor and measuring current.
+.meas tran IO_1_AVG AVG I(R1OUT) from=5u to=100u
+.meas tran IO_2_AVG AVG I(R2OUT) from=5u to=100u
+
+* ISC (Short-Circuit Current - requires shorting output to ground)
+* This would require a separate test setup.
+
+* TJ (Junction Temperature - typically an internal model parameter or set by Thermal_Pad)
+.meas tran TJ_AVG AVG V(Thermal_Pad) from=5u to=100u
+
+* VS (Supply Voltage - same as VCC)
+.meas tran VS_AVG AVG V(VCC) from=5u to=100u
+
+* VIVR (Input Voltage Range - same as VI)
+.meas tran VIVR_1_MAX MAX V(1IN_POS) from=5u to=100u
+.meas tran VIVR_1_MIN MIN V(1IN_POS) from=5u to=100u
+
+* TA (Ambient Temperature - set by Thermal_Pad)
+.meas tran TA_AVG AVG V(Thermal_Pad) from=5u to=100u
+
+* VIO (Input Offset Voltage - requires specific input conditions to find the trip point)
+* This requires a sweep of one input while the other is fixed, and finding the point where output switches.
+* For a single .tran, we can't directly measure VIO.
+
+* IB (Input Bias Current - requires specific input conditions and current measurement)
+* This requires a separate test setup with high impedance inputs.
+.meas tran IB_1IN_POS AVG I(V1IN_POS) from=5u to=100u
+.meas tran IB_1IN_NEG AVG I(V1IN_NEG) from=5u to=100u
+
+* IOS (Input Offset Current - difference between input bias currents)
+.meas tran IOS_1 PARAM ABS(IB_1IN_POS - IB_1IN_NEG)
+
+* VCM (Common Mode Input Voltage Range)
+* This requires sweeping common mode voltage.
+
+* AVD (Open-Loop Voltage Gain - requires specific input conditions and output swing)
+* This requires a small differential input and measuring the output swing.
+
+* VOL (Output Low Voltage - requires output sinking current)
+* This requires setting 1IN_NEG > 1IN_POS and sinking current from 1OUT.
+* For this setup, we can measure VOL when the output is low.
+.meas tran VOL_1 MIN V(1OUT) from=5u to=100u
+.meas tran VOL_2 MIN V(2OUT) from=5u to=100u
+
+* IOH-LKG (Output High Leakage Current - requires output pulled high and input conditions)
+* This requires setting 1IN_POS > 1IN_NEG and measuring current through the pull-up.
+.meas tran IOH_LKG_1 AVG I(R1OUT) from=5u to=100u
+.meas tran IOH_LKG_2 AVG I(R2OUT) from=5u to=100u
+
+* IOL (Output Sink Current - requires output sinking current to a specific voltage)
+* This requires setting 1IN_NEG > 1IN_POS and adjusting the load to achieve VOL=1.5V.
+
+* IQ (Quiescent Current - total supply current)
+.meas tran IQ_AVG AVG -I(VVCC) from=5u to=100u
+
+.end

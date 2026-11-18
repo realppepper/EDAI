@@ -1,0 +1,150 @@
+
+* --- Globally Hoisted Models for Multi-Subcircuit Visibility ---
+.model S_MODEL VSWITCH (RON=10 ROFF=1G VTH=0.5 VH=0.1)
+.model D_PROT D (IS=1e-15 N=1 RS=10)
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.5 PHI=0.8 LAMBDA=0.01)
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u GAMMA=0.4 PHI=0.7 LAMBDA=0.01)
+.model QNPN NPN(IS=1e-15 BF=200 VAF=100 IKF=0.05 NE=1.5 BR=4 VAR=10 IKR=0.01 NC=2 RB=100 RE=0.5 RC=10 CJE=1p CJC=0.5p TF=0.5n TR=10n XTB=1.5 EG=1.11 XTI=3)
+.model QPNP PNP(IS=1e-15 BF=50  VAF=50  IKF=0.02 NE=1.5 BR=4 VAR=10 IKR=0.01 NC=2 RB=200 RE=1   RC=20  CJE=1p CJC=0.5p TF=1n   TR=20n XTB=1.5 EG=1.11 XTI=3)
+.model QLPNP PNP(IS=1e-15 BF=10  VAF=200 IKF=0.01 NE=1.5 BR=1 VAR=10 IKR=0.01 NC=2 RB=500 RE=2   RC=50  CJE=0.5p CJC=0.3p TF=5n   TR=50n XTB=1.5 EG=1.11 XTI=3)
+.model DMOD D(IS=1e-15 N=1 RS=10)
+.model DESD D(IS=1e-18 N=1 BV=40 IBV=1e-3 CJO=1p)
+
+.subckt LM358B OUT1 IN1 IN1_P V IN2_P IN2 OUT2 V_P
+*==============================================================================
+* LM358B Dual Operational Amplifier - Behavioral/Structural SPICE Model
+* Compatible with standard SPICE simulators (LTspice, ngspice, HSPICE, Spectre)
+*==============================================================================
+
+*------------------------------------------------------------------------------
+* Standard Bipolar Transistor Models (Representative 30V Process)
+*------------------------------------------------------------------------------
+.model QNPN NPN(IS=1e-15 BF=200 VAF=100 IKF=0.05 NE=1.5 BR=4 VAR=10 IKR=0.01 NC=2 RB=100 RE=0.5 RC=10 CJE=1p CJC=0.5p TF=0.5n TR=10n XTB=1.5 EG=1.11 XTI=3)
+.model QPNP PNP(IS=1e-15 BF=50  VAF=50  IKF=0.02 NE=1.5 BR=4 VAR=10 IKR=0.01 NC=2 RB=200 RE=1   RC=20  CJE=1p CJC=0.5p TF=1n   TR=20n XTB=1.5 EG=1.11 XTI=3)
+* Lateral PNP for Input Stage (Lower Beta, Higher Vaf)
+.model QLPNP PNP(IS=1e-15 BF=10  VAF=200 IKF=0.01 NE=1.5 BR=1 VAR=10 IKR=0.01 NC=2 RB=500 RE=2   RC=50  CJE=0.5p CJC=0.3p TF=5n   TR=50n XTB=1.5 EG=1.11 XTI=3)
+
+*------------------------------------------------------------------------------
+* Channel 1 Amplifier
+*------------------------------------------------------------------------------
+* Input Stage: Differential Pair with Current Mirror Load
+I_TAIL1   N_TAIL1 V_P 15u          ; Tail current source (15uA)
+Q1_IN1_P  N_C1    IN1_P N_TAIL1 QLPNP  ; Input PNP ()
+Q2_IN1_N  N_C2    IN1   N_TAIL1 QLPNP  ; Input PNP (-)
+Q3_LOAD1  N_C1    N_C1  V   QPNP     ; Diode-connected Load PNP
+Q4_LOAD2  N_C2    N_C1  V   QPNP     ; Current Mirror Load PNP
+
+* Voltage Gain Stage (High Impedance Node N_C2)
+Q5_GAIN1  N_GAIN1 N_C2  V   QNPN     ; Common Emitter NPN Gain Stage
+C_COMP1   N_GAIN1 N_C2  30p          ; Miller Compensation Capacitor (Dominant Pole)
+R_GAIN1   N_GAIN1 V_P   200k         ; Load Resistor for Gain Stage (High Z)
+
+* Vbe Multiplier Bias for Output Stage
+Q8_BIAS1  N_BIAS1 N_BIAS1 V_P QNPN   ; Diode NPN
+R10_BIAS1 N_BIAS1 N_BIAS2 6.2k       ; Vbe Multiplier Resistors
+R11_BIAS1 N_BIAS2 V     6.2k         ; Sets ~2*Vbe ~ 1.4V across Q6/Q7 bases
+Q9_BIAS2  N_BIAS2 N_BIAS2 V   QPNP   ; Diode PNP (Level shift)
+
+* Output Stage: Complementary Emitter Followers
+Q6_OUT_P1 OUT1    N_GAIN1 V_P QNPN   ; Pull-up NPN (Emitter Follower)
+Q7_OUT_N1 OUT1    N_BIAS2 V   QPNP   ; Pull-down PNP (Emitter Follower)
+
+* Short Circuit Current Limiting (Behavioral - limits base drive)
+* Sourcing Limit (Q6): ~30mA. Sinking Limit (Q7): ~20mA.
+* Implemented via base current limiting resistors implicitly in drive impedance.
+* Explicit limiting for simulation robustness:
+.ic V(N_GAIN1)=0
+B_LIMIT_SRC1 N_GAIN1 V_P I={min(0, (0-V(V_P)+0.7)/100 - 0.03)} ; Clamps base drive if Iout>30mA src
+.ic V(N_BIAS2)=0
+B_LIMIT_SNK1 N_BIAS2 V   I={max(0, (0-V(V)-0.7)/100 + 0.02)}  ; Clamps base drive if Iout>20mA snk
+
+*------------------------------------------------------------------------------
+* Channel 2 Amplifier (Identical to Channel 1)
+*------------------------------------------------------------------------------
+I_TAIL2   N_TAIL2 V_P 15u
+Q1_IN2_P  N_C3    IN2_P N_TAIL2 QLPNP
+Q2_IN2_N  N_C4    IN2   N_TAIL2 QLPNP
+Q3_LOAD3  N_C3    N_C3  V   QPNP
+Q4_LOAD4  N_C4    N_C3  V   QPNP
+
+Q5_GAIN2  N_GAIN2 N_C4  V   QNPN
+C_COMP2   N_GAIN2 N_C4  30p
+R_GAIN2   N_GAIN2 V_P   200k
+
+Q8_BIAS2  N_BIAS3 N_BIAS3 V_P QNPN
+R10_BIAS2 N_BIAS3 N_BIAS4 6.2k
+R11_BIAS2 N_BIAS4 V     6.2k
+Q9_BIAS4  N_BIAS4 N_BIAS4 V   QPNP
+
+Q6_OUT_P2 OUT2    N_GAIN2 V_P QNPN
+Q7_OUT_N2 OUT2    N_BIAS4 V   QPNP
+
+.ic V(N_GAIN2)=0
+B_LIMIT_SRC2 N_GAIN2 V_P I={min(0, (0-V(V_P)+0.7)/100 - 0.03)}
+.ic V(N_BIAS4)=0
+B_LIMIT_SNK2 N_BIAS4 V   I={max(0, (0-V(V)-0.7)/100 + 0.02)}
+
+*------------------------------------------------------------------------------
+* Shared Bias Circuit (Bandgap Reference Core & Current Mirrors)
+* Generates ~1.2V Bandgap -> PTAT Current -> Scaled Bias Currents
+*------------------------------------------------------------------------------
+* Startup Circuit
+R_STARTUP V_P N_START 1Meg
+D_START   N_START V   DMOD     ; Kickstarts bandgap
+.model DMOD D(IS=1e-15 N=1 RS=10)
+
+* Bandgap Core (Brokaw Cell Topology Simplified)
+Q10_BG    N_BG1   N_BG1   N_E1  QNPN   ; Q10 (1x)
+Q11_BG    N_BG2   N_BG1   N_E2  QNPN   ; Q11 (8x Area -> m=8)
+R1_BG     N_E1    V       10k    ; Degeneration R
+R2_BG     N_E2    V       1.25k  ; Degeneration R (Ratio sets PTAT)
+R3_BG     N_BG2   V_P     50k    ; Load R
+R4_BG     N_BG1   V_P     50k    ; Load R
+
+* PTAT Current Generation & Mirroring to Channels
+* I_PTAT ~ (Vt * ln(8)) / R2 ~ (26mV * 2.08) / 1.25k ~ 43uA
+* Mirror to Tail Currents (15uA each) and Gain Stage (50uA each)
+Q12_MIR   N_BIAS_T V_P     N_BG2  QPNP   ; Mirror to Tail Bias Node
+Q13_TAIL1 N_TAIL1  N_BIAS_T V_P    QPNP  ; Tail Current Ch1 (Scaled by Area/Resistors)
+Q14_TAIL2 N_TAIL2  N_BIAS_T V_P    QPNP  ; Tail Current Ch2
+
+Q15_MIR_G N_BIAS_G V_P     N_BG2  QPNP   ; Mirror to Gain Stage Bias
+Q16_GAIN1 N_GAIN1  N_BIAS_G V_P    QNPN  ; Gain Stage Current Source Ch1 (Active Load alternative)
+Q17_GAIN2 N_GAIN2  N_BIAS_G V_P    QNPN  ; Gain Stage Current Source Ch2
+
+* Bias Scaling Resistors (Adjust mirror ratios for target currents)
+R_BIAS_T  N_BIAS_T V_P 20k   ; Sets Tail Mirror current level
+R_BIAS_G  N_BIAS_G V_P 6k    ; Sets Gain Stage Mirror current level
+
+* Quiescent Current Trimming (Total IQ ~ 600uA for dual @ 5V -> 300uA/ch)
+* The bias network above draws current from V_P. Resistors R_BIAS_T, R_BIAS_G
+* and transistor sizing determine the total supply current.
+* Additional bleed resistor to match 300uA/ch spec at 5V.
+R_IQ_TRIM V_P V 16.6k        ; Draws ~300uA @ 5V (shared), plus active bias ~300uA total -> 600uA dual.
+
+*------------------------------------------------------------------------------
+* ESD Protection Diodes (Behavioral Clamps)
+*------------------------------------------------------------------------------
+.model DESD D(IS=1e-18 N=1 BV=40 IBV=1e-3 CJO=1p)
+* Inputs to Supplies
+D_IN1_P_P  IN1_P V_P DESD
+D_IN1_P_N  V     IN1_P DESD
+D_IN1_N_P  IN1   V_P DESD
+D_IN1_N_N  V     IN1   DESD
+D_IN2_P_P  IN2_P V_P DESD
+D_IN2_P_N  V     IN2_P DESD
+D_IN2_N_P  IN2   V_P DESD
+D_IN2_N_N  V     IN2   DESD
+* Outputs to Supplies
+D_OUT1_P   OUT1  V_P DESD
+D_OUT1_N   V     OUT1 DESD
+D_OUT2_P   OUT2  V_P DESD
+D_OUT2_N   V     OUT2 DESD
+
+*------------------------------------------------------------------------------
+* Thermal Modeling (Optional but good practice)
+*------------------------------------------------------------------------------
+* Self-heating not modeled in standard .subckt without .temp control.
+* Junction Temp Tj = Ta + Pd * Rth. Pd = (V(V_P)-V(V)) * I(V_P).
+
+.ends LM358B

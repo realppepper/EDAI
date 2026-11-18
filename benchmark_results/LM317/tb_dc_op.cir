@@ -1,0 +1,72 @@
+.options gmin=1e-12 cshunt=1e-15
+* LM317 Testbench for Specification Verification
+
+.include "LM317_iter2.cir"
+
+* Voltage Sources for DUT Pins
+* INPUT: 0.00 us
+* ADJUST: 10.00 us
+* OUTPUT: 11.00 us (This is an output, not an input to be driven directly)
+
+* Power supply for INPUT (e.g., 15V for typical operation)
+V_INPUT INPUT 0 PWL(0u 0V 0.01u 15V)
+* Adjustable voltage for ADJUST pin (e.g., 1.25V for minimum output)
+* We'll use a resistor divider to set the ADJUST pin voltage for output voltage range and regulation tests.
+* For initial setup, let's set it for a nominal output.
+* R1 and R2 for setting output voltage: Vout = 1.25 * (1 + R2/R1) + I_adj * R2
+* Let R1 = 240 Ohm, R2 = 2.4k Ohm for Vout approx 13.75V
+R1 OUTPUT ADJUST 240
+R2 ADJUST 0 2.4k
+
+* Load for OUTPUT
+RLOAD OUTPUT 0 100 ; Nominal load of 100 Ohm
+
+* DUT Instance
+XDUT ADJUST INPUT OUTPUT LM317
+
+* Simulation commands
+.tran 0.1u 100u
+
+* Measurements for Target Specifications
+
+* 'Output voltage range': Min=1.25, Max=37.0 V | Conditions: Adjustable
+* This requires sweeping the ADJUST pin voltage or the resistor divider.
+* For a single run, we'll measure the current output.
+.meas tran V_OUT_NOM AVG V(OUTPUT) from=20u to=100u
+
+* 'Output current': Max=1.5 A
+* This requires a load sweep or a specific load to draw max current.
+* For this run, we'll measure the current through the load.
+.meas tran I_OUT_NOM AVG I(RLOAD) from=20u to=100u
+
+* 'Line regulation': Typ=0.01 %/V
+* This requires varying V_INPUT and observing V_OUT.
+* We'll need multiple runs or a stepped source for accurate measurement.
+* For a single run, we'll just measure the output.
+* To measure line regulation, we'd typically run two simulations with slightly different input voltages.
+* Let's assume a nominal input for this run.
+
+* 'Load regulation': Typ=0.1 %
+* This requires varying RLOAD and observing V_OUT.
+* Similar to line regulation, requires multiple runs or a stepped load.
+* For this run, we'll just measure the output with the nominal load.
+
+* 'Power dissipation': Internally limited (No specific value to measure directly from this run)
+
+* 'Input-output voltage differential': Min=-0.3, Max=40.0 V
+.meas tran V_DIFF_IO AVG V(INPUT,OUTPUT) from=20u to=100u
+
+* 'TJ': Min=-65.0, Max=150.0 °C (Legacy chip - not directly measurable in electrical simulation)
+
+* 'VO': Min=1.25, Max=37.0 V (Same as 'Output voltage range')
+.meas tran VO_MEAS AVG V(OUTPUT) from=20u to=100u
+
+* 'VI – VO': Min=3.0, Max=40.0 V (Same as 'Input-output voltage differential')
+.meas tran VI_VO_MEAS AVG V(INPUT,OUTPUT) from=20u to=100u
+
+* 'IO': Min=0.01, Max=1.5 A (Same as 'Output current')
+.meas tran IO_MEAS AVG I(RLOAD) from=20u to=100u
+
+* 'TJ': Min=0.0, Max=125.0 °C (Not directly measurable in electrical simulation)
+
+.end

@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autonomous Analog Circuit Design & Verification Visualizer</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --background: #090d16;
+      --card: #0f172a;
+      --card-hover: #1e293b;
+      --border: #334155;
+      --foreground: #f8fafc;
+      --muted-foreground: #94a3b8;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.25);
+      --accent: #818cf8;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    .glow-card {
+      box-shadow: 0 0 20px -5px rgba(56, 189, 248, 0.15);
+    }
+    .node-pin {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .node-pin:hover {
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 8px var(--primary));
+    }
+    .tab-btn.active {
+      background-color: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border-bottom: 2px solid #38bdf8;
+    }
+    .code-box {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+  </style>
+</head>
+<body class="min-h-screen custom-scrollbar p-3 md:p-6 antialiased">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- Top Navigation & IC Selector Header -->
+    <header class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-lg flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-sky-500/10 border border-sky-500/30 rounded-xl text-sky-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+              Autonomous Analog Circuit Verifier
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Neuro-Symbolic Engine</span>
+            </h1>
+            <p class="text-xs md:text-sm text-[var(--muted-foreground)] mt-0.5">
+              Deep Visual Inspection of First-Principles AI Circuit Synthesis, PDG Scheduling & Formal Verification
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- IC Selector Pills / Dropdown -->
+      <div class="flex items-center gap-2 w-full lg:w-auto">
+        <label for="icSelect" class="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider shrink-0">Selected IC:</label>
+        <select id="icSelect" onchange="switchIC(this.value)" class="w-full lg:w-72 bg-slate-900 border border-[var(--border)] text-sky-300 font-semibold text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-sky-400">
+        </select>
+      </div>
+    </header>
+
+    <!-- Sub-Process Master Flowchart (Breadcrumb Pipeline) -->
+    <section class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-lg">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xs uppercase tracking-wider font-bold text-sky-400 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Execution Sub-Process Architecture (6 Core Phases)
+        </h2>
+        <span id="pipelineStatusBadge" class="text-xs font-medium px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300 border border-sky-500/30">Active</span>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+        <!-- Phase 1 -->
+        <div onclick="selectTab('tab-hkg')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 1</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">PDF to HKG</div>
+          <div class="text-[11px] text-slate-400 mt-1">Layout, tables & knowledge graph</div>
+        </div>
+
+        <!-- Phase 2 -->
+        <div onclick="selectTab('tab-pdg')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 2</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">PDG & Schedule</div>
+          <div class="text-[11px] text-slate-400 mt-1">Causal DAG & delay &sigma;(p)</div>
+        </div>
+
+        <!-- Phase 3 -->
+        <div onclick="selectTab('tab-synthesis')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 3</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">AI Netlist Synthesis</div>
+          <div class="text-[11px] text-slate-400 mt-1">Transistor sizing & topology</div>
+        </div>
+
+        <!-- Phase 4 -->
+        <div onclick="selectTab('tab-testbenches')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 4</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">Testbench Deck</div>
+          <div class="text-[11px] text-slate-400 mt-1">.op / .tran / .ac auto decks</div>
+        </div>
+
+        <!-- Phase 5 -->
+        <div onclick="selectTab('tab-verification')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 5</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">LTspice & SymPy</div>
+          <div class="text-[11px] text-slate-400 mt-1">Batch sim & formal interval</div>
+        </div>
+
+        <!-- Phase 6 -->
+        <div onclick="selectTab('tab-healing')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 6</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">Self-Healing Loop</div>
+          <div class="text-[11px] text-slate-400 mt-1">Shortfall &rarr; Re-synthesis</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Metrics Cards for Current Selected IC -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">TARGET IC / CATEGORY</div>
+        <div id="statIcName" class="text-lg md:text-xl font-bold text-white mt-1 truncate">--</div>
+        <div id="statCategory" class="text-xs text-sky-400 truncate mt-0.5">--</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">EXTRACTED SPECS</div>
+        <div id="statSpecCount" class="text-lg md:text-xl font-bold text-white mt-1">--</div>
+        <div id="statPinCount" class="text-xs text-indigo-400 mt-0.5">-- Pins Identified</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">CLOSED-LOOP ITERATIONS</div>
+        <div id="statLoopCount" class="text-lg md:text-xl font-bold text-white mt-1">--</div>
+        <div id="statLoopStatus" class="text-xs text-amber-400 mt-0.5">2 Iterations Executed</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">FINAL VERIFICATION PASS</div>
+        <div id="statPassRate" class="text-lg md:text-xl font-bold text-emerald-400 mt-1">--%</div>
+        <div id="statPassRateSub" class="text-xs text-slate-400 mt-0.5">LTspice Neuro-Symbolic</div>
+      </div>
+    </section>
+
+    <!-- Interactive Navigation Tabs -->
+    <div class="border-b border-slate-700 flex overflow-x-auto gap-2 text-sm font-medium">
+      <button onclick="selectTab('tab-overview')" id="btn-tab-overview" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all active">
+        1. Sub-Process Flowchart
+      </button>
+      <button onclick="selectTab('tab-pdg')" id="btn-tab-pdg" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        2. Port Dependency Graph & Timing
+      </button>
+      <button onclick="selectTab('tab-synthesis')" id="btn-tab-synthesis" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        3. AI Netlist & Transistor Sizing
+      </button>
+      <button onclick="selectTab('tab-testbenches')" id="btn-tab-testbenches" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        4. Testbench Decks
+      </button>
+      <button onclick="selectTab('tab-verification')" id="btn-tab-verification" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        5. SymPy Oracle & Measurements
+      </button>
+      <button onclick="selectTab('tab-healing')" id="btn-tab-healing" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        6. Closed-Loop Diagnostics
+      </button>
+      <button onclick="selectTab('tab-hkg')" id="btn-tab-hkg" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        7. Knowledge Graph (HKG)
+      </button>
+    </div>
+
+    <!-- TAB 1: SUB-PROCESS FLOWCHART & SYSTEM ARCHITECTURE -->
+    <div id="tab-overview" class="tab-content space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+          Detailed Internal Sub-Processes Execution Flow
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-6">
+          Every analog IC undergoes an automated, six-phase end-to-end synthesis and verification cycle without template hardcoding.
+        </p>
+
+        <!-- SVG Flowchart -->
+        <div class="overflow-x-auto py-2">
+          <svg class="w-full min-w-[850px] h-64 text-slate-200" viewBox="0 0 950 260">
+            <defs>
+              <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0284c7"/>
+                <stop offset="100%" stop-color="#0369a1"/>
+              </linearGradient>
+              <linearGradient id="grad-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6366f1"/>
+                <stop offset="100%" stop-color="#4f46e5"/>
+              </linearGradient>
+              <linearGradient id="grad-emerald" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#059669"/>
+                <stop offset="100%" stop-color="#047857"/>
+              </linearGradient>
+              <linearGradient id="grad-amber" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#d97706"/>
+                <stop offset="100%" stop-color="#b45309"/>
+              </linearGradient>
+              <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+              </marker>
+              <marker id="arrow-feedback" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b"/>
+              </marker>
+            </defs>
+
+            <!-- Box 1: PDF to HKG -->
+            <rect x="20" y="40" width="130" height="90" rx="12" fill="url(#grad-blue)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="85" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">1. PDF Parsing</text>
+            <text x="85" y="90" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Layout & Tables</text>
+            <text x="85" y="105" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; HKG Graph</text>
+
+            <line x1="150" y1="85" x2="180" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 2: PDG Scheduling -->
+            <rect x="180" y="40" width="130" height="90" rx="12" fill="url(#grad-blue)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="245" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">2. PDG Engine</text>
+            <text x="245" y="90" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Pin Dependency</text>
+            <text x="245" y="105" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Delay Schedule &sigma;(p)</text>
+
+            <line x1="310" y1="85" x2="340" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 3: LLM Circuit Synthesis -->
+            <rect x="340" y="40" width="140" height="90" rx="12" fill="url(#grad-purple)" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="410" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">3. AI Synthesis</text>
+            <text x="410" y="90" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; First-Principles</text>
+            <text x="410" y="105" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; Transistor Sizing</text>
+
+            <line x1="480" y1="85" x2="510" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 4: Testbench Deck Synthesis -->
+            <rect x="510" y="40" width="130" height="90" rx="12" fill="url(#grad-purple)" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="575" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">4. Testbench Decks</text>
+            <text x="575" y="90" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; .op / .tran / .ac</text>
+            <text x="575" y="105" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; Auto .meas Bindings</text>
+
+            <line x1="640" y1="85" x2="670" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 5: LTspice & SymPy -->
+            <rect x="670" y="40" width="130" height="90" rx="12" fill="url(#grad-emerald)" stroke="#34d399" stroke-width="1.5"/>
+            <text x="735" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">5. Verification</text>
+            <text x="735" y="90" text-anchor="middle" font-size="10" fill="#d1fae5">&bull; Headless LTspice</text>
+            <text x="735" y="105" text-anchor="middle" font-size="10" fill="#d1fae5">&bull; SymPy Oracles</text>
+
+            <line x1="800" y1="85" x2="830" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 6: Decision / Self-Healing -->
+            <polygon points="885,55 935,85 885,115 835,85" fill="url(#grad-amber)" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="885" y="82" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">All</text>
+            <text x="885" y="95" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">Pass?</text>
+
+            <!-- Feedback Loop Arrow back to Phase 3 -->
+            <path d="M 885 115 L 885 180 L 410 180 L 410 135" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrow-feedback)"/>
+            <text x="645" y="195" text-anchor="middle" font-size="10" font-weight="bold" fill="#fbbf24">Self-Healing Iteration Feedback (Shortfalls &amp; Diagnosis)</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PORT DEPENDENCY GRAPH (PDG) & INTERACTIVE TIMING -->
+    <div id="tab-pdg" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              Interactive Port Dependency Graph (PDG) &amp; Startup Timeline
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+              Topological activation sequence derived from physical pin roles (Power &rarr; Bias &rarr; Signal &rarr; Output)
+            </p>
+          </div>
+
+          <!-- Playback Controls -->
+          <div class="flex items-center gap-3 bg-slate-900 border border-slate-700 px-4 py-2 rounded-xl">
+            <button onclick="toggleTimelinePlay()" id="btnPlayPause" class="text-sky-400 hover:text-sky-300 font-bold text-xs flex items-center gap-1.5">
+              <svg id="playIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg>
+              <span>Play Sequence</span>
+            </button>
+            <input type="range" id="timeSlider" min="0" max="10" step="0.5" value="0" oninput="updateTimelineTime(parseFloat(this.value))" class="w-36 accent-sky-400 cursor-pointer">
+            <span id="timeDisplay" class="text-xs font-mono font-bold text-sky-300 min-w-[55px] text-right">0.0 &mu;s</span>
+          </div>
+        </div>
+
+        <!-- Dynamic PDG SVG Container -->
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 overflow-x-auto min-h-[320px] flex items-center justify-center">
+          <svg id="pdgSvg" class="w-full max-w-4xl h-72 text-slate-200" viewBox="0 0 800 280">
+            <!-- Rendered dynamically by renderPDG() -->
+          </svg>
+        </div>
+
+        <!-- Schedule Table -->
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="text-slate-400 bg-slate-900/60 uppercase text-[11px] border-b border-slate-800">
+              <tr>
+                <th class="px-3 py-2">Pin Name</th>
+                <th class="px-3 py-2">Physical Role</th>
+                <th class="px-3 py-2">Direction</th>
+                <th class="px-3 py-2">Settling Delay &sigma;(p)</th>
+                <th class="px-3 py-2">Status at Current Time</th>
+              </tr>
+            </thead>
+            <tbody id="pdgTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: AI NETLIST SYNTHESIS & ARCHITECTURE -->
+    <div id="tab-synthesis" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+          First-Principles Transistor Netlist Synthesis &amp; Sizing Rationale
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          LLM-generated SPICE netlist without hardcoded circuit templates. Compare Loop 1 (initial synthesis) vs Loop 2 (autonomous refinement).
+        </p>
+
+        <!-- Loop Selector for Netlist -->
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-xs text-slate-400 font-semibold uppercase">View Netlist:</span>
+          <button onclick="switchNetlistIteration(1)" id="btnNetlistIter1" class="px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold">Iteration 1</button>
+          <button onclick="switchNetlistIteration(2)" id="btnNetlistIter2" class="px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold">Iteration 2</button>
+        </div>
+
+        <!-- Architecture Rationale Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 mb-4">
+          <h4 class="text-xs uppercase font-bold text-sky-400 mb-1">Architecture Rationale &amp; Block Topology</h4>
+          <p id="architectureSummaryText" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line"></p>
+        </div>
+
+        <!-- Netlist Code Box -->
+        <div class="relative bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span id="netlistFilename" class="font-mono text-sky-300">circuit.cir</span>
+            <span>SPICE Dialect: LTspice</span>
+          </div>
+          <pre id="netlistCodePre" class="p-4 text-xs font-mono text-slate-300 overflow-x-auto max-h-96 custom-scrollbar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: TESTBENCH DECKS -->
+    <div id="tab-testbenches" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+          Synthesized Multi-Domain Testbenches
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          Automated SPICE testbenches for DC Operating Point (.op), Dynamic Transient (.tran), and AC Frequency Sweeps (.ac) aligned with PDG schedule.
+        </p>
+
+        <div class="flex items-center gap-2 mb-4" id="tbDeckButtons">
+          <!-- Dynamically filled with testbench buttons -->
+        </div>
+
+        <div class="relative bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span id="currentTbName" class="font-mono text-purple-300">tb_dc_op.cir</span>
+            <span>Analysis Mode: Automated .meas</span>
+          </div>
+          <pre id="tbCodePre" class="p-4 text-xs font-mono text-slate-300 overflow-x-auto max-h-96 custom-scrollbar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: SYMPY ORACLE VERIFICATION & MEASUREMENTS -->
+    <div id="tab-verification" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              Neuro-Symbolic Specification Matrix &amp; Oracle Interval Audit
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+              Datasheet specifications formally bounded by SymPy interval algebra &amp; evaluated against LTspice measurements.
+            </p>
+          </div>
+
+          <!-- Filter Search -->
+          <div class="flex items-center gap-2 w-full md:w-auto">
+            <input type="text" id="specSearchInput" oninput="filterSpecs(this.value)" placeholder="Search parameter (e.g. VCC, Gain)..." class="text-xs bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-slate-200 focus:outline-none focus:border-sky-400 w-full md:w-56">
+          </div>
+        </div>
+
+        <!-- Spec Table -->
+        <div class="overflow-x-auto max-h-[460px] custom-scrollbar border border-slate-800 rounded-xl">
+          <table class="w-full text-xs text-left">
+            <thead class="sticky top-0 text-slate-300 bg-slate-900 uppercase text-[11px] border-b border-slate-800 shadow">
+              <tr>
+                <th class="px-3 py-2.5">Parameter Symbol</th>
+                <th class="px-3 py-2.5">Min Limit</th>
+                <th class="px-3 py-2.5">Typ Target</th>
+                <th class="px-3 py-2.5">Max Limit</th>
+                <th class="px-3 py-2.5">Unit</th>
+                <th class="px-3 py-2.5">Measured in Sim</th>
+                <th class="px-3 py-2.5">SymPy Status</th>
+              </tr>
+            </thead>
+            <tbody id="specTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: CLOSED-LOOP DIAGNOSTICS & REFINEMENT -->
+    <div id="tab-healing" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+          Closed-Loop Refinement History &amp; Shortfall Analysis
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-6">
+          Step-by-step diagnostic breakdown showing what fell short in each loop iteration and what improvements were applied.
+        </p>
+
+        <div id="diagnosticsContainer" class="space-y-6">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 7: HARDWARE KNOWLEDGE GRAPH (HKG) -->
+    <div id="tab-hkg" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+          Hardware Knowledge Graph (HKG) Topology
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          Hierarchical document entity graph extracted from PDF text, layout blocks, and electrical tables.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h4 class="text-xs font-bold uppercase text-sky-400 mb-2">Device Metadata</h4>
+            <div id="hkgDeviceMetadata" class="text-xs text-slate-300 space-y-1.5"></div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h4 class="text-xs font-bold uppercase text-indigo-400 mb-2">Pin Definitions &amp; Roles</h4>
+            <div id="hkgPinList" class="text-xs text-slate-300 max-h-48 overflow-y-auto custom-scrollbar space-y-1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Embedded Benchmark Data -->
+  <script>
+    const BENCHMARK_DATA = [{"id": "NE555", "folder_name": "NE555", "summary": {"part_name": "xx555 Precision Timers", "subckt_name": "XX555_PRECISION_TIMERS", "pass_rate_percent": 0.0, "spec_count": 69, "iterations": [{"iteration": 1, "netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\XX555_PRECISION_TIMERS_iter1.cir", "pass_rate_percent": 0.0, "passed_specs": 0, "failed_specs": 0, "unmeasured_specs": 59, "passed_symbols": [], "simulation_errors": ["C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\XX555_PRECISION_TIMERS_iter1.cir(65): Unknown parameter", "  --> Q_DISCH DISCH disch_driver GND QNPN W=100u L=10u ; Sized for 8mA with low Vce_sat", "  --> ^^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\XX555_PRECISION_TIMERS_iter1.cir(79): Unknown parameter", "  --> Q_OUT_PNP VCC out_drv_p OUT QPNP W=500u L=10u ; Sourcing", "  --> ^^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\XX555_PRECISION_TIMERS_iter1.cir(80): Unknown parameter", "  --> Q_OUT_NPN OUT out_drv_n GND QNPN W=500u L=10u ; Sinking", "  --> ^^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_transient.cir(81): syntax error", "  --> .meas tran trig_V_VCC15_NA555 param V(TRIG) when V(OUT)=7.5 fall=1 ; Measure TRIG voltage at transition", "  --> ^^^^^^^^^^^^^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_transient.cir(86): syntax error", "  --> .meas tran trig_V_VCC15_SE555 param V(TRIG) when V(OUT)=7.5 fall=1 ; Measure TRIG voltage at transition", "  --> ^^^^^^^^^^^^^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_transient.cir(93): syntax error", "  --> .meas tran trig_lvl_VCC15_SE555_temp param V(TRIG) when V(OUT)=7.5 fall=1 ; Measure at default temp", "  --> ^^^^^^^^^^^^^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_transient.cir(102): syntax error", "  --> .meas tran trig_V_VCC5_NA555 param V(TRIG) when V(OUT)=2.5 fall=1 ; Measure TRIG voltage at transition", "  --> ^^^^^^^^^^^^^^^^^^^^^^^"], "shortfalls": ["Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\XX555_PRECISION_TIMERS_iter1.cir(65): Unknown parameter", "Compiler/Simulation Error:   --> Q_DISCH DISCH disch_driver GND QNPN W=100u L=10u ; Sized for 8mA with low Vce_sat", "Compiler/Simulation Error:   --> ^^^^^^^^^^^^", "Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\XX555_PRECISION_TIMERS_iter1.cir(79): Unknown parameter", "Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'IO' violated: Parameter 'IO' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'TJ' violated: Parameter 'TJ' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Case temperature for 60 seconds' violated: Parameter 'Case temperature for 60 seconds' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)"], "improvements": ["Initial first-principles topology and Level-1 parameter sizing synthesized from scratch."], "architecture_summary": "The XX555 Precision Timer subcircuit is designed to replicate the functionality of a standard 555 timer IC, incorporating two comparators, an SR flip-flop, a discharge transistor, and an output buffer. The design adheres to the specified pinout and electrical characteristics, with component sizing calculated to meet the datasheet's voltage levels, current capabilities, and timing requirements.\n\n**Overall Topology:**\n\nThe core of the 555 timer consists of:\n1.  **Voltage Divider:** Three identical resistors (R1, R2, R3) connected in series between VCC and GND, creating reference voltages for the comparators. The tap points are `VCC * 2/3` (threshold reference) and `VCC * 1/3` (trigger reference). The `CONT` pin is connected to the `VCC * 2/3` node, allowing external modification of the threshold voltage.\n2.  **Comparators:**\n    *   **Threshold Comparator (Comp_THRES):** Compares the `THRES` input voltage with the `VCC * 2/3` reference (or `CONT` voltage). Its output (`comp_thres_out`) goes high when `THRES` > `CONT`.\n    *   **Trigger Comparator (Comp_TRIG):** Compares the `TRIG` input voltage with the `VCC * 1/3` reference. Its output (`comp_trig_out`) goes high when `TRIG` < `VCC * 1/3`.\n3.  **SR Flip-Flop:** A NOR-based SR flip-flop is used to store the state.\n    *   The `SET` input of the flip-flop is driven by the output of the `TRIG` comparator.\n    *   The `RESET` input of the flip-flop is driven by the output of the `THRES` comparator OR the external `RESET` pin. The external `RESET` pin is active low and overrides other inputs.\n    *   The flip-flop's output (`Q_ff`) controls the `OUT` pin and the `DISCH` transistor.\n4.  **Discharge Transistor (Q_DISCH):** An NPN BJT (or NMOS) acts as an open-collector switch. When the flip-flop output (`Q_ff`) is low (meaning `OUT` is low), `Q_DISCH` turns on, providing a low-impedance path between `DISCH` and `GND`.\n5.  **Output Buffer:** A push-pull output stage (or totem-pole) capable of sinking and sourcing up to 200mA. This is implemented using a complementary pair of power transistors (PNP and NPN or PMOS and NMOS).\n\n**Component Sizing and Design Choices:**\n\n*   **Voltage Divider (R1, R2, R3):**\n    *   To ensure accurate 1/3 and 2/3 VCC division, three identical resistors are used. A value of 10k\u03a9 is chosen for R1, R2, R3. This provides a reasonable current draw from VCC (e.g., 15V / 30k\u03a9 = 0.5mA) while keeping the impedance low enough for comparator inputs.\n    *   The `CONT` pin is directly connected to the node between R1 and R2.\n\n*   **Comparators (Comp_THRES, Comp_TRIG):**\n    *   **Behavioral Models:** For simplicity and to strictly meet the threshold voltage specifications, behavioral voltage sources (`B` sources) are used for the comparators. This allows precise control over the switching points.\n    *   **Hysteresis:** Real comparators have some hysteresis. While not explicitly specified in the datasheet for the thresholds, a small amount of hysteresis (e.g., 50mV) can be implicitly introduced by the flip-flop's switching characteristics or explicitly added to the B-source if needed for stability. For this design, ideal switching is assumed for the primary thresholds, as the datasheet specifies precise voltage levels.\n    *   **Output Levels:** Comparator outputs are designed to swing between 0V and VCC to properly drive the flip-flop.\n\n*   **SR Flip-Flop:**\n    *   **NOR Gate Implementation:** A standard SR flip-flop can be built using two cross-coupled NOR gates. Each NOR gate is implemented using a combination of NMOS and PMOS transistors.\n    *   **Logic:**\n        *   `SET` (S_ff) is `comp_trig_out`.\n        *   `RESET` (R_ff) is `comp_thres_out` OR `NOT(RESET_pin)`.\n        *   `Q_ff` is the primary output, `NOT(Q_ff)` is the complementary output.\n    *   **Transistor Sizing:** The transistors for the NOR gates are sized to provide fast switching and sufficient drive for the output buffer and discharge transistor. W/L ratios of 10u/1u for NMOS and 20u/1u for PMOS are typical for logic gates in a 5V-15V environment, ensuring reasonable current drive.\n\n*   **Discharge Transistor (Q_DISCH):**\n    *   **NPN BJT:** An NPN BJT is chosen for the discharge transistor, as it's a common implementation in 555 timers.\n    *   **On-State Voltage:** The datasheet specifies `DISCH switch on-state voltage: Max=0.4V @ IO = 8mA`. This requires a BJT with a low Vce(sat) and sufficient current gain. A power NPN model (e.g., `Q_POWER_NPN`) with appropriate parameters (high beta, low Vce(sat)) is used.\n    *   **Off-State Current:** `DISCH switch off-state current: Max=100nA`. This implies a low leakage current for the BJT when off.\n    *   **Control:** The base of `Q_DISCH` is driven by `Q_ff` (or an inverter of `Q_ff`) such that when `Q_ff` is low, `Q_DISCH` turns on.\n\n*   **Output Buffer (OUT pin):**\n    *   **Push-Pull Stage:** A complementary push-pull stage is used to achieve the 200mA source/sink capability. This typically involves a PNP transistor for sourcing and an NPN transistor for sinking.\n    *   **Transistor Sizing:** The output transistors (Q_OUT_PNP, Q_OUT_NPN) are power BJTs, significantly larger than the logic transistors, to handle the 200mA current. Their current gain (beta) and saturation voltages are critical.\n    *   **Driver Stage:** Intermediate driver stages (inverters or buffers) are used to provide sufficient base current to the power output transistors.\n    *   **Current Limiting/Protection:** While not explicitly requested, a production 555 would include current limiting for the output stage. For this netlist, ideal power BJTs are assumed to meet the current spec without explicit current limiting circuitry, which would add significant complexity.\n\n*   **Input Stages (THRES, TRIG, RESET):**\n    *   **THRES Input:** Connected directly to the positive input of Comp_THRES. The input current spec (`THRES current: Max=250nA`) implies a high-impedance input, which is inherent with a comparator input.\n    *   **TRIG Input:** Connected directly to the negative input of Comp_TRIG. The input current spec (`TRIG current: Max=2.0uA`) also implies a high-impedance input.\n    *   **RESET Input:** Active low. It directly controls the flip-flop's reset. An internal inverter is used to convert the active-low external signal to an active-high signal for the NOR-based flip-flop's reset input. The `RESET current` specs are met by appropriate sizing of the input transistor and pull-up/pull-down resistors. A pull-up resistor (e.g., 100k\u03a9) is added to the `RESET` input to ensure it defaults to high if left floating, preventing false resets.\n\n*   **Power Supply (VCC, GND):**\n    *   The VCC and GND pins are the primary power connections for all internal circuitry.\n    *   The operating voltage range (4.5V to 18V) dictates the choice of transistor models and their operating regions. BJT-based designs are generally more robust over a wider voltage range compared to purely CMOS designs without careful level shifting.\n\n**Model Parameters:**\n\n*   **NMOS/PMOS:** Level 1 models are used for simplicity. W/L ratios are chosen to provide reasonable current drive and switching speeds.\n    *   `KP`: Transconductance parameter.\n    *   `VTO`: Threshold voltage.\n    *   `LAMBDA`: Channel-length modulation.\n*   **NPN/PNP:** Standard BJT models are used.\n    *   `IS`: Saturation current.\n    *   `BF`: Forward beta (current gain).\n    *   `VAF`: Forward Early voltage.\n    *   `IKF`: High current roll-off.\n    *   `VCE_SAT`: Collector-emitter saturation voltage (critical for DISCH and OUT).\n\n**Startup Sequence:**\n\nThe `PORT DEPENDENCY SCHEDULE` is handled by the `.IC` (initial condition) statements in a testbench, or by ensuring that the internal states settle correctly after power-up. The netlist itself defines the connections, and the behavior will naturally follow the power-up sequence. For example, comparators will output undefined states until VCC is stable and reference voltages are established. The `RESET` pin's default pull-up ensures the flip-flop starts in a known state (reset) if `RESET` is not actively driven.\n\n**Meeting Specifications:**\n\n*   **VCC Range:** The BJT and MOSFET models are chosen to operate correctly across the 4.5V to 18V range.\n*   **IO (Output Current):** The output buffer's power BJTs are sized to handle +/-200mA.\n*   **THRES/TRIG Voltage Levels:** Precisely set by the voltage divider (R1, R2, R3) and the `CONT` pin. The behavioral comparators ensure these thresholds are met exactly.\n*   **THRES/TRIG/RESET Currents:** The input impedance of the comparators and the `RESET` input stage are designed to meet these low current requirements.\n*   **DISCH On-State Voltage:** The `Q_DISCH` BJT model parameters are selected to achieve a Vce(sat) less than 0.4V at 8mA.\n*   **CONT Voltage (open circuit):** The voltage divider naturally sets this to 2/3 VCC.\n\nThis design provides a robust and accurate representation of the 555 timer's internal architecture, adhering to the specified electrical characteristics and SPICE modeling requirements.", "design_rationale": {"summary": "The XX555 Precision Timer subcircuit is designed to replicate the functionality of a standard 555 timer IC, incorporating two comparators, an SR flip-flop, a discharge transistor, and an output buffer. The design adheres to the specified pinout and electrical characteristics, with component sizing calculated to meet the datasheet's voltage levels, current capabilities, and timing requirements.\n\n**Overall Topology:**\n\nThe core of the 555 timer consists of:\n1.  **Voltage Divider:** Three identical resistors (R1, R2, R3) connected in series between VCC and GND, creating reference voltages for the comparators. The tap points are `VCC * 2/3` (threshold reference) and `VCC * 1/3` (trigger reference). The `CONT` pin is connected to the `VCC * 2/3` node, allowing external modification of the threshold voltage.\n2.  **Comparators:**\n    *   **Threshold Comparator (Comp_THRES):** Compares the `THRES` input voltage with the `VCC * 2/3` reference (or `CONT` voltage). Its output (`comp_thres_out`) goes high when `THRES` > `CONT`.\n    *   **Trigger Comparator (Comp_TRIG):** Compares the `TRIG` input voltage with the `VCC * 1/3` reference. Its output (`comp_trig_out`) goes high when `TRIG` < `VCC * 1/3`.\n3.  **SR Flip-Flop:** A NOR-based SR flip-flop is used to store the state.\n    *   The `SET` input of the flip-flop is driven by the output of the `TRIG` comparator.\n    *   The `RESET` input of the flip-flop is driven by the output of the `THRES` comparator OR the external `RESET` pin. The external `RESET` pin is active low and overrides other inputs.\n    *   The flip-flop's output (`Q_ff`) controls the `OUT` pin and the `DISCH` transistor.\n4.  **Discharge Transistor (Q_DISCH):** An NPN BJT (or NMOS) acts as an open-collector switch. When the flip-flop output (`Q_ff`) is low (meaning `OUT` is low), `Q_DISCH` turns on, providing a low-impedance path between `DISCH` and `GND`.\n5.  **Output Buffer:** A push-pull output stage (or totem-pole) capable of sinking and sourcing up to 200mA. This is implemented using a complementary pair of power transistors (PNP and NPN or PMOS and NMOS).\n\n**Component Sizing and Design Choices:**\n\n*   **Voltage Divider (R1, R2, R3):**\n    *   To ensure accurate 1/3 and 2/3 VCC division, three identical resistors are used. A value of 10k\u03a9 is chosen for R1, R2, R3. This provides a reasonable current draw from VCC (e.g., 15V / 30k\u03a9 = 0.5mA) while keeping the impedance low enough for comparator inputs.\n    *   The `CONT` pin is directly connected to the node between R1 and R2.\n\n*   **Comparators (Comp_THRES, Comp_TRIG):**\n    *   **Behavioral Models:** For simplicity and to strictly meet the threshold voltage specifications, behavioral voltage sources (`B` sources) are used for the comparators. This allows precise control over the switching points.\n    *   **Hysteresis:** Real comparators have some hysteresis. While not explicitly specified in the datasheet for the thresholds, a small amount of hysteresis (e.g., 50mV) can be implicitly introduced by the flip-flop's switching characteristics or explicitly added to the B-source if needed for stability. For this design, ideal switching is assumed for the primary thresholds, as the datasheet specifies precise voltage levels.\n    *   **Output Levels:** Comparator outputs are designed to swing between 0V and VCC to properly drive the flip-flop.\n\n*   **SR Flip-Flop:**\n    *   **NOR Gate Implementation:** A standard SR flip-flop can be built using two cross-coupled NOR gates. Each NOR gate is implemented using a combination of NMOS and PMOS transistors.\n    *   **Logic:**\n        *   `SET` (S_ff) is `comp_trig_out`.\n        *   `RESET` (R_ff) is `comp_thres_out` OR `NOT(RESET_pin)`.\n        *   `Q_ff` is the primary output, `NOT(Q_ff)` is the complementary output.\n    *   **Transistor Sizing:** The transistors for the NOR gates are sized to provide fast switching and sufficient drive for the output buffer and discharge transistor. W/L ratios of 10u/1u for NMOS and 20u/1u for PMOS are typical for logic gates in a 5V-15V environment, ensuring reasonable current drive.\n\n*   **Discharge Transistor (Q_DISCH):**\n    *   **NPN BJT:** An NPN BJT is chosen for the discharge transistor, as it's a common implementation in 555 timers.\n    *   **On-State Voltage:** The datasheet specifies `DISCH switch on-state voltage: Max=0.4V @ IO = 8mA`. This requires a BJT with a low Vce(sat) and sufficient current gain. A power NPN model (e.g., `Q_POWER_NPN`) with appropriate parameters (high beta, low Vce(sat)) is used.\n    *   **Off-State Current:** `DISCH switch off-state current: Max=100nA`. This implies a low leakage current for the BJT when off.\n    *   **Control:** The base of `Q_DISCH` is driven by `Q_ff` (or an inverter of `Q_ff`) such that when `Q_ff` is low, `Q_DISCH` turns on.\n\n*   **Output Buffer (OUT pin):**\n    *   **Push-Pull Stage:** A complementary push-pull stage is used to achieve the 200mA source/sink capability. This typically involves a PNP transistor for sourcing and an NPN transistor for sinking.\n    *   **Transistor Sizing:** The output transistors (Q_OUT_PNP, Q_OUT_NPN) are power BJTs, significantly larger than the logic transistors, to handle the 200mA current. Their current gain (beta) and saturation voltages are critical.\n    *   **Driver Stage:** Intermediate driver stages (inverters or buffers) are used to provide sufficient base current to the power output transistors.\n    *   **Current Limiting/Protection:** While not explicitly requested, a production 555 would include current limiting for the output stage. For this netlist, ideal power BJTs are assumed to meet the current spec without explicit current limiting circuitry, which would add significant complexity.\n\n*   **Input Stages (THRES, TRIG, RESET):**\n    *   **THRES Input:** Connected directly to the positive input of Comp_THRES. The input current spec (`THRES current: Max=250nA`) implies a high-impedance input, which is inherent with a comparator input.\n    *   **TRIG Input:** Connected directly to the negative input of Comp_TRIG. The input current spec (`TRIG current: Max=2.0uA`) also implies a high-impedance input.\n    *   **RESET Input:** Active low. It directly controls the flip-flop's reset. An internal inverter is used to convert the active-low external signal to an active-high signal for the NOR-based flip-flop's reset input. The `RESET current` specs are met by appropriate sizing of the input transistor and pull-up/pull-down resistors. A pull-up resistor (e.g., 100k\u03a9) is added to the `RESET` input to ensure it defaults to high if left floating, preventing false resets.\n\n*   **Power Supply (VCC, GND):**\n    *   The VCC and GND pins are the primary power connections for all internal circuitry.\n    *   The operating voltage range (4.5V to 18V) dictates the choice of transistor models and their operating regions. BJT-based designs are generally more robust over a wider voltage range compared to purely CMOS designs without careful level shifting.\n\n**Model Parameters:**\n\n*   **NMOS/PMOS:** Level 1 models are used for simplicity. W/L ratios are chosen to provide reasonable current drive and switching speeds.\n    *   `KP`: Transconductance parameter.\n    *   `VTO`: Threshold voltage.\n    *   `LAMBDA`: Channel-length modulation.\n*   **NPN/PNP:** Standard BJT models are used.\n    *   `IS`: Saturation current.\n    *   `BF`: Forward beta (current gain).\n    *   `VAF`: Forward Early voltage.\n    *   `IKF`: High current roll-off.\n    *   `VCE_SAT`: Collector-emitter saturation voltage (critical for DISCH and OUT).\n\n**Startup Sequence:**\n\nThe `PORT DEPENDENCY SCHEDULE` is handled by the `.IC` (initial condition) statements in a testbench, or by ensuring that the internal states settle correctly after power-up. The netlist itself defines the connections, and the behavior will naturally follow the power-up sequence. For example, comparators will output undefined states until VCC is stable and reference voltages are established. The `RESET` pin's default pull-up ensures the flip-flop starts in a known state (reset) if `RESET` is not actively driven.\n\n**Meeting Specifications:**\n\n*   **VCC Range:** The BJT and MOSFET models are chosen to operate correctly across the 4.5V to 18V range.\n*   **IO (Output Current):** The output buffer's power BJTs are sized to handle +/-200mA.\n*   **THRES/TRIG Voltage Levels:** Precisely set by the voltage divider (R1, R2, R3) and the `CONT` pin. The behavioral comparators ensure these thresholds are met exactly.\n*   **THRES/TRIG/RESET Currents:** The input impedance of the comparators and the `RESET` input stage are designed to meet these low current requirements.\n*   **DISCH On-State Voltage:** The `Q_DISCH` BJT model parameters are selected to achieve a Vce(sat) less than 0.4V at 8mA.\n*   **CONT Voltage (open circuit):** The voltage divider naturally sets this to 2/3 VCC.\n\nThis design provides a robust and accurate representation of the 555 timer's internal architecture, adhering to the specified electrical characteristics and SPICE modeling requirements."}}, {"iteration": 2, "netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\XX555_PRECISION_TIMERS_iter2.cir", "pass_rate_percent": 0.0, "passed_specs": 0, "failed_specs": 0, "unmeasured_specs": 59, "passed_symbols": [], "simulation_errors": ["C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(32): syntax error", "  --> .meas VCC_MAX_GEN MAX FIND V(VCC)", "  --> ^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(36): syntax error", "  --> .meas VI_CONT_MAX MAX FIND V(CONT)", "  --> ^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(37): syntax error", "  --> .meas VI_RESET_MAX MAX FIND V(RESET)", "  --> ^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(38): syntax error", "  --> .meas VI_THRES_MAX MAX FIND V(THRES)", "  --> ^^^^^^^^^"], "shortfalls": ["Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(32): syntax error", "Compiler/Simulation Error:   --> .meas VCC_MAX_GEN MAX FIND V(VCC)", "Compiler/Simulation Error:   --> ^^^^^^^", "Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(36): syntax error", "Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'IO' violated: Parameter 'IO' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'TJ' violated: Parameter 'TJ' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Case temperature for 60 seconds' violated: Parameter 'Case temperature for 60 seconds' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)"], "improvements": ["Topology refinement: The XX555 Precision Timer subcircuit is designed to replicate the functionality of a standard 555 timer IC, including its monostable and ast..."], "architecture_summary": "The XX555 Precision Timer subcircuit is designed to replicate the functionality of a standard 555 timer IC, including its monostable and astable operating modes, trigger and threshold comparators, reset function, and output drive capabilities. The architecture is based on a classic 555 internal block diagram, comprising:\n\n1.  **Voltage Divider:** A resistive voltage divider establishes the 2/3 VCC threshold and 1/3 VCC trigger levels. The `CONT` pin allows external access to the 2/3 VCC node, enabling modification of these levels or connection of a bypass capacitor for noise reduction.\n\n2.  **Comparators:**\n    *   **Threshold Comparator (Comp1):** Compares the `THRES` input with the 2/3 VCC level (or `CONT` voltage). Its output drives the reset input of the SR flip-flop.\n    *   **Trigger Comparator (Comp2):** Compares the `TRIG` input with the 1/3 VCC level. Its output drives the set input of the SR flip-flop.\n    These comparators are implemented using differential pairs with active loads, providing high gain and appropriate output swings to drive the flip-flop. The output stages are designed to be compatible with the logic levels required by the SR flip-flop.\n\n3.  **SR Flip-Flop:** A basic SR flip-flop (implemented with cross-coupled NOR gates or equivalent transistor logic) stores the state of the timer.\n    *   Set input: Driven by the Trigger Comparator output.\n    *   Reset input: Driven by the Threshold Comparator output OR the `RESET` input. The `RESET` input is active low and overrides other inputs, forcing the output low and discharge transistor on.\n\n4.  **Output Driver:** A push-pull output stage capable of sinking and sourcing up to 200mA. This is implemented with a large NPN transistor for sinking and a large PNP transistor for sourcing. The output is driven by the Q output of the SR flip-flop.\n\n5.  **Discharge Transistor:** An NPN transistor with an open collector, connected between `DISCH` and `GND`. This transistor is turned on when the output is low (Q-bar of the flip-flop is high), providing a low-impedance path to discharge an external timing capacitor.\n\n6.  **Bias Network:** A stable current source provides bias currents for the comparators and other internal circuitry, ensuring consistent operation across supply voltage variations.\n\n**Component Sizing Methodology:**\n\n*   **Voltage Divider:** Three equal resistors (R1, R2, R3) are used to create the 1/3 VCC and 2/3 VCC reference voltages. The value of 5k\u03a9 is chosen to provide a reasonable current draw without being excessively high, ensuring stable reference voltages.\n*   **Comparators:**\n    *   **Differential Pair (M1-M4 for Comp1, M5-M8 for Comp2):** W/L ratios are chosen to provide sufficient transconductance for high gain. A W/L of 100u/1u for input transistors and 50u/1u for active loads is a common starting point for general-purpose comparators.\n    *   **Current Source (M9, M10, M11, M12):** Provides tail current for the differential pairs. W/L ratios are set to establish a few tens of microamperes of current, balancing speed and power consumption.\n    *   **Output Stage (M13-M16 for Comp1, M17-M20 for Comp2):** Inverters or common-source stages are used to amplify the differential output and convert it to a single-ended signal suitable for the flip-flop. W/L ratios are chosen for appropriate logic levels and drive strength.\n*   **SR Flip-Flop (M21-M28):** Implemented using cross-coupled NOR gates (or NAND gates with appropriate inversion). Standard CMOS inverter sizing (e.g., W/L of 10u/1u for NMOS and 20u/1u for PMOS) is used to ensure proper logic operation.\n*   **Output Driver (Q_OUT_PNP, Q_OUT_NPN):**\n    *   `Q_OUT_NPN`: Sized with a large W/L (e.g., 500u/10u for a BJT model, or large W for MOSFET) to handle up to 200mA sinking current with low Vce(sat).\n    *   `Q_OUT_PNP`: Sized with a large W/L (e.g., 500u/10u for a BJT model, or large W for MOSFET) to handle up to 200mA sourcing current with low Vce(sat).\n*   **Discharge Transistor (Q_DISCH):** An NPN transistor with a large W/L (e.g., 100u/10u for a BJT model, or large W for MOSFET) to provide a low on-resistance path for discharging the external capacitor, capable of handling typical timing capacitor currents.\n*   **RESET Logic:** A simple inverter (M29, M30) is used to invert the active-low `RESET` signal before it feeds into the flip-flop's reset input.\n*   **NC Pin:** The `NC` pin is left unconnected internally as per the datasheet.\n\n**Addressing Previous Feedback:**\n\n1.  **Unknown Parameter Errors (Q_DISCH, Q_OUT_PNP, Q_OUT_NPN):** The previous netlist used `W=... L=...` parameters for BJT models (`QNPN`, `QPNP`). These parameters are specific to MOSFET models. For BJTs, the sizing is typically controlled by the emitter area (`AREA`) or by using multiple parallel transistors. In this revision, I will define generic NPN and PNP models and rely on the default `AREA=1` or implicitly assume the models are appropriately scaled for the required current. If specific current handling is needed, the `AREA` parameter can be adjusted, or multiple transistors can be placed in parallel. For this general model, I will remove the `W` and `L` parameters from the BJT instances.\n\n2.  **Failed Specification Audit (All parameters not observed):** This indicates that the previous simulation environment did not include the necessary testbenches or measurement commands to extract these parameters. The current task is to synthesize the netlist itself, assuming that a proper testbench will be used to verify these specifications. The architecture is designed to meet these specifications, but the netlist alone cannot \"observe\" them without a simulation setup. The component sizing is chosen with these specifications in mind (e.g., output current capability, threshold voltages).\n\nThis revised architecture aims for a robust and functional 555 timer model, adhering to SPICE syntax and design principles.", "design_rationale": {"summary": "The XX555 Precision Timer subcircuit is designed to replicate the functionality of a standard 555 timer IC, including its monostable and astable operating modes, trigger and threshold comparators, reset function, and output drive capabilities. The architecture is based on a classic 555 internal block diagram, comprising:\n\n1.  **Voltage Divider:** A resistive voltage divider establishes the 2/3 VCC threshold and 1/3 VCC trigger levels. The `CONT` pin allows external access to the 2/3 VCC node, enabling modification of these levels or connection of a bypass capacitor for noise reduction.\n\n2.  **Comparators:**\n    *   **Threshold Comparator (Comp1):** Compares the `THRES` input with the 2/3 VCC level (or `CONT` voltage). Its output drives the reset input of the SR flip-flop.\n    *   **Trigger Comparator (Comp2):** Compares the `TRIG` input with the 1/3 VCC level. Its output drives the set input of the SR flip-flop.\n    These comparators are implemented using differential pairs with active loads, providing high gain and appropriate output swings to drive the flip-flop. The output stages are designed to be compatible with the logic levels required by the SR flip-flop.\n\n3.  **SR Flip-Flop:** A basic SR flip-flop (implemented with cross-coupled NOR gates or equivalent transistor logic) stores the state of the timer.\n    *   Set input: Driven by the Trigger Comparator output.\n    *   Reset input: Driven by the Threshold Comparator output OR the `RESET` input. The `RESET` input is active low and overrides other inputs, forcing the output low and discharge transistor on.\n\n4.  **Output Driver:** A push-pull output stage capable of sinking and sourcing up to 200mA. This is implemented with a large NPN transistor for sinking and a large PNP transistor for sourcing. The output is driven by the Q output of the SR flip-flop.\n\n5.  **Discharge Transistor:** An NPN transistor with an open collector, connected between `DISCH` and `GND`. This transistor is turned on when the output is low (Q-bar of the flip-flop is high), providing a low-impedance path to discharge an external timing capacitor.\n\n6.  **Bias Network:** A stable current source provides bias currents for the comparators and other internal circuitry, ensuring consistent operation across supply voltage variations.\n\n**Component Sizing Methodology:**\n\n*   **Voltage Divider:** Three equal resistors (R1, R2, R3) are used to create the 1/3 VCC and 2/3 VCC reference voltages. The value of 5k\u03a9 is chosen to provide a reasonable current draw without being excessively high, ensuring stable reference voltages.\n*   **Comparators:**\n    *   **Differential Pair (M1-M4 for Comp1, M5-M8 for Comp2):** W/L ratios are chosen to provide sufficient transconductance for high gain. A W/L of 100u/1u for input transistors and 50u/1u for active loads is a common starting point for general-purpose comparators.\n    *   **Current Source (M9, M10, M11, M12):** Provides tail current for the differential pairs. W/L ratios are set to establish a few tens of microamperes of current, balancing speed and power consumption.\n    *   **Output Stage (M13-M16 for Comp1, M17-M20 for Comp2):** Inverters or common-source stages are used to amplify the differential output and convert it to a single-ended signal suitable for the flip-flop. W/L ratios are chosen for appropriate logic levels and drive strength.\n*   **SR Flip-Flop (M21-M28):** Implemented using cross-coupled NOR gates (or NAND gates with appropriate inversion). Standard CMOS inverter sizing (e.g., W/L of 10u/1u for NMOS and 20u/1u for PMOS) is used to ensure proper logic operation.\n*   **Output Driver (Q_OUT_PNP, Q_OUT_NPN):**\n    *   `Q_OUT_NPN`: Sized with a large W/L (e.g., 500u/10u for a BJT model, or large W for MOSFET) to handle up to 200mA sinking current with low Vce(sat).\n    *   `Q_OUT_PNP`: Sized with a large W/L (e.g., 500u/10u for a BJT model, or large W for MOSFET) to handle up to 200mA sourcing current with low Vce(sat).\n*   **Discharge Transistor (Q_DISCH):** An NPN transistor with a large W/L (e.g., 100u/10u for a BJT model, or large W for MOSFET) to provide a low on-resistance path for discharging the external capacitor, capable of handling typical timing capacitor currents.\n*   **RESET Logic:** A simple inverter (M29, M30) is used to invert the active-low `RESET` signal before it feeds into the flip-flop's reset input.\n*   **NC Pin:** The `NC` pin is left unconnected internally as per the datasheet.\n\n**Addressing Previous Feedback:**\n\n1.  **Unknown Parameter Errors (Q_DISCH, Q_OUT_PNP, Q_OUT_NPN):** The previous netlist used `W=... L=...` parameters for BJT models (`QNPN`, `QPNP`). These parameters are specific to MOSFET models. For BJTs, the sizing is typically controlled by the emitter area (`AREA`) or by using multiple parallel transistors. In this revision, I will define generic NPN and PNP models and rely on the default `AREA=1` or implicitly assume the models are appropriately scaled for the required current. If specific current handling is needed, the `AREA` parameter can be adjusted, or multiple transistors can be placed in parallel. For this general model, I will remove the `W` and `L` parameters from the BJT instances.\n\n2.  **Failed Specification Audit (All parameters not observed):** This indicates that the previous simulation environment did not include the necessary testbenches or measurement commands to extract these parameters. The current task is to synthesize the netlist itself, assuming that a proper testbench will be used to verify these specifications. The architecture is designed to meet these specifications, but the netlist alone cannot \"observe\" them without a simulation setup. The component sizing is chosen with these specifications in mind (e.g., output current capability, threshold voltages).\n\nThis revised architecture aims for a robust and functional 555 timer model, adhering to SPICE syntax and design principles."}}], "final_netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\XX555_PRECISION_TIMERS_iter2.cir"}, "knowledge_graph": {"ic_device": {"name": "xx555 Precision Timers", "category": "Precision Timing Circuits", "description": "The Nx555 and Sx555 devices are precision timing circuits capable of producing accurate time delays or oscillation. In time-delay or monostable operating modes, the timed interval is controlled by a single external resistor and capacitor network. In the astable mode of operation, the frequency and duty cycle are controlled independently with two external resistors and a single external capacitor. Each timer has a trigger level equal to approximately one-third of the supply voltage and a threshold level equal to approximately two-thirds of the supply voltage. These levels can be altered by use of the control voltage pin (CONT). When the trigger input (TRIG) is less than the trigger level, the flip-flop is set and the output goes high. If TRIG is greater than the trigger level and the threshold input (THRES) is greater than the threshold level, the flip-flop is reset and the output is low. The reset input (RESET) overrides all other inputs and is used to initiate a new timing cycle. If RESET is low, the flip-flop is reset and the output is low. Whenever the output is low, a low-impedance path is provided between the discharge pin (DISCH) and the ground pin (GND). Tie all unused inputs to an appropriate logic level to prevent false triggering. The output circuit is capable of sinking or sourcing current up to 200mA. Operation is specified for supplies of 5V to 15V. With a 5V supply, output levels are compatible with TTL inputs."}, "pins": [{"name": "CONT", "pin_number": "5", "direction": "BIDIRECTIONAL", "role": "CONTROL", "description": "Controls comparator thresholds, Outputs 2/3 \u00d7 VCC, allows bypass capacitor connection", "voltage_range": {}}, {"name": "DISCH", "pin_number": "7", "direction": "OUTPUT", "role": "OUTPUT", "description": "Open collector output to discharge timing capacitor", "voltage_range": {}}, {"name": "GND", "pin_number": "1", "direction": "GROUND", "role": "GROUND", "description": "Ground", "voltage_range": {}}, {"name": "NC", "pin_number": "1, 3, 4, 6, 8, 9, 11, 13, 14, 16, 18, 19", "direction": "null", "role": "null", "description": "No internal connection", "voltage_range": {}}, {"name": "OUT", "pin_number": "3", "direction": "OUTPUT", "role": "OUTPUT", "description": "High current timer output signal", "voltage_range": {}}, {"name": "RESET", "pin_number": "4", "direction": "INPUT", "role": "CONTROL", "description": "Active low reset input forces output and discharge low.", "voltage_range": {}}, {"name": "THRES", "pin_number": "6", "direction": "INPUT", "role": "SIGNAL", "description": "End of timing input. THRES > CONT sets output low and discharge low", "voltage_range": {}}, {"name": "TRIG", "pin_number": "2", "direction": "INPUT", "role": "SIGNAL", "description": "Start of timing input. TRIG < \u00bd CONT sets output high and discharge open", "voltage_range": {}}, {"name": "VCC", "pin_number": "8", "direction": "POWER", "role": "POWER", "description": "Input supply voltage, 4.5V to 16V. SE555 maximum is 18V.", "voltage_range": {"min": 4.5, "max": 18.0}}], "electrical_parameters": [{"symbol": "VCC", "name": "Supply voltage", "min": null, "typ": null, "max": 18.0, "unit": "V", "test_conditions": "over operating free-air temperature range (unless otherwise noted)", "related_pins": ["VCC"], "category": "Absolute Maximum Ratings"}, {"symbol": "VI", "name": "Input voltage", "min": null, "typ": null, "max": null, "unit": "V", "test_conditions": "CONT, RESET, THRES, TRIG", "related_pins": ["CONT", "RESET", "THRES", "TRIG"], "category": "Absolute Maximum Ratings"}, {"symbol": "IO", "name": "Output current", "min": -225.0, "typ": null, "max": 225.0, "unit": "mA", "test_conditions": "over operating free-air temperature range (unless otherwise noted)", "related_pins": ["OUT"], "category": "Absolute Maximum Ratings"}, {"symbol": "TJ", "name": "Operating virtual junction temperature", "min": null, "typ": null, "max": 150.0, "unit": "\u00b0C", "test_conditions": "over operating free-air temperature range (unless otherwise noted)", "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "Case temperature for 60 seconds", "name": "Case temperature for 60 seconds", "min": null, "typ": null, "max": 260.0, "unit": "\u00b0C", "test_conditions": "FK package", "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "Lead temperature 1.6mm (1/16 inch) from case", "name": "Lead temperature 1.6mm (1/16 inch) from case", "min": null, "typ": null, "max": 300.0, "unit": "\u00b0C", "test_conditions": "JG package, 60 seconds", "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "Tstg", "name": "Storage temperature", "min": -65.0, "typ": null, "max": 150.0, "unit": "\u00b0C", "test_conditions": "over operating free-air temperature range (unless otherwise noted)", "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "V(ESD)", "name": "Electrostatic discharge Human-body model (HBM), per ANSI/ESDA/JEDEC JS-001", "min": null, "typ": null, "max": null, "unit": "V", "test_conditions": null, "related_pins": [], "category": "ESD Ratings"}, {"symbol": "Charged device model (CDM), per ANSI/ESDA/JEDEC JS-002", "name": "Charged device model (CDM), per ANSI/ESDA/JEDEC JS-002", "min": null, "typ": null, "max": null, "unit": "V", "test_conditions": null, "related_pins": [], "category": "ESD Ratings"}, {"symbol": "VCC", "name": "Supply voltage", "min": 4.5, "typ": null, "max": 16.0, "unit": "V", "test_conditions": "NA555, NE555, SA555", "related_pins": ["VCC"], "category": "Recommended Operating Conditions"}, {"symbol": "VCC", "name": "Supply voltage", "min": 4.5, "typ": null, "max": 18.0, "unit": "V", "test_conditions": "SE555", "related_pins": ["VCC"], "category": "Recommended Operating Conditions"}, {"symbol": "IO", "name": "Output current", "min": -200.0, "typ": null, "max": 200.0, "unit": "mA", "test_conditions": "over operating free-air temperature range (unless otherwise noted)", "related_pins": ["OUT"], "category": "Recommended Operating Conditions"}, {"symbol": "TA", "name": "Operating free-air temperature", "min": -40.0, "typ": null, "max": 105.0, "unit": "\u00b0C", "test_conditions": "NA555", "related_pins": [], "category": "Recommended Operating Conditions"}, {"symbol": "TA", "name": "Operating free-air temperature", "min": 0.0, "typ": null, "max": 70.0, "unit": "\u00b0C", "test_conditions": "NE555", "related_pins": [], "category": "Recommended Operating Conditions"}, {"symbol": "TA", "name": "Operating free-air temperature", "min": -40.0, "typ": null, "max": 85.0, "unit": "\u00b0C", "test_conditions": "SA555", "related_pins": [], "category": "Recommended Operating Conditions"}, {"symbol": "TA", "name": "Operating free-air temperature", "min": -55.0, "typ": null, "max": 125.0, "unit": "\u00b0C", "test_conditions": "SE555", "related_pins": [], "category": "Recommended Operating Conditions"}, {"symbol": "R\u03b8JA", "name": "Junction-to-ambient thermal resistance", "min": null, "typ": 125.4, "max": null, "unit": "\u00b0C/W", "test_conditions": "D (SOIC) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JA", "name": "Junction-to-ambient thermal resistance", "min": null, "typ": 92.2, "max": null, "unit": "\u00b0C/W", "test_conditions": "FK (LCCC) 20 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JA", "name": "Junction-to-ambient thermal resistance", "min": null, "typ": 125.0, "max": null, "unit": "\u00b0C/W", "test_conditions": "JG (CDIP) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JA", "name": "Junction-to-ambient thermal resistance", "min": null, "typ": 98.5, "max": null, "unit": "\u00b0C/W", "test_conditions": "P (PDIP) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JA", "name": "Junction-to-ambient thermal resistance", "min": null, "typ": 124.5, "max": null, "unit": "\u00b0C/W", "test_conditions": "PS (SO) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JA", "name": "Junction-to-ambient thermal resistance", "min": null, "typ": 164.2, "max": null, "unit": "\u00b0C/W", "test_conditions": "PW (TSSOP) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(top)", "name": "Junction-to-case (top) thermal resistance", "min": null, "typ": 64.9, "max": null, "unit": "\u00b0C/W", "test_conditions": "D (SOIC) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(top)", "name": "Junction-to-case (top) thermal resistance", "min": null, "typ": 67.6, "max": null, "unit": "\u00b0C/W", "test_conditions": "FK (LCCC) 20 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(top)", "name": "Junction-to-case (top) thermal resistance", "min": null, "typ": 73.3, "max": null, "unit": "\u00b0C/W", "test_conditions": "JG (CDIP) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(top)", "name": "Junction-to-case (top) thermal resistance", "min": null, "typ": 77.8, "max": null, "unit": "\u00b0C/W", "test_conditions": "P (PDIP) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(top)", "name": "Junction-to-case (top) thermal resistance", "min": null, "typ": 61.2, "max": null, "unit": "\u00b0C/W", "test_conditions": "PS (SO) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(top)", "name": "Junction-to-case (top) thermal resistance", "min": null, "typ": 70.5, "max": null, "unit": "\u00b0C/W", "test_conditions": "PW (TSSOP) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JB", "name": "Junction-to-board thermal resistance", "min": null, "typ": 73.2, "max": null, "unit": "\u00b0C/W", "test_conditions": "D (SOIC) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JB", "name": "Junction-to-board thermal resistance", "min": null, "typ": 66.7, "max": null, "unit": "\u00b0C/W", "test_conditions": "FK (LCCC) 20 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JB", "name": "Junction-to-board thermal resistance", "min": null, "typ": 114.9, "max": null, "unit": "\u00b0C/W", "test_conditions": "JG (CDIP) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JB", "name": "Junction-to-board thermal resistance", "min": null, "typ": 61.0, "max": null, "unit": "\u00b0C/W", "test_conditions": "P (PDIP) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JB", "name": "Junction-to-board thermal resistance", "min": null, "typ": 79.3, "max": null, "unit": "\u00b0C/W", "test_conditions": "PS (SO) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JB", "name": "Junction-to-board thermal resistance", "min": null, "typ": 104.8, "max": null, "unit": "\u00b0C/W", "test_conditions": "PW (TSSOP) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "\u03c8JT", "name": "Junction-to-top characterization parameter", "min": null, "typ": 14.3, "max": null, "unit": "\u00b0C/W", "test_conditions": "D (SOIC) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "\u03c8JT", "name": "Junction-to-top characterization parameter", "min": null, "typ": 61.6, "max": null, "unit": "\u00b0C/W", "test_conditions": "FK (LCCC) 20 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "\u03c8JT", "name": "Junction-to-top characterization parameter", "min": null, "typ": 44.4, "max": null, "unit": "\u00b0C/W", "test_conditions": "JG (CDIP) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "\u03c8JT", "name": "Junction-to-top characterization parameter", "min": null, "typ": 43.9, "max": null, "unit": "\u00b0C/W", "test_conditions": "P (PDIP) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "\u03c8JT", "name": "Junction-to-top characterization parameter", "min": null, "typ": 16.5, "max": null, "unit": "\u00b0C/W", "test_conditions": "PS (SO) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "\u03c8JT", "name": "Junction-to-top characterization parameter", "min": null, "typ": 8.2, "max": null, "unit": "\u00b0C/W", "test_conditions": "PW (TSSOP) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "\u03c8JB", "name": "Junction-to-board characterization parameter", "min": null, "typ": 72.1, "max": null, "unit": "\u00b0C/W", "test_conditions": "D (SOIC) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "\u03c8JB", "name": "Junction-to-board characterization parameter", "min": null, "typ": 66.5, "max": null, "unit": "\u00b0C/W", "test_conditions": "FK (LCCC) 20 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "\u03c8JB", "name": "Junction-to-board characterization parameter", "min": null, "typ": 106.6, "max": null, "unit": "\u00b0C/W", "test_conditions": "JG (CDIP) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "\u03c8JB", "name": "Junction-to-board characterization parameter", "min": null, "typ": 60.3, "max": null, "unit": "\u00b0C/W", "test_conditions": "P (PDIP) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "\u03c8JB", "name": "Junction-to-board characterization parameter", "min": null, "typ": 77.8, "max": null, "unit": "\u00b0C/W", "test_conditions": "PS (SO) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "\u03c8JB", "name": "Junction-to-board characterization parameter", "min": null, "typ": 103.1, "max": null, "unit": "\u00b0C/W", "test_conditions": "PW (TSSOP) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(bot)", "name": "Junction-to-case (bottom) thermal resistance", "min": null, "typ": 14.2, "max": null, "unit": "\u00b0C/W", "test_conditions": "FK (LCCC) 20 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(bot)", "name": "Junction-to-case (bottom) thermal resistance", "min": null, "typ": 29.3, "max": null, "unit": "\u00b0C/W", "test_conditions": "JG (CDIP) 8 PINS", "related_pins": [], "category": "Thermal Information"}, {"symbol": "THRES voltage level", "name": "THRES voltage level", "min": 8.8, "typ": 10.0, "max": 11.2, "unit": "V", "test_conditions": "VCC = 15V, NA555, NE555, SA555", "related_pins": ["THRES"], "category": "Electrical Characteristics"}, {"symbol": "THRES voltage level", "name": "THRES voltage level", "min": 9.4, "typ": 10.0, "max": 10.6, "unit": "V", "test_conditions": "VCC = 15V, SE555", "related_pins": ["THRES"], "category": "Electrical Characteristics"}, {"symbol": "THRES voltage level", "name": "THRES voltage level", "min": 2.4, "typ": 3.3, "max": 4.2, "unit": "V", "test_conditions": "VCC = 5V, NA555, NE555, SA555", "related_pins": ["THRES"], "category": "Electrical Characteristics"}, {"symbol": "THRES voltage level", "name": "THRES voltage level", "min": 2.7, "typ": 3.3, "max": 4.0, "unit": "V", "test_conditions": "VCC = 5V, SE555", "related_pins": ["THRES"], "category": "Electrical Characteristics"}, {"symbol": "THRES current", "name": "THRES current", "min": null, "typ": 30.0, "max": 250.0, "unit": "nA", "test_conditions": null, "related_pins": ["THRES"], "category": "Electrical Characteristics"}, {"symbol": "TRIG voltage level", "name": "TRIG voltage level", "min": 4.5, "typ": 5.0, "max": 5.6, "unit": "V", "test_conditions": "VCC = 15V, NA555, NE555, SA555", "related_pins": ["TRIG"], "category": "Electrical Characteristics"}, {"symbol": "TRIG voltage level", "name": "TRIG voltage level", "min": 4.8, "typ": 5.0, "max": 5.2, "unit": "V", "test_conditions": "VCC = 15V, SE555", "related_pins": ["TRIG"], "category": "Electrical Characteristics"}, {"symbol": "TRIG voltage level", "name": "TRIG voltage level", "min": 3.0, "typ": null, "max": 6.0, "unit": "V", "test_conditions": "VCC = 15V, TA = \u201355\u00b0C to +125\u00b0C, SE555", "related_pins": ["TRIG"], "category": "Electrical Characteristics"}, {"symbol": "TRIG voltage level", "name": "TRIG voltage level", "min": 1.1, "typ": 1.67, "max": 2.2, "unit": "V", "test_conditions": "VCC = 5V, NA555, NE555, SA555", "related_pins": ["TRIG"], "category": "Electrical Characteristics"}, {"symbol": "TRIG voltage level", "name": "TRIG voltage level", "min": 1.45, "typ": 1.67, "max": 1.9, "unit": "V", "test_conditions": "VCC = 5V, SE555", "related_pins": ["TRIG"], "category": "Electrical Characteristics"}, {"symbol": "TRIG voltage level", "name": "TRIG voltage level", "min": null, "typ": null, "max": 1.9, "unit": "V", "test_conditions": "VCC = 5V, TA = \u201355\u00b0C to +125\u00b0C, SE555", "related_pins": ["TRIG"], "category": "Electrical Characteristics"}, {"symbol": "TRIG current", "name": "TRIG current", "min": null, "typ": 0.5, "max": 2.0, "unit": "\u03bcA", "test_conditions": "TRIG at 0V, NA555, NE555, SA555", "related_pins": ["TRIG"], "category": "Electrical Characteristics"}, {"symbol": "TRIG current", "name": "TRIG current", "min": null, "typ": 0.5, "max": 0.9, "unit": "\u03bcA", "test_conditions": "TRIG at 0V, SE555", "related_pins": ["TRIG"], "category": "Electrical Characteristics"}, {"symbol": "RESET voltage level", "name": "RESET voltage level", "min": 0.3, "typ": 0.7, "max": 1.0, "unit": "V", "test_conditions": null, "related_pins": ["RESET"], "category": "Electrical Characteristics"}, {"symbol": "RESET voltage level", "name": "RESET voltage level", "min": null, "typ": null, "max": 1.1, "unit": "V", "test_conditions": "TA = \u201355\u00b0C to +125\u00b0C, SE555", "related_pins": ["RESET"], "category": "Electrical Characteristics"}, {"symbol": "RESET current", "name": "RESET current", "min": null, "typ": 0.1, "max": 0.4, "unit": "mA", "test_conditions": "RESET at VCC", "related_pins": ["RESET"], "category": "Electrical Characteristics"}, {"symbol": "RESET current", "name": "RESET current", "min": -1.5, "typ": -0.4, "max": null, "unit": "mA", "test_conditions": "RESET at 0V, NA555, NE555, SA555", "related_pins": ["RESET"], "category": "Electrical Characteristics"}, {"symbol": "RESET current", "name": "RESET current", "min": -1.0, "typ": -0.4, "max": null, "unit": "mA", "test_conditions": "RESET at 0V, SE555", "related_pins": ["RESET"], "category": "Electrical Characteristics"}, {"symbol": "DISCH switch off-state current", "name": "DISCH switch off-state current", "min": null, "typ": 20.0, "max": 100.0, "unit": "nA", "test_conditions": null, "related_pins": ["DISCH"], "category": "Electrical Characteristics"}, {"symbol": "DISCH switch on-state voltage", "name": "DISCH switch on-state voltage", "min": null, "typ": 0.15, "max": 0.4, "unit": "V", "test_conditions": "VCC = 5V, IO = 8mA, NA555, NE555, SA555", "related_pins": ["DISCH"], "category": "Electrical Characteristics"}, {"symbol": "CONT voltage (open circuit)", "name": "CONT voltage (open circuit)", "min": 9.0}]}, "report_md": "# Autonomous AI Analog Circuit Synthesis & Verification Report\n**Target IC:** `xx555 Precision Timers` | **Subcircuit:** `XX555_PRECISION_TIMERS`\n**Overall Datasheet Specification Pass Rate:** `0.0%`\n\n## 1. Executive Summary\n- **IC Category:** The Nx555 and Sx555 devices are precision timing circuits capable of producing accurate time delays or oscillation. In time-delay or monostable operating modes, the timed interval is controlled by a single external resistor and capacitor network. In the astable mode of operation, the frequency and duty cycle are controlled independently with two external resistors and a single external capacitor. Each timer has a trigger level equal to approximately one-third of the supply voltage and a threshold level equal to approximately two-thirds of the supply voltage. These levels can be altered by use of the control voltage pin (CONT). When the trigger input (TRIG) is less than the trigger level, the flip-flop is set and the output goes high. If TRIG is greater than the trigger level and the threshold input (THRES) is greater than the threshold level, the flip-flop is reset and the output is low. The reset input (RESET) overrides all other inputs and is used to initiate a new timing cycle. If RESET is low, the flip-flop is reset and the output is low. Whenever the output is low, a low-impedance path is provided between the discharge pin (DISCH) and the ground pin (GND). Tie all unused inputs to an appropriate logic level to prevent false triggering. The output circuit is capable of sinking or sourcing current up to 200mA. Operation is specified for supplies of 5V to 15V. With a 5V supply, output levels are compatible with TTL inputs.\n- **Total Datasheet Specifications Extracted:** 69\n- **Design Iterations Required:** 2\n- **Synthesized Netlist Location:** `C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\XX555_PRECISION_TIMERS_iter2.cir`\n\n## 2. Port Dependency Graph (PDG) Scheduling\nTopological activation sequence derived from physical pin roles:\n| Pin Name | Physical Role | Direction | Activation Time (us) |\n| :--- | :--- | :--- | :--- |\n| `CONT` | `CONTROL` | `BIDIRECTIONAL` | 5.00 us |\n| `DISCH` | `OUTPUT` | `OUTPUT` | 8.00 us |\n| `GND` | `GROUND` | `GROUND` | 0.00 us |\n| `NC` | `null` | `null` | 7.00 us |\n| `OUT` | `OUTPUT` | `OUTPUT` | 8.00 us |\n| `RESET` | `CONTROL` | `INPUT` | 5.00 us |\n| `THRES` | `SIGNAL` | `INPUT` | 7.00 us |\n| `TRIG` | `SIGNAL` | `INPUT` | 7.00 us |\n| `VCC` | `POWER` | `POWER` | 0.00 us |\n\n### 2.1 Port Dependency Graph Topology\n```mermaid\ngraph TD\n    CONT[\"CONT (CONTROL)<br/>5.0us\"]\n    DISCH[\"DISCH (OUTPUT)<br/>8.0us\"]\n    GND[\"GND (GROUND)<br/>0.0us\"]\n    NC[\"NC (null)<br/>7.0us\"]\n    OUT[\"OUT (OUTPUT)<br/>8.0us\"]\n    RESET[\"RESET (CONTROL)<br/>5.0us\"]\n    THRES[\"THRES (SIGNAL)<br/>7.0us\"]\n    TRIG[\"TRIG (SIGNAL)<br/>7.0us\"]\n    VCC[\"VCC (POWER)<br/>0.0us\"]\n    CONT -->|0.0us| DISCH\n    CONT -->|0.0us| NC\n    CONT -->|0.0us| OUT\n    CONT -->|0.0us| THRES\n    CONT -->|0.0us| TRIG\n    GND -->|0.0us| CONT\n    GND -->|0.0us| DISCH\n    GND -->|0.0us| NC\n    GND -->|0.0us| OUT\n    GND -->|0.0us| RESET\n    GND -->|0.0us| THRES\n    GND -->|0.0us| TRIG\n    NC -->|0.0us| DISCH\n    NC -->|0.0us| OUT\n    RESET -->|0.0us| DISCH\n    RESET -->|0.0us| NC\n    RESET -->|0.0us| OUT\n    RESET -->|0.0us| THRES\n    RESET -->|0.0us| TRIG\n    THRES -->|0.0us| DISCH\n    THRES -->|0.0us| OUT\n    TRIG -->|0.0us| DISCH\n    TRIG -->|0.0us| OUT\n```\n\n## 3. Specification Verification & SymPy Oracle Audit\nDetailed verification results evaluated against SymPy interval constraints:\n| Parameter | Min Target | Typ Target | Max Target | Measured Value | Unit | Status |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| `VCC` | - | - | 18 | **N/A** | V | \u274c FAIL |\n| `VI` | - | - | - | **N/A** | V | \u274c FAIL |\n| `IO` | -0.225 | - | 0.225 | **N/A** | mA | \u274c FAIL |\n| `TJ` | - | - | 150 | **N/A** | \u00b0C | \u274c FAIL |\n| `Case temperature for 60 seconds` | - | - | 260 | **N/A** | \u00b0C | \u274c FAIL |\n| `VCC` | 4.5 | - | 16 | **N/A** | V | \u274c FAIL |\n| `VCC` | 4.5 | - | 18 | **N/A** | V | \u274c FAIL |\n| `IO` | -0.2 | - | 0.2 | **N/A** | mA | \u274c FAIL |\n| `TA` | -40 | - | 105 | **N/A** | \u00b0C | \u274c FAIL |\n| `TA` | 0 | - | 70 | **N/A** | \u00b0C | \u274c FAIL |\n| `TA` | -40 | - | 85 | **N/A** | \u00b0C | \u274c FAIL |\n| `TA` | -55 | - | 125 | **N/A** | \u00b0C | \u274c FAIL |\n| `R\u03b8JC(top)` | 51.92 | 64.9 | 77.88 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JC(top)` | 54.08 | 67.6 | 81.12 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JC(top)` | 58.64 | 73.3 | 87.96 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JC(top)` | 62.24 | 77.8 | 93.36 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JC(top)` | 48.96 | 61.2 | 73.44 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JC(top)` | 56.4 | 70.5 | 84.6 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JB` | 58.56 | 73.2 | 87.84 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JB` | 53.36 | 66.7 | 80.04 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JB` | 91.92 | 114.9 | 137.9 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JB` | 48.8 | 61 | 73.2 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JB` | 63.44 | 79.3 | 95.16 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JB` | 83.84 | 104.8 | 125.8 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `\u03c8JT` | 11.44 | 14.3 | 17.16 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `\u03c8JT` | 49.28 | 61.6 | 73.92 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `\u03c8JT` | 35.52 | 44.4 | 53.28 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `\u03c8JT` | 35.12 | 43.9 | 52.68 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `\u03c8JT` | 13.2 | 16.5 | 19.8 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `\u03c8JT` | 6.56 | 8.2 | 9.84 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `\u03c8JB` | 57.68 | 72.1 | 86.52 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `\u03c8JB` | 53.2 | 66.5 | 79.8 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `\u03c8JB` | 85.28 | 106.6 | 127.9 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `\u03c8JB` | 48.24 | 60.3 | 72.36 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `\u03c8JB` | 62.24 | 77.8 | 93.36 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `\u03c8JB` | 82.48 | 103.1 | 123.7 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JC(bot)` | 11.36 | 14.2 | 17.04 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JC(bot)` | 23.44 | 29.3 | 35.16 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `THRES voltage level` | 8.8 | 10 | 11.2 | **N/A** | V | \u274c FAIL |\n| `THRES voltage level` | 9.4 | 10 | 10.6 | **N/A** | V | \u274c FAIL |\n| `THRES voltage level` | 2.4 | 3.3 | 4.2 | **N/A** | V | \u274c FAIL |\n| `THRES voltage level` | 2.7 | 3.3 | 4 | **N/A** | V | \u274c FAIL |\n| `THRES current` | - | 3e-08 | 2.5e-07 | **N/A** | nA | \u274c FAIL |\n| `TRIG voltage level` | 4.5 | 5 | 5.6 | **N/A** | V | \u274c FAIL |\n| `TRIG voltage level` | 4.8 | 5 | 5.2 | **N/A** | V | \u274c FAIL |\n| `TRIG voltage level` | 3 | - | 6 | **N/A** | V | \u274c FAIL |\n| `TRIG voltage level` | 1.1 | 1.67 | 2.2 | **N/A** | V | \u274c FAIL |\n| `TRIG voltage level` | 1.45 | 1.67 | 1.9 | **N/A** | V | \u274c FAIL |\n| `TRIG voltage level` | - | - | 1.9 | **N/A** | V | \u274c FAIL |\n| `TRIG current` | - | 0.5 | 2 | **N/A** | \u03bcA | \u274c FAIL |\n| `TRIG current` | - | 0.5 | 0.9 | **N/A** | \u03bcA | \u274c FAIL |\n| `RESET voltage level` | 0.3 | 0.7 | 1 | **N/A** | V | \u274c FAIL |\n| `RESET voltage level` | - | - | 1.1 | **N/A** | V | \u274c FAIL |\n| `RESET current` | - | 0.0001 | 0.0004 | **N/A** | mA | \u274c FAIL |\n| `RESET current` | -0.0015 | -0.0004 | - | **N/A** | mA | \u274c FAIL |\n| `RESET current` | -0.001 | -0.0004 | - | **N/A** | mA | \u274c FAIL |\n| `DISCH switch off-state current` | - | 2e-08 | 1e-07 | **N/A** | nA | \u274c FAIL |\n| `DISCH switch on-state voltage` | - | 0.15 | 0.4 | **N/A** | V | \u274c FAIL |\n| `CONT voltage (open circuit)` | 9 | - | - | **N/A** |  | \u274c FAIL |\n\n## 4. Closed-Loop Iteration History & Root Cause Analysis\n| Iteration | Pass Rate | Passed Specs | Failed Specs | Architecture Notes |\n| :--- | :--- | :--- | :--- | :--- |\n| Iteration 1 | 0.0% | 0 | 0 | The XX555 Precision Timer subcircuit is designed to replicate the functionality ... |\n| Iteration 2 | 0.0% | 0 | 0 | The XX555 Precision Timer subcircuit is designed to replicate the functionality ... |\n\n### 4.1 Loop 1 Detailed Audit\n- **Pass Rate**: `0.0%` (0/0 specs passed)\n\n**Shortfall Audit (\ubbf8\ub2ec \uc6d0\uc778 \ubd84\uc11d):**\n- Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\XX555_PRECISION_TIMERS_iter1.cir(65): Unknown parameter\n- Compiler/Simulation Error:   --> Q_DISCH DISCH disch_driver GND QNPN W=100u L=10u ; Sized for 8mA with low Vce_sat\n- Compiler/Simulation Error:   --> ^^^^^^^^^^^^\n- Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\XX555_PRECISION_TIMERS_iter1.cir(79): Unknown parameter\n- Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'IO' violated: Parameter 'IO' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'TJ' violated: Parameter 'TJ' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Case temperature for 60 seconds' violated: Parameter 'Case temperature for 60 seconds' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)\n\n**Improvement Actions (\uac1c\uc120 \ubc0f \uc218\uc815 \uc0ac\ud56d):**\n- Initial first-principles topology and Level-1 parameter sizing synthesized from scratch.\n\n### 4.2 Loop 2 Detailed Audit\n- **Pass Rate**: `0.0%` (0/0 specs passed)\n\n**Shortfall Audit (\ubbf8\ub2ec \uc6d0\uc778 \ubd84\uc11d):**\n- Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(32): syntax error\n- Compiler/Simulation Error:   --> .meas VCC_MAX_GEN MAX FIND V(VCC)\n- Compiler/Simulation Error:   --> ^^^^^^^\n- Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(36): syntax error\n- Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'IO' violated: Parameter 'IO' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'TJ' violated: Parameter 'TJ' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Case temperature for 60 seconds' violated: Parameter 'Case temperature for 60 seconds' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)\n\n**Improvement Actions (\uac1c\uc120 \ubc0f \uc218\uc815 \uc0ac\ud56d):**\n- Topology refinement: The XX555 Precision Timer subcircuit is designed to replicate the functionality of a standard 555 timer IC, including its monostable and ast...\n\n## 5. Synthesized SPICE Netlist Architecture\nNetlist file: `C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\XX555_PRECISION_TIMERS_iter2.cir`\n```spice\n\n.subckt XX555_PRECISION_TIMERS CONT DISCH GND NC OUT RESET THRES TRIG VCC\n\n* --- Model Definitions ---\n.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u GAMMA=0.5 PHI=0.6 LAMBDA=0.01)\n.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.5 PHI=0.6 LAMBDA=0.01)\n.model QNPN NPN (IS=1e-14 BF=100 VAF=100 IKF=0.1 ISE=1e-13 NE=1.3 BR=10 VAR=100 IKR=0.01 ISC=1e-13 NC=1.2 RB=10 RC=1 RE=0.1 CJE=1p CJC=0.5p TF=0.3n TR=6n)\n.model QPNP PNP (IS=1e-14 BF=50 VAF=50 IKF=0.05 ISE=1e-13 NE=1.3 BR=5 VAR=50 IKR=0.005 ISC=1e-13 NC=1.2 RB=20 RC=2 RE=0.2 CJE=2p CJC=1p TF=0.6n TR=12n)\n\n* --- Internal Voltage Divider for Reference Levels ---\n* R1, R2, R3 form a voltage divider to create 2/3 VCC and 1/3 VCC.\n* CONT pin is connected to the 2/3 VCC node.\nR1 VCC cont_node 5k\nR2 cont_node trig_ref 5k\nR3 trig_ref GND 5k\n\n* --- Threshold Comparator (Comp1): THRES vs CONT (2/3 VCC) ---\n* Output drives the Reset (R) input of the SR Flip-Flop\n* If THRES > CONT, Comp1_out goes high (resets FF)\nM1 comp1_out_n THRES comp1_src GND NMOS W=100u L=1u\nM2 comp1_out_n CONT comp1_src GND NMOS W=100u L=1u\nM3 VCC comp1_out_n VCC comp1_load PMOS W=50u L=1u\nM4 VCC CONT VCC comp1_load PMOS W=50u L=1u\n* Current source for differential pair\nM9 comp1_src comp1_bias GND GND NMOS W=20u L=1u\nM10 VCC comp1_bias VCC VCC PMOS W=40u L=1u\n* Output stage to drive FF reset\nM13 comp1_out comp1_out_n GND GND NMOS W=20u L=1u\nM14 VCC comp1_out_n VCC comp1_out PMOS W=40u L=1u\n\n* --- Trigger Comparator (Comp2): TRIG vs 1/3 VCC (trig_ref) ---\n* Output drives the Set (S) input of the SR Flip-Flop\n* If TRIG < trig_ref, Comp2_out goes high (sets FF)\nM5 comp2_out_n trig_ref comp2_src GND NMOS W=100u L=1u\nM6 comp2_out_n TRIG comp2_src GND NMOS W=100u L=1u\nM7 VCC comp2_out_n VCC comp2_load PMOS W=50u L=1u\nM8 VCC trig_ref VCC comp2_load PMOS W=50u L=1u\n* Current source for differential pair\nM11 comp2_src comp2_bias GND GND NMOS W=20u L=1u\nM12 VCC comp2_bias VCC VCC PMOS W=40u L=1u\n* Output stage to drive FF set\nM15 comp2_out comp2_out_n GND GND NMOS W=20u L=1u\nM16 VCC comp2_out_n VCC comp2_out PMOS W=40u L=1u\n\n* --- Bias for Comparators ---\n* Simple current mirror for bias\nM_BIAS_NMOS_REF comp1_bias VCC GND GND NMOS W=10u L=1u\nM_BIAS_NMOS_OUT comp2_bias comp1_bias GND GND NMOS W=10u L=1u\nR_BIAS VCC comp1_bias 100k ; Sets reference current\n\n* --- SR Flip-Flop (NAND-based with active low inputs) ---\n* Set (S) input: comp2_out (active high, from TRIG comparator)\n* Reset (R) input: ff_reset_in (active high, from THRES comparator OR RESET)\n* Q output: ff_q_out\n* Q_bar output: ff_q_bar_out\n\n* NAND1: (S_in AND Q_bar_in)' = Q_out\nM21 ff_q_out ff_set_in ff_q_bar_out GND NMOS W=10u L=1u\nM22 ff_q_out ff_q_bar_out ff_q_bar_out GND NMOS W=10u L=1u ; This is incorrect for NAND, should be series\nM21_a ff_q_out ff_set_in ff_q_bar_out GND NMOS W=10u L=1u\nM21_b ff_q_out ff_q_bar_out GND GND NMOS W=10u L=1u ; Corrected NAND structure\nM23 VCC ff_q_out VCC ff_set_in PMOS W=20u L=1u\nM24 VCC ff_q_out VCC ff_q_bar_out PMOS W=20u L=1u\n\n* NAND2: (R_in AND Q_in)' = Q_bar_out\nM25 ff_q_bar_out ff_reset_in ff_q_out GND NMOS W=10u L=1u\nM26 ff_q_bar_out ff_q_out GND GND NMOS W=10u L=1u ; Corrected NAND structure\nM27 VCC ff_q_bar_out VCC ff_reset_in PMOS W=20u L=1u\nM28 VCC ff_q_bar_out VCC ff_q_out PMOS W=20u L=1u\n\n* Input logic for FF Set (S)\n* comp2_out is active high when TRIG < 1/3 VCC\nB_FF_SET ff_set_in GND V = { V(comp2_out) }\n\n* Input logic for FF Reset (R)\n* ff_reset_in is active high when THRES > 2/3 VCC OR RESET is low\n* RESET is active low, so invert it first\nM29 reset_inv RESET GND GND NMOS W=10u L=1u\nM30 VCC RESET VCC reset_inv PMOS W=20u L=1u\n* Combine comp1_out (THRES > 2/3 VCC) and inverted RESET\nB_FF_RESET ff_reset_in GND V = { V(comp1_out) | V(reset_inv) }\n\n* --- Output Driver ---\n* Driven by ff_q_out (Q output of FF)\n* High current push-pull stage\nQ_OUT_PNP VCC out_drv_p OUT QPNP ; Sourcing\nQ_OUT_NPN OUT out_drv_n GND QNPN ; Sinking\n\n* Inverter to drive PNP base (active low for sourcing)\nM_OUT_INV_N out_drv_p ff_q_out GND GND NMOS W=50u L=1u\nM_OUT_INV_P VCC ff_q_out VCC out_drv_p PMOS W=100u L=1u\n\n* Buffer to drive NPN base (active high for sinking)\nM_OUT_BUF_N out_drv_n ff_q_out GND GND NMOS W=50u L=1u\nM_OUT_BUF_P VCC ff_q_out VCC out_drv_n PMOS W=100u L=1u\n\n* --- Discharge Transistor ---\n* Driven by ff_q_bar_out (Q-bar output of FF)\n* Open collector NPN transistor\nQ_DISCH DISCH ff_q_bar_out GND QNPN ; Sized for 8mA with low Vce_sat\n\n* --- NC Pin ---\n* No internal connection, left floating.\n\n.ends XX555_PRECISION_TIMERS\n```", "netlists": {"iter1": "\n.subckt XX555_PRECISION_TIMERS CONT DISCH GND NC OUT RESET THRES TRIG VCC\n\n* --- Model Definitions ---\n.model NMOS NMOS (LEVEL=1 VTO=1 KP=50u LAMBDA=0.05)\n.model PMOS PMOS (LEVEL=1 VTO=-1 KP=25u LAMBDA=0.05)\n.model QNPN NPN (IS=1e-14 BF=200 VAF=50 IKF=0.1 RB=10 RC=1 RE=0.1 CJE=1p CJC=1p TF=0.1n TR=1n VCE_SAT=0.1)\n.model QPNP PNP (IS=1e-14 BF=100 VAF=40 IKF=0.05 RB=20 RC=2 RE=0.2 CJE=2p CJC=2p TF=0.2n TR=2n VCE_SAT=0.1)\n.model DMOD D (IS=1e-14)\n\n* --- Internal Voltage References (Voltage Divider) ---\n* R1, R2, R3 form a voltage divider to create VCC/3 and 2*VCC/3 references.\n* CONT pin is connected to the 2/3 VCC node.\nR1 VCC node_2_3_VCC 10k\nR2 node_2_3_VCC node_1_3_VCC 10k\nR3 node_1_3_VCC GND 10k\n\n* Connect CONT pin to the 2/3 VCC node\nE_CONT_BUFFER CONT_INT CONT VALUE = {V(CONT)} ; Buffer CONT input to prevent loading the divider\nR_CONT_BUFFER CONT_INT node_2_3_VCC 1m ; Small resistance to allow external override of 2/3 VCC\n\n* --- Comparators ---\n* Comparator 1 (Threshold Comparator): THRES vs. CONT (or 2/3 VCC)\n* Output goes high when THRES > CONT\nB_COMP_THRES comp_thres_out GND V = { (V(THRES) > V(CONT_INT)) ? V(VCC) : 0 }\n\n* Comparator 2 (Trigger Comparator): TRIG vs. 1/3 VCC\n* Output goes high when TRIG < 1/3 VCC\nB_COMP_TRIG comp_trig_out GND V = { (V(TRIG) < V(node_1_3_VCC)) ? V(VCC) : 0 }\n\n* --- SR Flip-Flop (NOR-based) ---\n* Set input (S_ff) from Trigger Comparator (active high)\n* Reset input (R_ff) from Threshold Comparator (active high) OR external RESET (active low)\n\n* Invert RESET pin for active-high reset to flip-flop\nM_RESET_INV_P reset_inv_out RESET VCC VCC PMOS W=20u L=1u\nM_RESET_INV_N reset_inv_out RESET GND GND NMOS W=10u L=1u\nR_RESET_PULLUP RESET VCC 100k ; Pull-up for RESET pin if left floating\n\n* NOR Gate 1 (Q_ff_bar)\nM_NOR1_P1 Q_ff_bar comp_trig_out VCC VCC PMOS W=20u L=1u\nM_NOR1_P2 Q_ff_bar reset_ff_in VCC VCC PMOS W=20u L=1u\nM_NOR1_N1 Q_ff_bar comp_trig_out node_nor1_n GND NMOS W=10u L=1u\nM_NOR1_N2 node_nor1_n reset_ff_in GND GND NMOS W=10u L=1u\n\n* NOR Gate 2 (Q_ff)\nM_NOR2_P1 Q_ff Q_ff_bar VCC VCC PMOS W=20u L=1u\nM_NOR2_P2 Q_ff reset_ff_in VCC VCC PMOS W=20u L=1u ; This is incorrect for cross-coupled NOR.\n* Corrected NOR Gate 2 for cross-coupled SR FF:\n* The second NOR gate's inputs are Q_ff_bar and R_ff.\nM_NOR2_P1_corr Q_ff Q_ff_bar VCC VCC PMOS W=20u L=1u\nM_NOR2_P2_corr Q_ff reset_ff_in VCC VCC PMOS W=20u L=2u ; R_ff input to Q_ff NOR\nM_NOR2_N1_corr Q_ff Q_ff_bar node_nor2_n GND NMOS W=10u L=1u\nM_NOR2_N2_corr node_nor2_n reset_ff_in GND GND NMOS W=10u L=1u\n\n* Combine comparator reset and external reset\nB_RESET_COMBINED reset_ff_in GND V = { (V(comp_thres_out) > V(VCC)/2) | (V(reset_inv_out) > V(VCC)/2) ? V(VCC) : 0 }\n\n* --- Discharge Transistor ---\n* Q_DISCH turns on when Q_ff is low (OUT is low)\n* Need an inverter to drive Q_DISCH base from Q_ff\nM_DISCH_INV_P disch_driver Q_ff VCC VCC PMOS W=20u L=1u\nM_DISCH_INV_N disch_driver Q_ff GND GND NMOS W=10u L=1u\n\nQ_DISCH DISCH disch_driver GND QNPN W=100u L=10u ; Sized for 8mA with low Vce_sat\n\n* --- Output Buffer ---\n* Push-pull stage to drive OUT pin.\n* Q_ff (high) -> OUT high, Q_ff (low) -> OUT low.\n* Driver for PNP (sourcing)\nM_OUT_DRV_PNP_P out_drv_p Q_ff VCC VCC PMOS W=40u L=1u\nM_OUT_DRV_PNP_N out_drv_p Q_ff GND GND NMOS W=20u L=1u\n\n* Driver for NPN (sinking)\nM_OUT_DRV_NPN_P out_drv_n Q_ff VCC VCC PMOS W=20u L=1u\nM_OUT_DRV_NPN_N out_drv_n Q_ff GND GND NMOS W=40u L=1u\n\n* Output Power Transistors (sized for 200mA)\nQ_OUT_PNP VCC out_drv_p OUT QPNP W=500u L=10u ; Sourcing\nQ_OUT_NPN OUT out_drv_n GND QNPN W=500u L=10u ; Sinking\n\n* --- NC Pin ---\n* No internal connection, simply connect to a dummy node or leave floating.\n* For SPICE, it's good practice to connect it to a high-impedance node or GND if not used.\n* Here, we'll just leave it as a terminal.\n\n.ends XX555_PRECISION_TIMERS", "iter2": "\n.subckt XX555_PRECISION_TIMERS CONT DISCH GND NC OUT RESET THRES TRIG VCC\n\n* --- Model Definitions ---\n.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u GAMMA=0.5 PHI=0.6 LAMBDA=0.01)\n.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.5 PHI=0.6 LAMBDA=0.01)\n.model QNPN NPN (IS=1e-14 BF=100 VAF=100 IKF=0.1 ISE=1e-13 NE=1.3 BR=10 VAR=100 IKR=0.01 ISC=1e-13 NC=1.2 RB=10 RC=1 RE=0.1 CJE=1p CJC=0.5p TF=0.3n TR=6n)\n.model QPNP PNP (IS=1e-14 BF=50 VAF=50 IKF=0.05 ISE=1e-13 NE=1.3 BR=5 VAR=50 IKR=0.005 ISC=1e-13 NC=1.2 RB=20 RC=2 RE=0.2 CJE=2p CJC=1p TF=0.6n TR=12n)\n\n* --- Internal Voltage Divider for Reference Levels ---\n* R1, R2, R3 form a voltage divider to create 2/3 VCC and 1/3 VCC.\n* CONT pin is connected to the 2/3 VCC node.\nR1 VCC cont_node 5k\nR2 cont_node trig_ref 5k\nR3 trig_ref GND 5k\n\n* --- Threshold Comparator (Comp1): THRES vs CONT (2/3 VCC) ---\n* Output drives the Reset (R) input of the SR Flip-Flop\n* If THRES > CONT, Comp1_out goes high (resets FF)\nM1 comp1_out_n THRES comp1_src GND NMOS W=100u L=1u\nM2 comp1_out_n CONT comp1_src GND NMOS W=100u L=1u\nM3 VCC comp1_out_n VCC comp1_load PMOS W=50u L=1u\nM4 VCC CONT VCC comp1_load PMOS W=50u L=1u\n* Current source for differential pair\nM9 comp1_src comp1_bias GND GND NMOS W=20u L=1u\nM10 VCC comp1_bias VCC VCC PMOS W=40u L=1u\n* Output stage to drive FF reset\nM13 comp1_out comp1_out_n GND GND NMOS W=20u L=1u\nM14 VCC comp1_out_n VCC comp1_out PMOS W=40u L=1u\n\n* --- Trigger Comparator (Comp2): TRIG vs 1/3 VCC (trig_ref) ---\n* Output drives the Set (S) input of the SR Flip-Flop\n* If TRIG < trig_ref, Comp2_out goes high (sets FF)\nM5 comp2_out_n trig_ref comp2_src GND NMOS W=100u L=1u\nM6 comp2_out_n TRIG comp2_src GND NMOS W=100u L=1u\nM7 VCC comp2_out_n VCC comp2_load PMOS W=50u L=1u\nM8 VCC trig_ref VCC comp2_load PMOS W=50u L=1u\n* Current source for differential pair\nM11 comp2_src comp2_bias GND GND NMOS W=20u L=1u\nM12 VCC comp2_bias VCC VCC PMOS W=40u L=1u\n* Output stage to drive FF set\nM15 comp2_out comp2_out_n GND GND NMOS W=20u L=1u\nM16 VCC comp2_out_n VCC comp2_out PMOS W=40u L=1u\n\n* --- Bias for Comparators ---\n* Simple current mirror for bias\nM_BIAS_NMOS_REF comp1_bias VCC GND GND NMOS W=10u L=1u\nM_BIAS_NMOS_OUT comp2_bias comp1_bias GND GND NMOS W=10u L=1u\nR_BIAS VCC comp1_bias 100k ; Sets reference current\n\n* --- SR Flip-Flop (NAND-based with active low inputs) ---\n* Set (S) input: comp2_out (active high, from TRIG comparator)\n* Reset (R) input: ff_reset_in (active high, from THRES comparator OR RESET)\n* Q output: ff_q_out\n* Q_bar output: ff_q_bar_out\n\n* NAND1: (S_in AND Q_bar_in)' = Q_out\nM21 ff_q_out ff_set_in ff_q_bar_out GND NMOS W=10u L=1u\nM22 ff_q_out ff_q_bar_out ff_q_bar_out GND NMOS W=10u L=1u ; This is incorrect for NAND, should be series\nM21_a ff_q_out ff_set_in ff_q_bar_out GND NMOS W=10u L=1u\nM21_b ff_q_out ff_q_bar_out GND GND NMOS W=10u L=1u ; Corrected NAND structure\nM23 VCC ff_q_out VCC ff_set_in PMOS W=20u L=1u\nM24 VCC ff_q_out VCC ff_q_bar_out PMOS W=20u L=1u\n\n* NAND2: (R_in AND Q_in)' = Q_bar_out\nM25 ff_q_bar_out ff_reset_in ff_q_out GND NMOS W=10u L=1u\nM26 ff_q_bar_out ff_q_out GND GND NMOS W=10u L=1u ; Corrected NAND structure\nM27 VCC ff_q_bar_out VCC ff_reset_in PMOS W=20u L=1u\nM28 VCC ff_q_bar_out VCC ff_q_out PMOS W=20u L=1u\n\n* Input logic for FF Set (S)\n* comp2_out is active high when TRIG < 1/3 VCC\nB_FF_SET ff_set_in GND V = { V(comp2_out) }\n\n* Input logic for FF Reset (R)\n* ff_reset_in is active high when THRES > 2/3 VCC OR RESET is low\n* RESET is active low, so invert it first\nM29 reset_inv RESET GND GND NMOS W=10u L=1u\nM30 VCC RESET VCC reset_inv PMOS W=20u L=1u\n* Combine comp1_out (THRES > 2/3 VCC) and inverted RESET\nB_FF_RESET ff_reset_in GND V = { V(comp1_out) | V(reset_inv) }\n\n* --- Output Driver ---\n* Driven by ff_q_out (Q output of FF)\n* High current push-pull stage\nQ_OUT_PNP VCC out_drv_p OUT QPNP ; Sourcing\nQ_OUT_NPN OUT out_drv_n GND QNPN ; Sinking\n\n* Inverter to drive PNP base (active low for sourcing)\nM_OUT_INV_N out_drv_p ff_q_out GND GND NMOS W=50u L=1u\nM_OUT_INV_P VCC ff_q_out VCC out_drv_p PMOS W=100u L=1u\n\n* Buffer to drive NPN base (active high for sinking)\nM_OUT_BUF_N out_drv_n ff_q_out GND GND NMOS W=50u L=1u\nM_OUT_BUF_P VCC ff_q_out VCC out_drv_n PMOS W=100u L=1u\n\n* --- Discharge Transistor ---\n* Driven by ff_q_bar_out (Q-bar output of FF)\n* Open collector NPN transistor\nQ_DISCH DISCH ff_q_bar_out GND QNPN ; Sized for 8mA with low Vce_sat\n\n* --- NC Pin ---\n* No internal connection, left floating.\n\n.ends XX555_PRECISION_TIMERS"}, "testbenches": {"tb_dc_op.cir": ".options gmin=1e-12 cshunt=1e-15\n* LTspice Testbench for XX555_PRECISION_TIMERS\n\n.include \"XX555_PRECISION_TIMERS_iter2.cir\"\n\n* Voltage Sources for Power and Inputs\nVGND GND 0 0\nVVCC VCC 0 PWL(0 0V 4.99u 0V 5u 5V) ; VCC for initial tests, adjust as needed for specific VCC specs\nVCONT CONT 0 PWL(0 0V 4.99u 0V 5u 2.5V) ; CONT activated at 5us\nVRESET RESET 0 PWL(0 0V 4.99u 0V 5u 5V) ; RESET activated at 5us, set high for normal operation\nVNC NC 0 PWL(0 0V 6.99u 0V 7u 0V) ; NC activated at 7us, typically left floating or grounded\nVTHRES THRES 0 PWL(0 0V 6.99u 0V 7u 0V) ; THRES activated at 7us, initial state\nVTRIG TRIG 0 PWL(0 0V 6.99u 0V 7u 5V) ; TRIG activated at 7us, initial state\n; Sanitized output driver short: VDISCH DISCH 0 PWL(0 0V 7.99u 0V 8u 0V) ; DISCH activated at 8us, initial state\nVOUT_SENSE OUT_SENSE 0 PWL(0 0V 7.99u 0V 8u 0V) ; OUT activated at 8us, initial state\n\n* DUT Instance\nXDUT CONT DISCH GND NC OUT RESET THRES TRIG VCC XX555_PRECISION_TIMERS\n\n* Dummy load for OUT pin to measure current\nRLOAD OUT 0 1k ; A dummy load to allow current measurement\n\n* .OP analysis for DC measurements\n.op\n\n* Transient analysis for dynamic measurements and power-up\n.tran 0 100u 0 0.1u startup\n\n* MEASUREMENT DIRECTIVES\n\n* VCC: Max=18.0 V (General)\n.meas VCC_MAX_GEN MAX FIND V(VCC)\n\n* VI: Max=None V (CONT, RESET, THRES, TRIG) - This is a general input voltage spec, not a specific measurement.\n* We will measure the max voltage applied to these pins during the simulation.\n.meas VI_CONT_MAX MAX FIND V(CONT)\n.meas VI_RESET_MAX MAX FIND V(RESET)\n.meas VI_THRES_MAX MAX FIND V(THRES)\n.meas VI_TRIG_MAX MAX FIND V(TRIG)\n\n* IO: Min=-225.0, Max=225.0 mA (General)\n.meas IO_MAX MAX FIND I(RLOAD)\n.meas IO_MIN MIN FIND I(RLOAD)\n\n* TJ: Max=150.0 \u00b0C - Requires thermal model, not directly measurable in electrical simulation.\n* Case temperature for 60 seconds: Max=260.0 \u00b0C - Requires thermal model, not directly measurable.\n\n* VCC: Min=4.5, Max=16.0 V (NA555, NE555, SA555)\n* VCC: Min=4.5, Max=18.0 V (SE555)\n* These are operating conditions, not direct measurements from a single simulation.\n* We will measure the VCC applied.\n.meas VCC_APPLIED_MIN MIN FIND V(VCC)\n.meas VCC_APPLIED_MAX MAX FIND V(VCC)\n\n* IO: Min=-200.0, Max=200.0 mA (Specific condition)\n* This is a subset of the general IO spec, already covered by IO_MAX/MIN.\n\n* TA: Min/Max values - Operating temperature ranges, not directly measurable in electrical simulation.\n* R\u03b8JC(top), R\u03b8JB, \u03c8JT, \u03c8JB, R\u03b8JC(bot) - Thermal resistance/impedance, not directly measurable in electrical simulation.\n\n* THRES voltage level: VCC = 15V\n* To measure these, we need to set VCC to 15V and observe THRES.\n* This requires a separate simulation or a more complex PWL for VCC.\n* For now, we'll assume VCC is set to 5V as per initial setup.\n* To test VCC=15V, change VVCC to PWL(0 0V 4.99u 0V 5u 15V)\n.meas THRES_V_LEVEL_VCC5_OP V(THRES) at 100u ; Measure THRES voltage at steady state with VCC=5V\n\n* THRES current: Typ=30.0, Max=250.0 nA\n* To measure current into THRES, we need a voltage source in series or a small resistor.\n* Let's add a small voltage source to measure current.\nVTHRES_SENSE THRES_SENSE THRES 0V\n.meas I_THRES_OP I(VTHRES_SENSE) at 100u\n\n* RESET voltage level: Min=0.3, Typ=0.7, Max=1.0 V\n* This implies the voltage at which RESET becomes active or inactive.\n* We need to sweep RESET voltage to find these points.\n* For now, we measure the voltage applied to RESET.\n.meas RESET_V_LEVEL_APPLIED V(RESET) at 100u\n\n* RESET current: Typ=0.1, Max=0.4 mA (RESET at VCC)\n* To measure this, RESET needs to be tied to VCC.\n* Let's assume VRESET is tied to VCC for this measurement.\n* Change VRESET to VRESET RESET VCC 0V for this test.\n* For now, we measure the current into the RESET pin with VRESET at 5V.\nVRESET_SENSE RESET_SENSE RESET 0V\n.meas I_RESET_VCC_OP I(VRESET_SENSE) at 100u\n\n* RESET current: Min=-1.5, Typ=-0.4 mA (RESET at 0V)\n* To measure this, RESET needs to be tied to 0V.\n* Change VRESET to VRESET RESET 0 0V for this test.\n* For now, we measure the current into the RESET pin with VRESET at 5V.\n* This measurement is not directly captured by the current setup.\n\n* DISCH switch off-state current: Typ=20.0, Max=100.0 nA\n* To measure this, DISCH needs to be off (e.g., V(DISCH) = 0V and internal switch open).\n* We need the internal switch is off. This typically happens when OUT is high.\n* Let's measure current into DISCH when it's pulled low by the external source.\nVDISCH_SENSE DISCH_SENSE DISCH 0V\n.meas I_DISCH_OFF_OP I(VDISCH_SENSE) at 100u\n\n* DISCH switch on-state voltage: Typ=0.15, Max=0.4 V (VCC = 5V, IO = 8mA)\n* This requires forcing a current through DISCH and measuring its voltage.\n* This is a more complex setup, requiring a current source connected to DISCH.\n* For now, we measure the voltage at DISCH when it's pulled low.\n.meas V_DISCH_ON_OP V(DISCH) at 100u\n\n* CONT voltage (open circuit): Min=9.0 None\n* This implies the voltage at CONT when it's left floating or lightly loaded.\n* Our current setup drives CONT with a voltage source.\n* To measure open circuit, we would remove VCONT and add a high impedance probe.\n* For now, we measure the voltage applied to CONT.\n.meas V_CONT_OC_APPLIED V(CONT) at 100u\n\n.end\n", "tb_transient.cir": ".options gmin=1e-12 cshunt=1e-15\n* LTspice Testbench for XX555_PRECISION_TIMERS\n\n.include \"XX555_PRECISION_TIMERS_iter2.cir\"\n\n* Voltage Sources for DUT Pins\nVGND GND 0 0\nVVCC VCC 0 15V\nVCONT CONT 0 0V\nVRESET RESET 0 0V\nVNC NC 0 0V\nVTHRES THRES 0 0V\nVTRIG TRIG 0 0V\n; Sanitized output driver short: VDISCH DISCH 0 0V\n; Sanitized output driver short: VOUT OUT 0 0V\n\n* Power-up / Activation Schedule\n.param T_GND = 0.00u\n.param T_CONT = 5.00u\n.param T_RESET = 5.00u\n.param T_NC = 7.00u\n.param T_THRES = 7.00u\n.param T_TRIG = 7.00u\n.param T_DISCH = 8.00u\n.param T_OUT = 8.00u\n\n* Initializing all pins to 0V and then applying step voltages at scheduled times\n* VCC is set to 15V for the first set of measurements, then 5V for the second set.\n\n* Test 1: TRIG voltage level (VCC = 15V)\n* NA555, NE555, SA555\n* To measure TRIG voltage level, we need to set up the circuit such that TRIG is at its threshold.\n* This typically means VCC/3 for a 555 timer.\n* We will apply a ramp and measure when the internal comparator trips.\n* However, the specification asks for the \"TRIG voltage level\" which implies a static voltage.\n* For a 555, the TRIG pin is typically compared to 1/3 VCC.\n* We will measure the voltage at the TRIG pin when the internal comparator would trip.\n* Since the spec is \"TRIG voltage level\", we assume this refers to the internal threshold.\n* We can infer this by applying a voltage to TRIG and observing the output, but a direct measurement of the internal threshold is not possible without internal nodes.\n* A common way to verify this is to apply a slow ramp to TRIG and observe the point where the internal comparator changes state.\n* For this test, we will set TRIG to a DC voltage and measure the voltage at the TRIG pin.\n* The specification implies the internal threshold voltage, which is VCC/3.\n* We will set TRIG to VCC/3 and measure the voltage at the TRIG pin.\n\n* For \"TRIG voltage level\" measurement, we assume the spec refers to the internal threshold voltage, which is VCC/3.\n* We will set TRIG to VCC/3 and measure the voltage at the TRIG pin.\n* This is a static measurement.\n\n* VCC = 15V\n; Sanitized duplicate parallel voltage source short: VVCC_15 VCC 0 15V\n; Sanitized duplicate parallel voltage source short: VTRIG_DC TRIG 0 5V ; Set TRIG to 1/3 of 15V = 5V\n; Sanitized duplicate parallel voltage source short: VCONT_DC CONT 0 0V\n; Sanitized duplicate parallel voltage source short: VRESET_DC RESET 0 15V ; Keep RESET high\n; Sanitized duplicate parallel voltage source short: VTHRES_DC THRES 0 15V ; Keep THRES high to prevent discharge\n; Sanitized output driver short: VDISCH_DC DISCH 0 0V ; DISCH is typically open or connected to collector of internal transistor\n\nXDUT_VCC15 CONT DISCH GND NC OUT RESET THRES TRIG VCC XX555_PRECISION_TIMERS\n\n.tran 0.5n 300n\n\n* Measurements for VCC = 15V\n.meas tran TRIG_V_NA_NE_SA_VCC15_TYP AVG V(TRIG) from=200n to=300n ; Expected 5V\n.meas tran TRIG_V_SE_VCC15_TYP AVG V(TRIG) from=200n to=300n ; Expected 5V\n.meas tran TRIG_V_SE_VCC15_TA_TYP AVG V(TRIG) from=200n to=300n ; Expected 3V to 6V range\n\n* Test 2: TRIG voltage level (VCC = 5V)\n* NA555, NE555, SA555\n* VCC = 5V\n* TRIG voltage level = 1/3 VCC = 1.67V\n\nVVCC_5 VCC_5V 0 5V\nVTRIG_DC_5V TRIG_5V 0 1.67V ; Set TRIG to 1/3 of 5V = 1.67V\nVCONT_DC_5V CONT_5V 0 0V\nVRESET_DC_5V RESET_5V 0 5V\nVTHRES_DC_5V THRES_5V 0 5V\nVDISCH_DC_5V DISCH_5V 0 0V\n\nXDUT_VCC5 CONT_5V DISCH_5V GND NC OUT_5V RESET_5V THRES_5V TRIG_5V VCC_5V XX555_PRECISION_TIMERS\n\n.tran 0.5n 300n\n\n* Measurements for VCC = 5V\n.meas tran TRIG_V_NA_NE_SA_VCC5_TYP AVG V(TRIG_5V) from=200n to=300n ; Expected 1.67V\n.meas tran TRIG_V_SE_VCC5_TYP AVG V(TRIG_5V) from=200n to=300n ; Expected 1.67V\n.meas tran TRIG_V_SE_VCC5_TA_MAX MAX V(TRIG_5V) from=200n to=300n ; Expected max 1.9V\n\n* Test 3: TRIG current (TRIG at 0V)\n* NA555, NE555, SA555\n* VCC = 15V\n* TRIG at 0V\n\nVVCC_I_TRIG VCC_I_TRIG 0 15V\nVTRIG_I_TRIG TRIG_I_TRIG 0 0V ; Set TRIG to 0V\nVCONT_I_TRIG CONT_I_TRIG 0 0V\nVRESET_I_TRIG RESET_I_TRIG 0 15V\nVTHRES_I_TRIG THRES_I_TRIG 0 15V\nVDISCH_I_TRIG DISCH_I_TRIG 0 0V\n\nXDUT_I_TRIG CONT_I_TRIG DISCH_I_TRIG GND NC OUT_I_TRIG RESET_I_TRIG THRES_I_TRIG TRIG_I_TRIG VCC_I_TRIG XX555_PRECISION_TIMERS\n\n.tran 0.5n 300n\n\n* Measurements for TRIG current\n* Current into TRIG pin is positive if current flows into the pin.\n.meas tran TRIG_I_NA_NE_SA_TYP AVG I(VTRIG_I_TRIG) from=200n to=300n ; Expected 0.5uA\n.meas tran TRIG_I_SE_TYP AVG I(VTRIG_I_TRIG) from=200n to=300n ; Expected 0.5uA\n\n.end\n"}, "simulation_logs": {"tb_dc_op.log": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(32): syntax error\n.meas VCC_MAX_GEN MAX FIND V(VCC)\n                          ^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(36): syntax error\n.meas VI_CONT_MAX MAX FIND V(CONT)\n                          ^^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(37): syntax error\n.meas VI_RESET_MAX MAX FIND V(RESET)\n                           ^^^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(38): syntax error\n.meas VI_THRES_MAX MAX FIND V(THRES)\n                           ^^^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(39): syntax error\n.meas VI_TRIG_MAX MAX FIND V(TRIG)\n                          ^^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(42): syntax error\n.meas IO_MAX MAX FIND I(RLOAD)\n                     ^^^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(43): syntax error\n.meas IO_MIN MIN FIND I(RLOAD)\n                     ^^^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(52): syntax error\n.meas VCC_APPLIED_MIN MIN FIND V(VCC)\n                              ^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(53): syntax error\n.meas VCC_APPLIED_MAX MAX FIND V(VCC)\n                              ^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(66): syntax error\n.meas THRES_V_LEVEL_VCC5_OP V(THRES) at 100u ; Measure THRES voltage at steady state with VCC=5V\n                           ^^^^^^^^^^^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(72): syntax error\n.meas I_THRES_OP I(VTHRES_SENSE) at 100u\n                ^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(78): syntax error\n.meas RESET_V_LEVEL_APPLIED V(RESET) at 100u\n                           ^^^^^^^^^^^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(86): syntax error\n.meas I_RESET_VCC_OP I(VRESET_SENSE) at 100u\n                    ^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(99): syntax error\n.meas I_DISCH_OFF_OP I(VDISCH_SENSE) at 100u\n                    ^^^^^^^^^^^^^^^^^^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(105): syntax error\n.meas V_DISCH_ON_OP V(DISCH) at 100u\n                   ^^^^^^^^^^^^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_dc_op.cir(112): syntax error\n.meas V_CONT_OC_APPLIED V(CONT) at 100u\n                       ^^^^^^^^^^^^^^^^\n", "tb_transient.log": "LTspice 24.1.10 for Windows\nCircuit: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\NE555\\tb_transient.cir\nStart Time: Wed Oct 14 00:26:13 2026\nMore than one analysis specified."}}];
+
+    let currentICIndex = 0;
+    let currentNetlistIter = 1;
+    let timelineTimer = null;
+    let isPlaying = false;
+    let currentTime = 0.0;
+
+    function init() {
+      const select = document.getElementById('icSelect');
+      select.innerHTML = '';
+      BENCHMARK_DATA.forEach((ic, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        const name = ic.summary.part_name || ic.id;
+        const cat = (ic.knowledge_graph.ic_device && ic.knowledge_graph.ic_device.category) || '';
+        opt.textContent = `${name} (${cat || ic.id})`;
+        select.appendChild(opt);
+      });
+
+      if (BENCHMARK_DATA.length > 0) {
+        switchIC(0);
+      }
+    }
+
+    function switchIC(index) {
+      currentICIndex = parseInt(index);
+      const ic = BENCHMARK_DATA[currentICIndex];
+      if (!ic) return;
+
+      const name = ic.summary.part_name || ic.id;
+      const cat = (ic.knowledge_graph.ic_device && ic.knowledge_graph.ic_device.category) || 'Analog IC';
+      const specCount = ic.summary.spec_count || (ic.knowledge_graph.electrical_parameters && ic.knowledge_graph.electrical_parameters.length) || 0;
+      const pins = (ic.knowledge_graph.pins || []);
+      const iters = ic.summary.iterations || [];
+      const passRate = ic.summary.pass_rate_percent || 0.0;
+
+      // Update Key Metrics
+      document.getElementById('statIcName').textContent = name;
+      document.getElementById('statCategory').textContent = cat;
+      document.getElementById('statSpecCount').textContent = specCount;
+      document.getElementById('statPinCount').textContent = `${pins.length} Pins Extracted`;
+      document.getElementById('statLoopCount').textContent = `${iters.length} Loops`;
+      document.getElementById('statPassRate').textContent = `${passRate.toFixed(1)}%`;
+      document.getElementById('statPassRateSub').textContent = passRate > 0 ? 'Verified Closed-Loop' : 'Simulated (Iter 2 Completed)';
+
+      // Render Sub-Sections
+      renderPDG(pins);
+      renderNetlist();
+      renderTestbenches();
+      renderSpecs();
+      renderDiagnostics(iters);
+      renderHKG(ic);
+    }
+
+    function selectTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+      const target = document.getElementById(tabId);
+      if (target) target.classList.remove('hidden');
+
+      const btn = document.getElementById('btn-' + tabId);
+      if (btn) btn.classList.add('active');
+    }
+
+    // -------------------------------------------------------------
+    // PDG & TIMELINE RENDERER
+    // -------------------------------------------------------------
+    function renderPDG(pins) {
+      const svg = document.getElementById('pdgSvg');
+      svg.innerHTML = '';
+      const tbody = document.getElementById('pdgTableBody');
+      tbody.innerHTML = '';
+
+      if (!pins || pins.length === 0) {
+        svg.innerHTML = '<text x="400" y="140" text-anchor="middle" fill="#64748b" font-size="14">No pin data available in knowledge graph</text>';
+        return;
+      }
+
+      // Group pins by role into columns
+      const roleCols = {
+        'POWER': { x: 100, color: '#38bdf8', label: 'Power Pins (0us)' },
+        'GROUND': { x: 100, color: '#94a3b8', label: 'Ground' },
+        'BIAS': { x: 300, color: '#fbbf24', label: 'Bias / Reg' },
+        'CONTROL': { x: 480, color: '#a855f7', label: 'Control' },
+        'SIGNAL': { x: 480, color: '#60a5fa', label: 'Signal Inputs' },
+        'OUTPUT': { x: 680, color: '#34d399', label: 'Output Nodes' }
+      };
+
+      const pinNodes = [];
+      const colCounts = {};
+
+      pins.forEach((p, idx) => {
+        const role = (p.role || 'SIGNAL').toUpperCase();
+        const baseCol = roleCols[role] || roleCols['SIGNAL'];
+        const colIdx = colCounts[baseCol.x] || 0;
+        colCounts[baseCol.x] = colIdx + 1;
+
+        let delay = 2.0;
+        if (role === 'POWER' || role === 'GROUND') delay = 0.0;
+        else if (role === 'BIAS') delay = 2.0;
+        else if (role === 'CONTROL' || role === 'SIGNAL') delay = 4.0;
+        else if (role === 'OUTPUT') delay = 7.0;
+
+        pinNodes.push({
+          name: p.name,
+          role: role,
+          direction: p.direction || 'BIDIRECTIONAL',
+          delay: delay,
+          x: baseCol.x,
+          y: 50 + colIdx * 45,
+          color: baseCol.color
+        });
+      });
+
+      // Draw Edges (Power -> Bias -> Signal -> Output)
+      pinNodes.forEach(p1 => {
+        pinNodes.forEach(p2 => {
+          if (p1.delay < p2.delay && (p2.delay - p1.delay <= 3.5)) {
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const d = `M ${p1.x + 40} ${p1.y} C ${p1.x + 90} ${p1.y}, ${p2.x - 90} ${p2.y}, ${p2.x - 40} ${p2.y}`;
+            path.setAttribute('d', d);
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', '#334155');
+            path.setAttribute('stroke-width', '1.2');
+            path.setAttribute('stroke-dasharray', '3,3');
+            svg.appendChild(path);
+          }
+        });
+      });
+
+      // Draw Nodes
+      pinNodes.forEach(node => {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'node-pin cursor-pointer');
+        g.setAttribute('id', `pin-node-${node.name}`);
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', node.x - 45);
+        rect.setAttribute('y', node.y - 18);
+        rect.setAttribute('width', 90);
+        rect.setAttribute('height', 36);
+        rect.setAttribute('rx', 8);
+        rect.setAttribute('fill', '#0f172a');
+        rect.setAttribute('stroke', node.color);
+        rect.setAttribute('stroke-width', '1.5');
+        rect.setAttribute('id', `pin-rect-${node.name}`);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', node.x);
+        text.setAttribute('y', node.y - 2);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', '11');
+        text.setAttribute('font-weight', 'bold');
+        text.setAttribute('fill', '#f8fafc');
+        text.textContent = node.name;
+
+        const subText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        subText.setAttribute('x', node.x);
+        subText.setAttribute('y', node.y + 11);
+        subText.setAttribute('text-anchor', 'middle');
+        subText.setAttribute('font-size', '9');
+        subText.setAttribute('fill', node.color);
+        subText.textContent = `${node.delay} μs`;
+
+        g.appendChild(rect);
+        g.appendChild(text);
+        g.appendChild(subText);
+        svg.appendChild(g);
+
+        // Add to Table
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40';
+        tr.innerHTML = `
+          <td class="px-3 py-2 font-mono font-bold text-sky-300">${node.name}</td>
+          <td class="px-3 py-2">${node.role}</td>
+          <td class="px-3 py-2 text-slate-400">${node.direction}</td>
+          <td class="px-3 py-2 font-mono">${node.delay.toFixed(1)} μs</td>
+          <td class="px-3 py-2" id="status-${node.name}"><span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">Waiting</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updateTimelineTime(currentTime);
+    }
+
+    function updateTimelineTime(val) {
+      currentTime = val;
+      document.getElementById('timeSlider').value = val;
+      document.getElementById('timeDisplay').textContent = `${val.toFixed(1)} μs`;
+
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const pins = (ic && ic.knowledge_graph.pins) || [];
+      pins.forEach(p => {
+        const role = (p.role || 'SIGNAL').toUpperCase();
+        let delay = 2.0;
+        if (role === 'POWER' || role === 'GROUND') delay = 0.0;
+        else if (role === 'BIAS') delay = 2.0;
+        else if (role === 'CONTROL' || role === 'SIGNAL') delay = 4.0;
+        else if (role === 'OUTPUT') delay = 7.0;
+
+        const rect = document.getElementById(`pin-rect-${p.name}`);
+        const statusEl = document.getElementById(`status-${p.name}`);
+        if (rect && statusEl) {
+          if (currentTime >= delay) {
+            rect.setAttribute('fill', '#1e293b');
+            rect.setAttribute('stroke-width', '2.5');
+            statusEl.innerHTML = '<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Active & Settled</span>';
+          } else {
+            rect.setAttribute('fill', '#0f172a');
+            rect.setAttribute('stroke-width', '1.0');
+            statusEl.innerHTML = '<span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-500">Prerequisite</span>';
+          }
+        }
+      });
+    }
+
+    function toggleTimelinePlay() {
+      const btn = document.getElementById('btnPlayPause');
+      if (isPlaying) {
+        clearInterval(timelineTimer);
+        isPlaying = false;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg><span>Play Sequence</span>';
+      } else {
+        isPlaying = true;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"/></svg><span>Pause</span>';
+        if (currentTime >= 10.0) currentTime = 0.0;
+        timelineTimer = setInterval(() => {
+          currentTime += 0.5;
+          if (currentTime > 10.0) {
+            currentTime = 10.0;
+            toggleTimelinePlay();
+          }
+          updateTimelineTime(currentTime);
+        }, 250);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // NETLIST & SIZING RENDERER
+    // -------------------------------------------------------------
+    function renderNetlist() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const iters = (ic && ic.summary.iterations) || [];
+      const curIterData = iters[currentNetlistIter - 1] || iters[0] || {};
+      const archText = curIterData.architecture_summary || 'First-principles netlist synthesized directly from datasheet specifications.';
+      document.getElementById('architectureSummaryText').textContent = archText;
+
+      const netlistContent = ic.netlists[`iter${currentNetlistIter}`] || ic.netlists['iter1'] || '* No netlist found for this iteration.';
+      document.getElementById('netlistCodePre').textContent = netlistContent;
+      document.getElementById('netlistFilename').textContent = `${ic.summary.subckt_name || ic.id}_iter${currentNetlistIter}.cir`;
+    }
+
+    function switchNetlistIteration(iter) {
+      currentNetlistIter = iter;
+      document.getElementById('btnNetlistIter1').className = iter === 1
+        ? 'px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold'
+        : 'px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold';
+      document.getElementById('btnNetlistIter2').className = iter === 2
+        ? 'px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold'
+        : 'px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold';
+      renderNetlist();
+    }
+
+    // -------------------------------------------------------------
+    // TESTBENCH RENDERER
+    // -------------------------------------------------------------
+    function renderTestbenches() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const container = document.getElementById('tbDeckButtons');
+      container.innerHTML = '';
+
+      const tbs = Object.keys(ic.testbenches || {});
+      if (tbs.length === 0) {
+        container.innerHTML = '<span class="text-xs text-slate-400">No testbenches available.</span>';
+        document.getElementById('tbCodePre').textContent = '* No testbench deck found.';
+        return;
+      }
+
+      tbs.forEach((tbName, idx) => {
+        const btn = document.createElement('button');
+        btn.className = idx === 0
+          ? 'px-3 py-1.5 text-xs rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono font-semibold'
+          : 'px-3 py-1.5 text-xs rounded-xl bg-slate-800 text-slate-400 border border-slate-700 font-mono font-semibold hover:text-white';
+        btn.textContent = tbName;
+        btn.onclick = () => {
+          document.querySelectorAll('#tbDeckButtons button').forEach(b => {
+            b.className = 'px-3 py-1.5 text-xs rounded-xl bg-slate-800 text-slate-400 border border-slate-700 font-mono font-semibold hover:text-white';
+          });
+          btn.className = 'px-3 py-1.5 text-xs rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono font-semibold';
+          document.getElementById('currentTbName').textContent = tbName;
+          document.getElementById('tbCodePre').textContent = ic.testbenches[tbName];
+        };
+        container.appendChild(btn);
+      });
+
+      document.getElementById('currentTbName').textContent = tbs[0];
+      document.getElementById('tbCodePre').textContent = ic.testbenches[tbs[0]];
+    }
+
+    // -------------------------------------------------------------
+    // SYMPY ORACLE SPEC MATRIX RENDERER
+    // -------------------------------------------------------------
+    function renderSpecs() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const tbody = document.getElementById('specTableBody');
+      tbody.innerHTML = '';
+
+      const specs = (ic.knowledge_graph && ic.knowledge_graph.electrical_parameters) || [];
+      if (specs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-slate-500">No electrical parameters found</td></tr>';
+        return;
+      }
+
+      specs.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition-colors';
+
+        const minVal = s.min !== null && s.min !== undefined ? s.min : '-';
+        const typVal = s.typ !== null && s.typ !== undefined ? s.typ : '-';
+        const maxVal = s.max !== null && s.max !== undefined ? s.max : '-';
+        const unit = s.unit || '';
+
+        tr.innerHTML = `
+          <td class="px-3 py-2 font-mono font-bold text-sky-300">${s.symbol || s.name}</td>
+          <td class="px-3 py-2 font-mono">${minVal}</td>
+          <td class="px-3 py-2 font-mono text-slate-400">${typVal}</td>
+          <td class="px-3 py-2 font-mono">${maxVal}</td>
+          <td class="px-3 py-2 text-indigo-300 font-mono">${unit}</td>
+          <td class="px-3 py-2 font-mono text-slate-400">Unobserved</td>
+          <td class="px-3 py-2">
+            <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 border border-slate-700">Simulated</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterSpecs(query) {
+      const q = query.toLowerCase();
+      document.querySelectorAll('#specTableBody tr').forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+    }
+
+    // -------------------------------------------------------------
+    // DIAGNOSTICS & CLOSED-LOOP RENDERER
+    // -------------------------------------------------------------
+    function renderDiagnostics(iters) {
+      const container = document.getElementById('diagnosticsContainer');
+      container.innerHTML = '';
+
+      if (!iters || iters.length === 0) {
+        container.innerHTML = '<div class="text-xs text-slate-400">No iteration diagnostics recorded.</div>';
+        return;
+      }
+
+      iters.forEach(it => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-900 border border-slate-800 rounded-xl p-5 shadow space-y-4';
+
+        const passPct = (it.pass_rate_percent || 0.0).toFixed(1);
+        const shortfalls = it.shortfalls || [];
+        const improvements = it.improvements || [];
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <h4 class="font-bold text-sm text-white">Closed-Loop Iteration ${it.iteration}</h4>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-slate-400">Pass Rate:</span>
+              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">${passPct}%</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <!-- Shortfall Audit -->
+            <div class="bg-slate-950 border border-rose-500/20 rounded-xl p-3.5 space-y-2">
+              <div class="font-bold text-rose-400 flex items-center gap-1.5 uppercase text-[11px]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                Shortfall Audit (미달 원인 분석)
+              </div>
+              <ul class="space-y-1 text-slate-300 max-h-40 overflow-y-auto custom-scrollbar">
+                ${shortfalls.length ? shortfalls.map(sf => `<li class="font-mono text-[11px] leading-tight text-slate-400">&bull; ${sf}</li>`).join('') : '<li class="text-slate-500">None detected.</li>'}
+              </ul>
+            </div>
+
+            <!-- Improvements Applied -->
+            <div class="bg-slate-950 border border-emerald-500/20 rounded-xl p-3.5 space-y-2">
+              <div class="font-bold text-emerald-400 flex items-center gap-1.5 uppercase text-[11px]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Improvement Actions (개선 및 수정 내역)
+              </div>
+              <ul class="space-y-1 text-slate-300 max-h-40 overflow-y-auto custom-scrollbar">
+                ${improvements.length ? improvements.map(imp => `<li class="text-[11px] leading-tight text-slate-300">&bull; ${imp}</li>`).join('') : '<li class="text-slate-500">No improvements logged.</li>'}
+              </ul>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // -------------------------------------------------------------
+    // HKG METADATA RENDERER
+    // -------------------------------------------------------------
+    function renderHKG(ic) {
+      const dev = (ic.knowledge_graph && ic.knowledge_graph.ic_device) || {};
+      const pins = (ic.knowledge_graph && ic.knowledge_graph.pins) || [];
+
+      const metaEl = document.getElementById('hkgDeviceMetadata');
+      metaEl.innerHTML = `
+        <div><span class="text-slate-500 font-semibold">Device Name:</span> <span class="font-bold text-white">${dev.name || ic.id}</span></div>
+        <div><span class="text-slate-500 font-semibold">Category:</span> <span class="text-sky-300">${dev.category || 'Analog IC'}</span></div>
+        <div class="text-[11px] text-slate-400 leading-relaxed mt-2">${dev.description || 'No datasheet description available.'}</div>
+      `;
+
+      const pinEl = document.getElementById('hkgPinList');
+      pinEl.innerHTML = pins.map(p => `
+        <div class="flex items-center justify-between py-1 border-b border-slate-800/40">
+          <span class="font-mono text-sky-400 font-bold">${p.name}</span>
+          <span class="text-[10px] text-slate-400 uppercase">${p.role || 'SIGNAL'} | ${p.direction || 'BIDIR'}</span>
+        </div>
+      `).join('') || '<div class="text-slate-500">No pin list available.</div>';
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

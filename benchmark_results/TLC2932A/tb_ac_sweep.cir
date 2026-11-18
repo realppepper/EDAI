@@ -1,0 +1,57 @@
+.include "TLC2932A_iter2.cir"
+* LTspice Testbench for TLC2932A - Output Current Measurement
+
+* DUT Instantiation
+XDUT LOGIC_VDD SELECT VCO_OUT FIN_A FIN_B PFD_OUT LOGIC_GND TEST PFD_INHIBIT VCO_INHIBIT VCO_GND VCO_IN RBIAS VCO_VDD TLC2932A
+
+* Power Supplies and Grounding
+V_LOGIC_VDD LOGIC_VDD 0 PWL(0s 0V 10ns 5V)
+V_VCO_VDD VCO_VDD 0 PWL(0s 0V 10ns 5V)
+V_LOGIC_GND LOGIC_GND 0 0V
+V_VCO_GND VCO_GND 0 0V
+
+* Input Stimuli following PDG schedule
+* RBIAS: 10.00 us
+V_RBIAS RBIAS 0 PWL(0us 0V 9.99us 0V 10.00us 1V) ; Assuming RBIAS is a voltage input, adjust value if it's a current or needs specific bias
+* SELECT: 15.00 us
+V_SELECT SELECT 0 PWL(0us 0V 14.99us 0V 15.00us 5V) ; Assuming SELECT is a digital input, 5V for high
+* TEST: 15.00 us
+V_TEST TEST 0 PWL(0us 0V 14.99us 0V 15.00us 0V) ; Assuming TEST is low for normal operation
+* PFD_INHIBIT: 15.00 us
+V_PFD_INHIBIT PFD_INHIBIT 0 PWL(0us 0V 14.99us 0V 15.00us 0V) ; Assuming PFD_INHIBIT is low for normal operation
+* VCO_INHIBIT: 15.00 us
+V_VCO_INHIBIT VCO_INHIBIT 0 PWL(0us 0V 14.99us 0V 15.00us 0V) ; Assuming VCO_INHIBIT is low for normal operation
+* VCO_IN: 15.00 us
+V_VCO_IN VCO_IN 0 PWL(0us 0V 14.99us 0V 15.00us 2.5V) ; Assuming VCO_IN is an analog input, set to mid-supply for initial test
+
+* FIN_A: 17.00 us
+V_FIN_A FIN_A 0 PWL(0us 0V 16.99us 0V 17.00us 5V 17.01us 0V 17.02us 5V) PULSE(0V 5V 17us 1ns 1ns 100ns 200ns) ; Example pulse for FIN_A
+* FIN_B: 17.00 us
+V_FIN_B FIN_B 0 PWL(0us 0V 16.99us 0V 17.00us 5V 17.01us 0V 17.02us 5V) PULSE(0V 5V 17us 1ns 1ns 100ns 200ns) ; Example pulse for FIN_B
+
+* Output Loading for current measurement
+* To measure output current, we need to sink/source current from the output pins.
+* Assuming PFD_OUT and VCO_OUT are the outputs for which current needs to be measured.
+* We'll use current sources/resistors to draw/supply current.
+* For 'Output current, (each output)', we need to test both sourcing and sinking capabilities.
+* Let's assume we are testing the sinking current capability for PFD_OUT and VCO_OUT.
+* We'll connect a voltage source to the output and measure the current flowing into it.
+
+* PFD_OUT: 18.00 us
+; Sanitized output driver short: V_PFD_OUT_LOAD PFD_OUT 0 PWL(0us 0V 17.99us 0V 18.00us 0.1V) ; Connect PFD_OUT to a low voltage to sink current
+* VCO_OUT: 18.00 us
+; Sanitized output driver short: V_VCO_OUT_LOAD VCO_OUT 0 PWL(0us 0V 17.99us 0V 18.00us 0.1V) ; Connect VCO_OUT to a low voltage to sink current
+
+* Simulation commands
+.tran 0 50us 0 10ns
+.options plotwinsize=0
+
+* Measurement directives
+* 'Output current, (each output)': Min=0.0, Typ=None, Max=2.0 mA
+* We need to measure the current flowing out of the DUT's output pins.
+* For PFD_OUT:
+.meas tran I_PFD_OUT_MAX MAX I(V_PFD_OUT_LOAD) from=20us to=40us
+* For VCO_OUT:
+.meas tran I_VCO_OUT_MAX MAX I(V_VCO_OUT_LOAD) from=20us to=40us
+
+.end

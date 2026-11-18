@@ -1,0 +1,39 @@
+* Two-Stage CMOS Miller Operational Amplifier (Transistor-Level IC Netlist)
+* Modeled after Texas Instruments TLC271 / LMC6041 Architecture
+* Pinout: 1:IN+  2:IN-  3:VDD  4:VSS  5:OUT
+.subckt CMOS_OPAMP 1 2 3 4 5
+
+* Generic 0.5um / 180nm CMOS Transistor Models
+.model NMOS NMOS (Level=1 Vto=0.7 Kp=120u Gamma=0.4 Lambda=0.02 Phi=0.7)
+.model PMOS PMOS (Level=1 Vto=-0.7 Kp=50u Gamma=0.57 Lambda=0.03 Phi=0.8)
+
+* --- Input Differential Stage ---
+* M1, M2: NMOS Input Pair (1:IN+, 2:IN-)
+M1 11 2 10 4 NMOS W=20u L=2u
+M2 12 1 10 4 NMOS W=20u L=2u
+
+* M3, M4: PMOS Active Current Mirror Load
+M3 11 11 3 3 PMOS W=40u L=2u
+M4 12 11 3 3 PMOS W=40u L=2u
+
+* M5: Tail Current Source (40uA)
+M5 10 14 4 4 NMOS W=40u L=2u
+
+* --- Second Gain Stage ---
+* M6: PMOS Common-Source Amplifier
+M6 5 12 3 3 PMOS W=120u L=2u
+
+* M7: NMOS Current Source Load (160uA)
+M7 5 14 4 4 NMOS W=160u L=2u
+
+* --- Miller Frequency Compensation ---
+* Cc and nulling resistor Rz to eliminate RHP zero
+Cc 12 13 3p
+Rz 13 5 1.5k
+
+* --- Bias Generation Network ---
+* M8 establishes Vbias from reference current Iref
+M8 14 14 4 4 NMOS W=40u L=2u
+Iref 3 14 40u
+
+.ends CMOS_OPAMP

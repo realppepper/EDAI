@@ -1,0 +1,290 @@
+{
+  "v1_kind_rules": [
+    {
+      "classes": [
+        "audio_amp",
+        "amplifier"
+      ],
+      "symbol_regex": "^THD\\+?N?$|^D\\b",
+      "name_regex": "total harmonic distortion|distortion\\s*\\+?\\s*noise",
+      "kind": "thd_n",
+      "canonical_unit": "%",
+      "magnitude_compare": true
+    },
+    {
+      "classes": [
+        "audio_amp",
+        "power_stage",
+        "amplifier"
+      ],
+      "symbol_regex": "^P(O|OUT|L)\\b|^P_O$",
+      "name_regex": "continuous output power|output power|power output",
+      "kind": "p_out",
+      "canonical_unit": "W",
+      "magnitude_compare": false
+    },
+    {
+      "classes": [
+        "audio_amp",
+        "timer",
+        "pll",
+        "switching_converter"
+      ],
+      "symbol_regex": "^f(OSC|SW|CLK)\\b|^F_OSC$",
+      "name_regex": "oscillator frequency|switching frequency|clock frequency",
+      "kind": "f_osc",
+      "canonical_unit": "Hz",
+      "magnitude_compare": false
+    },
+    {
+      "classes": [
+        "audio_amp",
+        "power_switch",
+        "ldo",
+        "switching_converter"
+      ],
+      "symbol_regex": "^r(DS\\(on\\)|ON|ds_on)\\b|^RDS\\(ON\\)$",
+      "name_regex": "drain[- ]source on[- ]state resistance|on[- ]resistance",
+      "kind": "rds_on",
+      "canonical_unit": "Ohm",
+      "magnitude_compare": true
+    },
+    {
+      "classes": [
+        "ldo",
+        "regulator",
+        "pmic"
+      ],
+      "symbol_regex": "^V(DO|DROPOUT)$",
+      "name_regex": "dropout voltage",
+      "kind": "v_dropout",
+      "canonical_unit": "V",
+      "magnitude_compare": true
+    },
+    {
+      "classes": [
+        "ldo",
+        "regulator",
+        "pmic"
+      ],
+      "symbol_regex": "^(\u0394V_LINE|LINE_REG)$",
+      "name_regex": "line regulation",
+      "kind": "line_reg",
+      "canonical_unit": "%/V",
+      "magnitude_compare": true
+    },
+    {
+      "classes": [
+        "ldo",
+        "regulator",
+        "pmic"
+      ],
+      "symbol_regex": "^(\u0394V_LOAD|LOAD_REG)$",
+      "name_regex": "load regulation",
+      "kind": "load_reg",
+      "canonical_unit": "%",
+      "magnitude_compare": true
+    },
+    {
+      "classes": [
+        "step-down converter"
+      ],
+      "symbol_regex": "^VUVLO$",
+      "name_regex": "undervoltage\\ lockout\\ threshold",
+      "kind": "analog_ic_verification",
+      "canonical_unit": "V",
+      "magnitude_compare": false
+    },
+    {
+      "classes": [
+        "step-down converter"
+      ],
+      "symbol_regex": "^VEN_H$",
+      "name_regex": "high\\ level\\ input\\ threshold\\ voltage\\ \\(en\\)",
+      "kind": "analog_ic_ven_h",
+      "canonical_unit": "V",
+      "magnitude_compare": false
+    },
+    {
+      "classes": [
+        "step-down converter"
+      ],
+      "symbol_regex": "^VEN_L$",
+      "name_regex": "low\\ level\\ input\\ threshold\\ voltage\\ \\(en\\)",
+      "kind": "analog_ic_ven_l",
+      "canonical_unit": "V",
+      "magnitude_compare": false
+    },
+    {
+      "classes": [
+        "step-down converter"
+      ],
+      "symbol_regex": "^LKG_EN$",
+      "name_regex": "input\\ leakage\\ current\\ \\(en\\)",
+      "kind": "analog_ic_measurement",
+      "canonical_unit": "\u03bcA",
+      "magnitude_compare": false
+    },
+    {
+      "classes": [
+        "phase locked loop"
+      ],
+      "symbol_regex": "^V\\(input voltage \\(inputs except vco in\\)\\)$",
+      "name_regex": "input\\ voltage\\ \\(inputs\\ except\\ vco\\ in\\)",
+      "kind": "analog_ic_measurement",
+      "canonical_unit": "V",
+      "magnitude_compare": false
+    },
+    {
+      "classes": [
+        "phase locked loop"
+      ],
+      "symbol_regex": "^VCO\\s+control\\s+voltage\\s+at\\s+VCO\\s+IN$",
+      "name_regex": "vco\\ control\\ voltage\\ at\\ vco\\ in",
+      "kind": "analog_physical_measurement",
+      "canonical_unit": "V",
+      "magnitude_compare": false
+    },
+    {
+      "classes": [
+        "phase locked loop"
+      ],
+      "symbol_regex": "^lock\\s+frequency$",
+      "name_regex": "lock\\ frequency",
+      "kind": "analog_ic_design",
+      "canonical_unit": "MHz",
+      "magnitude_compare": false
+    },
+    {
+      "classes": [
+        "phase locked loop"
+      ],
+      "symbol_regex": "^Bias_Resistor$",
+      "name_regex": "bias\\ resistor",
+      "kind": "analog_ic_design",
+      "canonical_unit": "k\u03a9",
+      "magnitude_compare": false
+    },
+    {
+      "classes": [
+        "phase locked loop"
+      ],
+      "symbol_regex": "^VTH$",
+      "name_regex": "input\\ threshold\\ voltage\\ at\\ select,\\ vco\\ inhibit",
+      "kind": "analog_ic_physical_measurement",
+      "canonical_unit": "V",
+      "magnitude_compare": false
+    },
+    {
+      "classes": [
+        "analog-to-digital converter"
+      ],
+      "symbol_regex": "^integral_linearity_error$",
+      "name_regex": "integral\\ linearity\\ error",
+      "kind": "analog_ic_verification",
+      "canonical_unit": "LSB",
+      "magnitude_compare": false
+    },
+    {
+      "classes": [
+        "analog-to-digital converter"
+      ],
+      "symbol_regex": "^differential_linearity_error$",
+      "name_regex": "differential\\ linearity\\ error",
+      "kind": "analog_ic_verification",
+      "canonical_unit": "LSB",
+      "magnitude_compare": false
+    },
+    {
+      "classes": [
+        "analog-to-digital converter"
+      ],
+      "symbol_regex": "^No Missing Codes$",
+      "name_regex": "no\\ missing\\ codes",
+      "kind": "analog",
+      "canonical_unit": "BIT",
+      "magnitude_compare": false
+    },
+    {
+      "classes": [
+        "analog-to-digital converter"
+      ],
+      "symbol_regex": "^full_scale_input_span$",
+      "name_regex": "full\\-scale\\ input\\ span",
+      "kind": "analog_ics",
+      "canonical_unit": "V",
+      "magnitude_compare": false
+    },
+    {
+      "classes": [
+        "analog-to-digital converter"
+      ],
+      "symbol_regex": "^abs_input_range$",
+      "name_regex": "absolute\\ input\\ range",
+      "kind": "analog_measurement",
+      "canonical_unit": "V",
+      "magnitude_compare": false
+    }
+  ],
+  "v2_fixture_templates": {
+    "thd_n": "* Pure Physical Analog Audio Fixture for THD / THD+N\n.include \"{dut_netlist_path}\"\nXDUT {dut_pins} {dut_name}\n* Physical Power Supplies\nVPOS {vpos_pin} 0 DC {vsupply_pos}\nVNEG {vneg_pin} 0 DC {vsupply_neg}\n* Physical Pure Analog Sinusoidal Stimulus (1 kHz fundamental)\nVIN_P {inp_pin} 0 SINE(0 {vin_amp} 1k 25u)\nVIN_N {inn_pin} 0 SINE(0 -{vin_amp} 1k 25u)\n* Physical Passive Load Resistor\nRLOAD {outp_pin} {outn_pin} {r_load}\n* Fourier Harmonic Distortion Analysis Directive\n.four 1k 9 V({outp_pin}, {outn_pin})\n.tran 10u 20m 10m\n.meas tran v_rms RMS V({outp_pin}, {outn_pin}) from=15m to=20m\n.meas tran p_out AVG (V({outp_pin})-V({outn_pin}))*I(RLOAD) from=15m to=20m\n.end\n",
+    "f_osc": "* Pure Physical Analog Frequency Fixture\n.include \"{dut_netlist_path}\"\nXDUT {dut_pins} {dut_name}\nVPOS {vpos_pin} 0 DC {vsupply_pos}\nVNEG {vneg_pin} 0 DC {vsupply_neg}\n* External timing capacitor/resistor if required\n.tran 10n 50u 10u\n.meas tran t1 when V({out_pin})=({vsupply_pos}/2) rise=5\n.meas tran t2 when V({out_pin})=({vsupply_pos}/2) rise=6\n.meas tran f_osc param 1/(t2-t1)\n.end\n",
+    "v_dropout": "* Pure Physical Analog LDO Dropout Fixture\n.include \"{dut_netlist_path}\"\nXDUT {dut_pins} {dut_name}\n* Input voltage swept down to find saturation / dropout threshold\nVIN {vin_pin} 0 DC {vin_nom}\nRLOAD {vout_pin} 0 {r_load}\n.dc VIN {vin_nom} 0.5 -0.05\n.meas dc v_dropout find (V({vin_pin})-V({vout_pin})) when V({vout_pin})=({vout_nom}*0.98)\n.end\n",
+    "analog_ic_verification": "* Automated LTspice Physical Measurement Fixture for Differential Linearity Error (DNL)\n* Target: Analog-to-Digital Converter\n* Temperature Range: -40\u00b0C to 85\u00b0C\n* Stimulus: Pure physical analog sources (No behavioral sources, No logic devices)\n\n*--------------------------------------------------------------------------\n* Temperature Sweep Configuration\n*--------------------------------------------------------------------------\n.step temp -40 85 5\n\n*--------------------------------------------------------------------------\n* Stimulus: Differential Input Signal\n* A full-scale sinusoidal differential stimulus is required to exercise\n* the transfer function across all codes.\n*--------------------------------------------------------------------------\nVIN+ 1 0 SINE(0 1.25 10k 0 0 0 0)\nVIN- 2 0 SINE(0 1.25 10k 0 0 0 0)\n\n*--------------------------------------------------------------------------\n* DUT Instantiation\n* The golden model must provide differential outputs OUT+ and OUT-.\n*--------------------------------------------------------------------------\nXDUT 1 2 3 4 5 6 7 8 XDUT\n\n*--------------------------------------------------------------------------\n* Load/Termination Resistors (Physical Implementation)\n* A 50-ohm differential termination is standard for ADC input modeling.\n*--------------------------------------------------------------------------\nR1 1 0 50\nR2 2 0 50\n\n*--------------------------------------------------------------------------\n* Measurement Directives\n*--------------------------------------------------------------------------\n* Differential Linearity Error (DNL) Calculation:\n* DNL is defined as the difference between the actual step width and the\n* ideal 1 LSB step, measured in LSB units.\n*\n* The measurement extracts the switching points of the internal comparators\n* by analyzing the input voltage sweep. The formula calculates the code width\n* deviation from the ideal 1.0 LSB.\n*\n* Note: The 'max' and 'min' operators within .meas are LTspice specific and\n* operate on the transient analysis results.\n.meas TRAN dnl_avg avg v(IN+) - v(IN-) from=0 to=100u\n.meas TRAN dnl_max max v(dnl_avg) from=0 to=100u\n.meas TRAN dnl_min min v(dnl_avg) from=0 to=100u\n.meas TRAN dnl_error max - min\n\n* Output the final differential linearity error metric\n.meas TRAN differential_linearity_error param=dnl_error\n\n*--------------------------------------------------------------------------\n* Transient Analysis Directive\n*--------------------------------------------------------------------------\n.tran 0 100u 0 1u\n\n.end",
+    "analog_ic_ven_h": "* Pure physical testbench for High level input threshold voltage (VEN_H)\n* Target: Step-Down Converter EN pin\n* DUT: golden_dut.sub\n* Measurement: ven_h\n\n.include \"golden_dut.sub\"\n\n* Stimulus: DC voltage sweep on EN pin to find threshold\nV_EN 0 1 0\n\n* Load and biasing (adjust per DUT requirements)\nR_LOAD 1 0 1k\nC_LOAD 1 0 1uF\n\n* DUT Instantiation\nXDUT 1 0 V_EN EN GND golden_dut\n\n* Measurement: Find V_EN when DUT output switches or EN pin crosses internal reference\n* Method: Measure the voltage on the EN pin at the point of switching.\n* Assumption: DUT has a defined threshold where it starts switching.\n* We use a pulse to stimulate and measure the steady-state voltage, or a DC sweep.\n* Here we perform a DC sweep on V_EN from 0 to 5V and measure the point where output changes.\n* However, for a pure threshold measurement, we typically apply a voltage and measure current, or vice versa.\n* For EN pin threshold, we often monitor the voltage at which the converter starts.\n\n.meas dc ven_h TRAN 0 10m 0 1m \n* Note: The above .meas is a placeholder. \n* A true threshold measurement requires detecting a point. \n* Since we cannot use behavioral 'if' statements, we rely on the DC operating point \n* or a transient observation. \n* Below is a setup for a DC sweep to find the threshold voltage manually or via .backannotation.\n* \n* Alternative: Use a PULSE to toggle EN and measure the resulting state.\n* \n* For this fixture, we will perform a DC sweep and extract the voltage \n* at which the output voltage changes state (if applicable). \n* Given the constraints, we measure the DC operating point of the EN pin \n* during a transient simulation where EN is pulsed.\n\n.dc V_EN 0 5 0.01\n\n.end",
+    "analog_ic_ven_l": "* Automated LTspice Physical Measurement Fixture for VEN_L (Low level input threshold voltage)\n* Target: Step-Down Converter EN Pin Threshold Detection\n* Pure Physical Stimulus - No Behavioral Sources\n\n.include \"golden_dut.sub\"\n\nVEN_STIM VEN_STIM 0 PULSE(0 3.3 0 10n 10n 1u 10u)\n* Rising edge stimulus to trigger the EN logic threshold\n\nXDUT EN VIN SW L1 VOUT GND golden_dut\n\n* Measurement: Track EN pin voltage during the pulse window\n* Definition: Low level input threshold is the steady-state voltage when EN is asserted low\n.meas TRAN ven_l_avg avg V(EN) from=1u to=9u\n\n* Plot reference for manual verification\n.plot TRAN V(EN) V(VIN)\n\n.end",
+    "analog_ic_measurement": "* Pure physical testbench for Input Voltage (inputs except VCO IN)\n* Target: Phase Locked Loop DUT\n* Test Conditions: VDD = 3 V, TA = 25\u00b0C\n\n.include \"golden_dut.sub\"\n\nVINP 0 3\nVINN 0 0\n\n* Input voltage source (differential pair input, excluding VCO IN)\n* Stimulus: DC offset sine wave suitable for PLL input range\nVINP 0 3 SINE(1.5 1.5 10k 0 0 0 1m)\nVINN 0 0 SINE(1.5 -1.5 10k 0 0 0 1m)\n\n* Power supply\nVDD 0 3\n\n* DUT Instantiation\nXDUT VINP VINN VDD GND input_voltage outputs XDUT\n\n* Measurement: Track the input voltage at the DUT input nodes\n.meas TRAN input_voltage_average avg VINP VINN 0 1m\n.meas TRAN input_voltage_peak pk VINP 0 1m\n\n.end",
+    "analog_physical_measurement": "* Pure physical testbench for VCO control voltage at VCO IN\n* Test Conditions: VDD = 3 V, TA = 25\u00b0C\n.include \"golden_dut.sub\"\n\nVDD VDD 0 3\n* VCO Control Voltage Source (Physical Stimulus)\n* Assuming VCO IN is the control node; adjust node name as per DUT subcircuit\nVCO_CTRL VCO_IN 0 SINE(0 1.65 10k 0 0 0 1m)\n\n* DUT Instantiation\nXDUT VCO_IN VCO_OUT VCO_CTRL VCO_GND VDD DUT\n\n* Measurement: Extract the voltage at the VCO IN node\n.meas TRAN VCO_CONTROL_VOLTAGE AVG V(VCO_IN) FROM=0 TO=1m\n\n.end",
+    "analog_ic_design": "* Automated LTspice Physical Measurement Fixture\n* Target: Bias Resistor (k\u03a9) within a Phase Locked Loop DUT\n* Test Conditions: VDD = 3 V, TA = 25\u00b0C\n* Pure Physical Analog Stimulus - No Behavioral Sources\n\n.include \"golden_dut.sub\"\n\nVDD 1 0 3\n\n* Bias Resistor under test connected between VDD and DUT input node\nR_Bias_Resistor 1 2 1k\n\n* DUT Instantiation (Phase Locked Loop)\n* Pin mapping: VDD, GND, Bias_In, Bias_Out, etc. adjusted to golden_dut.sub pins\nXDUT 2 0 Bias_In Bias_Out VDD GND\n\n* Measurement: Compute Resistance using Ohm's Law\n* IR(R_Bias_Resistor) gives current through resistor in Amps\n* V(1,2) gives voltage across resistor in Volts\n* R = V / I (in Ohms); divide by 1000 to get k\u03a9\n.meas bias_resistor R_eq V(1,2)/I(R_Bias_Resistor)/1000\n\n* Transient analysis to ensure steady-state measurement\n.tran 1ms 10ms\n\n.end",
+    "analog_ic_physical_measurement": "* Automated Physical Measurement Fixture for VTH (Input Threshold Voltage at Select/VCO Inhibit)\n* Target: Phase Locked Loop\n* Test Conditions: VI = VDD or GND, VDD = 3 V, TA = 25\u00b0C\n* Pure Physical Stimulus - No Behavioral Sources, No Logic Devices\n\n.include \"golden_dut.sub\"\n\nVDD VDD 0 3\n\n* --- Input Stimulus for Threshold Test ---\n* Applied VI across DUT select/inhibit node to find switching point\nVSIG VIN 0 PULSE(0 3 0n 10p 10p 1u 2u)\n\n* --- DUT Instantiation ---\n* Nodes: VIN, VTH (inhibit/select node), VDD, GND\nXDUT VIN VTH VDD GND DUT\n\n* --- Measurement ---\n* Measure the input voltage at the moment the DUT output toggles or changes state.\n* This captures the threshold voltage where the inhibit/select function switches.\n.meas TRAN vth VIN V=3 when V(OUT) crosses 1.5\n\n* --- Analysis ---\n* The measurement 'vth' captures the exact DC input voltage at the switching point.\n* For a complete DC sweep analysis, one would typically use .DC VIN 0 3 1mV\n* however, the PULSE source above provides the transient stimulus to find the threshold.\n\n.end",
+    "analog": "* Automated LTspice Physical Measurement Fixture for \"No Missing Codes\"\n* Target: Analog-to-Digital Converter\n* Temperature Range: -40\u00b0C to 85\u00b0C\n* Stimulus Type: Pure Physical Analog (No Behavioral Sources, No Logic Devices)\n\n* Pure Physical Testbench\n.include \"golden_dut.sub\"\n\nVIN in 0 DC 0\n* Stimulus for No Missing Codes Test\n* A full-scale sine wave sweep is used to detect missing codes\n* The stimulus steps through digital code levels via a ramp or multi-level sine\n* Here we use a multi-frequency approach to exercise all codes\n\n* Example: Sine wave sweeping full scale (adjust freq/amp for your specific DUT)\nVTEST in 0 SINE(0 1.0 1k 0 0 0 10m)\n\n* Temperature Sweep Control (LTspice parameter)\n* .param temp = -40\n* .temp param temp\n\nXDUT in out DUT\n\n* Measurement: No Missing Codes\n* This measurement detects if there are any missing codes in the ADC output\n* It does this by performing a histogram of the output code transitions\n* and checking for gaps in the code histogram.\n* \n* Note: True \"No Missing Codes\" verification typically requires\n* applying a stimulus that covers all codes and checking the histogram.\n* The following .meas command sets up a basic histogram check.\n* \n* For a complete NMC check, one would typically:\n* 1. Run a sweep of codes (e.g., using a ramp or multi-sine)\n* 2. Histogram the output code\n* 3. Verify no code has zero counts (except codes at the very ends if differential)\n*\n* Below is a structural measurement block. \n* The exact histogram implementation may vary based on DUT output format.\n* \n.mealst hist_data in out 10000\n.measure TRAN no_missing_codes avg hist_data[0] \n* The above is a placeholder. A true NMC check requires\n* post-processing the histogram to find zero-count codes.\n* \n* For demonstration, we measure the output code histogram start.\n.measure TRAN code_histogram avg hist_data[1] \n\n.end",
+    "analog_ics": "* Pure physical testbench for Full-scale input span\n* Target: ADC (Differential Input)\n* Stimulus: Independent Voltage Sources only (No behavioral sources, no logic devices)\n.include \"golden_dut.sub\"\n\nVIN1 0 +IN 0 DC 0 SINE(0 2.5 10k 0 0 0 1m)\nVIN2 0 -IN 0 DC 0 SINE(0 2.5 10k 0 0 0 1m)\n\n* Differential Stimulus: Vdiff = VIN1 - VIN2\n* Note: SINE sources are in-phase; differential peak-to-peak span is 5V (2.5V pk each side)\n\nXDUT +IN -IN VREF VCOM VDD VSS ADC_OUT\n+ golden_dut\n\n.meas TRAN full_scale_input_span param=V(+IN)-V(-IN) at=100n rise=200n fall=400n\n\n.end",
+    "analog_measurement": "* Automated Physical Measurement Fixture for Absolute Input Range\n* Target: Analog-to-Digital Converter\n* Stimulus: Pure independent voltage sources and passive components only\n\n.include \"golden_dut.sub\"\n\nVIN in 0 DC 0 SINE(0 1 1k 0 0 0 1m)\n* PULSE source for transient settling verification if needed\n* VIN in 0 PULSE(0 1 0 1n 1n 1u 1m)\n\n*---------- DUT INSTANTIATION ----------\nXDUT in+ in- vref vdd gnd DUT\n\n*---------- MEASUREMENT DIRECTIVES ----------\n* Measure the absolute maximum peak-to-peak input voltage the DUT can accept\n* before clipping or functional failure, using a large signal sine sweep.\n.meas TRAN abs_input_range avg V(in) max=100m cross=0 targ=50u\n\n* Optional: Sweep analysis to find exact clipping threshold\n* .mexpr FUNCTION Vm = VAMPL(VIN)  (Note: mexpr is for analysis, stimulus remains physical)\n\n.end"
+  },
+  "v3_unit_conversions": {
+    "nV/rtHz": {
+      "canonical": "V/rtHz",
+      "factor": 1e-09
+    },
+    "uV/rtHz": {
+      "canonical": "V/rtHz",
+      "factor": 1e-06
+    },
+    "%/V": {
+      "canonical": "percent_per_volt",
+      "factor": 1.0
+    },
+    "ppm/C": {
+      "canonical": "ppm_per_degc",
+      "factor": 1.0
+    },
+    "mOhm": {
+      "canonical": "Ohm",
+      "factor": 0.001
+    },
+    "mohm": {
+      "canonical": "Ohm",
+      "factor": 0.001
+    },
+    "W": {
+      "canonical": "W",
+      "factor": 1.0
+    },
+    "mW": {
+      "canonical": "W",
+      "factor": 0.001
+    },
+    "kHz": {
+      "canonical": "Hz",
+      "factor": 1000.0
+    },
+    "MHz": {
+      "canonical": "Hz",
+      "factor": 1000000.0
+    },
+    "dBm": {
+      "canonical": "dBm",
+      "factor": 1.0
+    }
+  }
+}

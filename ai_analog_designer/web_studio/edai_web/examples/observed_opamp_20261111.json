@@ -1,0 +1,46 @@
+{
+  "title": "Observed educational OP AMP case - screenshot transcription",
+  "parameters": [
+    {
+      "name": "Ibias",
+      "min": 6e-05,
+      "max": 0.00024,
+      "initial": 0.00015,
+      "step": 1e-05
+    },
+    {
+      "name": "Cc",
+      "min": 2e-12,
+      "max": 1.6e-11,
+      "initial": 8e-12,
+      "step": 1e-12
+    }
+  ],
+  "goals": [
+    {
+      "measure": "overshoot_pct",
+      "op": "<=",
+      "value": 10,
+      "unit": "%"
+    },
+    {
+      "measure": "settling_time",
+      "op": "<=",
+      "value": 6e-06,
+      "unit": "s"
+    },
+    {
+      "measure": "power_mw",
+      "op": "<=",
+      "value": 3,
+      "unit": "mW"
+    }
+  ],
+  "objective": {
+    "measure": "power_mw",
+    "sense": "min"
+  },
+  "method": "feedback",
+  "max_runs": 1,
+  "timeout_s": 20
+}

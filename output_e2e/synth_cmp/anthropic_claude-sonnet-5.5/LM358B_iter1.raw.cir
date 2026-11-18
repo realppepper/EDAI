@@ -1,0 +1,47 @@
+.model QN NPN (IS=1e-15 BF=200 VAF=100 RB=100 RE=2 CJE=1p CJC=0.5p TF=0.3n)
+.model QP PNP (IS=1e-15 BF=60 VAF=60 RB=100 RE=2 CJE=1p CJC=0.5p TF=2n)
+.model DD D (IS=1e-15)
+
+.subckt LM358B_CH OUT INN INP V VP
+* bias reference
+RB1 VP NB1 150k
+QB1 NB1 NB1 NB2 QP
+RB2 NB2 NB3 1k
+DB1 NB3 V DD
+* tail current source PNP
+QT NT NB1 VP QP
+RT VP NT 1k
+* tail transistor emitter resistor via QB style: simple
+* input pair (PNP)
+RE1 NT NE1 2k
+RE2 NT NE2 2k
+Q1 N1 INN NE1 QP
+Q2 N2 INP NE2 QP
+* NPN mirror
+Q3 N1 N1 V QN
+Q4 N2 N1 V QN
+RM1 N1 V 10Meg
+RM2 N2 V 10Meg
+* gain stage
+Q5 NG N2 NR QN
+RR1 NR V 20k
+Q6 NG2 NG V QN
+CC N2 NG2 15p
+* gain stage load: PNP current source
+QL1 NG2 NB1 NL VP QP
+RL1 VP NL 1k
+RG1 NG V 1Meg
+* output stage
+QO1 VP NG2 NO QN
+RO1 NO OUT 25
+QO2 OUT NQ V QN
+RQ NG2 NQ 2k
+RQ2 NQ V 30k
+CC2 NG2 V 1p
+RLK OUT V 100Meg
+.ends LM358B_CH
+
+.subckt LM358B OUT1 IN1 IN1_P V IN2_P IN2 OUT2 V_P
+X1 OUT1 IN1 IN1_P V V_P LM358B_CH
+X2 OUT2 IN2 IN2_P V V_P LM358B_CH
+.ends LM358B

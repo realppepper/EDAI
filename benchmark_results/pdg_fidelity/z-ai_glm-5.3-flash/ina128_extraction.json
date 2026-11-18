@@ -1,0 +1,1661 @@
+{
+  "ic_device": {
+    "name": "INA128/INA129",
+    "category": "Instrumentation Amplifier",
+    "description": "Precision, low-power, general-purpose instrumentation amplifier; gain set by single external resistor RG.",
+    "package": "D (8-Pin SOIC) / P (8-Pin PDIP)"
+  },
+  "pins": [
+    {
+      "name": "RG",
+      "pin_number": "1,8",
+      "role": "FEEDBACK",
+      "direction": "BIDIRECTIONAL",
+      "description": "Gain setting pin between pin 1 and pin 8 for gains greater than 1",
+      "page": 3,
+      "evidence": "Gain setting pin. For gains greater than 1, place a gain resistor"
+    },
+    {
+      "name": "VIN-",
+      "pin_number": "2",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Negative input",
+      "page": 3,
+      "evidence": "Negative input"
+    },
+    {
+      "name": "VIN+",
+      "pin_number": "3",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Positive input",
+      "page": 3,
+      "evidence": "Positive input"
+    },
+    {
+      "name": "V-",
+      "pin_number": "4",
+      "role": "POWER",
+      "direction": "POWER",
+      "description": "Negative supply",
+      "page": 3,
+      "evidence": "Negative supply"
+    },
+    {
+      "name": "Ref",
+      "pin_number": "5",
+      "role": "REFERENCE",
+      "direction": "INPUT",
+      "description": "Reference input, must be driven by low impedance or ground",
+      "page": 3,
+      "evidence": "Reference input. This pin must be driven by low impedance"
+    },
+    {
+      "name": "VO",
+      "pin_number": "6",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "description": "Output",
+      "page": 3,
+      "evidence": "Output"
+    },
+    {
+      "name": "V+",
+      "pin_number": "7",
+      "role": "POWER",
+      "direction": "POWER",
+      "description": "Positive supply",
+      "page": 3,
+      "evidence": "Positive supply"
+    }
+  ],
+  "port_dependencies": [
+    {
+      "source": "V+",
+      "target": "VO",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "Power-supply voltage greater than 4.5V (\u00b12.25V)"
+    },
+    {
+      "source": "V-",
+      "target": "VO",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "Power-supply voltage greater than 4.5V (\u00b12.25V)"
+    },
+    {
+      "source": "VIN+",
+      "target": "VO",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "Single channel; gain set by RG"
+    },
+    {
+      "source": "VIN-",
+      "target": "VO",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "Single channel; gain set by RG"
+    },
+    {
+      "source": "Ref",
+      "target": "VO",
+      "dependency_type": "FEEDBACK_LOOP",
+      "settling_delay_us": null,
+      "condition": "Must be driven by low impedance or connected to ground"
+    },
+    {
+      "source": "RG",
+      "target": "VO",
+      "dependency_type": "FEEDBACK_LOOP",
+      "settling_delay_us": null,
+      "condition": "Gain resistor between pin 1 and pin 8 for gains greater than 1"
+    }
+  ],
+  "functional_blocks": [
+    {
+      "name": "Three-op-amp instrumentation amplifier",
+      "type": "Amplifier",
+      "description": "Current-feedback input circuitry, three op amp design; gain from 1 to 10,000 set by single external resistor",
+      "input_ports": [
+        "VIN+",
+        "VIN-",
+        "Ref",
+        "RG"
+      ],
+      "output_ports": [
+        "VO"
+      ]
+    },
+    {
+      "name": "Overvoltage Protection",
+      "type": "Protection",
+      "description": "Internal input protection withstands up to \u00b140V without damage",
+      "input_ports": [
+        "VIN+",
+        "VIN-"
+      ],
+      "output_ports": []
+    }
+  ],
+  "electrical_parameters": [
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "INA12x, D (SOIC)",
+      "page": 5,
+      "evidence": "R\u03b8JA | Junction-to-ambient thermal resistance | 110 | 46.1 | \u00b0C/W",
+      "related_pins": [
+        "8 PINS"
+      ]
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "INA12x, D (SOIC)",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) | Junction-to-case (top) thermal resistance | 57 | 34.1 | \u00b0C/W",
+      "related_pins": [
+        "8 PINS"
+      ]
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "INA12x, D (SOIC)",
+      "page": 5,
+      "evidence": "R\u03b8JB | Junction-to-board thermal resistance | 54 | 23.4 | \u00b0C/W",
+      "related_pins": [
+        "8 PINS"
+      ]
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "INA12x, D (SOIC)",
+      "page": 5,
+      "evidence": "\u03c8JT | Junction-to-top characterization parameter | 11 | 11.3 | \u00b0C/W",
+      "related_pins": [
+        "8 PINS"
+      ]
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "INA12x, D (SOIC)",
+      "page": 5,
+      "evidence": "\u03c8JB | Junction-to-board characterization parameter | 53 | 23.2 | \u00b0C/W",
+      "related_pins": [
+        "8 PINS"
+      ]
+    },
+    {
+      "symbol": null,
+      "name": "Input",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": null,
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INPUT",
+      "related_pins": []
+    },
+    {
+      "symbol": "INA12xP, INA12xU",
+      "name": "Input",
+      "category": "ELECTRICAL",
+      "min": -10.0,
+      "typ": 10.0,
+      "max": -100.0,
+      "unit": "V/G",
+      "test_conditions": "CSO: SHE, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xP, INA12xU | \u00b110{TYP} \u00b1100{TYP} / G | \u00b150{MAX} \u00b1500{MAX} / G",
+      "related_pins": [
+        "INA12xP, INA12xU"
+      ]
+    },
+    {
+      "symbol": "INA12xPA, INA12xUA",
+      "name": "Input",
+      "category": "ELECTRICAL",
+      "min": -25.0,
+      "typ": 25.0,
+      "max": -100.0,
+      "unit": "V/G",
+      "test_conditions": "CSO: SHE, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xPA, INA12xUA | \u00b125{TYP} \u00b1100{TYP} / G \u00b1125{TYP} \u00b11000{MAX} / G",
+      "related_pins": [
+        "INA12xPA, INA12xUA"
+      ]
+    },
+    {
+      "symbol": "VOS",
+      "name": "Offset voltage (RTI)",
+      "category": "ELECTRICAL",
+      "min": 1.0,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b5V",
+      "test_conditions": "1 \u2264 G \u2264 10000, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "VOS | Offset voltage (RTI) | 1 \u2264 G \u2264 10000 | \u00b5V",
+      "related_pins": []
+    },
+    {
+      "symbol": "INA12xU",
+      "name": "Input",
+      "category": "ELECTRICAL",
+      "min": -20.0,
+      "typ": 20.0,
+      "max": -50.0,
+      "unit": "V/G",
+      "test_conditions": "CSO: FRE, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xU | \u00b120{TYP} \u00b150{TYP} / G | \u00b150{MAX} \u00b1500{MAX} / G",
+      "related_pins": [
+        "INA12xU"
+      ]
+    },
+    {
+      "symbol": "INA12xUA",
+      "name": "Input",
+      "category": "ELECTRICAL",
+      "min": -20.0,
+      "typ": 20.0,
+      "max": -50.0,
+      "unit": "V/G",
+      "test_conditions": "CSO: FRE, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xUA | \u00b120{TYP} \u00b150{TYP} / G \u00b1125{TYP} \u00b11000{MAX} / G",
+      "related_pins": [
+        "INA12xUA"
+      ]
+    },
+    {
+      "symbol": "INA12xP, INA12xU",
+      "name": "Offset voltage drift (RTI)",
+      "category": "ELECTRICAL",
+      "min": -0.2,
+      "typ": 0.2,
+      "max": -0.5,
+      "unit": "\u00b5V/\u00b0C",
+      "test_conditions": "TA = \u201340\u00b0C to 85\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xP, INA12xU | \u00b10.2{TYP} \u00b12{TYP} / G | \u00b10.5{MAX} \u00b120{MAX} / G",
+      "related_pins": [
+        "INA12xP, INA12xU"
+      ]
+    },
+    {
+      "symbol": "INA12xPA, INA12xUA",
+      "name": "Offset voltage drift (RTI)",
+      "category": "ELECTRICAL",
+      "min": -0.2,
+      "typ": 0.2,
+      "max": -0.5,
+      "unit": "\u00b5V/\u00b0C",
+      "test_conditions": "+85\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xPA, INA12xUA | \u00b10.2{TYP} \u00b15{TYP} / G | \u00b11{MAX} \u00b120{MAX} / G",
+      "related_pins": [
+        "INA12xPA, INA12xUA"
+      ]
+    },
+    {
+      "symbol": "INA12xP, INA12xU",
+      "name": "Offset voltage drift (RTI)",
+      "category": "ELECTRICAL",
+      "min": -0.2,
+      "typ": 0.2,
+      "max": -1.0,
+      "unit": "\u00b5V/\u00b0C",
+      "test_conditions": "CSO: SHE, +85\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xP, INA12xU | \u00b10.2{TYP} \u00b120{TYP} / G | \u00b11{MAX} \u00b1100{MAX} / G",
+      "related_pins": [
+        "INA12xP, INA12xU"
+      ]
+    },
+    {
+      "symbol": "INA12xPA, INA12xUA",
+      "name": "Power-supply rejection",
+      "category": "ELECTRICAL",
+      "min": -2.0,
+      "typ": null,
+      "max": -200.0,
+      "unit": "\u00b5V/G",
+      "test_conditions": "VS = \u00b12.25V to, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xPA, INA12xUA | \u00b12{MAX} \u00b1200{MAX} / G",
+      "related_pins": [
+        "INA12xPA, INA12xUA"
+      ]
+    },
+    {
+      "symbol": "INA12xU",
+      "name": "Power-supply rejection",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": null,
+      "unit": "\u00b5V/V",
+      "test_conditions": "CSO: FRE, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xU | \u00b10.1{TYP} \u00b11{TYP} / G | \u00b10.4{MAX} \u00b13.2{MAX} / G",
+      "related_pins": [
+        "INA12xU"
+      ]
+    },
+    {
+      "symbol": "INA12xUA",
+      "name": "Long-term stability",
+      "category": "ELECTRICAL",
+      "min": -0.8,
+      "typ": 0.8,
+      "max": -6.4,
+      "unit": "\u00b5V/G",
+      "test_conditions": "CSO: SHE, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xUA | \u00b10.8{MAX} \u00b16.4{MAX} / G",
+      "related_pins": [
+        "INA12xUA"
+      ]
+    },
+    {
+      "symbol": "INA12xU",
+      "name": "Long-term stability",
+      "category": "ELECTRICAL",
+      "min": -0.1,
+      "typ": 0.1,
+      "max": -3.0,
+      "unit": "\u00b5V/G",
+      "test_conditions": "CSO: SHE, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xU | \u00b10.1{TYP} \u00b13{TYP} / G",
+      "related_pins": [
+        "INA12xU"
+      ]
+    },
+    {
+      "symbol": "INA12xUA",
+      "name": "Long-term stability",
+      "category": "ELECTRICAL",
+      "min": -0.2,
+      "typ": 0.2,
+      "max": -3.0,
+      "unit": "\u00b5V/G",
+      "test_conditions": "CSO: FRE, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xUA | \u00b10.2{TYP} \u00b13{TYP} / G",
+      "related_pins": [
+        "INA12xUA"
+      ]
+    },
+    {
+      "symbol": "Differential Input impedance",
+      "name": "Differential Input impedance",
+      "category": "ELECTRICAL",
+      "min": 10.0,
+      "typ": null,
+      "max": null,
+      "unit": "G\u03a9 || pF",
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "Differential | 10{TYP} || 2{TYP} | Input impedance | G\u03a9 || pF",
+      "related_pins": []
+    },
+    {
+      "symbol": "Common-mode Input impedance",
+      "name": "Common-mode Input impedance",
+      "category": "ELECTRICAL",
+      "min": 100.0,
+      "typ": null,
+      "max": null,
+      "unit": "G\u03a9 || pF",
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "Common-mode | 100{TYP} || 9{TYP} | VCM | Common-mode voltage(2) VO = 0V",
+      "related_pins": []
+    },
+    {
+      "symbol": "Safe input voltage",
+      "name": "Safe input voltage",
+      "category": "ELECTRICAL",
+      "min": -40.0,
+      "typ": null,
+      "max": 40.0,
+      "unit": "V",
+      "test_conditions": "RS = 0\u03a9, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "Safe input voltage | RS = 0\u03a9 | \u00b140{MAX} | V",
+      "related_pins": []
+    },
+    {
+      "symbol": "INA12xP, INA12xU",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": 80.0,
+      "typ": 86.0,
+      "max": null,
+      "unit": "nA",
+      "test_conditions": "G = 1, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xP, INA12xU | 80{MIN} | 86{TYP}",
+      "related_pins": [
+        "INA12xP, INA12xU"
+      ]
+    },
+    {
+      "symbol": "INA12xPA, INA12xUA",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": 73.0,
+      "typ": null,
+      "max": null,
+      "unit": "nA",
+      "test_conditions": "G = 1, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xPA, INA12xUA | 73{MIN}",
+      "related_pins": [
+        "INA12xPA, INA12xUA"
+      ]
+    },
+    {
+      "symbol": "INA12xP, INA12xU",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": 100.0,
+      "typ": 106.0,
+      "max": null,
+      "unit": "nA",
+      "test_conditions": "G = 10, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xP, INA12xU | 100{MIN} | 106{TYP}",
+      "related_pins": [
+        "INA12xP, INA12xU"
+      ]
+    },
+    {
+      "symbol": "INA12xPA, INA12xUA",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": 93.0,
+      "typ": null,
+      "max": null,
+      "unit": "nA",
+      "test_conditions": "G = 10, \u0394RS = 1 k\u03a9, VCM = \u00b113 V, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xPA, INA12xUA | 93{MIN}",
+      "related_pins": [
+        "INA12xPA, INA12xUA"
+      ]
+    },
+    {
+      "symbol": "INA12xP, INA12xU",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": 120.0,
+      "typ": 125.0,
+      "max": null,
+      "unit": "nA",
+      "test_conditions": "G = 100, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xP, INA12xU | 120{MIN} | 125{TYP}",
+      "related_pins": [
+        "INA12xP, INA12xU"
+      ]
+    },
+    {
+      "symbol": "INA12xPA, INA12xUA",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": 110.0,
+      "typ": null,
+      "max": null,
+      "unit": "nA",
+      "test_conditions": "G = 100, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xPA, INA12xUA | 110{MIN}",
+      "related_pins": [
+        "INA12xPA, INA12xUA"
+      ]
+    },
+    {
+      "symbol": "INA12xP, INA12xU",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": 120.0,
+      "typ": 130.0,
+      "max": null,
+      "unit": "nA",
+      "test_conditions": "G = 1000, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xP, INA12xU | 120{MIN} | 130{TYP}",
+      "related_pins": [
+        "INA12xP, INA12xU"
+      ]
+    },
+    {
+      "symbol": "INA12xPA, INA12xUA",
+      "name": "Common-mode rejection",
+      "category": "ELECTRICAL",
+      "min": 110.0,
+      "typ": null,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "G = 1000, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xPA, INA12xUA | 110{MIN}",
+      "related_pins": [
+        "INA12xPA, INA12xUA"
+      ]
+    },
+    {
+      "symbol": "INA12xU",
+      "name": "Common-mode rejection",
+      "category": "ELECTRICAL",
+      "min": 90.0,
+      "typ": 100.0,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "G = 1, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xU | 90{MIN} | 100{TYP}",
+      "related_pins": [
+        "INA12xU"
+      ]
+    },
+    {
+      "symbol": "INA12xUA",
+      "name": "Common-mode rejection",
+      "category": "ELECTRICAL",
+      "min": 83.0,
+      "typ": null,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "G = 10, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xUA | 83{MIN}",
+      "related_pins": [
+        "INA12xUA"
+      ]
+    },
+    {
+      "symbol": "INA12xU",
+      "name": "Common-mode rejection",
+      "category": "ELECTRICAL",
+      "min": 110.0,
+      "typ": 120.0,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "G = 10, \u0394RS = 1 k\u03a9, VCM = \u00b113 V, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xU | 110{MIN} | 120{TYP}",
+      "related_pins": [
+        "INA12xU"
+      ]
+    },
+    {
+      "symbol": "INA12xUA",
+      "name": "Common-mode rejection",
+      "category": "ELECTRICAL",
+      "min": 103.0,
+      "typ": null,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "G = 100, \u0394RS = 1 k\u03a9, VCM = \u00b113 V, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xUA | 103{MIN}",
+      "related_pins": [
+        "INA12xUA"
+      ]
+    },
+    {
+      "symbol": "INA12xU",
+      "name": "Common-mode rejection",
+      "category": "ELECTRICAL",
+      "min": 130.0,
+      "typ": 140.0,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "G = 1000, TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 5,
+      "evidence": "INA12xU | 130{MIN} | 140{TYP}",
+      "related_pins": [
+        "INA12xU"
+      ]
+    },
+    {
+      "symbol": "INA12xUA",
+      "name": "Common-mode rejection",
+      "category": "ELECTRICAL",
+      "min": 120.0,
+      "typ": null,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "G = 100, TA = 25\u00b0C, VS =",
+      "page": 5
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 2,
+      "max": 5,
+      "unit": "nA",
+      "test_conditions": "INA12xP, INA12xU, CSO: SHE, TA = 25C, VS = \u00b115V",
+      "page": 6,
+      "evidence": "INA12xP, INA12xU | \u00b12{TYP} | \u00b15{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 10,
+      "unit": "nA",
+      "test_conditions": "INA12xPA, INA12xUA, CSO: SHE, TA = 25C, VS = \u00b115V",
+      "page": 6,
+      "evidence": "INA12xPA, INA12xUA | \u00b110{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.15,
+      "max": 0.6,
+      "unit": "nA",
+      "test_conditions": "INA12xU, CSO: FRE, TA = 25C, VS = \u00b115V",
+      "page": 6,
+      "evidence": "INA12xU | \u00b10.15{TYP} | \u00b10.6{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 1.2,
+      "unit": "nA",
+      "test_conditions": "INA12xUA, CSO: FRE, TA = 25C, VS = \u00b115V",
+      "page": 6,
+      "evidence": "INA12xUA | \u00b11.2{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "",
+      "name": "Input bias current drift",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 30,
+      "max": null,
+      "unit": "pA/\u2103",
+      "test_conditions": "TA = -40C to 85C",
+      "page": 6,
+      "evidence": "Input bias current drift | TA = \u201340\u00b0C to +85\u00b0C | \u00b130{TYP}",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1,
+      "max": 5,
+      "unit": "nA",
+      "test_conditions": "INA12xP, INA12xU, CSO: SHE, TA = 25C, VS = \u00b115V",
+      "page": 6,
+      "evidence": "INA12xP, INA12xU | \u00b11{TYP} | \u00b15{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 10,
+      "unit": "nA",
+      "test_conditions": "INA12xPA, INA12xUA, CSO: SHE, TA = 25C, VS = \u00b115V",
+      "page": 6,
+      "evidence": "INA12xPA, INA12xUA | \u00b110{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.15,
+      "max": 0.6,
+      "unit": "nA",
+      "test_conditions": "INA12xU, CSO: FRE, TA = 25C, VS = \u00b115V",
+      "page": 6,
+      "evidence": "INA12xU | \u00b10.15{TYP} | \u00b10.6{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 1.2,
+      "unit": "nA",
+      "test_conditions": "INA12xUA, CSO: FRE, TA = 25C, VS = \u00b115V",
+      "page": 6,
+      "evidence": "INA12xUA | \u00b11.2{MAX}",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "eN",
+      "name": "Voltage noise (RTI)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 10,
+      "max": null,
+      "unit": "nV/\u221aHz",
+      "test_conditions": "G = 1000, RS = 0\u03a9, f = 10Hz, CSO: SHE",
+      "page": 6,
+      "evidence": "CSO: SHE | 10{TYP} f = 10Hz",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "eN",
+      "name": "Voltage noise (RTI)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 7,
+      "max": null,
+      "unit": "nV/\u221aHz",
+      "test_conditions": "G = 1000, RS = 0\u03a9, f = 10Hz, CSO: FRE",
+      "page": 6,
+      "evidence": "CSO: FRE | 7{TYP} f = 10Hz",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "eN",
+      "name": "Voltage noise (RTI)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 8,
+      "max": null,
+      "unit": "nV/\u221aHz",
+      "test_conditions": "G = 1000, RS = 0\u03a9, f = 100Hz, CSO: SHE",
+      "page": 6,
+      "evidence": "CSO: SHE | 8{TYP} f = 100Hz",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "eN",
+      "name": "Voltage noise (RTI)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 6.9,
+      "max": null,
+      "unit": "nV/\u221aHz",
+      "test_conditions": "G = 1000, RS = 0\u03a9, f = 100Hz, CSO: FRE",
+      "page": 6,
+      "evidence": "CSO: FRE | 6.9{TYP} f = 100Hz",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "eN",
+      "name": "Voltage noise (RTI)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 8,
+      "max": null,
+      "unit": "nV/\u221aHz",
+      "test_conditions": "G = 1000, RS = 0\u03a9, f = 1kHz, CSO: SHE",
+      "page": 6,
+      "evidence": "CSO: SHE | 8{TYP} f = 1kHz",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "eN",
+      "name": "Voltage noise (RTI)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 6.9,
+      "max": null,
+      "unit": "nV/\u221aHz",
+      "test_conditions": "G = 1000, RS = 0\u03a9, f = 1kHz, CSO: FRE",
+      "page": 6,
+      "evidence": "CSO: FRE | 6.9{TYP} f = 1kHz",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "eN",
+      "name": "Voltage noise (RTI)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.2,
+      "max": null,
+      "unit": "\u00b5VPP",
+      "test_conditions": "G = 1000, RS = 0\u03a9, fB = 0.1Hz to 10Hz",
+      "page": 6,
+      "evidence": "fB = 0.1Hz to 10Hz | 0.2{TYP} | \u00b5VPP",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "In",
+      "name": "Current noise",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.9,
+      "max": null,
+      "unit": "pA/\u221aHz",
+      "test_conditions": "f = 10Hz",
+      "page": 6,
+      "evidence": "f = 10Hz | 0.9{TYP} pA/\u221aHz",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "In",
+      "name": "Current noise",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.3,
+      "max": null,
+      "unit": "pA/\u221aHz",
+      "test_conditions": "f = 1kHz, CSO: SHE",
+      "page": 6,
+      "evidence": "CSO: SHE | 0.3{TYP} | pA/\u221aHz",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "In",
+      "name": "Current noise",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.17,
+      "max": null,
+      "unit": "pA/\u221aHz",
+      "test_conditions": "f = 1kHz, CSO: FRE",
+      "page": 6,
+      "evidence": "CSO: FRE | 0.17{TYP}",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "In",
+      "name": "Current noise",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 30,
+      "max": null,
+      "unit": "pAPP",
+      "test_conditions": "fB = 0.1Hz to 10Hz, CSO: SHE",
+      "page": 6,
+      "evidence": "CSO: SHE | 30{TYP} fB = 0.1Hz to 10Hz | pAPP",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "In",
+      "name": "Current noise",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 4.7,
+      "max": null,
+      "unit": "pAPP",
+      "test_conditions": "fB = 0.1Hz to 10Hz, CSO: FRE",
+      "page": 6,
+      "evidence": "CSO: FRE | 4.7{TYP}",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "Gain equation",
+      "name": "Gain equation (INA128)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V/V",
+      "test_conditions": "INA128",
+      "page": 7,
+      "evidence": "INA128 | 1{MIN} + (50 k\u03a9 / RG)",
+      "related_pins": [
+        "RG"
+      ]
+    },
+    {
+      "symbol": "Gain equation",
+      "name": "Gain equation (INA129)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V/V",
+      "test_conditions": "INA129",
+      "page": 7,
+      "evidence": "INA129 | 1{MIN} + (49.4 k\u03a9 / RG)",
+      "related_pins": [
+        "RG"
+      ]
+    },
+    {
+      "symbol": "G",
+      "name": "Gain",
+      "category": "ELECTRICAL",
+      "min": 1,
+      "typ": null,
+      "max": 10000,
+      "unit": "V/V",
+      "test_conditions": "",
+      "page": 7,
+      "evidence": "G | Gain | 1{MIN} | 10000{MAX} | V/V",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain error",
+      "name": "Gain error",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -0.01,
+      "max": -0.024,
+      "unit": "%",
+      "test_conditions": "G = 1, INA12xP, INA12xU, CSO: SHE",
+      "page": 7,
+      "evidence": "INA12xP, INA12xU | \u00b10.01{TYP} | \u00b10.024{MAX} CSO: SHE",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain error",
+      "name": "Gain error",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -0.1,
+      "unit": "%",
+      "test_conditions": "G = 1, INA12xPA, INA12xUA",
+      "page": 7,
+      "evidence": "INA12xPA, INA12xUA | \u00b10.1{MAX} G = 1",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain error",
+      "name": "Gain error",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -0.005,
+      "max": -0.025,
+      "unit": "%",
+      "test_conditions": "G = 1, INA12xU, CSO: FRE",
+      "page": 7,
+      "evidence": "INA12xU | \u00b10.005{TYP} | \u00b10.025{MAX} CSO: FRE",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain error",
+      "name": "Gain error",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -0.1,
+      "unit": "%",
+      "test_conditions": "G = 1, INA12xUA, CSO: FRE",
+      "page": 7,
+      "evidence": "INA12xUA | \u00b10.1{MAX} INA12xP",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain error",
+      "name": "Gain error",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -0.02,
+      "max": -0.4,
+      "unit": "%",
+      "test_conditions": "G = 10, INA12xP, INA12xU, CSO: SHE",
+      "page": 7,
+      "evidence": "INA12xP, INA12xU | \u00b10.02{TYP} | \u00b10.4{MAX} CSO: SHE",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain error",
+      "name": "Gain error",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -0.5,
+      "unit": "%",
+      "test_conditions": "G = 10, INA12xPA, INA12xUA",
+      "page": 7,
+      "evidence": "INA12xPA, INA12xUA | \u00b10.5{MAX} G = 10",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain error",
+      "name": "Gain error",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -0.025,
+      "max": -0.15,
+      "unit": "%",
+      "test_conditions": "G = 10, INA12xU, CSO: FRE",
+      "page": 7,
+      "evidence": "INA12xU | \u00b10.025{TYP} | \u00b10.15{MAX} CSO: FRE",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain error",
+      "name": "Gain error",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -0.2,
+      "unit": "%",
+      "test_conditions": "G = 10, INA12xUA, CSO: FRE",
+      "page": 7,
+      "evidence": "INA12xUA | \u00b10.2{MAX} Gain error",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain error",
+      "name": "Gain error",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -0.05,
+      "max": -0.5,
+      "unit": "%",
+      "test_conditions": "G = 100, INA12xP, INA12xU, CSO: SHE",
+      "page": 7,
+      "evidence": "INA12xP, INA12xU | \u00b10.05{TYP} | \u00b10.5{MAX} CSO: SHE",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain error",
+      "name": "Gain error",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -0.7,
+      "unit": "%",
+      "test_conditions": "G = 100, INA12xPA, INA12xUA",
+      "page": 7,
+      "evidence": "INA12xPA, INA12xUA | \u00b10.7{MAX} G = 100",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain error",
+      "name": "Gain error",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -0.025,
+      "max": -0.15,
+      "unit": "%",
+      "test_conditions": "G = 100, INA12xU, CSO: FRE",
+      "page": 7,
+      "evidence": "INA12xU | \u00b10.025{TYP} | \u00b10.15{MAX} CSO: FRE",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain error",
+      "name": "Gain error",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -0.25,
+      "unit": "%",
+      "test_conditions": "G = 100, INA12xUA, CSO: FRE",
+      "page": 7,
+      "evidence": "INA12xUA | \u00b10.25{MAX} INA12xP",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain error",
+      "name": "Gain error",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -0.5,
+      "max": -1,
+      "unit": "%",
+      "test_conditions": "G = 1000, INA12xP, INA12xU, CSO: SHE",
+      "page": 7,
+      "evidence": "INA12xP, INA12xU | \u00b10.5{TYP} | \u00b11{MAX} CSO: SHE",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain error",
+      "name": "Gain error",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -2,
+      "unit": "%",
+      "test_conditions": "G = 1000, INA12xPA, INA12xUA",
+      "page": 7,
+      "evidence": "INA12xPA, INA12xUA | \u00b12{MAX} G = 1000",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain error",
+      "name": "Gain error",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -0.05,
+      "max": -1,
+      "unit": "%",
+      "test_conditions": "G = 1000, INA12xU, CSO: FRE",
+      "page": 7,
+      "evidence": "INA12xU | \u00b10.05{TYP} | \u00b11{MAX} CSO: FRE",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain error",
+      "name": "Gain error",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -2,
+      "unit": "%",
+      "test_conditions": "G = 1000, INA12xUA, CSO: FRE",
+      "page": 7,
+      "evidence": "INA12xUA | \u00b12{MAX} CSO: SHE",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain drift",
+      "name": "Gain drift",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -1,
+      "max": -10,
+      "unit": "ppm/\u00b0C",
+      "test_conditions": "TA = -40\u00b0C to +85\u00b0C, CSO: SHE",
+      "page": 7,
+      "evidence": "CSO: SHE | \u00b11{TYP} | \u00b110{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain drift",
+      "name": "Gain drift",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -5,
+      "unit": "ppm/\u00b0C",
+      "test_conditions": "TA = -40\u00b0C to +85\u00b0C, CSO: FRE",
+      "page": 7,
+      "evidence": "CSO: FRE | \u00b15{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain drift",
+      "name": "Gain drift",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -25,
+      "max": -100,
+      "unit": "ppm/\u00b0C",
+      "test_conditions": "TA = -40\u00b0C to +85\u00b0C, 50k\u03a9 or 49.4k\u03a9 resistance, CSO: SHE",
+      "page": 7,
+      "evidence": "CSO: SHE | \u00b125{TYP} | \u00b1100{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain drift",
+      "name": "Gain drift",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -50,
+      "unit": "ppm/\u00b0C",
+      "test_conditions": "TA = -40\u00b0C to +85\u00b0C, 50k\u03a9 or 49.4k\u03a9 resistance, CSO: FRE",
+      "page": 7,
+      "evidence": "CSO: FRE | \u00b150{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain nonlinearity",
+      "name": "Gain nonlinearity",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -0.0001,
+      "max": -0.001,
+      "unit": "% of FSR",
+      "test_conditions": "G = 1, VO = \u00b113.6V, INA12xP, INA12xU",
+      "page": 7,
+      "evidence": "INA12xP, INA12xU | \u00b10.0001{TYP} | \u00b10.001{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain nonlinearity",
+      "name": "Gain nonlinearity",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -0.002,
+      "unit": "% of FSR",
+      "test_conditions": "G = 1, VO = \u00b113.6V, INA12xPA, INA12xUA",
+      "page": 7,
+      "evidence": "INA12xPA, INA12xUA | \u00b10.002{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain nonlinearity",
+      "name": "Gain nonlinearity",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -0.0003,
+      "max": -0.002,
+      "unit": "% of FSR",
+      "test_conditions": "G = 10, INA12xP, INA12xU",
+      "page": 7,
+      "evidence": "INA12xP, INA12xU | \u00b10.0003{TYP} | \u00b10.002{MAX} G = 10",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain nonlinearity",
+      "name": "Gain nonlinearity",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -0.004,
+      "unit": "% of FSR",
+      "test_conditions": "G = 10, INA12xPA, INA12xUA",
+      "page": 7,
+      "evidence": "INA12xPA, INA12xUA | \u00b10.004{MAX} % of FSR",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain nonlinearity",
+      "name": "Gain nonlinearity",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -0.0005,
+      "max": -0.002,
+      "unit": "% of FSR",
+      "test_conditions": "G = 100, INA12xP, INA12xU",
+      "page": 7,
+      "evidence": "INA12xP, INA12xU | \u00b10.0005{TYP} | \u00b10.002{MAX} G = 100",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain nonlinearity",
+      "name": "Gain nonlinearity",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -0.004,
+      "unit": "% of FSR",
+      "test_conditions": "G = 100, INA12xPA, INA12xUA",
+      "page": 7,
+      "evidence": "INA12xPA, INA12xUA | \u00b10.004{MAX} G = 1000",
+      "related_pins": []
+    },
+    {
+      "symbol": "Gain nonlinearity",
+      "name": "Gain nonlinearity",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -0.001,
+      "max": null,
+      "unit": "% of FSR",
+      "test_conditions": "G = 1000",
+      "page": 7,
+      "evidence": "G = 1000 | \u00b10.001{TYP}",
+      "related_pins": []
+    },
+    {
+      "symbol": "Positive output voltage swing",
+      "name": "Positive output voltage swing",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "CSO: SHE, (V+) - 1.4 min",
+      "page": 7,
+      "evidence": "Positive output voltage | CSO: SHE | (V+) \u2013 1.4{MIN}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "Positive output voltage swing",
+      "name": "Positive output voltage swing",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "CSO: FRE, (V+) - 0.15 min",
+      "page": 7,
+      "evidence": "CSO: FRE | (V+) \u2013 0.15{MIN}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "Negative output voltage swing",
+      "name": "Negative output voltage swing",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "CSO: SHE, (V-) + 1.4 min",
+      "page": 7,
+      "evidence": "Negative output voltage | CSO: SHE | (V\u2013) + 1.4{MIN}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "Negative output voltage swing",
+      "name": "Negative output voltage swing",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "CSO: FRE, (V-) + 0.15 min",
+      "page": 7,
+      "evidence": "CSO: FRE | (V\u2013) + 0.15{MIN}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "CL",
+      "name": "Load capacitance",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1000,
+      "max": null,
+      "unit": "pF",
+      "test_conditions": "Stable operation",
+      "page": 7,
+      "evidence": "CL | Load capacitance | Stable operation | 1000{TYP} | pF",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "ISC",
+      "name": "Short-circuit current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "Continuous to VS, CSO: SHE, +6/-15",
+      "page": 7,
+      "evidence": "Continuous to VS / CSO: SHE | +6/\u201315",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "ISC",
+      "name": "Short-circuit current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "Continuous to VS, CSO: FRE, +18/-18",
+      "page": 7,
+      "evidence": "2 | CSO: FRE | +18/\u201318",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "BW",
+      "name": "Bandwidth, \u20133dB",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1.3,
+      "max": null,
+      "unit": "MHz",
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9m, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 8,
+      "evidence": "G = 1 | 1.3{TYP} | MHz",
+      "related_pins": []
+    },
+    {
+      "symbol": "BW",
+      "name": "Bandwidth, \u20133dB",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 640,
+      "max": null,
+      "unit": null,
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9m, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 8,
+      "evidence": "G = 10 | 640{TYP}",
+      "related_pins": []
+    },
+    {
+      "symbol": "BW",
+      "name": "Bandwidth, \u20133dB",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 200,
+      "max": null,
+      "unit": "kHz",
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9m, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 8,
+      "evidence": "G = 100 | 200{TYP} kHz",
+      "related_pins": []
+    },
+    {
+      "symbol": "SR",
+      "name": "Slew rate",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 20,
+      "max": null,
+      "unit": "V/\u00b5s",
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9m, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 8,
+      "evidence": "CSO: SHE | 20{TYP} G = 1000",
+      "related_pins": []
+    },
+    {
+      "symbol": "SR",
+      "name": "Slew rate",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 33,
+      "max": null,
+      "unit": "V/\u00b5s",
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9m, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 8,
+      "evidence": "CSO: FRE | 33{TYP} CSO: SHE | 4{TYP}",
+      "related_pins": []
+    },
+    {
+      "symbol": "SR",
+      "name": "Slew rate",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1.2,
+      "max": null,
+      "unit": "V/\u00b5s",
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9m, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 8,
+      "evidence": "CSO: FRE | 1.2{TYP} CSO: SHE | 7{TYP} G = 1",
+      "related_pins": []
+    },
+    {
+      "symbol": "tS",
+      "name": "Settling time",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 12,
+      "max": null,
+      "unit": "\u00b5s",
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9m, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 8,
+      "evidence": "G = 10 | tS | To 0.01% | CSO: FRE | 12{TYP} | \u00b5s",
+      "related_pins": []
+    },
+    {
+      "symbol": "tS",
+      "name": "Settling time",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 80,
+      "max": null,
+      "unit": "\u00b5s",
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9m, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 8,
+      "evidence": "G = 1000 | 80{TYP}",
+      "related_pins": []
+    },
+    {
+      "symbol": "tS",
+      "name": "Settling time",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 4,
+      "max": null,
+      "unit": "\u00b5s",
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9m, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 8,
+      "evidence": "Overload recovery | 50% input overload | 4{TYP} | \u00b5s",
+      "related_pins": []
+    },
+    {
+      "symbol": "IQ",
+      "name": "Quiescent current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 700,
+      "max": 750,
+      "unit": "\u00b5A",
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9m, VREF = 0 V, VCM = VS / 2, and G = 1, all chips site origins (CSO) (unless otherwise noted)",
+      "page": 8,
+      "evidence": "IQ | Quiescent current | VIN = 0V | \u00b1700{TYP} | \u00b1750{MAX} | \u00b5A",
+      "related_pins": []
+    }
+  ],
+  "provenance": {
+    "pin_pages": [
+      1,
+      3
+    ],
+    "spec_pages": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      20
+    ],
+    "func_pages": [
+      16,
+      17
+    ],
+    "failed_spec_pages": [
+      {
+        "page": 4,
+        "error": "Failed to parse JSON from LLM response:\n{\"electrical_parameters\": [{\"symbol\": \"VS\", \"name\": \"Supply voltage\", \"category\": \"ABS_MAX\", \"min\": null, \"typ\": null, \"max\": 18, \"unit\": \"V\", \"test_conditions\""
+      }
+    ],
+    "source_file": "ina128.pdf"
+  }
+}

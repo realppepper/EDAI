@@ -1,0 +1,426 @@
+{
+  "ic": "ne555",
+  "model": "z-ai/glm-5.3-flash",
+  "llm_seconds": 154.1,
+  "llm_calls": [
+    {
+      "ts": 1792590236.4600973,
+      "tag": "hkg_pins",
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 0.87,
+      "total_s": 8.33,
+      "completion_tokens": 1309,
+      "prompt_tokens": 3163,
+      "cost_usd": 0.00112895,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.0294
+    },
+    {
+      "ts": 1792590243.8504484,
+      "tag": "hkg_specs_p7",
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 1.93,
+      "total_s": 6.88,
+      "completion_tokens": 1452,
+      "prompt_tokens": 1071,
+      "cost_usd": 0.000691896,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.0336
+    },
+    {
+      "ts": 1792590257.623681,
+      "tag": "hkg_specs_p4",
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 1.6,
+      "total_s": 28.23,
+      "completion_tokens": 1549,
+      "prompt_tokens": 1156,
+      "cost_usd": 0.00033639,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.0352
+    },
+    {
+      "ts": 1792590260.5323439,
+      "tag": "hkg_specs_p6",
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 1.0,
+      "total_s": 24.07,
+      "completion_tokens": 4786,
+      "prompt_tokens": 1831,
+      "cost_usd": 0.002076688,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.0373
+    },
+    {
+      "ts": 1792590356.8972352,
+      "tag": "hkg_specs_p5",
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 1.75,
+      "total_s": 126.91,
+      "completion_tokens": 5320,
+      "prompt_tokens": 1672,
+      "cost_usd": 0.00094848,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.0443
+    }
+  ],
+  "groundtruth_comparison": {
+    "ic": "NE555",
+    "score": 98.2,
+    "pins": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 8,
+      "pred": 8,
+      "gt": 8,
+      "role_accuracy": 1.0,
+      "missing": [],
+      "extra": [],
+      "role_errors": []
+    },
+    "dependencies_full_pdg": {
+      "precision": 1.0,
+      "recall": 0.846,
+      "f1": 0.917,
+      "tp": 11,
+      "pred": 11,
+      "gt": 13,
+      "missing": [
+        [
+          "CONT",
+          "DISCH"
+        ],
+        [
+          "VCC",
+          "CONT"
+        ]
+      ],
+      "spurious": []
+    },
+    "dependencies_datasheet_only": {
+      "precision": 1.0,
+      "recall": 0.846,
+      "f1": 0.917,
+      "tp": 11,
+      "pred": 11,
+      "gt": 13
+    },
+    "schedule_consistency": {
+      "ratio": 1.0,
+      "checked": 13,
+      "violations": []
+    },
+    "spec_rows": {
+      "precision": 0.413,
+      "recall": 1.0,
+      "f1": 0.585,
+      "tp": 50,
+      "pred": 121,
+      "gt": 50
+    },
+    "electrical_spec_recall": 1.0,
+    "spec_value_accuracy": 0.965,
+    "spec_category_accuracy": 1.0,
+    "category_confusion": {
+      "ELECTRICAL": {
+        "ELECTRICAL": 32
+      },
+      "ABS_MAX": {
+        "ABS_MAX": 7
+      },
+      "ESD": {
+        "ESD": 2
+      },
+      "RECOMMENDED": {
+        "RECOMMENDED": 3
+      },
+      "THERMAL": {
+        "THERMAL": 6
+      }
+    },
+    "nonelectrical_leak_rate": 0.0,
+    "timing": {
+      "recall": 1.0,
+      "items": [
+        {
+          "symbol": "tr",
+          "found": true
+        },
+        {
+          "symbol": "tf",
+          "found": true
+        }
+      ],
+      "pdg_timing_specs": {
+        "turnon_settling_us": null,
+        "propagation_delay_us": null,
+        "slew_rate_v_us": null,
+        "bandwidth_mhz": null,
+        "sources": {}
+      },
+      "pdg_uses_datasheet_delay": false
+    }
+  },
+  "provenance_audit": {
+    "mode": "groundtruth_free_provenance",
+    "fidelity_score_pct": 84.3,
+    "status": "ACCEPTABLE",
+    "pin_provenance": {
+      "pins": 8,
+      "grounded": 8,
+      "grounded_pct": 100.0,
+      "ungrounded": []
+    },
+    "spec_provenance": {
+      "specs": 121,
+      "grounded": 116,
+      "grounded_pct": 95.9,
+      "by_category": {
+        "ABS_MAX": 7,
+        "ESD": 2,
+        "RECOMMENDED": 7,
+        "THERMAL": 36,
+        "ELECTRICAL": 69
+      },
+      "ungrounded_examples": [
+        {
+          "symbol": "VI",
+          "category": "ABS_MAX",
+          "page": 4,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "R\u03b8JC(bot)",
+          "category": "THERMAL",
+          "page": 5,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "R\u03b8JC(bot)",
+          "category": "THERMAL",
+          "page": 5,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "R\u03b8JC(bot)",
+          "category": "THERMAL",
+          "page": 5,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "R\u03b8JC(bot)",
+          "category": "THERMAL",
+          "page": 5,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        }
+      ]
+    },
+    "topological_validity": {
+      "is_dag": true,
+      "unreachable_outputs": [],
+      "isolated_pins": []
+    },
+    "edge_origin": {
+      "edges": 16,
+      "datasheet_derived": 11,
+      "rule_injected": 5,
+      "datasheet_pct": 68.8
+    },
+    "timing_grounding": {
+      "delay_grounded_edges": 0,
+      "grounded_pct": 0.0,
+      "timing_specs_used": {
+        "turnon_settling_us": null,
+        "propagation_delay_us": null,
+        "slew_rate_v_us": null,
+        "bandwidth_mhz": null,
+        "sources": {}
+      }
+    },
+    "edge_details": [
+      {
+        "from": "GND",
+        "to": "OUT",
+        "delay_us": 50.0,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "Ground return for output drive"
+      },
+      {
+        "from": "GND",
+        "to": "DISCH",
+        "delay_us": 50.0,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "Low-impedance path DISCH to GND when output low"
+      },
+      {
+        "from": "GND",
+        "to": "CONT",
+        "delay_us": 20.0,
+        "type": "POWER_TO_BIAS",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Bias stabilization after supply ramp"
+      },
+      {
+        "from": "TRIG",
+        "to": "OUT",
+        "delay_us": 50.0,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "TRIG < trigger level sets output high"
+      },
+      {
+        "from": "TRIG",
+        "to": "DISCH",
+        "delay_us": 50.0,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "TRIG < \u00bd CONT sets discharge open"
+      },
+      {
+        "from": "RESET",
+        "to": "OUT",
+        "delay_us": 50.0,
+        "type": "CONTROL_GATE",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "RESET low forces output low; overrides all other inputs"
+      },
+      {
+        "from": "RESET",
+        "to": "DISCH",
+        "delay_us": 50.0,
+        "type": "CONTROL_GATE",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "RESET low forces discharge low"
+      },
+      {
+        "from": "RESET",
+        "to": "TRIG",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "RESET",
+        "to": "THRES",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "CONT",
+        "to": "OUT",
+        "delay_us": 50.0,
+        "type": "FEEDBACK_LOOP",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "Controls comparator thresholds; alters trigger and threshold levels"
+      },
+      {
+        "from": "CONT",
+        "to": "RESET",
+        "delay_us": 5.0,
+        "type": "TO_CONTROL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Control threshold settling"
+      },
+      {
+        "from": "THRES",
+        "to": "OUT",
+        "delay_us": 50.0,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "THRES > threshold level sets output low"
+      },
+      {
+        "from": "THRES",
+        "to": "DISCH",
+        "delay_us": 50.0,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "THRES > CONT sets discharge low"
+      },
+      {
+        "from": "VCC",
+        "to": "OUT",
+        "delay_us": 50.0,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "Output sink/source current greater for higher VCC"
+      },
+      {
+        "from": "VCC",
+        "to": "DISCH",
+        "delay_us": 50.0,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "Maximum discharge sink current greater for higher VCC"
+      },
+      {
+        "from": "VCC",
+        "to": "CONT",
+        "delay_us": 20.0,
+        "type": "POWER_TO_BIAS",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Bias stabilization after supply ramp"
+      }
+    ],
+    "pin_coverage": {
+      "coverage_pct": 100.0
+    }
+  },
+  "schedule_us": {
+    "GND": 0.0,
+    "VCC": 0.0,
+    "CONT": 20.0,
+    "RESET": 25.0,
+    "TRIG": 27.0,
+    "THRES": 27.0,
+    "OUT": 77.0,
+    "DISCH": 77.0
+  }
+}

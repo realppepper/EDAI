@@ -1,0 +1,299 @@
+{
+  "ic": "lm317",
+  "model": "deepseek-ai/deepseek-v4.1-flash",
+  "llm_seconds": 63.8,
+  "llm_calls": [
+    {
+      "ts": 1792564219.5847507,
+      "tag": "hkg_specs_p14",
+      "provider": "nim",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "attempt": 1,
+      "status": "http_429",
+      "total_s": 0.58,
+      "error": "HTTP 429: {\"status\":429,\"title\":\"Too Many Requests\"}"
+    },
+    {
+      "ts": 1792564221.8150463,
+      "tag": "hkg_specs_p28",
+      "provider": "nim",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 2.79,
+      "total_s": 2.81,
+      "completion_tokens": 9,
+      "prompt_tokens": 854,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792564223.860006,
+      "tag": "hkg_specs_p14",
+      "provider": "nim",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "attempt": 2,
+      "status": "ok",
+      "ttft_s": 2.07,
+      "total_s": 2.25,
+      "completion_tokens": 9,
+      "prompt_tokens": 643,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792564229.1303227,
+      "tag": "hkg_pins",
+      "provider": "nim",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 2.42,
+      "total_s": 10.14,
+      "completion_tokens": 657,
+      "prompt_tokens": 2294,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792564232.5832205,
+      "tag": "hkg_specs_p7",
+      "provider": "nim",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 3.43,
+      "total_s": 13.59,
+      "completion_tokens": 1267,
+      "prompt_tokens": 980,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792564232.8591192,
+      "tag": "hkg_specs_p6",
+      "provider": "nim",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 2.43,
+      "total_s": 13.86,
+      "completion_tokens": 966,
+      "prompt_tokens": 830,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792564282.7130642,
+      "tag": "hkg_specs_p8",
+      "provider": "nim",
+      "model": "deepseek-ai/deepseek-v4.1-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 2.79,
+      "total_s": 63.71,
+      "completion_tokens": 3080,
+      "prompt_tokens": 1386,
+      "finish_reason": "stop"
+    }
+  ],
+  "groundtruth_comparison": {
+    "ic": "LM317",
+    "score": 78.4,
+    "pins": {
+      "precision": 0.75,
+      "recall": 1.0,
+      "f1": 0.857,
+      "tp": 3,
+      "pred": 4,
+      "gt": 3,
+      "role_accuracy": 1.0,
+      "missing": [],
+      "extra": [
+        "OUTPUT_4"
+      ],
+      "role_errors": []
+    },
+    "dependencies_full_pdg": {
+      "precision": 0.25,
+      "recall": 0.5,
+      "f1": 0.333,
+      "tp": 1,
+      "pred": 4,
+      "gt": 2,
+      "missing": [
+        [
+          "ADJUST",
+          "OUTPUT"
+        ]
+      ],
+      "spurious": [
+        [
+          "INPUT",
+          "ADJUST"
+        ]
+      ]
+    },
+    "dependencies_datasheet_only": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "tp": 0,
+      "pred": 2,
+      "gt": 2
+    },
+    "schedule_consistency": {
+      "ratio": 0.5,
+      "checked": 2,
+      "violations": [
+        [
+          "ADJUST",
+          "OUTPUT"
+        ]
+      ]
+    },
+    "spec_rows": {
+      "precision": 0.644,
+      "recall": 0.806,
+      "f1": 0.716,
+      "tp": 29,
+      "pred": 45,
+      "gt": 36
+    },
+    "electrical_spec_recall": 1.0,
+    "spec_value_accuracy": 0.92,
+    "spec_category_accuracy": 1.0,
+    "category_confusion": {
+      "ELECTRICAL": {
+        "ELECTRICAL": 19
+      },
+      "ABS_MAX": {
+        "ABS_MAX": 4
+      },
+      "ESD": {
+        "ESD": 2
+      },
+      "RECOMMENDED": {
+        "RECOMMENDED": 4
+      }
+    },
+    "nonelectrical_leak_rate": 0.0,
+    "timing": {
+      "recall": null,
+      "items": [],
+      "pdg_timing_specs": {
+        "turnon_settling_us": null,
+        "propagation_delay_us": null,
+        "slew_rate_v_us": null,
+        "bandwidth_mhz": null,
+        "sources": {}
+      },
+      "pdg_uses_datasheet_delay": false
+    }
+  },
+  "provenance_audit": {
+    "mode": "groundtruth_free_provenance",
+    "fidelity_score_pct": 81.4,
+    "status": "ACCEPTABLE",
+    "pin_provenance": {
+      "pins": 4,
+      "grounded": 4,
+      "grounded_pct": 100.0,
+      "ungrounded": []
+    },
+    "spec_provenance": {
+      "specs": 45,
+      "grounded": 43,
+      "grounded_pct": 95.6,
+      "by_category": {
+        "ABS_MAX": 4,
+        "ESD": 2,
+        "RECOMMENDED": 4,
+        "THERMAL": 11,
+        "ELECTRICAL": 24
+      },
+      "ungrounded_examples": [
+        {
+          "symbol": "Power dissipation",
+          "category": "ABS_MAX",
+          "page": 6,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "R\u03b8JC(bot)",
+          "category": "THERMAL",
+          "page": 7,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        }
+      ]
+    },
+    "topological_validity": {
+      "is_dag": true,
+      "unreachable_outputs": [],
+      "isolated_pins": []
+    },
+    "edge_origin": {
+      "edges": 4,
+      "datasheet_derived": 2,
+      "rule_injected": 2,
+      "datasheet_pct": 50.0
+    },
+    "timing_grounding": {
+      "delay_grounded_edges": 0,
+      "grounded_pct": 0.0,
+      "timing_specs_used": {
+        "turnon_settling_us": null,
+        "propagation_delay_us": null,
+        "slew_rate_v_us": null,
+        "bandwidth_mhz": null,
+        "sources": {}
+      }
+    },
+    "edge_details": [
+      {
+        "from": "ADJUST",
+        "to": "OUTPUT_4",
+        "delay_us": 50.0,
+        "type": "FEEDBACK_LOOP",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "OUTPUT pin is 1.25V greater than ADJUST pin to provide output regulation"
+      },
+      {
+        "from": "INPUT",
+        "to": "OUTPUT_4",
+        "delay_us": 50.0,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "Requires up to 3V headroom (VI - VO) to operate in regulation"
+      },
+      {
+        "from": "INPUT",
+        "to": "ADJUST",
+        "delay_us": 50.0,
+        "type": "POWER_FEED",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Default output settling (no datasheet timing)"
+      },
+      {
+        "from": "INPUT",
+        "to": "OUTPUT",
+        "delay_us": 50.0,
+        "type": "POWER_FEED",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Default output settling (no datasheet timing)"
+      }
+    ],
+    "pin_coverage": {
+      "coverage_pct": 100.0
+    }
+  },
+  "schedule_us": {
+    "INPUT": 0.0,
+    "ADJUST": 50.0,
+    "OUTPUT": 50.0,
+    "OUTPUT_4": 100.0
+  }
+}

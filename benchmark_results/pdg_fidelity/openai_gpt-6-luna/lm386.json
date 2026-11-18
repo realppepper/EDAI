@@ -1,0 +1,352 @@
+{
+  "ic": "lm386",
+  "model": "openai/gpt-6-luna",
+  "llm_seconds": 70.1,
+  "llm_calls": [
+    {
+      "ts": 1792589897.3755403,
+      "tag": "hkg_pins",
+      "provider": "openrouter",
+      "model": "openai/gpt-6-luna",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 6.0,
+      "total_s": 15.55,
+      "completion_tokens": 1323,
+      "prompt_tokens": 1845,
+      "cost_usd": 0.00089205,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.0193
+    },
+    {
+      "ts": 1792589907.271132,
+      "tag": "hkg_specs_p5",
+      "provider": "openrouter",
+      "model": "openai/gpt-6-luna",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 4.28,
+      "total_s": 15.57,
+      "completion_tokens": 1551,
+      "prompt_tokens": 1027,
+      "cost_usd": 0.0009038,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.0227
+    },
+    {
+      "ts": 1792589936.2440522,
+      "tag": "hkg_specs_p4",
+      "provider": "openrouter",
+      "model": "openai/gpt-6-luna",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 8.4,
+      "total_s": 28.97,
+      "completion_tokens": 2709,
+      "prompt_tokens": 1305,
+      "cost_usd": 0.00151755,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.0327
+    }
+  ],
+  "groundtruth_comparison": {
+    "ic": "LM386",
+    "score": 94.2,
+    "pins": {
+      "precision": 1.0,
+      "recall": 0.875,
+      "f1": 0.933,
+      "tp": 7,
+      "pred": 7,
+      "gt": 8,
+      "role_accuracy": 1.0,
+      "missing": [
+        "GAIN8"
+      ],
+      "extra": [],
+      "role_errors": []
+    },
+    "dependencies_full_pdg": {
+      "precision": 0.583,
+      "recall": 0.875,
+      "f1": 0.7,
+      "tp": 7,
+      "pred": 12,
+      "gt": 8,
+      "missing": [
+        [
+          "GAIN8",
+          "VOUT"
+        ]
+      ],
+      "spurious": [
+        [
+          "+INPUT",
+          "GAIN1"
+        ],
+        [
+          "-INPUT",
+          "GAIN1"
+        ],
+        [
+          "GND",
+          "BYPASS"
+        ],
+        [
+          "GND",
+          "GAIN1"
+        ],
+        [
+          "VS",
+          "GAIN1"
+        ]
+      ]
+    },
+    "dependencies_datasheet_only": {
+      "precision": 0.875,
+      "recall": 0.875,
+      "f1": 0.875,
+      "tp": 7,
+      "pred": 8,
+      "gt": 8
+    },
+    "schedule_consistency": {
+      "ratio": 1.0,
+      "checked": 7,
+      "violations": []
+    },
+    "spec_rows": {
+      "precision": 0.61,
+      "recall": 0.926,
+      "f1": 0.735,
+      "tp": 25,
+      "pred": 41,
+      "gt": 27
+    },
+    "electrical_spec_recall": 1.0,
+    "spec_value_accuracy": 1.0,
+    "spec_category_accuracy": 1.0,
+    "category_confusion": {
+      "ELECTRICAL": {
+        "ELECTRICAL": 10
+      },
+      "ABS_MAX": {
+        "ABS_MAX": 5
+      },
+      "RECOMMENDED": {
+        "RECOMMENDED": 4
+      },
+      "THERMAL": {
+        "THERMAL": 6
+      }
+    },
+    "nonelectrical_leak_rate": 0.0,
+    "timing": {
+      "recall": 1.0,
+      "items": [
+        {
+          "symbol": "BW",
+          "found": true
+        }
+      ],
+      "pdg_timing_specs": {
+        "turnon_settling_us": null,
+        "propagation_delay_us": null,
+        "slew_rate_v_us": null,
+        "bandwidth_mhz": 0.3,
+        "sources": {
+          "bandwidth_mhz": "BW"
+        }
+      },
+      "pdg_uses_datasheet_delay": true
+    }
+  },
+  "provenance_audit": {
+    "mode": "groundtruth_free_provenance",
+    "fidelity_score_pct": 90.7,
+    "status": "TRUSTWORTHY",
+    "pin_provenance": {
+      "pins": 7,
+      "grounded": 7,
+      "grounded_pct": 100.0,
+      "ungrounded": []
+    },
+    "spec_provenance": {
+      "specs": 41,
+      "grounded": 41,
+      "grounded_pct": 100.0,
+      "by_category": {
+        "ABS_MAX": 7,
+        "ESD": 1,
+        "RECOMMENDED": 5,
+        "THERMAL": 15,
+        "ELECTRICAL": 13
+      },
+      "ungrounded_examples": []
+    },
+    "topological_validity": {
+      "is_dag": true,
+      "unreachable_outputs": [],
+      "isolated_pins": []
+    },
+    "edge_origin": {
+      "edges": 14,
+      "datasheet_derived": 8,
+      "rule_injected": 6,
+      "datasheet_pct": 57.1
+    },
+    "timing_grounding": {
+      "delay_grounded_edges": 10,
+      "grounded_pct": 71.4,
+      "timing_specs_used": {
+        "turnon_settling_us": null,
+        "propagation_delay_us": null,
+        "slew_rate_v_us": null,
+        "bandwidth_mhz": 0.3,
+        "sources": {
+          "bandwidth_mhz": "BW"
+        }
+      }
+    },
+    "edge_details": [
+      {
+        "from": "GAIN",
+        "to": "VOUT",
+        "delay_us": 2.6526,
+        "type": "FEEDBACK_LOOP",
+        "origin": "datasheet",
+        "delay_source": "BW",
+        "condition": "Gain is set or modified using pins 1 and 8."
+      },
+      {
+        "from": "NINPUT",
+        "to": "VOUT",
+        "delay_us": 2.6526,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": "BW",
+        "condition": "Inverting signal input of the mono amplifier."
+      },
+      {
+        "from": "NINPUT",
+        "to": "GAIN",
+        "delay_us": 2.6526,
+        "type": "SIGNAL_PATH",
+        "origin": "rule",
+        "delay_source": "BW",
+        "condition": "5 tau of GBW (0.3MHz)"
+      },
+      {
+        "from": "PINPUT",
+        "to": "VOUT",
+        "delay_us": 2.6526,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": "BW",
+        "condition": "Noninverting signal input of the mono amplifier."
+      },
+      {
+        "from": "PINPUT",
+        "to": "GAIN",
+        "delay_us": 2.6526,
+        "type": "SIGNAL_PATH",
+        "origin": "rule",
+        "delay_source": "BW",
+        "condition": "5 tau of GBW (0.3MHz)"
+      },
+      {
+        "from": "GND",
+        "to": "VOUT",
+        "delay_us": 2.6526,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": "BW",
+        "condition": "Ground reference for the output."
+      },
+      {
+        "from": "GND",
+        "to": "BYPASS",
+        "delay_us": 2.0,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "Ground reference for the output-designated bypass pin."
+      },
+      {
+        "from": "GND",
+        "to": "GAIN",
+        "delay_us": 2.6526,
+        "type": "POWER_FEED",
+        "origin": "rule",
+        "delay_source": "BW",
+        "condition": "5 tau of GBW (0.3MHz)"
+      },
+      {
+        "from": "VS",
+        "to": "VOUT",
+        "delay_us": 2.6526,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": "BW",
+        "condition": "Supply pin feeds the output."
+      },
+      {
+        "from": "VS",
+        "to": "BYPASS",
+        "delay_us": 2.0,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": null,
+        "condition": "Supply pin feeds the output-designated bypass pin."
+      },
+      {
+        "from": "VS",
+        "to": "GAIN",
+        "delay_us": 2.6526,
+        "type": "POWER_FEED",
+        "origin": "rule",
+        "delay_source": "BW",
+        "condition": "5 tau of GBW (0.3MHz)"
+      },
+      {
+        "from": "BYPASS",
+        "to": "VOUT",
+        "delay_us": 2.6526,
+        "type": "BIAS_FEED",
+        "origin": "datasheet",
+        "delay_source": "BW",
+        "condition": "Bypass decoupling path."
+      },
+      {
+        "from": "BYPASS",
+        "to": "NINPUT",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "BYPASS",
+        "to": "PINPUT",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      }
+    ],
+    "pin_coverage": {
+      "coverage_pct": 100.0
+    }
+  },
+  "schedule_us": {
+    "GND": 0.0,
+    "VS": 0.0,
+    "BYPASS": 2.0,
+    "NINPUT": 4.0,
+    "PINPUT": 4.0,
+    "GAIN": 6.653,
+    "VOUT": 9.305
+  }
+}

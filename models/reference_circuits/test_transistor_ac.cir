@@ -1,0 +1,27 @@
+* Transistor-Level LM741 AC & DC Verification Testbench
+.include "models/lm741_transistor.sub"
+
+Vcc 7 0 DC 15
+Vee 4 0 DC -15
+
+Vin 3 0 DC 0 AC 1.0
+
+* L-C Servo loop
+L_fb 6 2 100Meg
+C_fb 2 0 100Meg
+
+* DUT Instance
+* Nodes: 3:IN+, 2:IN-, 7:VCC, 4:VEE, 6:OUT
+X1 3 2 7 4 6 LM741_BJT
+
+* Load: 2k ohm, 100pF
+RL 6 0 2k
+CL 6 0 100p
+
+.ac dec 20 0.01 100Meg
+
+.meas ac Avol_at_1Hz find V(6) at=1
+.meas ac GBW when mag(V(6))=1.0
+.meas ac Loop_at_GBW find V(6) when mag(V(6))=1.0
+
+.end

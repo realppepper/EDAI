@@ -1,0 +1,264 @@
+
+* --- Globally Hoisted Models for Multi-Subcircuit Visibility ---
+.model S_MODEL VSWITCH (RON=10 ROFF=1G VTH=0.5 VH=0.1)
+.model D_PROT D (IS=1e-15 N=1 RS=10)
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.5 PHI=0.8 LAMBDA=0.01)
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u GAMMA=0.4 PHI=0.7 LAMBDA=0.01)
+.model QNPN NPN( IS=1e-15 BF=200 BR=3 NF=1 NR=1
+.model QPNP PNP( IS=1e-15 BF=50 BR=3 NF=1 NR=1
+.model DIODE D( IS=1e-15 N=1 RS=10
+
+.subckt LM358B OUT1 IN1 IN1_P V IN2_P IN2 OUT2 V_P
+*==============================================================================
+* LM358B Dual Operational Amplifier - Behavioral SPICE Model
+* Compatible with standard SPICE simulators (LTspice, ngspice, HSPICE, etc.)
+*==============================================================================
+
+*------------------------------------------------------------------------------
+* Standard Bipolar Transistor Models (Level 1 Gummel-Poon)
+*------------------------------------------------------------------------------
+.model QNPN NPN( IS=1e-15 BF=200 BR=3 NF=1 NR=1
++ VAF=100 VAR=10 IKF=0.01 IKR=0.01
++ ISE=1e-14 NE=1.5 ISC=1e-13 NC=2
++ RB=100 RE=0.5 RC=10
++ CJE=2e-12 VJE=0.75 MJE=0.33
++ CJC=1e-12 VJC=0.75 MJC=0.33
++ CJS=0 VJS=0.75 MJS=0
++ TF=1e-9 TR=1e-7 XTF=1 VTF=10 ITF=0.1
++ PTF=0 KF=0 AF=1 FC=0.5
++ XTB=1.5 EG=1.11 XTI=3
++ TNOM=27
+
+.model QPNP PNP( IS=1e-15 BF=50 BR=3 NF=1 NR=1
++ VAF=50 VAR=10 IKF=0.01 IKR=0.01
++ ISE=1e-14 NE=1.5 ISC=1e-13 NC=2
++ RB=200 RE=0.5 RC=20
++ CJE=3e-12 VJE=0.75 MJE=0.33
++ CJC=2e-12 VJC=0.75 MJC=0.33
++ CJS=0 VJS=0.75 MJS=0
++ TF=2e-9 TR=2e-7 XTF=1 VTF=10 ITF=0.1
++ PTF=0 KF=0 AF=1 FC=0.5
++ XTB=1.5 EG=1.11 XTI=3
++ TNOM=27
+
+*------------------------------------------------------------------------------
+* Diode Models for ESD Protection and Bandgap
+*------------------------------------------------------------------------------
+.model DIODE D( IS=1e-15 N=1 RS=10
++ CJO=1e-12 VJ=0.75 M=0.33
++ TT=1e-9 BV=40 IBV=1e-3
++ TNOM=27
+
+*------------------------------------------------------------------------------
+* Global Temperature Parameter
+*------------------------------------------------------------------------------
+.param TEMP=27
+
+*==============================================================================
+* CHANNEL 1 AMPLIFIER
+*==============================================================================
+
+*--- Input ESD Protection Diodes ---
+D1_IN1_P_IN1 IN1_P IN1 DIODE
+D1_IN1_IN1_P IN1 IN1_P DIODE
+D1_IN1_P_V IN1_P V DIODE
+D1_V_IN1_P V IN1_P DIODE
+D1_IN1_V IN1 V DIODE
+D1_V_IN1 V IN1 DIODE
+
+*--- Input Series Resistance (ESD/Noise) ---
+R1_IN1_P IN1_P IN1_P_INT 1k
+R1_IN1 IN1 IN1_INT 1k
+
+*--- Input PNP Differential Pair with Degeneration ---
+Q1_1 IN1_P_INT N1_1 N1_TAIL QPNP
+Q1_2 IN1_INT N1_2 N1_TAIL QPNP
+R1_DEG1 N1_1 N1_TAIL 500
+R1_DEG2 N1_2 N1_TAIL 500
+
+*--- Tail Current Source (10µA) ---
+Q1_TAIL N1_TAIL N1_BIAS V QPNP
+R1_TAIL_DEG N1_TAIL N1_TAIL_INT 1k
+
+*--- Current Mirror Load (PNP) ---
+Q1_3 N1_1 N1_1 V_P QPNP
+Q1_4 N1_2 N1_1 V_P QPNP
+
+*--- Second Stage: NPN Common-Emitter with Active Load ---
+Q1_17 N1_2 N1_17_C N1_17_E QNPN
+Q1_18 N1_17_C N1_18_B N1_18_E QNPN
+R1_17_E N1_17_E V 1k
+R1_18_E N1_18_E V 1k
+R1_18_B N1_18_B N1_17_C 10k
+
+*--- Miller Compensation with Nulling Resistor ---
+C1_CC N1_2 N1_17_C 30p
+R1_CC N1_17_C N1_COMP 3.5k
+
+*--- VBE Multiplier for Output Stage Bias ---
+Q1_19 N1_19_C N1_19_B N1_19_E QNPN
+R1_19 N1_19_C N1_19_B 6.2k
+R1_20 N1_19_B N1_19_E 3.8k
+
+*--- Output Stage: Class AB Push-Pull ---
+Q1_21 OUT1 N1_21_B N1_21_E QNPN
+Q1_22 OUT1 N1_22_B N1_22_E QPNP
+R1_21 N1_21_E N1_19_C 50
+R1_22 N1_22_E N1_19_E 50
+
+*--- Output Short-Circuit Protection / Current Limit ---
+R1_OUT_LIMIT1 OUT1 N1_OUT_INT1 0.1
+R1_OUT_LIMIT2 N1_OUT_INT1 N1_OUT_INT2 0.1
+
+*--- Feedback Network for Unity-Gain Buffer Behavior ---
+E1_FB N1_FB_OUT 0 VALUE={V(N1_OUT_INT2) - V(IN1) + V(IN1_P)}
+R1_FB1 N1_FB_OUT N1_2 1Meg
+R1_FB2 N1_2 0 1Meg
+
+*--- Drive Buffers for Output Bases ---
+G1_DRV_UP N1_21_B 0 VALUE={LIMIT((V(N1_COMP) - V(N1_19_C))/1k, -1m, 10m)}
+G1_DRV_DN N1_22_B 0 VALUE={LIMIT((V(N1_19_E) - V(N1_COMP))/1k, -10m, 1m)}
+
+*==============================================================================
+* CHANNEL 2 AMPLIFIER (Identical to Channel 1)
+*==============================================================================
+
+*--- Input ESD Protection Diodes ---
+D2_IN2_P_IN2 IN2_P IN2 DIODE
+D2_IN2_IN2_P IN2 IN2_P DIODE
+D2_IN2_P_V IN2_P V DIODE
+D2_V_IN2_P V IN2_P DIODE
+D2_IN2_V IN2 V DIODE
+D2_V_IN2 V IN2 DIODE
+
+*--- Input Series Resistance ---
+R2_IN2_P IN2_P IN2_P_INT 1k
+R2_IN2 IN2 IN2_INT 1k
+
+*--- Input PNP Differential Pair with Degeneration ---
+Q2_1 IN2_P_INT N2_1 N2_TAIL QPNP
+Q2_2 IN2_INT N2_2 N2_TAIL QPNP
+R2_DEG1 N2_1 N2_TAIL 500
+R2_DEG2 N2_2 N2_TAIL 500
+
+*--- Tail Current Source (10µA) ---
+Q2_TAIL N2_TAIL N2_BIAS V QPNP
+R2_TAIL_DEG N2_TAIL N2_TAIL_INT 1k
+
+*--- Current Mirror Load ---
+Q2_3 N2_1 N2_1 V_P QPNP
+Q2_4 N2_2 N2_1 V_P QPNP
+
+*--- Second Stage ---
+Q2_17 N2_2 N2_17_C N2_17_E QNPN
+Q2_18 N2_17_C N2_18_B N2_18_E QNPN
+R2_17_E N2_17_E V 1k
+R2_18_E N2_18_E V 1k
+R2_18_B N2_18_B N2_17_C 10k
+
+*--- Miller Compensation ---
+C2_CC N2_2 N2_17_C 30p
+R2_CC N2_17_C N2_COMP 3.5k
+
+*--- VBE Multiplier ---
+Q2_19 N2_19_C N2_19_B N2_19_E QNPN
+R2_19 N2_19_C N2_19_B 6.2k
+R2_20 N2_19_B N2_19_E 3.8k
+
+*--- Output Stage ---
+Q2_21 OUT2 N2_21_B N2_21_E QNPN
+Q2_22 OUT2 N2_22_B N2_22_E QPNP
+R2_21 N2_21_E N2_19_C 50
+R2_22 N2_22_E N2_19_E 50
+
+*--- Output Limiting ---
+R2_OUT_LIMIT1 OUT2 N2_OUT_INT1 0.1
+R2_OUT_LIMIT2 N2_OUT_INT1 N2_OUT_INT2 0.1
+
+*--- Feedback Network ---
+E2_FB N2_FB_OUT 0 VALUE={V(N2_OUT_INT2) - V(IN2) + V(IN2_P)}
+R2_FB1 N2_FB_OUT N2_2 1Meg
+R2_FB2 N2_2 0 1Meg
+
+*--- Drive Buffers ---
+G2_DRV_UP N2_21_B 0 VALUE={LIMIT((V(N2_COMP) - V(N2_19_C))/1k, -1m, 10m)}
+G2_DRV_DN N2_22_B 0 VALUE={LIMIT((V(N2_19_E) - V(N2_COMP))/1k, -10m, 1m)}
+
+*==============================================================================
+* SHARED BIAS CIRCUIT (Bandgap-Referenced Current Mirror)
+*==============================================================================
+
+*--- Startup Circuit ---
+R_STARTUP V_P N_STARTUP 1Meg
+Q_STARTUP N_STARTUP N_STARTUP V QNPN
+D_STARTUP N_STARTUP N_BIAS_REF DIODE
+
+*--- Bandgap Core (Brokaw Cell) ---
+Q_BG1 N_BG1_C N_BG1_B N_BG1_E QNPN
+Q_BG2 N_BG2_C N_BG2_B N_BG2_E QNPN
+R_BG1 N_BG1_C N_BG1_B 10k
+R_BG2 N_BG2_C N_BG2_B 10k
+R_BG3 N_BG1_E N_BG2_E 20k
+R_BG4 N_BG2_E V 10k
+
+*--- Bandgap Output Buffer ---
+Q_BG_BUF N_BIAS_REF N_BG1_C V QNPN
+R_BG_BUF N_BIAS_REF V 100k
+
+*--- PTAT Current Generation ---
+Q_PTAT1 N_PTAT_C N_PTAT_B N_PTAT_E QNPN
+Q_PTAT2 N_PTAT_C N_PTAT_B N_PTAT_E2 QNPN
+R_PTAT1 N_PTAT_E V 50k
+R_PTAT2 N_PTAT_E2 V 50k
+
+*--- Reference Current Mirror (10µA) ---
+Q_REF1 N_IREF N_BIAS_REF V QNPN
+Q_REF2 N_IREF N_BIAS_REF V QNPN
+R_REF1 N_IREF V 10k
+R_REF2 N_IREF V 10k
+
+*--- Bias Distribution to Channels ---
+* Channel 1 Tail Current (10µA)
+Q_BIAS_TAIL1 N1_BIAS N_IREF V QNPN
+R_BIAS_TAIL1 N1_BIAS V 100k
+
+* Channel 2 Tail Current (10µA)
+Q_BIAS_TAIL2 N2_BIAS N_IREF V QNPN
+R_BIAS_TAIL2 N2_BIAS V 100k
+
+* Second Stage Bias (50µA each)
+Q_BIAS_2ND1 N1_18_B N_IREF V QNPN
+R_BIAS_2ND1 N1_18_B V 20k
+Q_BIAS_2ND2 N2_18_B N_IREF V QNPN
+R_BIAS_2ND2 N2_18_B V 20k
+
+* VBE Multiplier Bias (100µA each)
+Q_BIAS_VBE1 N1_19_C N_IREF V QNPN
+R_BIAS_VBE1 N1_19_C V 10k
+Q_BIAS_VBE2 N2_19_C N_IREF V QNPN
+R_BIAS_VBE2 N2_19_C V 10k
+
+* Output Stage Bias Assist
+Q_BIAS_OUT1 N1_19_E N_IREF V QNPN
+R_BIAS_OUT1 N1_19_E V 10k
+Q_BIAS_OUT2 N2_19_E N_IREF V QNPN
+R_BIAS_OUT2 N2_19_E V 10k
+
+*==============================================================================
+* SUPPLY DECOUPLING / INTERNAL NODES
+*==============================================================================
+C_SUPPLY V_P V 10p
+R_SUPPLY_DAMP V_P V 100k
+
+*==============================================================================
+* THERMAL MODELING (Junction-to-Ambient for SOIC-8)
+*==============================================================================
+* Thermal resistance modeled via self-heating in transistors (TNOM=27)
+* RthJA = 124.7 °C/W for SOIC-8 package
+
+*==============================================================================
+* OUTPUT NODE CONNECTIONS
+*==============================================================================
+* Outputs already connected through OUT1, OUT2 pins
+
+.ends LM358B

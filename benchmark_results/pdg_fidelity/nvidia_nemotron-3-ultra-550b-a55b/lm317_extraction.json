@@ -1,0 +1,1105 @@
+{
+  "ic_device": {
+    "name": "LM317",
+    "category": "Adjustable Linear Voltage Regulator",
+    "description": "Adjustable three-pin positive-voltage regulator capable of supplying more than 1.5A over an output voltage range of 1.25V to 37V. Requires only two external resistors to set output voltage. Features current limiting, thermal overload protection, and safe operating area protection.",
+    "package": "TO-220 (KCS/KCT, 3-pin, Legacy Chip)"
+  },
+  "pins": [
+    {
+      "name": "INPUT",
+      "pin_number": "3",
+      "role": "POWER",
+      "direction": "INPUT",
+      "description": "Input voltage pin for the regulator.",
+      "page": 5,
+      "evidence": "Input voltage pin for the regulator."
+    },
+    {
+      "name": "OUTPUT",
+      "pin_number": "2, TAB",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "description": "Output voltage pin for the regulator. Tab is internally connected to OUTPUT.",
+      "page": 5,
+      "evidence": "Output voltage pin for the regulator."
+    },
+    {
+      "name": "ADJUST",
+      "pin_number": "1",
+      "role": "FEEDBACK",
+      "direction": "INPUT",
+      "description": "Output voltage adjustment pin. Connect to a resistor divider to set VOUT.",
+      "page": 5,
+      "evidence": "Output voltage adjustment pin. Connect to a resistor divider to set VOUT."
+    }
+  ],
+  "port_dependencies": [
+    {
+      "source": "INPUT",
+      "target": "OUTPUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "Requires up to 3V headroom (VI \u2013 VO) to operate in regulation."
+    },
+    {
+      "source": "ADJUST",
+      "target": "OUTPUT",
+      "dependency_type": "FEEDBACK_LOOP",
+      "settling_delay_us": null,
+      "condition": "Device OUTPUT pin sources current necessary to make the OUTPUT pin 1.25V greater than ADJUST pin to provide output regulation."
+    }
+  ],
+  "functional_blocks": [
+    {
+      "name": "NPN Darlington Output Drive",
+      "type": "Output Stage",
+      "description": "Provides naturally low output impedance. Output capacitor is optional. Requires 3V headroom (VI \u2013 VO) to support maximum current and lowest temperature.",
+      "input_ports": [
+        "INPUT"
+      ],
+      "output_ports": [
+        "OUTPUT"
+      ]
+    },
+    {
+      "name": "Overload Protection Block",
+      "type": "Protection",
+      "description": "Overcurrent and overtemperature shutdown protects the device against overload or damage from operating in excessive heat. Automatically resets from overload. Functional even if ADJUST pin is disconnected.",
+      "input_ports": [
+        "INPUT",
+        "OUTPUT"
+      ],
+      "output_ports": [
+        "OUTPUT"
+      ]
+    },
+    {
+      "name": "Programmable Feedback (Error Amplifier)",
+      "type": "Control Loop",
+      "description": "Op amp with a 1.25V offset input at the ADJUST pin provides easy output voltage or current programming. Minimizes IADJUST current and keeps it constant with line and load changes.",
+      "input_ports": [
+        "ADJUST",
+        "OUTPUT"
+      ],
+      "output_ports": [
+        "OUTPUT"
+      ]
+    },
+    {
+      "name": "Internal Reference",
+      "type": "Reference",
+      "description": "1.25V internal reference voltage between OUTPUT and ADJUST pins.",
+      "input_ports": [],
+      "output_ports": [
+        "ADJUST"
+      ]
+    }
+  ],
+  "electrical_parameters": [
+    {
+      "symbol": "PD",
+      "name": "Power dissipation",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "",
+      "test_conditions": "Internally limited",
+      "page": 6,
+      "evidence": "Power dissipation | Internally limited",
+      "related_pins": []
+    },
+    {
+      "symbol": "VI-VO",
+      "name": "Input-output voltage differential",
+      "category": "ABS_MAX",
+      "min": -0.3,
+      "typ": null,
+      "max": 40,
+      "unit": "V",
+      "test_conditions": "",
+      "page": 6,
+      "evidence": "Input-output voltage differential | -0.3{MIN} | 40{MAX} | V",
+      "related_pins": [
+        "IN",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "Tstg",
+      "name": "Storage temperature",
+      "category": "ABS_MAX",
+      "min": -65,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": "",
+      "page": 6,
+      "evidence": "Storage temperature, Tstg | -65{MIN} | 150{MAX} | \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "TJ",
+      "name": "Operating virtual junction temperature (legacy chip)",
+      "category": "ABS_MAX",
+      "min": -65,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": "legacy chip",
+      "page": 6,
+      "evidence": "Operating virtual junction temperature, TJ (legacy chip) | -65{MIN} | 150{MAX} | \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "VESD_HBM",
+      "name": "Human body model (HBM) ESD",
+      "category": "ESD",
+      "min": null,
+      "typ": null,
+      "max": 2500,
+      "unit": "V",
+      "test_conditions": "Legacy Chip, per ANSI/ESDA/JEDEC JS-001",
+      "page": 6,
+      "evidence": "Human body model (HBM) | \u00b12500{MAX} | \u00b13000",
+      "related_pins": []
+    },
+    {
+      "symbol": "VESD_HBM",
+      "name": "Human body model (HBM) ESD",
+      "category": "ESD",
+      "min": null,
+      "typ": null,
+      "max": 3000,
+      "unit": "V",
+      "test_conditions": "New Chip, per ANSI/ESDA/JEDEC JS-001",
+      "page": 6,
+      "evidence": "Human body model (HBM) | \u00b12500{MAX} | \u00b13000",
+      "related_pins": []
+    },
+    {
+      "symbol": "VESD_CDM",
+      "name": "Charged device model (CDM) ESD",
+      "category": "ESD",
+      "min": null,
+      "typ": null,
+      "max": 1000,
+      "unit": "V",
+      "test_conditions": "Legacy Chip, per JEDEC JESD22-C101",
+      "page": 6,
+      "evidence": "Charged device model (CDM) | \u00b11000{MAX} | NA",
+      "related_pins": []
+    },
+    {
+      "symbol": "VO",
+      "name": "Output voltage",
+      "category": "RECOMMENDED",
+      "min": 1.25,
+      "typ": null,
+      "max": 37,
+      "unit": "V",
+      "test_conditions": "",
+      "page": 6,
+      "evidence": "VO | Output voltage | 1.25{MIN} | 37{MAX} | V",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VI-VO",
+      "name": "Input-to-output differential voltage",
+      "category": "RECOMMENDED",
+      "min": 3,
+      "typ": null,
+      "max": 40,
+      "unit": "V",
+      "test_conditions": "",
+      "page": 6,
+      "evidence": "VI \u2013 VO | Input-to-output differential voltage | 3{MIN} | 40{MAX} | V",
+      "related_pins": [
+        "IN",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IO",
+      "name": "Output current",
+      "category": "RECOMMENDED",
+      "min": 0.01,
+      "typ": null,
+      "max": 1.5,
+      "unit": "A",
+      "test_conditions": "",
+      "page": 6,
+      "evidence": "IO | Output current | 0.01{MIN} | 1.5{MAX} | A",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "TJ",
+      "name": "Operating virtual junction temperature",
+      "category": "RECOMMENDED",
+      "min": 0,
+      "typ": null,
+      "max": 125,
+      "unit": "\u00b0C",
+      "test_conditions": "",
+      "page": 6,
+      "evidence": "TJ | Operating virtual junction temperature | 0{MIN} | 125{MAX} | \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 66.8,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, DCY (SOT-223), 4 PINS",
+      "page": 7,
+      "evidence": "R\u03b8(JA) | Junction-to-ambient thermal resistance | 66.8",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 43.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, DCY (SOT-223), 4 PINS",
+      "page": 7,
+      "evidence": "R\u03b8JC(top) | Junction-to-case (top) thermal resistance | 43.2",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 16.9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, DCY (SOT-223), 4 PINS",
+      "page": 7,
+      "evidence": "R\u03b8JB | Junction-to-board thermal resistance | 16.9",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 3.6,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, DCY (SOT-223), 4 PINS",
+      "page": 7,
+      "evidence": "\u03c8JT | Junction-to-top characterization parameter | 3.6",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 16.8,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, DCY (SOT-223), 4 PINS",
+      "page": 7,
+      "evidence": "\u03c8JB | Junction-to-board characterization parameter | 16.8",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, DCY (SOT-223), 4 PINS",
+      "page": 7,
+      "evidence": "R\u03b8JC(bot) | Junction-to-case (bottom) thermal resistance | NA",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 23.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, KCS (TO-220), 3 PINS",
+      "page": 7,
+      "evidence": "R\u03b8(JA) | Junction-to-ambient thermal resistance | 23.5",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 15.9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, KCS (TO-220), 3 PINS",
+      "page": 7,
+      "evidence": "R\u03b8JC(top) | Junction-to-case (top) thermal resistance | 15.9",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 7.9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, KCS (TO-220), 3 PINS",
+      "page": 7,
+      "evidence": "R\u03b8JB | Junction-to-board thermal resistance | 7.9",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 3.0,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, KCS (TO-220), 3 PINS",
+      "page": 7,
+      "evidence": "\u03c8JT | Junction-to-top characterization parameter | 3.0",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 7.8,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, KCS (TO-220), 3 PINS",
+      "page": 7,
+      "evidence": "\u03c8JB | Junction-to-board characterization parameter | 7.8",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 0.1,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, KCS (TO-220), 3 PINS",
+      "page": 7,
+      "evidence": "R\u03b8JC(bot) | Junction-to-case (bottom) thermal resistance | 0.1",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 37.9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, KCT (TO-220), 3 PINS",
+      "page": 7,
+      "evidence": "R\u03b8(JA) | Junction-to-ambient thermal resistance | 37.9",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 51.1,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, KCT (TO-220), 3 PINS",
+      "page": 7,
+      "evidence": "R\u03b8JC(top) | Junction-to-case (top) thermal resistance | 51.1",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 23.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, KCT (TO-220), 3 PINS",
+      "page": 7,
+      "evidence": "R\u03b8JB | Junction-to-board thermal resistance | 23.2",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 13.0,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, KCT (TO-220), 3 PINS",
+      "page": 7,
+      "evidence": "\u03c8JT | Junction-to-top characterization parameter | 13.0",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 22.8,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, KCT (TO-220), 3 PINS",
+      "page": 7,
+      "evidence": "\u03c8JB | Junction-to-board characterization parameter | 22.8",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 4.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, KCT (TO-220), 3 PINS",
+      "page": 7,
+      "evidence": "R\u03b8JC(bot) | Junction-to-case (bottom) thermal resistance | 4.2",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 38.0,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, KTT (TO-263), 3 PINS",
+      "page": 7,
+      "evidence": "R\u03b8(JA) | Junction-to-ambient thermal resistance | 38.0",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 36.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, KTT (TO-263), 3 PINS",
+      "page": 7,
+      "evidence": "R\u03b8JC(top) | Junction-to-case (top) thermal resistance | 36.5",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 18.9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, KTT (TO-263), 3 PINS",
+      "page": 7,
+      "evidence": "R\u03b8JB | Junction-to-board thermal resistance | 18.9",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 6.9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, KTT (TO-263), 3 PINS",
+      "page": 7,
+      "evidence": "\u03c8JT | Junction-to-top characterization parameter | 6.9",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 17.9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, KTT (TO-263), 3 PINS",
+      "page": 7,
+      "evidence": "\u03c8JB | Junction-to-board characterization parameter | 17.9",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 1.1,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Legacy Chip, KTT (TO-263), 3 PINS",
+      "page": 7,
+      "evidence": "R\u03b8JC(bot) | Junction-to-case (bottom) thermal resistance | 1.1",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 59.6,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "New Chip, DCY (SOT-223), 4 PINS",
+      "page": 7,
+      "evidence": "R\u03b8(JA) | Junction-to-ambient thermal resistance | 59.6",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 39.3,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "New Chip, DCY (SOT-223), 4 PINS",
+      "page": 7,
+      "evidence": "R\u03b8JC(top) | Junction-to-case (top) thermal resistance | 39.3",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 8.4,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "New Chip, DCY (SOT-223), 4 PINS",
+      "page": 7,
+      "evidence": "R\u03b8JB | Junction-to-board thermal resistance | 8.4",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 1.8,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "New Chip, DCY (SOT-223), 4 PINS",
+      "page": 7,
+      "evidence": "\u03c8JT | Junction-to-top characterization parameter | 1.8",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 8.3,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "New Chip, DCY (SOT-223), 4 PINS",
+      "page": 7,
+      "evidence": "\u03c8JB | Junction-to-board characterization parameter | 8.3",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "New Chip, DCY (SOT-223), 4 PINS",
+      "page": 7,
+      "evidence": "R\u03b8JC(bot) | Junction-to-case (bottom) thermal resistance | \u2014",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 41.0,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "New Chip, KTT (TO-263), 3 PINS",
+      "page": 7,
+      "evidence": "R\u03b8(JA) | Junction-to-ambient thermal resistance | 41.0",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 43.6,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "New Chip, KTT (TO-263), 3 PINS",
+      "page": 7,
+      "evidence": "R\u03b8JC(top) | Junction-to-case (top) thermal resistance | 43.6",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 23.6,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "New Chip, KTT (TO-263), 3 PINS",
+      "page": 7,
+      "evidence": "R\u03b8JB | Junction-to-board thermal resistance | 23.6",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 10.4,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "New Chip, KTT (TO-263), 3 PINS",
+      "page": 7,
+      "evidence": "\u03c8JT | Junction-to-top characterization parameter | 10.4",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 22.6,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "New Chip, KTT (TO-263), 3 PINS",
+      "page": 7,
+      "evidence": "\u03c8JB | Junction-to-board characterization parameter | 22.6",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 0.9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "New Chip, KTT (TO-263), 3 PINS",
+      "page": 7,
+      "evidence": "R\u03b8JC(bot) | Junction-to-case (bottom) thermal resistance | 0.9",
+      "related_pins": []
+    },
+    {
+      "symbol": "VREF",
+      "name": "Reference voltage",
+      "category": "ELECTRICAL",
+      "min": 1.2,
+      "typ": 1.25,
+      "max": 1.3,
+      "unit": "V",
+      "test_conditions": "TJ = 25\u00b0C, 3V \u2264 (VIN \u2212 VOUT) \u2264 40V, 10mA \u2264 IOUT \u2264 1500mA, PD \u2264 20W",
+      "page": 8,
+      "evidence": "Reference voltage | 3V \u2264 (VIN \u2212 VOUT) \u2264 40V, 10mA \u2264 IOUT \u2264 1500mA, PD \u2264 20W",
+      "related_pins": [
+        "OUT",
+        "ADJ"
+      ]
+    },
+    {
+      "symbol": "LINE_REG",
+      "name": "Line regulation",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.01,
+      "max": 0.04,
+      "unit": "%/V",
+      "test_conditions": "TJ = 25\u00b0C, 3V \u2264 (VIN \u2212 VOUT) \u2264 40V",
+      "page": 8,
+      "evidence": "Line regulation | 3V \u2264 (VIN \u2212 VOUT) \u2264 40V | 0.01{TYP} | 0.04{MAX}",
+      "related_pins": [
+        "IN",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "LINE_REG",
+      "name": "Line regulation",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.02,
+      "max": 0.07,
+      "unit": "%/V",
+      "test_conditions": "TJ = 0\u00b0C to 125\u00b0C (full operating temperature range), 3V \u2264 (VIN \u2212 VOUT) \u2264 40V",
+      "page": 8,
+      "evidence": "Line regulation | 3V \u2264 (VIN \u2212 VOUT) \u2264 40V | 0.02{TYP} | 0.07{MAX}",
+      "related_pins": [
+        "IN",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "LOAD_REG",
+      "name": "Load regulation (Legacy chip, VO \u2264 5V)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 25,
+      "unit": "mV",
+      "test_conditions": "TJ = 25\u00b0C, IO = 10mA to 1500mA, CADJ = 10\u03bcF, VO \u2264 5V",
+      "page": 8,
+      "evidence": "Load regulation | VO \u2264 5V | 25{MAX} | mV",
+      "related_pins": [
+        "OUT",
+        "ADJ"
+      ]
+    },
+    {
+      "symbol": "LOAD_REG",
+      "name": "Load regulation (Legacy chip, VO \u2265 5V)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": 0.5,
+      "unit": "%VO",
+      "test_conditions": "TJ = 25\u00b0C, IO = 10mA to 1500mA, CADJ = 10\u03bcF, VO \u2265 5V",
+      "page": 8,
+      "evidence": "Load regulation | VO \u2265 5V | 0.1{TYP} | 0.5{MAX} %VO",
+      "related_pins": [
+        "OUT",
+        "ADJ"
+      ]
+    },
+    {
+      "symbol": "LOAD_REG",
+      "name": "Load regulation (Legacy chip, VO \u2264 5V)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 20,
+      "max": 70,
+      "unit": "mV",
+      "test_conditions": "TJ = 0\u00b0C to 125\u00b0C, IO = 10mA to 1500mA, VO \u2264 5V",
+      "page": 8,
+      "evidence": "Load regulation | VO \u2264 5V | 20{TYP} | 70{MAX} | mV",
+      "related_pins": [
+        "OUT",
+        "ADJ"
+      ]
+    },
+    {
+      "symbol": "LOAD_REG",
+      "name": "Load regulation (Legacy chip, VO \u2265 5V)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.3,
+      "max": 1.5,
+      "unit": "%VO",
+      "test_conditions": "TJ = 0\u00b0C to 125\u00b0C, IO = 10mA to 1500mA, VO \u2265 5V",
+      "page": 8,
+      "evidence": "Load regulation | VO \u2265 5V | 0.3{TYP} | 1.5{MAX}",
+      "related_pins": [
+        "OUT",
+        "ADJ"
+      ]
+    },
+    {
+      "symbol": "LOAD_REG",
+      "name": "Load regulation (New chip, 10mA \u2264 IOUT \u2264 IMAX)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": 0.5,
+      "unit": "%VO",
+      "test_conditions": "TJ = 25\u00b0C",
+      "page": 8,
+      "evidence": "Load regulation | 10mA \u2264 IOUT \u2264 IMAX | 0.1{TYP} | 0.5{MAX} %VO",
+      "related_pins": [
+        "OUT",
+        "ADJ"
+      ]
+    },
+    {
+      "symbol": "LOAD_REG",
+      "name": "Load regulation (New chip, full temperature)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.3,
+      "max": 1.5,
+      "unit": "%VO",
+      "test_conditions": "TJ = 0\u00b0C to 125\u00b0C (full operating temperature range)",
+      "page": 8,
+      "evidence": "Load regulation | 10mA \u2264 IOUT \u2264 IMAX | 0.3{TYP} | 1.5{MAX}",
+      "related_pins": [
+        "OUT",
+        "ADJ"
+      ]
+    },
+    {
+      "symbol": "THERM_REG",
+      "name": "Thermal regulation",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.04,
+      "max": 0.07,
+      "unit": "%/W",
+      "test_conditions": "20ms pulse",
+      "page": 8,
+      "evidence": "Thermal regulation | 20ms pulse | 0.04{TYP} | 0.07{MAX} %/W",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IADJ",
+      "name": "Adjustment pin current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 50,
+      "max": 100,
+      "unit": "\u03bcA",
+      "test_conditions": "Over full operating temperature range",
+      "page": 8,
+      "evidence": "Adjustment pin current | Over full operating temperature range | 50{TYP} | 100{MAX} | \u03bcA",
+      "related_pins": [
+        "ADJ"
+      ]
+    },
+    {
+      "symbol": "IADJ_CHG",
+      "name": "Adjustment pin current change",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.2,
+      "max": 5,
+      "unit": "\u03bcA",
+      "test_conditions": "10mA \u2264 IOUT \u2264 IMAX, 3V \u2264 (VIN \u2212 VOUT) \u2264 40V, Over full operating temperature range",
+      "page": 8,
+      "evidence": "Adjustment pin current change | 10mA \u2264 IOUT \u2264 IMAX | 0.2{TYP} | 5{MAX} | \u03bcA",
+      "related_pins": [
+        "ADJ",
+        "OUT",
+        "IN"
+      ]
+    },
+    {
+      "symbol": "TEMP_STAB",
+      "name": "Temperature stability (Legacy chip)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.7,
+      "max": null,
+      "unit": "%VO",
+      "test_conditions": "TMIN \u2264 TJ \u2264 TMAX (Over full operating temperature range)",
+      "page": 8,
+      "evidence": "Temperature stability | TMIN \u2264 TJ \u2264 TMAX | 0.7{TYP}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "TEMP_STAB",
+      "name": "Temperature stability (New chip)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1,
+      "max": null,
+      "unit": "%VO",
+      "test_conditions": "TMIN \u2264 TJ \u2264 TMAX (Over full operating temperature range)",
+      "page": 8,
+      "evidence": "Temperature stability | TMIN \u2264 TJ \u2264 TMAX | 1%",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "ILOAD_MIN",
+      "name": "Minimum load current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 3.5,
+      "max": 10,
+      "unit": "mA",
+      "test_conditions": "(VIN \u2212 VOUT) = 40V, Over full operating temperature range",
+      "page": 8,
+      "evidence": "Minimum load current | (VIN \u2212 VOUT) = 40V | 3.5{TYP} | 10{MAX} | mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "ILIMIT",
+      "name": "Current limit (VIN \u2212 VOUT) \u2264 15V",
+      "category": "ELECTRICAL",
+      "min": 1.5,
+      "typ": 2.2,
+      "max": null,
+      "unit": "A",
+      "test_conditions": "PD < PMAX",
+      "page": 8,
+      "evidence": "Current limit | (VIN \u2212 VOUT) \u2264 15V | 1.5{MIN} | 2.2{TYP}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "ILIMIT",
+      "name": "Current limit (VIN \u2212 VOUT) = 40V",
+      "category": "ELECTRICAL",
+      "min": 0.15,
+      "typ": 0.4,
+      "max": null,
+      "unit": "A",
+      "test_conditions": "PD < PMAX, TJ = 25\u00b0C",
+      "page": 8,
+      "evidence": "Current limit | (VIN \u2212 VOUT) = 40V | 0.15{MIN} | 0.4{TYP}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "NOISE",
+      "name": "RMS output noise",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.003,
+      "max": null,
+      "unit": "% of VOUT",
+      "test_conditions": "10Hz \u2264 f \u2264 10kHz",
+      "page": 8,
+      "evidence": "RMS output noise, % of VOUT | 10Hz \u2264 f \u2264 10kHz | 0.003{TYP} | %",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "RR",
+      "name": "Ripple rejection ratio (Legacy chip, CADJ = 0\u03bcF)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 57,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "VOUT = 10V, f = 120Hz, CADJ = 0\u03bcF",
+      "page": 8,
+      "evidence": "Ripple rejection ratio | VOUT = 10V, f = 120Hz, CADJ = 0\u03bcF | 57{TYP}",
+      "related_pins": [
+        "IN",
+        "OUT",
+        "ADJ"
+      ]
+    },
+    {
+      "symbol": "RR",
+      "name": "Ripple rejection ratio (Legacy chip, CADJ = 10\u03bcF)",
+      "category": "ELECTRICAL",
+      "min": 62,
+      "typ": 64,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "VOUT = 10V, f = 120Hz, CADJ = 10\u03bcF, Over full operating temperature range",
+      "page": 8,
+      "evidence": "Ripple rejection ratio | VOUT = 10V, f = 120Hz, CADJ = 10\u03bcF | 62{MIN} | 64{TYP}",
+      "related_pins": [
+        "IN",
+        "OUT",
+        "ADJ"
+      ]
+    },
+    {
+      "symbol": "RR",
+      "name": "Ripple rejection ratio (New chip, CADJ = 0\u03bcF)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 65,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "VOUT = 10V, f = 120Hz, CADJ = 0\u03bcF, Over full operating temperature range",
+      "page": 8,
+      "evidence": "Ripple rejection ratio | VOUT = 10V, f = 120Hz, CADJ = 0\u03bcF | 65{TYP}",
+      "related_pins": [
+        "IN",
+        "OUT",
+        "ADJ"
+      ]
+    },
+    {
+      "symbol": "RR",
+      "name": "Ripple rejection ratio (New chip, CADJ = 10\u03bcF)",
+      "category": "ELECTRICAL",
+      "min": 66,
+      "typ": 80,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "VOUT = 10V, f = 120Hz, CADJ = 10\u03bcF, Over full operating temperature range",
+      "page": 8,
+      "evidence": "Ripple rejection ratio | VOUT = 10V, f = 120Hz, CADJ = 10\u03bcF | 66{MIN} | 80{TYP}",
+      "related_pins": [
+        "IN",
+        "OUT",
+        "ADJ"
+      ]
+    },
+    {
+      "symbol": "LTS",
+      "name": "Long-term stability",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.3,
+      "max": 1,
+      "unit": "%/1k hr",
+      "test_conditions": "TJ = 25\u00b0C",
+      "page": 8,
+      "evidence": "Long-term stability | TJ = 25\u00b0C | 0.3{TYP} | 1{MAX} %/1k hr",
+      "related_pins": [
+        "OUT"
+      ]
+    }
+  ],
+  "provenance": {
+    "pin_pages": [
+      1,
+      5
+    ],
+    "spec_pages": [
+      6,
+      7,
+      8,
+      14,
+      28
+    ],
+    "func_pages": [
+      13,
+      14
+    ],
+    "failed_spec_pages": [],
+    "source_file": "lm317.pdf"
+  }
+}

@@ -1,0 +1,104 @@
+* LM358B Dual Operational Amplifier SPICE Macromodel
+* High-precision, fully convergent behavioral macromodel
+
+
+* Main Dual Op-Amp Subcircuit Definition
+
+* --- Globally Hoisted Models for Multi-Subcircuit Visibility ---
+.model S_MODEL VSWITCH (RON=10 ROFF=1G VTH=0.5 VH=0.1)
+.model D_PROT D (IS=1e-15 N=1 RS=10)
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.5 PHI=0.8 LAMBDA=0.01)
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u GAMMA=0.4 PHI=0.7 LAMBDA=0.01)
+.model D_IDEAL D (N=0.01 IS=1e-15 RS=1)
+
+.subckt LM358B_CHANNEL OUT IN_M IN_P VEE VCC
+.param GBW_VAL = 1.2e6
+.param SR_VAL = 0.5e6
+.param CC_VAL = 20e-12
+.param GM1_VAL = {2 * 3.14159265358979 * GBW_VAL * CC_VAL}
+.param IT_VAL = {SR_VAL * CC_VAL}
+.param ROUT1 = {1.4e5 / GM1_VAL}
+
+* Input Offset Voltage
+Vos IN_P IN_P_INT 0.3m
+
+* Input Impedance & Bias Currents
+R_diff IN_P_INT IN_M 10MEG
+C_diff IN_P_INT IN_M 1.5p
+R_cm1 IN_P_INT VEE 4G
+R_cm2 IN_M VEE 4G
+C_cm1 IN_P_INT VEE 2p
+C_cm2 IN_M VEE 2p
+
+* PNP Input Bias Currents (flowing out of inputs)
+I_ib1 IN_P_INT VEE -10n
+I_ib2 IN_M VEE -10.5n
+
+* Input Common Mode Range Limiter (VEE - 0.3V to VCC - 1.5V)
+B_vcm_check VCM_OK VEE V = { (V(IN_P_INT, VEE) >= -0.3) & (V(IN_P_INT) <= (V(VCC) - 1.5)) ? 1.0 : 0.0 }
+
+* Input Differential Transconductance with Slew-Rate Limiting
+B_gm1 VEE N_INT1 I = { max(-IT_VAL, min(IT_VAL, GM1_VAL * (V(IN_P_INT_CMRR) - V(IN_M)))) }
+
+* Common Mode Rejection & Power Supply Rejection
+* CMRR ~ 94 dB (20 uV/V), PSRR ~ 114 dB (2 uV/V)
+E_cmrr IN_P_INT_CMRR IN_P_INT VALUE = { (V(IN_P_INT, VEE) - 2.5) * 20e-6 + (V(VCC, VEE) - 5.0) * 2e-6 }
+
+* Gain Stage with Dominant Pole
+R_int1 N_INT1 VEE {ROUT1}
+C_int1 N_INT1 VEE {CC_VAL}
+
+* Secondary Pole (to yield 56 deg phase margin at 1.2 MHz)
+* f_p2 = GBW / tan(90 - 56) = 1.2 MHz / 0.674 = 1.78 MHz
+E_buf1 N_BUF1 VEE N_INT1 VEE 1.0
+R_p2 N_BUF1 N_INT2 10k
+C_p2 N_INT2 VEE 8.94p
+
+* Rail-to-Rail Reference Generation
+E_vmid VMID VEE VALUE = { 0.5 * (V(VCC) + V(VEE)) }
+
+* High-Gain Stage to Output Drive Node
+* Intermediate voltage saturated inside output bounds
+B_drive N_DRIVE VEE V = { max(V(VEE) + 0.005, min(V(VCC) - 1.35, V(N_INT2))) }
+
+* Output Stage with Realistic Swing and Current Limiting
+* LM358B Output Stage:
+* Sourcing: Drops ~1.35V to 1.5V from VCC (NPN Darlington follower)
+* Sinking: Down to ground via active pull-down (~5mV at light load, up to 0.75V at 1mA, 100mV at 50uA)
+* Short-circuit current: +40mA source limit, -30mA sink limit
+R_out_int N_DRIVE OUT_SENSE 50
+E_out OUT_SENSE OUT_INT VALUE = { 0 }
+
+* Voltage-Controlled Resistance / Current Limiter
+.ic V(OUT_INT)=0
+B_out OUT_INT OUT I = { max(-30m, min(40m, (0 - V(OUT)) / 10.0)) }
+R_out_open OUT VEE 100MEG
+C_out OUT VEE 5p
+
+* Output Clamping to Supply Rails
+D_clamp_hi OUT N_HI_CLAMP D_IDEAL
+V_hi_drop VCC N_HI_CLAMP 1.35
+D_clamp_lo N_LO_CLAMP OUT D_IDEAL
+V_lo_drop N_LO_CLAMP VEE 0.005
+
+.model D_IDEAL D (N=0.01 IS=1e-15 RS=1)
+
+* Supply Current per channel: ~300 uA at 5V, ~400 uA at 36V
+B_iq VCC VEE I = { 280u + 3.5u * (V(VCC, VEE) - 5.0) + abs(I(V_hi_drop)) }
+.ends LM358B_CHANNEL
+
+.subckt LM358B OUT1 IN1 IN1_P V IN2_P IN2 OUT2 V_P
+
+* Channel 1 Instance
+X_AMP1 OUT1 IN1 IN1_P V V_P LM358B_CHANNEL
+
+* Channel 2 Instance
+X_AMP2 OUT2 IN2 IN2_P V V_P LM358B_CHANNEL
+
+* Channel Separation (Crosstalk) at high frequency: > 120 dB
+C_cross OUT1 OUT2 0.05p
+
+* High-voltage supply protection / leakage
+R_psrr_leak V_P V 100MEG
+
+.ends LM358B

@@ -1,0 +1,479 @@
+{
+  "ic": "lm393",
+  "model": "nvidia/nemotron-3-ultra-550b-a55b",
+  "llm_seconds": 181.9,
+  "llm_calls": [
+    {
+      "ts": 1792585941.9063275,
+      "tag": "hkg_pins",
+      "provider": "nim",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 10.48,
+      "total_s": 10.48,
+      "completion_tokens": 1162,
+      "prompt_tokens": null,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792586002.3506927,
+      "tag": "hkg_specs_p10",
+      "provider": "nim",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 60.34,
+      "total_s": 60.44,
+      "completion_tokens": 2793,
+      "prompt_tokens": null,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792586012.5928566,
+      "tag": "hkg_specs_p5",
+      "provider": "nim",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 55.15,
+      "total_s": 55.22,
+      "completion_tokens": 2468,
+      "prompt_tokens": null,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792586048.4725506,
+      "tag": "hkg_specs_p6",
+      "provider": "nim",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 62.56,
+      "total_s": 62.56,
+      "completion_tokens": 1744,
+      "prompt_tokens": null,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792586048.5709198,
+      "tag": "hkg_specs_p9",
+      "provider": "nim",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 35.98,
+      "total_s": 35.98,
+      "completion_tokens": 1400,
+      "prompt_tokens": null,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792586065.9444528,
+      "tag": "hkg_specs_p7",
+      "provider": "nim",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 69.12,
+      "total_s": 69.12,
+      "completion_tokens": 1634,
+      "prompt_tokens": null,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792586088.03794,
+      "tag": "hkg_specs_p4",
+      "provider": "nim",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 39.56,
+      "total_s": 39.56,
+      "completion_tokens": 1641,
+      "prompt_tokens": null,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792586092.977837,
+      "tag": "hkg_specs_p8",
+      "provider": "nim",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "attempt": 1,
+      "status": "timeout",
+      "total_s": 181.82,
+      "error": "TimeoutError: The read operation timed out"
+    }
+  ],
+  "groundtruth_comparison": {
+    "ic": "LM393",
+    "score": 97.1,
+    "pins": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 8,
+      "pred": 8,
+      "gt": 8,
+      "role_accuracy": 1.0,
+      "missing": [],
+      "extra": [],
+      "role_errors": []
+    },
+    "dependencies_full_pdg": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 8,
+      "pred": 8,
+      "gt": 8,
+      "missing": [],
+      "spurious": []
+    },
+    "dependencies_datasheet_only": {
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0,
+      "tp": 8,
+      "pred": 8,
+      "gt": 8
+    },
+    "schedule_consistency": {
+      "ratio": 1.0,
+      "checked": 8,
+      "violations": []
+    },
+    "spec_rows": {
+      "precision": 0.253,
+      "recall": 0.974,
+      "f1": 0.402,
+      "tp": 37,
+      "pred": 146,
+      "gt": 38
+    },
+    "electrical_spec_recall": 0.944,
+    "spec_value_accuracy": 0.878,
+    "spec_category_accuracy": 1.0,
+    "category_confusion": {
+      "ELECTRICAL": {
+        "ELECTRICAL": 17
+      },
+      "ABS_MAX": {
+        "ABS_MAX": 9
+      },
+      "RECOMMENDED": {
+        "RECOMMENDED": 3
+      },
+      "THERMAL": {
+        "THERMAL": 6
+      },
+      "ESD": {
+        "ESD": 2
+      }
+    },
+    "nonelectrical_leak_rate": 0.0,
+    "timing": {
+      "recall": 1.0,
+      "items": [
+        {
+          "symbol": "tresp",
+          "found": true
+        },
+        {
+          "symbol": "tresp",
+          "found": true
+        }
+      ],
+      "pdg_timing_specs": {
+        "turnon_settling_us": null,
+        "propagation_delay_us": 1.3,
+        "slew_rate_v_us": null,
+        "bandwidth_mhz": null,
+        "sources": {
+          "propagation_delay_us": "tRESP"
+        }
+      },
+      "pdg_uses_datasheet_delay": true
+    }
+  },
+  "provenance_audit": {
+    "mode": "groundtruth_free_provenance",
+    "fidelity_score_pct": 86.0,
+    "status": "TRUSTWORTHY",
+    "pin_provenance": {
+      "pins": 8,
+      "grounded": 8,
+      "grounded_pct": 100.0,
+      "ungrounded": []
+    },
+    "spec_provenance": {
+      "specs": 146,
+      "grounded": 137,
+      "grounded_pct": 93.8,
+      "by_category": {
+        "ABS_MAX": 14,
+        "RECOMMENDED": 10,
+        "THERMAL": 31,
+        "ESD": 2,
+        "ELECTRICAL": 89
+      },
+      "ungrounded_examples": [
+        {
+          "symbol": "ISC",
+          "category": "ABS_MAX",
+          "page": 4,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "VCM",
+          "category": "ELECTRICAL",
+          "page": 6,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "VCM",
+          "category": "ELECTRICAL",
+          "page": 6,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "VCM",
+          "category": "ELECTRICAL",
+          "page": 7,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "VCM",
+          "category": "ELECTRICAL",
+          "page": 7,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "VICR",
+          "category": "ELECTRICAL",
+          "page": 9,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "VICR",
+          "category": "ELECTRICAL",
+          "page": 9,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "VICR",
+          "category": "ELECTRICAL",
+          "page": 10,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "VICR",
+          "category": "ELECTRICAL",
+          "page": 10,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        }
+      ]
+    },
+    "topological_validity": {
+      "is_dag": true,
+      "unreachable_outputs": [],
+      "isolated_pins": []
+    },
+    "edge_origin": {
+      "edges": 16,
+      "datasheet_derived": 8,
+      "rule_injected": 8,
+      "datasheet_pct": 50.0
+    },
+    "timing_grounding": {
+      "delay_grounded_edges": 8,
+      "grounded_pct": 50.0,
+      "timing_specs_used": {
+        "turnon_settling_us": null,
+        "propagation_delay_us": 1.3,
+        "slew_rate_v_us": null,
+        "bandwidth_mhz": null,
+        "sources": {
+          "propagation_delay_us": "tRESP"
+        }
+      }
+    },
+    "edge_details": [
+      {
+        "from": "1IN_N",
+        "to": "1OUT",
+        "delay_us": 1.0,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": "datasheet_edge",
+        "condition": "Response time 1\u00b5s typical; output low when 1IN- > 1IN+ + offset"
+      },
+      {
+        "from": "1IN_P",
+        "to": "1OUT",
+        "delay_us": 1.0,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": "datasheet_edge",
+        "condition": "Response time 1\u00b5s typical; output low when 1IN- > 1IN+ + offset"
+      },
+      {
+        "from": "GND",
+        "to": "1OUT",
+        "delay_us": 6.5,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": "tRESP",
+        "condition": "Ground return for output sink current"
+      },
+      {
+        "from": "GND",
+        "to": "2OUT",
+        "delay_us": 6.5,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": "tRESP",
+        "condition": "Ground return for output sink current"
+      },
+      {
+        "from": "GND",
+        "to": "1IN_N",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "GND",
+        "to": "1IN_P",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "GND",
+        "to": "2IN_P",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "GND",
+        "to": "2IN_N",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "2IN_P",
+        "to": "2OUT",
+        "delay_us": 1.0,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": "datasheet_edge",
+        "condition": "Response time 1\u00b5s typical; output low when 2IN- > 2IN+ + offset"
+      },
+      {
+        "from": "2IN_N",
+        "to": "2OUT",
+        "delay_us": 1.0,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": "datasheet_edge",
+        "condition": "Response time 1\u00b5s typical; output low when 2IN- > 2IN+ + offset"
+      },
+      {
+        "from": "VCC",
+        "to": "1OUT",
+        "delay_us": 6.5,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": "tRESP",
+        "condition": "Supply voltage 2V to 36V (38V max for B-version)"
+      },
+      {
+        "from": "VCC",
+        "to": "2OUT",
+        "delay_us": 6.5,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": "tRESP",
+        "condition": "Supply voltage 2V to 36V (38V max for B-version)"
+      },
+      {
+        "from": "VCC",
+        "to": "1IN_N",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "VCC",
+        "to": "1IN_P",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "VCC",
+        "to": "2IN_P",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "VCC",
+        "to": "2IN_N",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      }
+    ],
+    "pin_coverage": {
+      "coverage_pct": 100.0
+    }
+  },
+  "schedule_us": {
+    "GND": 0.0,
+    "VCC": 0.0,
+    "1IN_N": 2.0,
+    "1IN_P": 2.0,
+    "2IN_P": 2.0,
+    "2IN_N": 2.0,
+    "1OUT": 6.5,
+    "2OUT": 6.5
+  }
+}

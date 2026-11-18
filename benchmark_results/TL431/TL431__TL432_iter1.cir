@@ -1,0 +1,101 @@
+* TL431/TL432 - Three-Terminal Adjustable Shunt Regulator
+*
+* Pinout:
+* 1. REF (Reference Input)
+* 2. A (Anode)
+* 3. K (Cathode)
+*
+* This model aims to capture the key electrical characteristics of the TL431/TL432,
+* including adjustable output voltage, low output impedance, and specified Vref tolerance.
+* A simplified bandgap reference is used for Vref generation, and a two-stage error amplifier
+* drives a large output shunt transistor. ESD protection diodes are included.
+
+.subckt TL431__TL432 REF A K
+
+* --- Device Models ---
+* NPN Transistor Model (General purpose, high beta for input stage)
+.model NPN_TL NPN (Is=1e-14 Bf=200 Vaf=100 Ikf=0.1 Ne=1.5 Ise=1e-14 Br=5 Va=10 Ikr=0.01 Nc=2 Isc=1e-14 Rb=10 Rc=1 Re=0.1 Cjc=5p Cje=10p Tf=0.3n Tr=6n Vceo=40)
+* PNP Transistor Model (General purpose)
+.model PNP_TL PNP (Is=1e-14 Bf=100 Vaf=50 Ikf=0.05 Ne=1.5 Ise=1e-14 Br=2 Va=5 Ikr=0.005 Nc=2 Isc=1e-14 Rb=20 Rc=2 Re=0.2 Cjc=10p Cje=20p Tf=0.6n Tr=12n Vceo=40)
+* Diode Model (for ESD protection and internal rectifiers)
+.model D_TL D (Is=1e-14 Rs=1 N=1.0 Bv=40 Ibv=1e-5 Cjo=5p Vj=0.7 M=0.33)
+
+* --- Internal Nodes ---
+* Vref_int: Internal reference voltage node
+* EA_out: Error amplifier output node
+* BGR_out: Bandgap reference output node
+* Bias_node: Node for biasing current sources
+
+* --- Bandgap Reference (BGR) - Simplified for Vref and Temp Co ---
+* This BGR aims for ~2.495V and low tempco.
+* Q10, Q11 form the Delta Vbe generator, Q12 provides a Vbe.
+* R_bgr1, R_bgr2, R_bgr3 set the current and sum the voltages.
+* The Vref tolerance is achieved by slight variations in resistor values in production.
+* For this model, we target the typical 2.495V.
+Q10 BGR_out BGR_out A NPN_TL AREA=1
+Q11 BGR_out BGR_out A NPN_TL AREA=10 ; Q11 has larger emitter area for Delta Vbe
+R_bgr1 BGR_out BGR_out 10k TC1=1e-4 TC2=1e-6 ; Tempco for Vref drift
+R_bgr2 BGR_out BGR_out 10k TC1=1e-4 TC2=1e-6
+R_bgr3 BGR_out BGR_out 10k TC1=1e-4 TC2=1e-6
+
+* Behavioral Vref source to precisely set Vref and its temperature characteristics
+* This B-source overrides the discrete BGR for precise Vref control and drift modeling.
+* Vref = 2.495V at 25C.
+* Delta Vref (C temp: 0-70C) = 6mV. Avg TC = 6mV / 70C = ~0.0857 mV/C
+* Delta Vref (I/Q temp: -40-125C) = 14mV. Avg TC = 14mV / 165C = ~0.0848 mV/C
+* We'll use an average TC of 0.085 mV/C for the behavioral model.
+B_VREF Vref_int A V = { 2.495 + (TEMP - 25) * 0.000085 }
+
+* --- Biasing Circuitry ---
+* Simple current mirror to provide bias currents for the error amplifier.
+* This current source is designed to operate over the VKA range.
+* R_bias sets the reference current.
+R_bias K Bias_node 100k
+Q_bias1 Bias_node Bias_node A NPN_TL
+Q_bias2 Bias_node Bias_node A NPN_TL
+
+* --- Error Amplifier ---
+* Stage 1: Differential Pair
+* Q1, Q2 form the input differential pair.
+* Q3, Q4 form the active load (current mirror).
+* I_diff_bias provides the tail current.
+Q1 REF_in REF A NPN_TL
+Q2 Vref_int_buf Vref_int A NPN_TL
+Q3 K EA_out K PNP_TL
+Q4 K Vref_int_buf K PNP_TL
+
+* Input buffer for Vref_int to prevent loading
+R_vref_buf Vref_int_buf Vref_int 1G ; High impedance buffer
+
+* Tail current for differential pair
+R_tail K Bias_node 1M
+Q_tail K Bias_node A NPN_TL
+
+* Stage 2: Common Emitter Amplifier
+* Q5 provides voltage gain.
+* Q6 acts as an active load.
+Q5 EA_out EA_out A NPN_TL
+Q6 K EA_out K PNP_TL
+
+* Frequency Compensation (Miller Compensation)
+Ccomp EA_out EA_out 20p
+
+* --- Output Shunt Transistor ---
+* Q_shunt is the main output transistor, sinking current from K to A.
+* Driven by the error amplifier output (EA_out).
+Q_shunt K EA_out A NPN_TL AREA=100 ; Large area for high current handling (100mA) and low Zout
+
+* --- ESD Protection Diodes ---
+* Diodes from K and REF to A to protect against ESD events.
+D_esd_k K A D_TL
+D_esd_ref REF A D_TL
+
+* --- Output Impedance Modeling (Zout) ---
+* The Zout of 0.2 Ohm is primarily determined by the open-loop gain of the error amplifier
+* and the transconductance of the output shunt transistor.
+* The model implicitly achieves this through high gain and large output transistor.
+* An optional series resistor R_zout_model can be added at the cathode for fine-tuning,
+* but ideally, the active circuit should achieve it.
+* R_zout_model K_int K 0.1 ; Optional, if active Zout is not low enough.
+
+.ends TL431__TL432

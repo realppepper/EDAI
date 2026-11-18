@@ -1,0 +1,144 @@
+
+.subckt OPAX134 NC_pin1 IN_NEG IN_POS V_NEG NC_pin2 OUT V_POS NC_pin3 OUT_A IN_NEG_A IN_POS_A V_NEG_A IN_NEG_B IN_POS_B OUT_B V_POS_B
+
+* OPAx134 - Ultra-low distortion, low-noise operational amplifier for audio applications.
+* This subcircuit models a single amplifier channel. For dual/quad versions,
+* multiple instances of the core amplifier would be used, sharing power supplies.
+* Pin mapping for a single channel (e.g., OPA134):
+* 1: NC_pin1 (NC)
+* 2: IN_NEG (Inverting Input)
+* 3: IN_POS (Non-inverting Input)
+* 4: V_NEG (Negative Power Supply)
+* 5: NC_pin2 (NC)
+* 6: OUT (Output)
+* 7: V_POS (Positive Power Supply)
+* 8: NC_pin3 (NC)
+
+* Pin mapping for dual channel (e.g., OPA2134) - only relevant pins are used for the single channel model
+* 1: OUT_A (Output, channel A)
+* 2: IN_NEG_A (Inverting input, channel A)
+* 3: IN_POS_A (Noninverting input, channel A)
+* 4: V_NEG_A (Negative (lowest) power supply) - connected to V_NEG
+* 5: IN_POS_B (Noninverting input, channel B)
+* 6: IN_NEG_B (Inverting input, channel B)
+* 7: OUT_B (Output, channel B)
+* 8: V_POS_B (Positive (highest) power supply) - connected to V_POS
+
+* Power Supply Nodes (internal)
+V_POS_INT V_POS 0 DC 0
+V_NEG_INT V_NEG 0 DC 0
+
+* Behavioral Power Supply Ramp-up (to meet PORT DEPENDENCY SCHEDULE)
+* V_POS and V_NEG are the external pins. Internal nodes are used for the circuit.
+* This assumes V_POS_B and V_NEG_A are tied to V_POS and V_NEG respectively for multi-channel devices.
+* For this single channel model, we use V_POS and V_NEG directly.
+B_VCC VCC_RAMP 0 V = { (time < 0.00u) ? 0 : (time < 2.00u) ? (time/2.00u)*V(V_POS) : V(V_POS) }
+B_VEE VEE_RAMP 0 V = { (time < 0.00u) ? 0 : (time < 2.00u) ? (time/2.00u)*V(V_NEG) : V(V_NEG) }
+
+* Ensure VCC_RAMP and VEE_RAMP are connected to the internal circuit.
+* For simplicity, we'll assume V_POS and V_NEG are the actual supply rails for the internal circuit,
+* and the external sources connected to V_POS and V_NEG will handle the ramp.
+* The "activation" of pins refers to when they are ready for use, not necessarily
+* when the internal circuit connects to them. The internal circuit is always connected.
+
+* ESD Protection Diodes (Simplified)
+* These diodes protect the input pins from overvoltage.
+D_ESD_IN_POS_P IN_POS V_POS D
+D_ESD_IN_POS_N V_NEG IN_POS D
+D_ESD_IN_NEG_P IN_NEG V_POS D
+D_ESD_IN_NEG_N V_NEG IN_NEG D
+
+* --- Current Reference and Bias Generation ---
+* Simple current mirror based bias for the entire circuit.
+* R_BIAS sets the reference current.
+R_BIAS VCC_RAMP BIAS_REF 100k
+M_BIAS_REF BIAS_REF BIAS_REF VEE_RAMP VEE_RAMP NMOS W=10u L=2u
+M_BIAS_N1 BIAS_N BIAS_REF VEE_RAMP VEE_RAMP NMOS W=20u L=2u ; Provides current for input stage
+M_BIAS_P1 BIAS_P BIAS_REF VCC_RAMP VCC_RAMP PMOS W=40u L=2u ; Provides current for VAS and output drivers
+
+* --- Input Stage: Differential FET Input with Cascode ---
+* True FET input for high impedance and low noise. NMOS used to simulate JFET behavior.
+* M1, M2: Input differential pair
+* M3, M4: Cascode transistors for improved CMRR and reduced input capacitance variation.
+* M5: Tail current source for the differential pair.
+
+M1 D_IN_POS IN_POS S_IN_POS VEE_RAMP NMOS W=2000u L=2u ; Large W/L for low noise, high gm
+M2 D_IN_NEG IN_NEG S_IN_NEG VEE_RAMP NMOS W=2000u L=2u
+
+* Source degeneration for linearity (optional, but good for audio)
+R_S1 S_IN_POS S_TAIL 10
+R_S2 S_IN_NEG S_TAIL 10
+
+* Cascode transistors
+M3 D_IN_POS CAS_BIAS D_IN_POS VEE_RAMP NMOS W=100u L=2u
+M4 D_IN_NEG CAS_BIAS D_IN_NEG VEE_RAMP NMOS W=100u L=2u
+
+* Cascode bias voltage
+R_CAS_BIAS1 VCC_RAMP CAS_BIAS 100k
+R_CAS_BIAS2 CAS_BIAS VEE_RAMP 100k
+C_CAS_BIAS CAS_BIAS VEE_RAMP 100p ; Decoupling
+
+* Tail current source for differential pair
+M5 S_TAIL BIAS_N VEE_RAMP VEE_RAMP NMOS W=50u L=2u
+
+* Active Load for Input Stage (Current Mirror)
+* M6, M7: PMOS current mirror as active load.
+M6 D_IN_POS D_IN_POS VCC_RAMP VCC_RAMP PMOS W=100u L=2u
+M7 D_IN_NEG D_IN_POS VCC_RAMP VCC_RAMP PMOS W=100u L=2u
+
+* Output of input stage (differential to single-ended conversion)
+* The output of the input stage is taken from D_IN_NEG (high gain node).
+
+* --- Voltage Amplifier Stage (VAS) ---
+* M8: Common-source amplifier, providing high gain.
+* M9: Active load for VAS.
+* Cc: Miller compensation capacitor.
+
+M8 VAS_OUT D_IN_NEG VEE_RAMP VEE_RAMP NMOS W=200u L=2u ; VAS input from D_IN_NEG
+M9 VAS_OUT BIAS_P VCC_RAMP VCC_RAMP PMOS W=200u L=2u ; Active load for VAS
+
+* Miller Compensation
+C_COMP VAS_OUT D_IN_NEG 20p ; Compensation capacitor for stability (GBW ~10MHz)
+
+* --- Output Stage: Class AB Buffer ---
+* Q1, Q2: NPN/PNP complementary output pair.
+* D1, D2, R_VBE: Vbe multiplier for Class AB biasing.
+* R_OUT_P, R_OUT_N: Current limiting resistors.
+
+* Vbe Multiplier for Class AB Bias
+R_VBE VCC_RAMP VBE_MULT 10k
+Q_VBE VBE_MULT VBE_MULT VEE_RAMP NPN   ; Placeholder for BJT model, W/L not applicable
+* For BJT, use area parameter, e.g., Q_VBE VBE_MULT VBE_MULT VEE_RAMP NPN A=10
+
+* Driver for NPN output transistor
+Q_DRV_P VCC_RAMP VAS_OUT DRV_P NPN ; Driver for Q_OUT_P
+R_DRV_P DRV_P VBE_MULT 100
+
+* Driver for PNP output transistor
+Q_DRV_N DRV_N VAS_OUT VEE_RAMP PNP ; Driver for Q_OUT_N
+R_DRV_N VBE_MULT DRV_N 100
+
+* Output Transistors (Complementary Emitter Followers)
+Q_OUT_P OUT_PRE DRV_P VCC_RAMP NPN ; NPN output transistor
+Q_OUT_N OUT_PRE DRV_N VEE_RAMP PNP ; PNP output transistor
+
+* Output current limiting resistors (simplified)
+R_OUT_P OUT_PRE OUT 10 ; Output current limiting
+R_OUT_N OUT VEE_RAMP 10 ; Output current limiting
+
+* Output buffer for the main OUT pin
+* This is a simplified representation. A real output stage would have more sophisticated current limiting and thermal protection.
+
+* --- Models ---
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u LAMBDA=0.01 TOX=10n PB=0.8 MJ=0.5 MJSW=0.3)
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u LAMBDA=0.02 TOX=10n PB=0.8 MJ=0.5 MJSW=0.3)
+.model NPN NPN (IS=10f BF=200 VAF=100 IKF=0.1 NE=1.5 RB=10 RC=1 RE=0.1 CJE=1p CJC=0.5p TF=0.3n TR=6n)
+.model PNP PNP (IS=10f BF=100 VAF=50 IKF=0.05 NE=1.5 RB=20 RC=2 RE=0.2 CJE=2p CJC=1p TF=0.6n TR=12n)
+.model D D (IS=10f RS=1 N=1.0 TT=10n CJO=1p)
+
+* NC pins are left unconnected internally as per description.
+* For multi-channel devices, V_NEG_A and V_POS_B would typically be tied to V_NEG and V_POS respectively.
+* The other channel pins (OUT_A, IN_NEG_A, IN_POS_A, IN_NEG_B, IN_POS_B, OUT_B) are not used in this single-channel model.
+* A full multi-channel model would instantiate this core amplifier multiple times.
+
+.ends OPAX134

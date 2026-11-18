@@ -1,0 +1,98 @@
+* LM317 Adjustable Voltage Regulator
+* Subcircuit for LM317
+.subckt LM317 ADJUST INPUT OUTPUT
+
+* Node Definitions:
+* ADJUST: Output voltage adjustment pin
+* INPUT: Input voltage pin
+* OUTPUT: Output voltage pin
+* VREF_NODE: Internal 1.25V reference voltage node
+* EA_OUT: Error amplifier output node
+* CL_SENSE: Current limit sense node
+* THERMAL_NODE: Internal thermal shutdown node
+* SOA_NODE: Safe Operating Area protection node
+* VCC: Internal supply for analog blocks (derived from INPUT)
+* GND: Ground reference (implicit 0V)
+
+* Model Definitions
+.model NPN NPN(Is=1e-14 Bf=200 Vaf=50 Ikf=0.1 Cjc=2p Cje=3p Tr=10n Tf=300p Rb=10 Rc=1 Re=1)
+.model PNP PNP(Is=1e-14 Bf=100 Vaf=40 Ikf=0.05 Cjc=3p Cje=4p Tr=20n Tf=500p Rb=20 Rc=2 Re=2)
+.model D_ZENER D(Is=1e-14 Rs=1 N=1 Bv=1.25 Ibv=10u) ; Zener diode for 1.25V reference
+.model D_PROT D(Is=1e-14 Rs=1 N=1) ; Protection diode
+
+* Internal Supply and Ground
+* VCC is derived from INPUT, assuming a small drop for internal circuitry
+R_VCC_DROP INPUT VCC 10
+C_VCC VCC 0 100n ; Decoupling capacitor for internal VCC
+
+* 1.25V Reference Voltage Generation
+* Simplified Bandgap Reference: Zener diode and current source
+I_REF VCC VREF_NODE 200u ; Bias current for Zener
+D_REF VREF_NODE 0 D_ZENER ; 1.25V Zener diode
+C_REF VREF_NODE 0 100p ; Filter for reference voltage
+
+* Error Amplifier (Simplified Two-Stage OTA)
+* Input Differential Pair (Q1, Q2) with Current Mirror Load (Q3, Q4)
+Q1 EA_OUT ADJUST VCC NPN ; Inverting input (connected to ADJUST)
+Q2 EA_OUT_INV VREF_NODE VCC NPN ; Non-inverting input (connected to VREF_NODE)
+* Current mirror load
+Q3 VCC EA_OUT_INV EA_OUT PNP
+Q4 VCC VCC EA_OUT PNP
+* Bias current for differential pair
+I_BIAS VCC EA_BIAS 100u
+Q5 EA_BIAS EA_BIAS 0 NPN ; Diode-connected for current mirror
+Q6 EA_BIAS EA_BIAS VCC PNP ; Diode-connected for current mirror
+
+* Second Stage and Output Buffer
+* Common Emitter Amplifier
+Q7 EA_OUT EA_OUT_INV VCC NPN ; Amplifier stage
+R_EA_LOAD VCC EA_OUT 10k ; Load resistor for amplifier
+C_COMP EA_OUT EA_OUT_INV 50p ; Frequency compensation capacitor
+
+* Output Buffer to drive Pass Transistor
+Q8 EA_OUT_BUFFER EA_OUT 0 NPN ; Emitter follower buffer
+R_EA_BUFFER_PULLDOWN EA_OUT_BUFFER 0 10k ; Pull-down for buffer
+
+* Pass Transistor
+Q_PASS INPUT EA_OUT_BUFFER OUTPUT NPN ; Main series pass transistor
+* Emitter area scaled for 1.5A capability
+.model NPN_PASS NPN(Is=1e-14 Bf=200 Vaf=50 Ikf=1.5 Cjc=50p Cje=100p Tr=50n Tf=1u Rb=1 Rc=0.1 Re=0.1 Area=100)
+Q_PASS_INST INPUT EA_OUT_BUFFER OUTPUT NPN_PASS
+
+* Current Limiting (1.5A)
+R_SENSE OUTPUT CL_SENSE 0.47 ; Sense resistor for 1.5A (0.7V drop)
+Q_CL EA_OUT_BUFFER CL_SENSE 0 NPN ; Current limit transistor
+* When V(CL_SENSE) - V(OUTPUT) > 0.7V, Q_CL turns on, shunting base current from Q_PASS
+
+* Thermal Overload Protection (Behavioral)
+* TJ (Junction Temperature) is an internal parameter, assumed to be monitored.
+* For simulation, we can use a behavioral source to represent its effect.
+* Let's assume a node 'TJ_MONITOR' represents the internal temperature in Celsius.
+* If TJ_MONITOR > 150C, the output is pulled down.
+B_THERMAL_SHUTDOWN EA_OUT_BUFFER 0 V = { (V(TJ_MONITOR) > 150) ? 0 : V(EA_OUT_BUFFER) }
+* For a static simulation, we can set TJ_MONITOR to a fixed value.
+* For transient, it would be a function of power dissipation and thermal resistance.
+* For this model, we'll assume TJ_MONITOR is an external input for testing.
+* In a real chip, this would be an internal temperature sensor.
+V_TJ_MONITOR TJ_MONITOR 0 25 ; Default junction temperature (25C)
+
+* Safe Operating Area (SOA) Protection (Behavioral)
+* Reduces current limit as V_IN_OUT_DIFF increases.
+* Simplified model: If V_IN_OUT_DIFF > 20V, reduce current limit threshold.
+* This can be done by increasing the effective R_SENSE or lowering the turn-on Vbe of Q_CL.
+* Here, we'll make the current limit more aggressive (lower threshold) at high V_IN_OUT_DIFF.
+B_SOA_CURRENT_LIMIT CL_SENSE 0 V = { V(OUTPUT) + ( (V(INPUT) - V(OUTPUT) > 20) ? 0.5 : 0.7 ) }
+* This effectively changes the Vbe_on for Q_CL based on V_IN_OUT_DIFF.
+* If V(INPUT) - V(OUTPUT) > 20V, Q_CL turns on when V(CL_SENSE) - V(OUTPUT) > 0.5V (instead of 0.7V).
+
+* Output Protection Diodes (Internal to LM317, for reverse voltage protection)
+* D1: Protects against output voltage exceeding input voltage (e.g., when input is shorted)
+D_PROT1 OUTPUT INPUT D_PROT
+* D2: Protects against external capacitor discharge into ADJUST pin
+D_PROT2 ADJUST OUTPUT D_PROT
+
+* Internal Quiescent Current
+* A small current is drawn by the internal circuitry.
+I_QUIESCENT INPUT 0 5mA ; Typical quiescent current
+
+.ends LM317

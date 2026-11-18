@@ -1,0 +1,130 @@
+.options gmin=1e-12 cshunt=1e-15
+* LTspice Testbench for LM358B_LM2904B Specifications
+
+.include "LM358B_LM2904B_iter2.cir"
+
+* Voltage Sources for Power Supplies and Inputs
+* VPOS and VNEG for the DUT
+VPOS VPOS 0 PWL(0us 0V, 0.00us 0V, 0.01us 5V) ; Example VPOS, adjust based on specific test
+VNEG VNEG 0 PWL(0us 0V, 0.00us 0V, 0.01us -5V) ; Example VNEG, adjust based on specific test
+
+* Input Stimulus (following PDG schedule)
+VIN1P IN1P 0 PWL(0us 0V, 2.00us 0V, 2.01us 1V) ; Example input for IN1P
+VIN1N IN1N 0 PWL(0us 0V, 2.00us 0V, 2.01us 1V) ; Example input for IN1N
+VIN2P IN2P 0 PWL(0us 0V, 2.00us 0V, 2.01us 1V) ; Example input for IN2P
+VIN2N IN2N 0 PWL(0us 0V, 2.00us 0V, 2.01us 1V) ; Example input for IN2N
+
+* NC_PIN (No Connect - typically tied to a known state or left floating if allowed)
+* For simulation, we'll tie it to ground for stability if not explicitly defined otherwise.
+VNC NC_PIN 0 PWL(0us 0V, 2.00us 0V, 2.01us 0V)
+
+* Duplicate pins - assuming they are internally connected or for specific package types.
+* For this testbench, we'll connect them to their primary counterparts.
+* If they are truly duplicates, they should be connected to the same nodes as the primary pins.
+* If they are separate pins for a dual op-amp, they would need separate stimulus.
+* Assuming they are duplicates for the same internal nodes for simplicity in this general testbench.
+* If the subcircuit handles the duplication internally, these connections might be redundant.
+* For safety, connect them to the same nodes as the primary pins.
+* If the subcircuit expects them to be left floating or connected differently, this needs adjustment.
+* For now, connecting them to the same nodes as the primary pins.
+* This might need adjustment based on the actual subcircuit implementation.
+* For a dual op-amp, OUT1_dup, IN1N_dup, etc. would typically be for the second amplifier.
+* Given the pin names, it seems like a dual op-amp with two sets of pins.
+* Let's assume the "dup" pins are for the second amplifier.
+
+* Second amplifier inputs and outputs
+VIN1P_dup IN1P_dup 0 PWL(0us 0V, 2.00us 0V, 2.01us 1V)
+VIN1N_dup IN1N_dup 0 PWL(0us 0V, 2.00us 0V, 2.01us 1V)
+VIN2P_dup IN2P_dup 0 PWL(0us 0V, 2.00us 0V, 2.01us 1V)
+VIN2N_dup IN2N_dup 0 PWL(0us 0V, 2.00us 0V, 2.01us 1V)
+
+* Output loads (following PDG schedule)
+* For simplicity, using resistors to ground.
+ROUT1 OUT1 0 1k
+ROUT2 OUT2 0 1k
+ROUT1_dup OUT1_dup 0 1k
+ROUT2_dup OUT2_dup 0 1k
+
+* Power supplies for duplicate pins (assuming they connect to the same internal VPOS/VNEG)
+* If the subcircuit expects separate VPOS/VNEG for the "dup" pins, this needs adjustment.
+* For now, connecting them to the main VPOS/VNEG.
+* If the subcircuit is a dual op-amp, VPOS_dup and VNEG_dup would typically connect to the same VPOS and VNEG.
+* Let's connect them to the main VPOS and VNEG.
+VPOS_dup VPOS_dup 0 PWL(0us 0V, 0.00us 0V, 0.01us 5V)
+VNEG_dup VNEG_dup 0 PWL(0us 0V, 0.00us 0V, 0.01us -5V)
+
+* DUT Instance
+XDUT OUT1 IN1N IN1P VNEG IN2P IN2N OUT2 VPOS NC_PIN OUT1_dup IN1N_dup IN1P_dup VNEG_dup IN2P_dup IN2N_dup OUT2_dup VPOS_dup LM358B_LM2904B
+
+* Simulation commands
+.tran 0 10us 0us 0.01us
+
+* MEASUREMENTS
+
+* VS (Supply Voltage) - Max values
+* These are typically checked by setting VPOS/VNEG and ensuring the DUT operates.
+* We can measure the actual supply voltage seen by the DUT.
+.meas tran VS_LM358B_max PARAM V(VPOS)-V(VNEG)
+.meas tran VS_LM158_max PARAM V(VPOS)-V(VNEG)
+.meas tran VS_LM2904_max PARAM V(VPOS)-V(VNEG)
+
+* VID (Differential Input Voltage) - Max/Min values
+* We need to apply differential inputs and measure the difference.
+* For this, we'll set up a scenario where VID is at its max/min.
+* Let's assume a simple DC sweep for VID or a transient where it reaches these values.
+* For a transient, we can measure the max/min difference.
+.meas tran VID1_max MAX V(IN1P,IN1N) from=2.01us to=10us
+.meas tran VID1_min MIN V(IN1P,IN1N) from=2.01us to=10us
+.meas tran VID2_max MAX V(IN2P,IN2N) from=2.01us to=10us
+.meas tran VID2_min MIN V(IN2P,IN2N) from=2.01us to=10us
+
+* VI (Input Voltage) - Max/Min values
+* This refers to the absolute voltage at the input pins.
+.meas tran VI1P_max MAX V(IN1P) from=2.01us to=10us
+.meas tran VI1P_min MIN V(IN1P) from=2.01us to=10us
+.meas tran VI1N_max MAX V(IN1N) from=2.01us to=10us
+.meas tran VI1N_min MIN V(IN1N) from=2.01us to=10us
+.meas tran VI2P_max MAX V(IN2P) from=2.01us to=10us
+.meas tran VI2P_min MIN V(IN2P) from=2.01us to=10us
+.meas tran VI2N_max MAX V(IN2N) from=2.01us to=10us
+.meas tran VI2N_min MIN V(IN2N) from=2.01us to=10us
+
+* Duration of output short circuit (one amplifier) to ground
+* This requires a specific test setup where an output is shorted.
+* This is a destructive test in real life, in simulation, we can model it.
+* For a transient simulation, we can short the output after some time and observe current.
+* This specification is about the device's robustness, not a direct measurement of a value.
+* It implies the device should withstand a short for an indefinite time under certain conditions.
+* We can measure the current during a short circuit.
+* To simulate this, we'd need to add a switch or a very low resistance to ground on an output.
+* For now, we'll skip direct measurement of "duration" as it's a pass/fail condition for the device itself.
+* If we were to test it, we'd put a 0-ohm resistor to ground on an output and measure the current.
+* E.g., Rshort OUT1 0 1m ; Short OUT1 to ground
+* .meas tran Ishort_OUT1 MAX I(Rshort) from=3.01us to=10us
+
+* TA (Ambient Temperature) and TJ (Junction Temperature)
+* These are environmental conditions, not directly measured in a typical SPICE simulation.
+* SPICE simulations are usually run at a fixed temperature (e.g., 27C by default).
+* To simulate different temperatures, use the `.temp` directive.
+* For RθJC, RθJB, ψJT, ψJB, these are thermal resistance parameters, not electrical measurements.
+* They are used in thermal models, not directly measured from electrical signals.
+* If the subcircuit included a thermal model, we could potentially extract TJ.
+* For this electrical testbench, we cannot directly measure these thermal parameters.
+
+* VS (Supply Voltage) - Min/Max operating range
+* Similar to the max VS, these are operating conditions.
+* We can set VPOS/VNEG to these values and check functionality.
+.meas tran VS_op_LM358B PARAM V(VPOS)-V(VNEG)
+.meas tran VS_op_LM158 PARAM V(VPOS)-V(VNEG)
+.meas tran VS_op_LM2904 PARAM V(VPOS)-V(VNEG)
+
+* VCM (Common Mode Voltage)
+* This is typically V(IN1P)+V(IN1N))/2 or similar.
+* The specification "V- to V+ - 2" implies the common mode range.
+* We can measure the common mode voltage.
+.meas tran VCM1_max MAX (V(IN1P)+V(IN1N))/2 from=2.01us to=10us
+.meas tran VCM1_min MIN (V(IN1P)+V(IN1N))/2 from=2.01us to=10us
+.meas tran VCM2_max MAX (V(IN2P)+V(IN2N))/2 from=2.01us to=10us
+.meas tran VCM2_min MIN (V(IN2P)+V(IN2N))/2 from=2.01us to=10us
+
+.end

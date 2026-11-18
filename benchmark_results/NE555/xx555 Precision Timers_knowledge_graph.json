@@ -1,0 +1,894 @@
+{
+  "ic_device": {
+    "name": "xx555 Precision Timers",
+    "category": "Precision Timing Circuits",
+    "description": "The Nx555 and Sx555 devices are precision timing circuits capable of producing accurate time delays or oscillation. In time-delay or monostable operating modes, the timed interval is controlled by a single external resistor and capacitor network. In the astable mode of operation, the frequency and duty cycle are controlled independently with two external resistors and a single external capacitor. Each timer has a trigger level equal to approximately one-third of the supply voltage and a threshold level equal to approximately two-thirds of the supply voltage. These levels can be altered by use of the control voltage pin (CONT). When the trigger input (TRIG) is less than the trigger level, the flip-flop is set and the output goes high. If TRIG is greater than the trigger level and the threshold input (THRES) is greater than the threshold level, the flip-flop is reset and the output is low. The reset input (RESET) overrides all other inputs and is used to initiate a new timing cycle. If RESET is low, the flip-flop is reset and the output is low. Whenever the output is low, a low-impedance path is provided between the discharge pin (DISCH) and the ground pin (GND). Tie all unused inputs to an appropriate logic level to prevent false triggering. The output circuit is capable of sinking or sourcing current up to 200mA. Operation is specified for supplies of 5V to 15V. With a 5V supply, output levels are compatible with TTL inputs."
+  },
+  "pins": [
+    {
+      "name": "CONT",
+      "pin_number": "5",
+      "direction": "BIDIRECTIONAL",
+      "role": "CONTROL",
+      "description": "Controls comparator thresholds, Outputs 2/3 \u00d7 VCC, allows bypass capacitor connection",
+      "voltage_range": {}
+    },
+    {
+      "name": "DISCH",
+      "pin_number": "7",
+      "direction": "OUTPUT",
+      "role": "OUTPUT",
+      "description": "Open collector output to discharge timing capacitor",
+      "voltage_range": {}
+    },
+    {
+      "name": "GND",
+      "pin_number": "1",
+      "direction": "GROUND",
+      "role": "GROUND",
+      "description": "Ground",
+      "voltage_range": {}
+    },
+    {
+      "name": "NC",
+      "pin_number": "1, 3, 4, 6, 8, 9, 11, 13, 14, 16, 18, 19",
+      "direction": "null",
+      "role": "null",
+      "description": "No internal connection",
+      "voltage_range": {}
+    },
+    {
+      "name": "OUT",
+      "pin_number": "3",
+      "direction": "OUTPUT",
+      "role": "OUTPUT",
+      "description": "High current timer output signal",
+      "voltage_range": {}
+    },
+    {
+      "name": "RESET",
+      "pin_number": "4",
+      "direction": "INPUT",
+      "role": "CONTROL",
+      "description": "Active low reset input forces output and discharge low.",
+      "voltage_range": {}
+    },
+    {
+      "name": "THRES",
+      "pin_number": "6",
+      "direction": "INPUT",
+      "role": "SIGNAL",
+      "description": "End of timing input. THRES > CONT sets output low and discharge low",
+      "voltage_range": {}
+    },
+    {
+      "name": "TRIG",
+      "pin_number": "2",
+      "direction": "INPUT",
+      "role": "SIGNAL",
+      "description": "Start of timing input. TRIG < \u00bd CONT sets output high and discharge open",
+      "voltage_range": {}
+    },
+    {
+      "name": "VCC",
+      "pin_number": "8",
+      "direction": "POWER",
+      "role": "POWER",
+      "description": "Input supply voltage, 4.5V to 16V. SE555 maximum is 18V.",
+      "voltage_range": {
+        "min": 4.5,
+        "max": 18.0
+      }
+    }
+  ],
+  "electrical_parameters": [
+    {
+      "symbol": "VCC",
+      "name": "Supply voltage",
+      "min": null,
+      "typ": null,
+      "max": 18.0,
+      "unit": "V",
+      "test_conditions": "over operating free-air temperature range (unless otherwise noted)",
+      "related_pins": [
+        "VCC"
+      ],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "VI",
+      "name": "Input voltage",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "CONT, RESET, THRES, TRIG",
+      "related_pins": [
+        "CONT",
+        "RESET",
+        "THRES",
+        "TRIG"
+      ],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "IO",
+      "name": "Output current",
+      "min": -225.0,
+      "typ": null,
+      "max": 225.0,
+      "unit": "mA",
+      "test_conditions": "over operating free-air temperature range (unless otherwise noted)",
+      "related_pins": [
+        "OUT"
+      ],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "TJ",
+      "name": "Operating virtual junction temperature",
+      "min": null,
+      "typ": null,
+      "max": 150.0,
+      "unit": "\u00b0C",
+      "test_conditions": "over operating free-air temperature range (unless otherwise noted)",
+      "related_pins": [],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "Case temperature for 60 seconds",
+      "name": "Case temperature for 60 seconds",
+      "min": null,
+      "typ": null,
+      "max": 260.0,
+      "unit": "\u00b0C",
+      "test_conditions": "FK package",
+      "related_pins": [],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "Lead temperature 1.6mm (1/16 inch) from case",
+      "name": "Lead temperature 1.6mm (1/16 inch) from case",
+      "min": null,
+      "typ": null,
+      "max": 300.0,
+      "unit": "\u00b0C",
+      "test_conditions": "JG package, 60 seconds",
+      "related_pins": [],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "Tstg",
+      "name": "Storage temperature",
+      "min": -65.0,
+      "typ": null,
+      "max": 150.0,
+      "unit": "\u00b0C",
+      "test_conditions": "over operating free-air temperature range (unless otherwise noted)",
+      "related_pins": [],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge Human-body model (HBM), per ANSI/ESDA/JEDEC JS-001",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [],
+      "category": "ESD Ratings"
+    },
+    {
+      "symbol": "Charged device model (CDM), per ANSI/ESDA/JEDEC JS-002",
+      "name": "Charged device model (CDM), per ANSI/ESDA/JEDEC JS-002",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [],
+      "category": "ESD Ratings"
+    },
+    {
+      "symbol": "VCC",
+      "name": "Supply voltage",
+      "min": 4.5,
+      "typ": null,
+      "max": 16.0,
+      "unit": "V",
+      "test_conditions": "NA555, NE555, SA555",
+      "related_pins": [
+        "VCC"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "VCC",
+      "name": "Supply voltage",
+      "min": 4.5,
+      "typ": null,
+      "max": 18.0,
+      "unit": "V",
+      "test_conditions": "SE555",
+      "related_pins": [
+        "VCC"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "IO",
+      "name": "Output current",
+      "min": -200.0,
+      "typ": null,
+      "max": 200.0,
+      "unit": "mA",
+      "test_conditions": "over operating free-air temperature range (unless otherwise noted)",
+      "related_pins": [
+        "OUT"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating free-air temperature",
+      "min": -40.0,
+      "typ": null,
+      "max": 105.0,
+      "unit": "\u00b0C",
+      "test_conditions": "NA555",
+      "related_pins": [],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating free-air temperature",
+      "min": 0.0,
+      "typ": null,
+      "max": 70.0,
+      "unit": "\u00b0C",
+      "test_conditions": "NE555",
+      "related_pins": [],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating free-air temperature",
+      "min": -40.0,
+      "typ": null,
+      "max": 85.0,
+      "unit": "\u00b0C",
+      "test_conditions": "SA555",
+      "related_pins": [],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating free-air temperature",
+      "min": -55.0,
+      "typ": null,
+      "max": 125.0,
+      "unit": "\u00b0C",
+      "test_conditions": "SE555",
+      "related_pins": [],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "min": null,
+      "typ": 125.4,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "D (SOIC) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "min": null,
+      "typ": 92.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "FK (LCCC) 20 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "min": null,
+      "typ": 125.0,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "JG (CDIP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "min": null,
+      "typ": 98.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "P (PDIP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "min": null,
+      "typ": 124.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "PS (SO) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "min": null,
+      "typ": 164.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "PW (TSSOP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "min": null,
+      "typ": 64.9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "D (SOIC) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "min": null,
+      "typ": 67.6,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "FK (LCCC) 20 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "min": null,
+      "typ": 73.3,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "JG (CDIP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "min": null,
+      "typ": 77.8,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "P (PDIP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "min": null,
+      "typ": 61.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "PS (SO) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "min": null,
+      "typ": 70.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "PW (TSSOP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "min": null,
+      "typ": 73.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "D (SOIC) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "min": null,
+      "typ": 66.7,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "FK (LCCC) 20 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "min": null,
+      "typ": 114.9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "JG (CDIP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "min": null,
+      "typ": 61.0,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "P (PDIP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "min": null,
+      "typ": 79.3,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "PS (SO) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "min": null,
+      "typ": 104.8,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "PW (TSSOP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "min": null,
+      "typ": 14.3,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "D (SOIC) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "min": null,
+      "typ": 61.6,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "FK (LCCC) 20 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "min": null,
+      "typ": 44.4,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "JG (CDIP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "min": null,
+      "typ": 43.9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "P (PDIP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "min": null,
+      "typ": 16.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "PS (SO) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "min": null,
+      "typ": 8.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "PW (TSSOP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "min": null,
+      "typ": 72.1,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "D (SOIC) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "min": null,
+      "typ": 66.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "FK (LCCC) 20 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "min": null,
+      "typ": 106.6,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "JG (CDIP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "min": null,
+      "typ": 60.3,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "P (PDIP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "min": null,
+      "typ": 77.8,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "PS (SO) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "min": null,
+      "typ": 103.1,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "PW (TSSOP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "min": null,
+      "typ": 14.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "FK (LCCC) 20 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "min": null,
+      "typ": 29.3,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "JG (CDIP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "THRES voltage level",
+      "name": "THRES voltage level",
+      "min": 8.8,
+      "typ": 10.0,
+      "max": 11.2,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, NA555, NE555, SA555",
+      "related_pins": [
+        "THRES"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "THRES voltage level",
+      "name": "THRES voltage level",
+      "min": 9.4,
+      "typ": 10.0,
+      "max": 10.6,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, SE555",
+      "related_pins": [
+        "THRES"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "THRES voltage level",
+      "name": "THRES voltage level",
+      "min": 2.4,
+      "typ": 3.3,
+      "max": 4.2,
+      "unit": "V",
+      "test_conditions": "VCC = 5V, NA555, NE555, SA555",
+      "related_pins": [
+        "THRES"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "THRES voltage level",
+      "name": "THRES voltage level",
+      "min": 2.7,
+      "typ": 3.3,
+      "max": 4.0,
+      "unit": "V",
+      "test_conditions": "VCC = 5V, SE555",
+      "related_pins": [
+        "THRES"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "THRES current",
+      "name": "THRES current",
+      "min": null,
+      "typ": 30.0,
+      "max": 250.0,
+      "unit": "nA",
+      "test_conditions": null,
+      "related_pins": [
+        "THRES"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "TRIG voltage level",
+      "name": "TRIG voltage level",
+      "min": 4.5,
+      "typ": 5.0,
+      "max": 5.6,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, NA555, NE555, SA555",
+      "related_pins": [
+        "TRIG"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "TRIG voltage level",
+      "name": "TRIG voltage level",
+      "min": 4.8,
+      "typ": 5.0,
+      "max": 5.2,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, SE555",
+      "related_pins": [
+        "TRIG"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "TRIG voltage level",
+      "name": "TRIG voltage level",
+      "min": 3.0,
+      "typ": null,
+      "max": 6.0,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, TA = \u201355\u00b0C to +125\u00b0C, SE555",
+      "related_pins": [
+        "TRIG"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "TRIG voltage level",
+      "name": "TRIG voltage level",
+      "min": 1.1,
+      "typ": 1.67,
+      "max": 2.2,
+      "unit": "V",
+      "test_conditions": "VCC = 5V, NA555, NE555, SA555",
+      "related_pins": [
+        "TRIG"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "TRIG voltage level",
+      "name": "TRIG voltage level",
+      "min": 1.45,
+      "typ": 1.67,
+      "max": 1.9,
+      "unit": "V",
+      "test_conditions": "VCC = 5V, SE555",
+      "related_pins": [
+        "TRIG"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "TRIG voltage level",
+      "name": "TRIG voltage level",
+      "min": null,
+      "typ": null,
+      "max": 1.9,
+      "unit": "V",
+      "test_conditions": "VCC = 5V, TA = \u201355\u00b0C to +125\u00b0C, SE555",
+      "related_pins": [
+        "TRIG"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "TRIG current",
+      "name": "TRIG current",
+      "min": null,
+      "typ": 0.5,
+      "max": 2.0,
+      "unit": "\u03bcA",
+      "test_conditions": "TRIG at 0V, NA555, NE555, SA555",
+      "related_pins": [
+        "TRIG"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "TRIG current",
+      "name": "TRIG current",
+      "min": null,
+      "typ": 0.5,
+      "max": 0.9,
+      "unit": "\u03bcA",
+      "test_conditions": "TRIG at 0V, SE555",
+      "related_pins": [
+        "TRIG"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "RESET voltage level",
+      "name": "RESET voltage level",
+      "min": 0.3,
+      "typ": 0.7,
+      "max": 1.0,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [
+        "RESET"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "RESET voltage level",
+      "name": "RESET voltage level",
+      "min": null,
+      "typ": null,
+      "max": 1.1,
+      "unit": "V",
+      "test_conditions": "TA = \u201355\u00b0C to +125\u00b0C, SE555",
+      "related_pins": [
+        "RESET"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "RESET current",
+      "name": "RESET current",
+      "min": null,
+      "typ": 0.1,
+      "max": 0.4,
+      "unit": "mA",
+      "test_conditions": "RESET at VCC",
+      "related_pins": [
+        "RESET"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "RESET current",
+      "name": "RESET current",
+      "min": -1.5,
+      "typ": -0.4,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "RESET at 0V, NA555, NE555, SA555",
+      "related_pins": [
+        "RESET"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "RESET current",
+      "name": "RESET current",
+      "min": -1.0,
+      "typ": -0.4,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "RESET at 0V, SE555",
+      "related_pins": [
+        "RESET"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "DISCH switch off-state current",
+      "name": "DISCH switch off-state current",
+      "min": null,
+      "typ": 20.0,
+      "max": 100.0,
+      "unit": "nA",
+      "test_conditions": null,
+      "related_pins": [
+        "DISCH"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "DISCH switch on-state voltage",
+      "name": "DISCH switch on-state voltage",
+      "min": null,
+      "typ": 0.15,
+      "max": 0.4,
+      "unit": "V",
+      "test_conditions": "VCC = 5V, IO = 8mA, NA555, NE555, SA555",
+      "related_pins": [
+        "DISCH"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "CONT voltage (open circuit)",
+      "name": "CONT voltage (open circuit)",
+      "min": 9.0
+    }
+  ]
+}

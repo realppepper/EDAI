@@ -1,0 +1,202 @@
+{
+  "circuit_name": "Texas Instruments LP2985-3.3 (150-mA Low-Noise Low-Dropout Regulator)",
+  "datasheet_doc": "TI SLVS522 / LP2985 Electrical Characteristics Table",
+  "category": "Commercial PMIC (Power Management IC)",
+  "test_conditions": {
+    "temperature_c": 25,
+    "vin_nominal": 4.3,
+    "vout_nominal": 3.3,
+    "cout_nominal_uf": 4.7,
+    "cbyp_nominal_nf": 10.0,
+    "iload_nominal_ma": 1.0
+  },
+  "specifications": [
+    {
+      "id": "vout_accuracy",
+      "name": "Output Voltage (Vout)",
+      "description": "Nominal output voltage at Vin=4.3V, Iout=1mA",
+      "typ": 3.30,
+      "min": 3.25,
+      "max": 3.35,
+      "unit": "V",
+      "meas_key": "vout_nom",
+      "tb_file": "tb_pmic_nominal.cir"
+    },
+    {
+      "id": "line_regulation",
+      "name": "Line Regulation",
+      "description": "Output voltage variation over Vin = 3.8V to 10.0V (Iout=1mA)",
+      "typ": 0.014,
+      "min": null,
+      "max": 0.050,
+      "unit": "%/V",
+      "meas_key": "line_reg_pct_v",
+      "tb_file": "tb_pmic_line_reg.cir"
+    },
+    {
+      "id": "load_regulation",
+      "name": "Load Regulation",
+      "description": "Output voltage variation over Iout = 1mA to 150mA (Vin=4.3V)",
+      "typ": 0.15,
+      "min": null,
+      "max": 0.40,
+      "unit": "%",
+      "meas_key": "load_reg_pct",
+      "tb_file": "tb_pmic_load_reg.cir"
+    },
+    {
+      "id": "dropout_150ma",
+      "name": "Dropout Voltage (Iout = 150mA)",
+      "description": "Vin - Vout when Vout drops by 100mV under full load",
+      "typ": 280.0,
+      "min": null,
+      "max": 350.0,
+      "unit": "mV",
+      "meas_key": "vdo_150ma_mv",
+      "tb_file": "tb_pmic_dropout.cir"
+    },
+    {
+      "id": "dropout_50ma",
+      "name": "Dropout Voltage (Iout = 50mA)",
+      "description": "Vin - Vout when Vout drops by 100mV under medium load",
+      "typ": 120.0,
+      "min": null,
+      "max": 180.0,
+      "unit": "mV",
+      "meas_key": "vdo_50ma_mv",
+      "tb_file": "tb_pmic_dropout.cir"
+    },
+    {
+      "id": "dropout_1ma",
+      "name": "Dropout Voltage (Iout = 1mA)",
+      "description": "Vin - Vout when Vout drops by 100mV under light load",
+      "typ": 7.0,
+      "min": null,
+      "max": 25.0,
+      "unit": "mV",
+      "meas_key": "vdo_1ma_mv",
+      "tb_file": "tb_pmic_dropout.cir"
+    },
+    {
+      "id": "iq_light",
+      "name": "Ground Pin Current (Light Load, 1mA)",
+      "description": "Quiescent ground pin current at Iout=1mA",
+      "typ": 95.0,
+      "min": null,
+      "max": 150.0,
+      "unit": "uA",
+      "meas_key": "ignd_1ma_ua",
+      "tb_file": "tb_pmic_quiescent.cir"
+    },
+    {
+      "id": "iq_full",
+      "name": "Ground Pin Current (Full Load, 150mA)",
+      "description": "Ground pin current at Iout=150mA",
+      "typ": 750.0,
+      "min": null,
+      "max": 950.0,
+      "unit": "uA",
+      "meas_key": "ignd_150ma_ua",
+      "tb_file": "tb_pmic_quiescent.cir"
+    },
+    {
+      "id": "i_shutdown",
+      "name": "Shutdown Current (Von/off = 0V)",
+      "description": "Input quiescent current when disabled",
+      "typ": 0.01,
+      "min": null,
+      "max": 1.0,
+      "unit": "uA",
+      "meas_key": "isd_ua",
+      "tb_file": "tb_pmic_shutdown.cir"
+    },
+    {
+      "id": "von_threshold",
+      "name": "Shutdown ON Threshold (VIH)",
+      "description": "Minimum voltage on ON/OFF pin to enable regulator",
+      "typ": 1.6,
+      "min": 1.4,
+      "max": 2.0,
+      "unit": "V",
+      "meas_key": "von_th",
+      "tb_file": "tb_pmic_shutdown.cir"
+    },
+    {
+      "id": "psrr_100hz",
+      "name": "Power Supply Ripple Rejection (100 Hz)",
+      "description": "PSRR at 100Hz with Cout=4.7uF, Cbyp=10nF, Iout=50mA",
+      "typ": 65.0,
+      "min": 50.0,
+      "max": null,
+      "unit": "dB",
+      "meas_key": "psrr_100hz_db",
+      "tb_file": "tb_pmic_psrr.cir"
+    },
+    {
+      "id": "psrr_1khz",
+      "name": "Power Supply Ripple Rejection (1 kHz)",
+      "description": "PSRR at 1kHz with Cout=4.7uF, Cbyp=10nF, Iout=50mA",
+      "typ": 70.0,
+      "min": 50.0,
+      "max": null,
+      "unit": "dB",
+      "meas_key": "psrr_1khz_db",
+      "tb_file": "tb_pmic_psrr.cir"
+    },
+    {
+      "id": "psrr_10khz",
+      "name": "Power Supply Ripple Rejection (10 kHz)",
+      "description": "PSRR at 10kHz with Cout=4.7uF, Cbyp=10nF, Iout=50mA",
+      "typ": 55.0,
+      "min": 40.0,
+      "max": null,
+      "unit": "dB",
+      "meas_key": "psrr_10khz_db",
+      "tb_file": "tb_pmic_psrr.cir"
+    },
+    {
+      "id": "isc_limit",
+      "name": "Short-Circuit Current Limit (Isc)",
+      "description": "Clamped output current when Vout is shorted to GND (0V)",
+      "typ": 400.0,
+      "min": 160.0,
+      "max": 500.0,
+      "unit": "mA",
+      "meas_key": "isc_limit_ma",
+      "tb_file": "tb_pmic_short_circuit.cir"
+    },
+    {
+      "id": "output_noise",
+      "name": "Output Voltage Noise (10 Hz to 100 kHz)",
+      "description": "Integrated output noise with Cbyp=10nF, Cout=4.7uF, Iout=10mA",
+      "typ": 30.0,
+      "min": null,
+      "max": 55.0,
+      "unit": "uV_RMS",
+      "meas_key": "onoise_total_uv",
+      "tb_file": "tb_pmic_noise.cir"
+    },
+    {
+      "id": "tran_load_drop",
+      "name": "Transient Load Step Undershoot",
+      "description": "Max Vout dip for 1mA -> 150mA step (tr=1us, Cout=4.7uF)",
+      "typ": 35.0,
+      "min": null,
+      "max": 60.0,
+      "unit": "mV",
+      "meas_key": "tran_undershoot_mv",
+      "tb_file": "tb_pmic_transient.cir"
+    },
+    {
+      "id": "tran_load_settle",
+      "name": "Transient Settling Time",
+      "description": "Time to return within 1% of nominal after load step",
+      "typ": 8.0,
+      "min": null,
+      "max": 20.0,
+      "unit": "us",
+      "meas_key": "tran_settle_us",
+      "tb_file": "tb_pmic_transient.cir"
+    }
+  ]
+}

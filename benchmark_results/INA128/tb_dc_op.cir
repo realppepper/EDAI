@@ -1,0 +1,169 @@
+.options gmin=1e-12 cshunt=1e-15
+* LTspice Testbench for INA12X Specifications
+
+.include "INA12X_iter2.cir"
+
+* Power Supplies
+V_POS V_ 0 SINE(0 18 1k 0 0 0) ; V+ supply, will be set to DC for most measurements
+V_NEG V_NEG 0 SINE(0 -18 1k 0 0 0) ; V- supply, will be set to DC for most measurements
+
+* Input Stimulus
+V_VINP VIN_P 0 DC 0
+V_VINN VIN_N 0 DC 0
+V_REF REF 0 DC 0
+V_RG RG 0 DC 0
+
+* DUT Instance
+XDUT REF RG V_ V_ VIN_ VIN_ VO INA12X
+
+* Power-up / Activation Schedule
+.param T_V_ = 0.00u
+.param T_RG = 5.00u
+.param T_REF = 7.00u
+.param T_VIN = 7.00u
+.param T_VO = 8.00u
+
+* Set up power supplies for various conditions
+* For VS = (V+) - (V-) max 18V, dual supply
+.param V_SUPPLY_DUAL_POS = 9V
+.param V_SUPPLY_DUAL_NEG = -9V
+* For VS = (V+) - 0V max 36V, single supply
+.param V_SUPPLY_SINGLE_POS = 36V
+
+* Transient analysis for power-up sequencing (if needed for dynamic measurements)
+* For static measurements, we'll use .op and set DC values.
+
+* --- MEASUREMENTS ---
+
+* VS: Max=18.0 V | Conditions: VS = (V+) – (V–)
+* This implies V+ = 9V, V- = -9V. The total differential supply is 18V.
+* We'll set V_ to 9V and V_NEG to -9V for this.
+.param V_PLUS_18V_DIFF = 9V
+.param V_MINUS_18V_DIFF = -9V
+.meas OP VS_DIFF_18V PARAM V_PLUS_18V_DIFF - V_MINUS_18V_DIFF
+
+* VS: Max=36.0 V | Conditions: VS = (V+) – 0V
+* This implies V+ = 36V, V- = 0V.
+.param V_PLUS_36V_SINGLE = 36V
+.meas OP VS_SINGLE_36V PARAM V_PLUS_36V_SINGLE
+
+* Analog input voltage: Max=40.0 V
+* This is a stress test, not a typical operating condition.
+* We'll set VIN_P to 40V and VIN_N to 0V, with supplies at max operating.
+.param V_ANALOG_IN_MAX = 40V
+.meas OP VIN_MAX_TEST PARAM V_ANALOG_IN_MAX
+
+* Output short-circuit: Continuous
+* This requires a current measurement when VO is shorted
+* We'll add a small resistor to measure current.
+R_SHORT VO 0 1m
+.meas OP I_SHORT_CIRCUIT AVG I(R_SHORT)
+
+* TA: Min=-40.0, Max=125.0 °C
+* Junction temperature: Max=150.0 °C
+* Lead temperature (soldering, 10s): Max=300.0 °C
+* These are environmental/thermal parameters, not directly measurable in SPICE.
+* They would be set as .temp parameters for simulation runs.
+.temp 25 ; Default operating temperature
+
+* VS: Min=4.5, Typ=30.0, Max=36.0 V
+* This is the total supply voltage range for single supply.
+* We'll measure the supply voltage itself.
+.param V_SUPPLY_RANGE_MAX = 36V
+.param V_SUPPLY_RANGE_MIN = 4.5V
+.meas OP VS_RANGE_MAX PARAM V_SUPPLY_RANGE_MAX
+.meas OP VS_RANGE_MIN PARAM V_SUPPLY_RANGE_MIN
+
+* Supply voltage Dual-supply: Min=2.25, Typ=15.0, Max=18.0 V
+* This refers to V+ and V- being symmetric, so V+ = 18V, V- = -18V for max 18V total.
+* Or V+ = 2.25V, V- = -2.25V for min 4.5V total.
+.param V_DUAL_SUPPLY_MAX_POS = 9V
+.param V_DUAL_SUPPLY_MAX_NEG = -9V
+.param V_DUAL_SUPPLY_MIN_POS = 2.25V
+.param V_DUAL_SUPPLY_MIN_NEG = -2.25V
+.meas OP V_DUAL_MAX_TOTAL PARAM V_DUAL_SUPPLY_MAX_POS - V_DUAL_SUPPLY_MAX_NEG
+.meas OP V_DUAL_MIN_TOTAL PARAM V_DUAL_SUPPLY_MIN_POS - V_DUAL_SUPPLY_MIN_NEG
+
+* TA: Min=-40.0, Max=85.0 °C
+* Another environmental parameter.
+.temp 25
+
+* Thermal resistances (RθJC, RθJB, ψJT, ψJB) are package-specific and not directly simulated in SPICE.
+* They are used for thermal analysis outside of electrical simulation.
+
+* VOS: Offset Voltage
+* To measure VOS, we need to set inputs to a common voltage and measure output, then divide by gain.
+* Or, measure the input voltage required to make the output 0V (RTI).
+* We'll set up a high gain configuration (e.g., G=1000) and measure output offset.
+* RG is used to set gain. For G=1000, RG = 100 / (G-1) = 100 / 999 ≈ 0.1001 kΩ
+.param RG_1000 = 100.1001
+R_RG RG 0 {RG_1000}
+
+* Set up for VOS measurement (G=1000)
+* Common mode input, output should be near REF.
+* Let's assume REF is 0V.
+; Sanitized duplicate parallel voltage source short: V_VINP VIN_P 0 DC 2.5V
+; Sanitized duplicate parallel voltage source short: V_VINN VIN_N 0 DC 2.5V
+; Sanitized duplicate parallel voltage source short: V_REF REF 0 DC 0V
+; Sanitized duplicate parallel voltage source short: V_POS V_ 0 DC 15V
+; Sanitized duplicate parallel voltage source short: V_NEG V_NEG 0 DC -15V
+
+.op
+.meas OP VOS_G1000 PARAM V(VO)/1000 ; Assuming G=1000 and REF=0V
+
+* Offset voltage drift (RTI)
+* This requires running simulations at different temperatures and calculating the difference.
+* We'll define a VOS at 25C and 85C.
+.temp 25
+.meas OP VOS_25C PARAM V(VO)/1000
+.temp 85
+.meas OP VOS_85C PARAM V(VO)/1000
+.meas OP VOS_DRIFT PARAM (VOS_85C - VOS_25C) / (85 - 25)
+
+* Long-term stability
+* Not directly measurable in SPICE. This is a reliability parameter.
+
+* Input impedance Differential: Typ=10.0 GΩ
+* Input impedance Differential: Typ=2.0 pF
+* These are input characteristics. We can measure input current for impedance.
+* For differential impedance, apply a differential voltage and measure current.
+* For capacitance, apply an AC signal and measure phase/current.
+* Let's measure DC input impedance.
+; Sanitized duplicate parallel voltage source short: V_VINP_IMP VIN_P 0 DC 1V
+; Sanitized duplicate parallel voltage source short: V_VINN_IMP VIN_N 0 DC 0V
+.meas OP I_VINP_IMP AVG I(V_VINP_IMP)
+.meas OP R_DIFF_IMP PARAM 1V / I_VINP_IMP
+
+* VCM: VO = 0V, (V–) + 2 to (V+) – 2
+* This requires sweeping the common mode input voltage and finding the range where VO can be 0V.
+* This is a more complex sweep, not a single .op measurement.
+* We'll set up a common mode input and check if VO is within limits.
+* For example, VCM = (V+) - 2V
+.param V_CM_HIGH = V_PLUS_18V_DIFF - 2V
+; Sanitized duplicate parallel voltage source short: V_VINP VIN_P 0 DC {V_CM_HIGH}
+; Sanitized duplicate parallel voltage source short: V_VINN VIN_N 0 DC {V_CM_HIGH}
+.meas OP VCM_HIGH_VO PARAM V(VO)
+
+* Safe input voltage: Max=40.0 V | Conditions: RS = 0Ω
+* Similar to "Analog input voltage" max.
+* We'll set VIN_P to 40V and VIN_N to 0V, with supplies at max operating.
+.param V_SAFE_IN_MAX = 40V
+.meas OP VIN_SAFE_MAX_TEST PARAM V_SAFE_IN_MAX
+
+* --- TRANSIENT ANALYSIS FOR POWER-UP ---
+* Set all sources to 0 initially, then ramp up according to PDG.
+; Sanitized duplicate parallel voltage source short: V_POS V_ 0 PWL(0 0 {T_V_} 0 {T_V_+1u} 15)
+; Sanitized duplicate parallel voltage source short: V_NEG V_NEG 0 PWL(0 0 {T_V_} 0 {T_V_+1u} -15)
+; Sanitized duplicate parallel voltage source short: V_RG_SRC RG 0 PWL(0 0 {T_RG} 0 {T_RG+1u} 0) ; RG is a resistor, not a voltage source. This is a placeholder.
+* For RG, we'd switch a resistor in/out or use a current source to simulate its effect.
+* For simplicity, we'll assume RG is connected at T_RG.
+* For DC measurements, RG is a fixed resistor.
+
+; Sanitized duplicate parallel voltage source short: V_REF_SRC REF 0 PWL(0 0 {T_REF} 0 {T_REF+1u} 0)
+; Sanitized duplicate parallel voltage source short: V_VINP_SRC VIN_P 0 PWL(0 0 {T_VIN} 0 {T_VIN+1u} 0.1) ; Small differential input for output to settle
+; Sanitized duplicate parallel voltage source short: V_VINN_SRC VIN_N 0 PWL(0 0 {T_VIN} 0 {T_VIN+1u} 0)
+
+.tran 0 100u 0 0.1u startup
+.option plotwinsize=0
+
+.end

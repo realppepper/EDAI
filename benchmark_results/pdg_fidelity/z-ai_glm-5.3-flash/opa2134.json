@@ -1,0 +1,482 @@
+{
+  "ic": "opa2134",
+  "model": "z-ai/glm-5.3-flash",
+  "llm_seconds": 36.6,
+  "llm_calls": [
+    {
+      "ts": 1792590218.8756356,
+      "tag": "hkg_pins",
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 4.32,
+      "total_s": 10.07,
+      "completion_tokens": 774,
+      "prompt_tokens": 3380,
+      "cost_usd": 0.0004203,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.0253
+    },
+    {
+      "ts": 1792590227.1723275,
+      "tag": "hkg_specs_p8",
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 0.84,
+      "total_s": 7.83,
+      "completion_tokens": 1350,
+      "prompt_tokens": 912,
+      "cost_usd": 0.00063324,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.026
+    },
+    {
+      "ts": 1792590228.1303897,
+      "tag": "hkg_specs_p22",
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 0.95,
+      "total_s": 0.96,
+      "completion_tokens": 17,
+      "prompt_tokens": 714,
+      "cost_usd": 6.681e-05,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.026
+    },
+    {
+      "ts": 1792590229.9785998,
+      "tag": "hkg_specs_p7",
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 2.07,
+      "total_s": 11.14,
+      "completion_tokens": 3055,
+      "prompt_tokens": 1449,
+      "cost_usd": 0.00152674375,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.0282
+    },
+    {
+      "ts": 1792590236.776019,
+      "tag": "hkg_specs_p5",
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 2.25,
+      "total_s": 26.61,
+      "completion_tokens": 1591,
+      "prompt_tokens": 1301,
+      "cost_usd": 0.00035574,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.0297
+    },
+    {
+      "ts": 1792590238.932085,
+      "tag": "hkg_specs_p6",
+      "provider": "openrouter",
+      "model": "z-ai/glm-5.3-flash",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 2.23,
+      "total_s": 25.6,
+      "completion_tokens": 2908,
+      "prompt_tokens": 1151,
+      "cost_usd": 0.00053979,
+      "finish_reason": "stop",
+      "spent_total_usd": 0.0303
+    }
+  ],
+  "groundtruth_comparison": {
+    "ic": "OPA2134",
+    "score": 71.1,
+    "pins": {
+      "precision": 1.0,
+      "recall": 0.625,
+      "f1": 0.769,
+      "tp": 5,
+      "pred": 5,
+      "gt": 8,
+      "role_accuracy": 0.8,
+      "missing": [
+        "OUT A",
+        "+IN B",
+        "OUT B"
+      ],
+      "extra": [],
+      "role_errors": [
+        {
+          "pin": "-IN B",
+          "pred": "OUTPUT",
+          "gt": "SIGNAL"
+        }
+      ]
+    },
+    "dependencies_full_pdg": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "tp": 0,
+      "pred": 4,
+      "gt": 8,
+      "missing": [
+        [
+          "+IN A",
+          "OUT A"
+        ],
+        [
+          "+IN B",
+          "OUT B"
+        ],
+        [
+          "-IN A",
+          "OUT A"
+        ],
+        [
+          "-IN B",
+          "OUT B"
+        ],
+        [
+          "V+",
+          "OUT A"
+        ],
+        [
+          "V+",
+          "OUT B"
+        ],
+        [
+          "V-",
+          "OUT A"
+        ],
+        [
+          "V-",
+          "OUT B"
+        ]
+      ],
+      "spurious": [
+        [
+          "+IN A",
+          "-IN B"
+        ],
+        [
+          "-IN A",
+          "-IN B"
+        ],
+        [
+          "V+",
+          "-IN B"
+        ],
+        [
+          "V-",
+          "-IN B"
+        ]
+      ]
+    },
+    "dependencies_datasheet_only": {
+      "precision": 0.0,
+      "recall": 0.0,
+      "f1": 0.0,
+      "tp": 0,
+      "pred": 4,
+      "gt": 8
+    },
+    "schedule_consistency": {
+      "ratio": 0.0,
+      "checked": 0,
+      "violations": []
+    },
+    "spec_rows": {
+      "precision": 0.679,
+      "recall": 0.948,
+      "f1": 0.791,
+      "tp": 55,
+      "pred": 81,
+      "gt": 58
+    },
+    "electrical_spec_recall": 0.923,
+    "spec_value_accuracy": 0.951,
+    "spec_category_accuracy": 1.0,
+    "category_confusion": {
+      "ABS_MAX": {
+        "ABS_MAX": 7
+      },
+      "ESD": {
+        "ESD": 3
+      },
+      "RECOMMENDED": {
+        "RECOMMENDED": 3
+      },
+      "THERMAL": {
+        "THERMAL": 6
+      },
+      "ELECTRICAL": {
+        "ELECTRICAL": 36
+      }
+    },
+    "nonelectrical_leak_rate": 0.0,
+    "timing": {
+      "recall": 1.0,
+      "items": [
+        {
+          "symbol": "GBW",
+          "found": true
+        },
+        {
+          "symbol": "SR",
+          "found": true
+        },
+        {
+          "symbol": "ts",
+          "found": true
+        },
+        {
+          "symbol": "ts",
+          "found": true
+        },
+        {
+          "symbol": "FPBW",
+          "found": true
+        },
+        {
+          "symbol": "tOR",
+          "found": true
+        }
+      ],
+      "pdg_timing_specs": {
+        "turnon_settling_us": 1.0,
+        "propagation_delay_us": null,
+        "slew_rate_v_us": 20.0,
+        "bandwidth_mhz": 1.3,
+        "sources": {
+          "bandwidth_mhz": "FPBW",
+          "slew_rate_v_us": "SR",
+          "turnon_settling_us": "Settling time (0.01%)"
+        }
+      },
+      "pdg_uses_datasheet_delay": true
+    }
+  },
+  "provenance_audit": {
+    "mode": "groundtruth_free_provenance",
+    "fidelity_score_pct": 84.4,
+    "status": "ACCEPTABLE",
+    "pin_provenance": {
+      "pins": 6,
+      "grounded": 6,
+      "grounded_pct": 100.0,
+      "ungrounded": []
+    },
+    "spec_provenance": {
+      "specs": 81,
+      "grounded": 71,
+      "grounded_pct": 87.7,
+      "by_category": {
+        "ABS_MAX": 7,
+        "ESD": 5,
+        "RECOMMENDED": 3,
+        "THERMAL": 28,
+        "ELECTRICAL": 38
+      },
+      "ungrounded_examples": [
+        {
+          "symbol": "Input voltage",
+          "category": "ABS_MAX",
+          "page": 5,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "ISC",
+          "category": "ABS_MAX",
+          "page": 5,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "R\u03b8JC(bot)",
+          "category": "THERMAL",
+          "page": 6,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "R\u03b8JC(bot)",
+          "category": "THERMAL",
+          "page": 6,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "R\u03b8JC(bot)",
+          "category": "THERMAL",
+          "page": 6,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "VO",
+          "category": "ELECTRICAL",
+          "page": 8,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "VO",
+          "category": "ELECTRICAL",
+          "page": 8,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "VO",
+          "category": "ELECTRICAL",
+          "page": 8,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "VO",
+          "category": "ELECTRICAL",
+          "page": 8,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "Capacitive load drive",
+          "category": "ELECTRICAL",
+          "page": 8,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        }
+      ]
+    },
+    "topological_validity": {
+      "is_dag": true,
+      "unreachable_outputs": [],
+      "isolated_pins": []
+    },
+    "edge_origin": {
+      "edges": 8,
+      "datasheet_derived": 4,
+      "rule_injected": 4,
+      "datasheet_pct": 50.0
+    },
+    "timing_grounding": {
+      "delay_grounded_edges": 4,
+      "grounded_pct": 50.0,
+      "timing_specs_used": {
+        "turnon_settling_us": 1.0,
+        "propagation_delay_us": null,
+        "slew_rate_v_us": 20.0,
+        "bandwidth_mhz": 1.3,
+        "sources": {
+          "bandwidth_mhz": "FPBW",
+          "slew_rate_v_us": "SR",
+          "turnon_settling_us": "Settling time (0.01%)"
+        }
+      }
+    },
+    "edge_details": [
+      {
+        "from": "NIN",
+        "to": "OUT",
+        "delay_us": 1.0,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": "Settling time (0.01%)",
+        "condition": "Inverting input drives output of same amplifier"
+      },
+      {
+        "from": "PIN",
+        "to": "OUT",
+        "delay_us": 1.0,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": "Settling time (0.01%)",
+        "condition": "Noninverting input drives output of same amplifier"
+      },
+      {
+        "from": "V_N",
+        "to": "OUT",
+        "delay_us": 1.0,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": "Settling time (0.01%)",
+        "condition": "Negative supply required for output operation"
+      },
+      {
+        "from": "V_N",
+        "to": "NIN",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "V_N",
+        "to": "PIN",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "V_P",
+        "to": "OUT",
+        "delay_us": 1.0,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": "Settling time (0.01%)",
+        "condition": "Positive supply required for output operation"
+      },
+      {
+        "from": "V_P",
+        "to": "NIN",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "V_P",
+        "to": "PIN",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      }
+    ],
+    "pin_coverage": {
+      "coverage_pct": 100.0
+    }
+  },
+  "schedule_us": {
+    "NC": 0.0,
+    "V_N": 0.0,
+    "V_P": 0.0,
+    "NIN": 2.0,
+    "PIN": 2.0,
+    "OUT": 3.0
+  }
+}

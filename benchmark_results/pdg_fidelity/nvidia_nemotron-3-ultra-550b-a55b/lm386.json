@@ -1,0 +1,350 @@
+{
+  "ic": "lm386",
+  "model": "nvidia/nemotron-3-ultra-550b-a55b",
+  "llm_seconds": 118.0,
+  "llm_calls": [
+    {
+      "ts": 1792585811.881368,
+      "tag": "hkg_pins",
+      "provider": "nim",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 16.78,
+      "total_s": 16.79,
+      "completion_tokens": 1066,
+      "prompt_tokens": null,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792585853.802219,
+      "tag": "hkg_specs_p5",
+      "provider": "nim",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 21.27,
+      "total_s": 21.27,
+      "completion_tokens": 927,
+      "prompt_tokens": null,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792585876.9730854,
+      "tag": "hkg_specs_p4",
+      "provider": "nim",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 65.09,
+      "total_s": 65.09,
+      "completion_tokens": 1977,
+      "prompt_tokens": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "groundtruth_comparison": {
+    "ic": "LM386",
+    "score": 92.4,
+    "pins": {
+      "precision": 1.0,
+      "recall": 0.875,
+      "f1": 0.933,
+      "tp": 7,
+      "pred": 7,
+      "gt": 8,
+      "role_accuracy": 1.0,
+      "missing": [
+        "GAIN8"
+      ],
+      "extra": [],
+      "role_errors": []
+    },
+    "dependencies_full_pdg": {
+      "precision": 0.6,
+      "recall": 0.75,
+      "f1": 0.667,
+      "tp": 6,
+      "pred": 10,
+      "gt": 8,
+      "missing": [
+        [
+          "GAIN8",
+          "VOUT"
+        ],
+        [
+          "VS",
+          "BYPASS"
+        ]
+      ],
+      "spurious": [
+        [
+          "+INPUT",
+          "GAIN1"
+        ],
+        [
+          "-INPUT",
+          "GAIN1"
+        ],
+        [
+          "GND",
+          "GAIN1"
+        ],
+        [
+          "VS",
+          "GAIN1"
+        ]
+      ]
+    },
+    "dependencies_datasheet_only": {
+      "precision": 1.0,
+      "recall": 0.75,
+      "f1": 0.857,
+      "tp": 6,
+      "pred": 6,
+      "gt": 8
+    },
+    "schedule_consistency": {
+      "ratio": 1.0,
+      "checked": 7,
+      "violations": []
+    },
+    "spec_rows": {
+      "precision": 0.643,
+      "recall": 1.0,
+      "f1": 0.783,
+      "tp": 27,
+      "pred": 42,
+      "gt": 27
+    },
+    "electrical_spec_recall": 1.0,
+    "spec_value_accuracy": 0.914,
+    "spec_category_accuracy": 0.963,
+    "category_confusion": {
+      "ELECTRICAL": {
+        "RECOMMENDED": 1,
+        "ELECTRICAL": 9
+      },
+      "ABS_MAX": {
+        "ABS_MAX": 5
+      },
+      "ESD": {
+        "ESD": 2
+      },
+      "RECOMMENDED": {
+        "RECOMMENDED": 4
+      },
+      "THERMAL": {
+        "THERMAL": 6
+      }
+    },
+    "nonelectrical_leak_rate": 0.0,
+    "timing": {
+      "recall": 1.0,
+      "items": [
+        {
+          "symbol": "BW",
+          "found": true
+        }
+      ],
+      "pdg_timing_specs": {
+        "turnon_settling_us": null,
+        "propagation_delay_us": null,
+        "slew_rate_v_us": null,
+        "bandwidth_mhz": 0.3,
+        "sources": {
+          "bandwidth_mhz": "BW"
+        }
+      },
+      "pdg_uses_datasheet_delay": true
+    }
+  },
+  "provenance_audit": {
+    "mode": "groundtruth_free_provenance",
+    "fidelity_score_pct": 88.6,
+    "status": "TRUSTWORTHY",
+    "pin_provenance": {
+      "pins": 7,
+      "grounded": 7,
+      "grounded_pct": 100.0,
+      "ungrounded": []
+    },
+    "spec_provenance": {
+      "specs": 42,
+      "grounded": 42,
+      "grounded_pct": 100.0,
+      "by_category": {
+        "ABS_MAX": 7,
+        "ESD": 2,
+        "RECOMMENDED": 7,
+        "THERMAL": 15,
+        "ELECTRICAL": 11
+      },
+      "ungrounded_examples": []
+    },
+    "topological_validity": {
+      "is_dag": true,
+      "unreachable_outputs": [],
+      "isolated_pins": []
+    },
+    "edge_origin": {
+      "edges": 14,
+      "datasheet_derived": 6,
+      "rule_injected": 8,
+      "datasheet_pct": 42.9
+    },
+    "timing_grounding": {
+      "delay_grounded_edges": 10,
+      "grounded_pct": 71.4,
+      "timing_specs_used": {
+        "turnon_settling_us": null,
+        "propagation_delay_us": null,
+        "slew_rate_v_us": null,
+        "bandwidth_mhz": 0.3,
+        "sources": {
+          "bandwidth_mhz": "BW"
+        }
+      }
+    },
+    "edge_details": [
+      {
+        "from": "GAIN",
+        "to": "VOUT",
+        "delay_us": 2.6526,
+        "type": "FEEDBACK_LOOP",
+        "origin": "datasheet",
+        "delay_source": "BW",
+        "condition": "Gain setting via pins 1 and 8 (internal 1.35k\u03a9 sets gain=20, external RC adjusts 20-200)"
+      },
+      {
+        "from": "NINPUT",
+        "to": "VOUT",
+        "delay_us": 2.6526,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": "BW",
+        "condition": "Inverting signal input"
+      },
+      {
+        "from": "NINPUT",
+        "to": "GAIN",
+        "delay_us": 2.6526,
+        "type": "SIGNAL_PATH",
+        "origin": "rule",
+        "delay_source": "BW",
+        "condition": "5 tau of GBW (0.3MHz)"
+      },
+      {
+        "from": "PINPUT",
+        "to": "VOUT",
+        "delay_us": 2.6526,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": "BW",
+        "condition": "Noninverting signal input"
+      },
+      {
+        "from": "PINPUT",
+        "to": "GAIN",
+        "delay_us": 2.6526,
+        "type": "SIGNAL_PATH",
+        "origin": "rule",
+        "delay_source": "BW",
+        "condition": "5 tau of GBW (0.3MHz)"
+      },
+      {
+        "from": "GND",
+        "to": "VOUT",
+        "delay_us": 2.6526,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": "BW",
+        "condition": "Ground reference for output stage"
+      },
+      {
+        "from": "GND",
+        "to": "BYPASS",
+        "delay_us": 20.0,
+        "type": "POWER_TO_BIAS",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Bias stabilization after supply ramp"
+      },
+      {
+        "from": "GND",
+        "to": "GAIN",
+        "delay_us": 2.6526,
+        "type": "POWER_FEED",
+        "origin": "rule",
+        "delay_source": "BW",
+        "condition": "5 tau of GBW (0.3MHz)"
+      },
+      {
+        "from": "VS",
+        "to": "VOUT",
+        "delay_us": 2.6526,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": "BW",
+        "condition": "Supply voltage 4V-12V or 5V-18V"
+      },
+      {
+        "from": "VS",
+        "to": "BYPASS",
+        "delay_us": 20.0,
+        "type": "POWER_TO_BIAS",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Bias stabilization after supply ramp"
+      },
+      {
+        "from": "VS",
+        "to": "GAIN",
+        "delay_us": 2.6526,
+        "type": "POWER_FEED",
+        "origin": "rule",
+        "delay_source": "BW",
+        "condition": "5 tau of GBW (0.3MHz)"
+      },
+      {
+        "from": "BYPASS",
+        "to": "VOUT",
+        "delay_us": 2.6526,
+        "type": "BIAS_FEED",
+        "origin": "datasheet",
+        "delay_source": "BW",
+        "condition": "Bypass decoupling for internal bias circuitry"
+      },
+      {
+        "from": "BYPASS",
+        "to": "NINPUT",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "BYPASS",
+        "to": "PINPUT",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      }
+    ],
+    "pin_coverage": {
+      "coverage_pct": 100.0
+    }
+  },
+  "schedule_us": {
+    "GND": 0.0,
+    "VS": 0.0,
+    "BYPASS": 20.0,
+    "NINPUT": 22.0,
+    "PINPUT": 22.0,
+    "GAIN": 24.653,
+    "VOUT": 27.305
+  }
+}

@@ -1,0 +1,149 @@
+* TLC2932A Phase-Locked Loop IC
+* Subcircuit for Voltage-Controlled Oscillator (VCO) and Phase Frequency Detector (PFD)
+.subckt TLC2932A LOGIC_VDD SELECT VCO_OUT FIN_A FIN_B PFD_OUT LOGIC_GND TEST PFD_INHIBIT VCO_INHIBIT VCO_GND VCO_IN RBIAS VCO_VDD
+
+* --- Global Parameters and Models ---
+.param VDD_NOMINAL = 3.3V
+.param TEMP = 25
+.param PI = 3.141592653589793
+
+* Standard Level 1 MOSFET Models
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u GAMMA=0.4 PHI=0.6 LAMBDA=0.05 TOX=10n UO=600)
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.5 PHI=0.6 LAMBDA=0.06 TOX=10n UO=250)
+
+* --- Input Buffers and ESD Protection ---
+* Input impedance and capacitance for digital inputs
+R_FIN_A_IN FIN_A FIN_A_BUF 10Meg ; ZIN = 10M
+C_FIN_A_IN FIN_A_BUF LOGIC_GND 5.6p ; CIN = 5.6p
+R_FIN_B_IN FIN_B FIN_B_BUF 10Meg
+C_FIN_B_IN FIN_B_BUF LOGIC_GND 5.6p
+R_SELECT_IN SELECT SELECT_BUF 10Meg
+C_SELECT_IN SELECT_BUF LOGIC_GND 5.6p
+R_PFD_INH_IN PFD_INHIBIT PFD_INHIBIT_BUF 10Meg
+C_PFD_INH_IN PFD_INHIBIT_BUF LOGIC_GND 5.6p
+R_VCO_INH_IN VCO_INHIBIT VCO_INHIBIT_BUF 10Meg
+C_VCO_INH_IN VCO_INHIBIT_BUF LOGIC_GND 5.6p
+
+* VCO_IN input impedance
+R_VCO_IN_IMP VCO_IN VCO_GND 10Meg ; ZI(VCO IN) = 10M
+
+* TEST pin connected to GND
+R_TEST TEST LOGIC_GND 1m ; Short to GND
+
+* Behavioral Schmitt Trigger for digital inputs (VIH=2.1V, VIL=0.5V, VTH=1.5V typ)
+* Output is LOGIC_VDD or LOGIC_GND
+B_FIN_A_SCHMITT FIN_A_DIG LOGIC_GND V = { (V(FIN_A_BUF) > 2.1) ? V(LOGIC_VDD) : (V(FIN_A_BUF) < 0.5) ? V(LOGIC_GND) : V(FIN_A_DIG) }
+B_FIN_B_SCHMITT FIN_B_DIG LOGIC_GND V = { (V(FIN_B_BUF) > 2.1) ? V(LOGIC_VDD) : (V(FIN_B_BUF) < 0.5) ? V(LOGIC_GND) : V(FIN_B_DIG) }
+B_SELECT_SCHMITT SELECT_DIG LOGIC_GND V = { (V(SELECT_BUF) > 2.1) ? V(LOGIC_VDD) : (V(SELECT_BUF) < 0.5) ? V(LOGIC_GND) : V(SELECT_DIG) }
+B_PFD_INH_SCHMITT PFD_INHIBIT_DIG LOGIC_GND V = { (V(PFD_INHIBIT_BUF) > 2.1) ? V(LOGIC_VDD) : (V(PFD_INHIBIT_BUF) < 0.5) ? V(LOGIC_GND) : V(PFD_INHIBIT_DIG) }
+B_VCO_INH_SCHMITT VCO_INHIBIT_DIG LOGIC_GND V = { (V(VCO_INHIBIT_BUF) > 2.1) ? V(LOGIC_VDD) : (V(VCO_INHIBIT_BUF) < 0.5) ? V(LOGIC_GND) : V(VCO_INHIBIT_DIG) }
+
+* --- VCO Section ---
+* VCO frequency calculation based on VCO_IN, RBIAS, VCO_VDD, and Temperature
+* fOSC: 25MHz typ @ RBIAS=3.3k, VCO_IN=1/2 VDD
+* kSVS: 0.004 %/mV = 4e-5 /mV = 4e-2 /V
+* alpha: -0.264 %/°C = -2.64e-3 /°C
+* VCO_IN range: 0.9V to VDD
+* RBIAS range: 2.2k to 5.1k
+* Lock frequency: 13-32MHz (3V), 13-35MHz (3.3V), 15-55MHz (5V)
+
+* Nominal values for calculation
+.param FOSC_NOM = 25e6 ; Hz
+.param RBIAS_NOM = 3.3e3 ; Ohms
+.param VCO_IN_NOM = 0.5 * VDD_NOMINAL ; V
+.param VDD_VCO_NOM = VDD_NOMINAL ; V
+
+* Coefficients (tuned to meet specs)
+* K_VCO: Sensitivity to VCO_IN. Assuming linear relationship.
+* For VDD=3.3V, VCO_IN from 0.9V to 3.3V, FOSC from ~13MHz to ~35MHz.
+* Let's assume FOSC_MIN = 13MHz at VCO_IN = 0.9V, FOSC_MAX = 35MHz at VCO_IN = 3.3V (for 3.3V VDD)
+* K_VCO = (35e6 - 13e6) / (3.3 - 0.9) = 22e6 / 2.4 = 9.16e6 Hz/V
+* K_RBIAS: Sensitivity to RBIAS. Inverse relationship.
+* FOSC_NOM = K_RBIAS_FACTOR / RBIAS_NOM => K_RBIAS_FACTOR = FOSC_NOM * RBIAS_NOM = 25e6 * 3.3e3 = 8.25e10
+* K_SVS: 0.004 %/mV = 4e-5 /mV = 4e-2 /V. Freq change = FOSC_NOM * K_SVS * (V_VDD - VDD_VCO_NOM)
+* K_TEMP: -0.264 %/°C = -2.64e-3 /°C. Freq change = FOSC_NOM * K_TEMP * (TEMP - 25)
+
+B_VCO_FREQ_CALC VCO_FREQ_HZ 0 V = { (8.25e10 / V(RBIAS_EXT)) * (1 + 0.004 * (V(VCO_VDD) - VDD_VCO_NOM)) * (1 + -0.00264 * (TEMP - 25)) * (V(VCO_IN) / VCO_IN_NOM)  + (V(VCO_IN) < 0.9) * (13e6 - V_VCO_FREQ_HZ) + (V(VCO_IN) > V(VCO_VDD)) * (55e6 - V_VCO_FREQ_HZ)  + (V(VCO_VDD) < 3.1) * (V_VCO_FREQ_HZ > 32e6) * (32e6 - V_VCO_FREQ_HZ) + (V(VCO_VDD) >= 3.1 & V(VCO_VDD) < 4.0) * (V_VCO_FREQ_HZ > 35e6) * (35e6 - V_VCO_FREQ_HZ) + (V(VCO_VDD) >= 4.0) * (V_VCO_FREQ_HZ > 55e6) * (55e6 - V_VCO_FREQ_HZ) + (V_VCO_FREQ_HZ < 13e6) * (13e6 - V_VCO_FREQ_HZ) }
+
+* External RBIAS resistor connection
+R_RBIAS_EXT VCO_VDD RBIAS {RBIAS_VAL} ; This resistor is external, RBIAS_VAL is a placeholder for the actual value in testbench
+B_RBIAS_VAL RBIAS_EXT 0 V = { V(VCO_VDD) / I(R_RBIAS_EXT) } ; Behavioral source to get the resistance value
+
+* VCO output generation (square wave)
+B_VCO_OSC VCO_OSC_RAW 0 V = { V(VCO_VDD) * (sin(2 * PI * V(VCO_FREQ_HZ) * time) > 0) }
+
+* VCO 1/2 frequency divider (controlled by SELECT)
+* Behavioral D-flip-flop for frequency division
+* VCO_DIV_OUT toggles on rising edge of VCO_OSC_RAW if SELECT_DIG is high
+* If SELECT_DIG is low, VCO_DIV_OUT follows VCO_OSC_RAW (no division)
+B_VCO_DIV_FF VCO_DIV_OUT_INT 0 V = { V(SELECT_DIG) > V(LOGIC_VDD)/2 ? (ddt(V(VCO_OSC_RAW)) > 0 & V(VCO_OSC_RAW) > V(VCO_VDD)/2 ? (V(VCO_DIV_OUT_INT) > V(VCO_VDD)/2 ? V(VCO_GND) : V(VCO_VDD)) : V(VCO_DIV_OUT_INT)) : V(VCO_OSC_RAW) }
+
+* VCO_OUT driver with inhibit and output characteristics
+* VOH=2.4V min, VOL=0.3V max @ +/-2mA
+* tr=9ns typ, tf=7.6ns typ @ 15pF load
+* Duty cycle 45-55%
+B_VCO_OUT_DRIVER VCO_OUT VCO_GND V = { V(VCO_INHIBIT_DIG) > V(LOGIC_VDD)/2 ? V(VCO_GND) : (V(VCO_DIV_OUT_INT) > V(VCO_VDD)/2 ? V(VCO_VDD) : V(VCO_GND)) }
+R_VCO_OUT_SER VCO_OUT_DRIVER_INT VCO_OUT 10 ; Output series resistance for tr/tf
+C_VCO_OUT_LOAD VCO_OUT VCO_GND 15p ; External load capacitance
+
+* Add rise/fall time and duty cycle modeling to VCO_OUT_DRIVER
+* This is a simplified behavioral model. For precise tr/tf, a more complex RC network or slew-rate limited buffer would be needed.
+* For duty cycle, the sin() function already provides 50%. Adjusting the threshold can shift it.
+* For now, the output driver will just pass the signal, and the series R and load C will define tr/tf.
+
+* --- PFD Section ---
+* Edge-triggered PFD with internal charge pump
+* FIN_A (reference), FIN_B (feedback)
+* PFD_OUT is charge pump output (current source)
+
+* PFD Logic: Detect rising edges of FIN_A and FIN_B
+* UP pulse when FIN_A leads FIN_B, DOWN pulse when FIN_B leads FIN_A
+* Reset when both are high or after a short delay
+B_FIN_A_RE FIN_A_RE 0 V = { ddt(V(FIN_A_DIG)) > 0.1 * V(LOGIC_VDD) } ; Rising edge detector for FIN_A
+B_FIN_B_RE FIN_B_RE 0 V = { ddt(V(FIN_B_DIG)) > 0.1 * V(LOGIC_VDD) } ; Rising edge detector for FIN_B
+
+* PFD State Machine (simplified behavioral model)
+* UP and DOWN signals are active high pulses
+* PFD_UP and PFD_DOWN are internal nodes for the charge pump control
+B_PFD_UP PFD_UP 0 V = { V(PFD_INHIBIT_DIG) > V(LOGIC_VDD)/2 ? 0 : (V(FIN_A_RE) > V(LOGIC_VDD)/2 & V(PFD_DOWN) < V(LOGIC_VDD)/2 ? V(LOGIC_VDD) : (V(FIN_B_RE) > V(LOGIC_VDD)/2 ? 0 : V(PFD_UP))) }
+B_PFD_DOWN PFD_DOWN 0 V = { V(PFD_INHIBIT_DIG) > V(LOGIC_VDD)/2 ? 0 : (V(FIN_B_RE) > V(LOGIC_VDD)/2 & V(PFD_UP) < V(LOGIC_VDD)/2 ? V(LOGIC_VDD) : (V(FIN_A_RE) > V(LOGIC_VDD)/2 ? 0 : V(PFD_DOWN))) }
+
+* Charge Pump (CP) current source
+* PFD_OUT is a current output. When PFD_INHIBIT is high, PFD_OUT is high-impedance (0 current).
+* Max PFD current (I_CP_MAX) is not explicitly given, but IDD(PFD) is 3mA. Let's assume a typical charge pump current of 1mA.
+.param I_CP_MAX = 1m ; Amps
+G_CHARGE_PUMP PFD_OUT LOGIC_GND I = { V(PFD_INHIBIT_DIG) > V(LOGIC_VDD)/2 ? 0 : (V(PFD_UP) > V(LOGIC_VDD)/2 ? I_CP_MAX : (V(PFD_DOWN) > V(LOGIC_VDD)/2 ? -I_CP_MAX : 0)) }
+
+* PFD_OUT rise/fall time (tr=3.4ns typ, tf=1.9ns typ)
+* These are for the output voltage when driving a load. The current source itself doesn't have tr/tf in this model, but the voltage across a capacitor will.
+* This is implicitly handled by the external loop filter.
+
+* --- Current Consumption Modeling ---
+* IDD(INH): 0.35uA typ, 1uA max (VCO INHIBIT = high, PFD is inhibited)
+* IDD(Z): 1uA max (PFD INHIBIT = VDD, VCO OUT inhibited)
+* IDD(VCO): 8.4mA typ, 17mA max (VCO active)
+* IDD(PFD): 3mA max (PFD active)
+
+* Quiescent current when inhibited (LOGIC_VDD)
+G_IDD_INH_LOGIC LOGIC_VDD LOGIC_GND I = { (V(VCO_INHIBIT_DIG) > V(LOGIC_VDD)/2 & V(PFD_INHIBIT_DIG) > V(LOGIC_VDD)/2) ? 0.5u : 0 }
+* Quiescent current when inhibited (VCO_VDD)
+G_IDD_INH_VCO VCO_VDD VCO_GND I = { (V(VCO_INHIBIT_DIG) > V(LOGIC_VDD)/2 & V(PFD_INHIBIT_DIG) > V(LOGIC_VDD)/2) ? 0.5u : 0 }
+
+* VCO operating current (VCO_VDD)
+* This current is proportional to frequency and VDD.
+G_IDD_VCO_ACTIVE VCO_VDD VCO_GND I = { V(VCO_INHIBIT_DIG) < V(LOGIC_VDD)/2 ? (8.4m * (V(VCO_FREQ_HZ) / FOSC_NOM) * (V(VCO_VDD) / VDD_VCO_NOM)) : 0 }
+
+* PFD operating current (LOGIC_VDD)
+* This current is drawn when PFD is active and processing signals.
+G_IDD_PFD_ACTIVE LOGIC_VDD LOGIC_GND I = { V(PFD_INHIBIT_DIG) < V(LOGIC_VDD)/2 ? 3m : 0 }
+
+* --- Output Characteristics (VOH/VOL) ---
+* VOH: 2.4V min @ IOH = -2mA
+* VOL: 0.3V max @ IOL = 2mA
+* These are handled by the output driver's internal resistance and the behavioral source clamping.
+* The `B_VCO_OUT_DRIVER` already outputs `V(VCO_VDD)` or `V(VCO_GND)`.
+* The `R_VCO_OUT_SER` models the output impedance.
+* For `VCO_OUT`, if `V(VCO_VDD)` is 3.3V, `VOH` will be 3.3V - (2mA * 10ohm) = 3.3V - 0.02V = 3.28V (meets 2.4V min).
+* `VOL` will be 0V + (2mA * 10ohm) = 0.02V (meets 0.3V max).
+
+.ends TLC2932A

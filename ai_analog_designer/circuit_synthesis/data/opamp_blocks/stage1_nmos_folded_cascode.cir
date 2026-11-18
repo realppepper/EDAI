@@ -1,0 +1,15 @@
+* 블록: 1단 - NMOS 입력 폴디드 캐스코드
+* 단자: VDD VSS IN_PLUS IN_MINUS NB PB VBN VBP OUT_LO OUT_HI
+* PMOS 입력 폴디드 캐스코드를 위아래로 뒤집은 구조. 입력 공통모드 범위가 VDD 쪽을 포함하고 0 V 근처는 쓰지 못한다.
+* OUT_LO 는 아래쪽(NMOS 캐스코드) 출력, OUT_HI 는 위쪽(PMOS 캐스코드) 출력.
+XMT   tail NB       VSS  VSS  nfet_06v0 w=11.5u l=2u m=4
+XM1   fp1  IN_MINUS tail VSS  nfet_06v0 w=20u l=1u m=2
+XM2   fp2  IN_PLUS  tail VSS  nfet_06v0 w=20u l=1u m=2
+XMP3  fp1  PB       VDD  VDD  pfet_06v0 w=24u l=2u m=4
+XMP4  fp2  PB       VDD  VDD  pfet_06v0 w=24u l=2u m=4
+XMPC3 d1   VBP      fp1  VDD  pfet_06v0 w=40u l=1u
+XMPC4 OUT_HI VBP    fp2  VDD  pfet_06v0 w=40u l=1u
+XMN3  x1   d1       VSS  VSS  nfet_06v0 w=11.5u l=2u m=2
+XMN4  x2   d1       VSS  VSS  nfet_06v0 w=11.5u l=2u m=2
+XMNC1 d1   VBN      x1   VSS  nfet_06v0 w=23u l=2u
+XMNC2 OUT_LO VBN    x2   VSS  nfet_06v0 w=23u l=2u

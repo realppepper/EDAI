@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autonomous Analog Circuit Design & Verification Visualizer</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --background: #090d16;
+      --card: #0f172a;
+      --card-hover: #1e293b;
+      --border: #334155;
+      --foreground: #f8fafc;
+      --muted-foreground: #94a3b8;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.25);
+      --accent: #818cf8;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    .glow-card {
+      box-shadow: 0 0 20px -5px rgba(56, 189, 248, 0.15);
+    }
+    .node-pin {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .node-pin:hover {
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 8px var(--primary));
+    }
+    .tab-btn.active {
+      background-color: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border-bottom: 2px solid #38bdf8;
+    }
+    .code-box {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+  </style>
+</head>
+<body class="min-h-screen custom-scrollbar p-3 md:p-6 antialiased">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- Top Navigation & IC Selector Header -->
+    <header class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-lg flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-sky-500/10 border border-sky-500/30 rounded-xl text-sky-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+              Autonomous Analog Circuit Verifier
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Neuro-Symbolic Engine</span>
+            </h1>
+            <p class="text-xs md:text-sm text-[var(--muted-foreground)] mt-0.5">
+              Deep Visual Inspection of First-Principles AI Circuit Synthesis, PDG Scheduling & Formal Verification
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- IC Selector Pills / Dropdown -->
+      <div class="flex items-center gap-2 w-full lg:w-auto">
+        <label for="icSelect" class="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider shrink-0">Selected IC:</label>
+        <select id="icSelect" onchange="switchIC(this.value)" class="w-full lg:w-72 bg-slate-900 border border-[var(--border)] text-sky-300 font-semibold text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-sky-400">
+        </select>
+      </div>
+    </header>
+
+    <!-- Sub-Process Master Flowchart (Breadcrumb Pipeline) -->
+    <section class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-lg">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xs uppercase tracking-wider font-bold text-sky-400 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Execution Sub-Process Architecture (6 Core Phases)
+        </h2>
+        <span id="pipelineStatusBadge" class="text-xs font-medium px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300 border border-sky-500/30">Active</span>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+        <!-- Phase 1 -->
+        <div onclick="selectTab('tab-hkg')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 1</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">PDF to HKG</div>
+          <div class="text-[11px] text-slate-400 mt-1">Layout, tables & knowledge graph</div>
+        </div>
+
+        <!-- Phase 2 -->
+        <div onclick="selectTab('tab-pdg')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 2</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">PDG & Schedule</div>
+          <div class="text-[11px] text-slate-400 mt-1">Causal DAG & delay &sigma;(p)</div>
+        </div>
+
+        <!-- Phase 3 -->
+        <div onclick="selectTab('tab-synthesis')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 3</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">AI Netlist Synthesis</div>
+          <div class="text-[11px] text-slate-400 mt-1">Transistor sizing & topology</div>
+        </div>
+
+        <!-- Phase 4 -->
+        <div onclick="selectTab('tab-testbenches')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 4</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">Testbench Deck</div>
+          <div class="text-[11px] text-slate-400 mt-1">.op / .tran / .ac auto decks</div>
+        </div>
+
+        <!-- Phase 5 -->
+        <div onclick="selectTab('tab-verification')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 5</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">LTspice & SymPy</div>
+          <div class="text-[11px] text-slate-400 mt-1">Batch sim & formal interval</div>
+        </div>
+
+        <!-- Phase 6 -->
+        <div onclick="selectTab('tab-healing')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 6</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">Self-Healing Loop</div>
+          <div class="text-[11px] text-slate-400 mt-1">Shortfall &rarr; Re-synthesis</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Metrics Cards for Current Selected IC -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">TARGET IC / CATEGORY</div>
+        <div id="statIcName" class="text-lg md:text-xl font-bold text-white mt-1 truncate">--</div>
+        <div id="statCategory" class="text-xs text-sky-400 truncate mt-0.5">--</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">EXTRACTED SPECS</div>
+        <div id="statSpecCount" class="text-lg md:text-xl font-bold text-white mt-1">--</div>
+        <div id="statPinCount" class="text-xs text-indigo-400 mt-0.5">-- Pins Identified</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">CLOSED-LOOP ITERATIONS</div>
+        <div id="statLoopCount" class="text-lg md:text-xl font-bold text-white mt-1">--</div>
+        <div id="statLoopStatus" class="text-xs text-amber-400 mt-0.5">2 Iterations Executed</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">FINAL VERIFICATION PASS</div>
+        <div id="statPassRate" class="text-lg md:text-xl font-bold text-emerald-400 mt-1">--%</div>
+        <div id="statPassRateSub" class="text-xs text-slate-400 mt-0.5">LTspice Neuro-Symbolic</div>
+      </div>
+    </section>
+
+    <!-- Interactive Navigation Tabs -->
+    <div class="border-b border-slate-700 flex overflow-x-auto gap-2 text-sm font-medium">
+      <button onclick="selectTab('tab-overview')" id="btn-tab-overview" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all active">
+        1. Sub-Process Flowchart
+      </button>
+      <button onclick="selectTab('tab-pdg')" id="btn-tab-pdg" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        2. Port Dependency Graph & Timing
+      </button>
+      <button onclick="selectTab('tab-synthesis')" id="btn-tab-synthesis" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        3. AI Netlist & Transistor Sizing
+      </button>
+      <button onclick="selectTab('tab-testbenches')" id="btn-tab-testbenches" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        4. Testbench Decks
+      </button>
+      <button onclick="selectTab('tab-verification')" id="btn-tab-verification" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        5. SymPy Oracle & Measurements
+      </button>
+      <button onclick="selectTab('tab-healing')" id="btn-tab-healing" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        6. Closed-Loop Diagnostics
+      </button>
+      <button onclick="selectTab('tab-hkg')" id="btn-tab-hkg" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        7. Knowledge Graph (HKG)
+      </button>
+    </div>
+
+    <!-- TAB 1: SUB-PROCESS FLOWCHART & SYSTEM ARCHITECTURE -->
+    <div id="tab-overview" class="tab-content space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+          Detailed Internal Sub-Processes Execution Flow
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-6">
+          Every analog IC undergoes an automated, six-phase end-to-end synthesis and verification cycle without template hardcoding.
+        </p>
+
+        <!-- SVG Flowchart -->
+        <div class="overflow-x-auto py-2">
+          <svg class="w-full min-w-[850px] h-64 text-slate-200" viewBox="0 0 950 260">
+            <defs>
+              <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0284c7"/>
+                <stop offset="100%" stop-color="#0369a1"/>
+              </linearGradient>
+              <linearGradient id="grad-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6366f1"/>
+                <stop offset="100%" stop-color="#4f46e5"/>
+              </linearGradient>
+              <linearGradient id="grad-emerald" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#059669"/>
+                <stop offset="100%" stop-color="#047857"/>
+              </linearGradient>
+              <linearGradient id="grad-amber" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#d97706"/>
+                <stop offset="100%" stop-color="#b45309"/>
+              </linearGradient>
+              <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+              </marker>
+              <marker id="arrow-feedback" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b"/>
+              </marker>
+            </defs>
+
+            <!-- Box 1: PDF to HKG -->
+            <rect x="20" y="40" width="130" height="90" rx="12" fill="url(#grad-blue)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="85" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">1. PDF Parsing</text>
+            <text x="85" y="90" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Layout & Tables</text>
+            <text x="85" y="105" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; HKG Graph</text>
+
+            <line x1="150" y1="85" x2="180" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 2: PDG Scheduling -->
+            <rect x="180" y="40" width="130" height="90" rx="12" fill="url(#grad-blue)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="245" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">2. PDG Engine</text>
+            <text x="245" y="90" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Pin Dependency</text>
+            <text x="245" y="105" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Delay Schedule &sigma;(p)</text>
+
+            <line x1="310" y1="85" x2="340" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 3: LLM Circuit Synthesis -->
+            <rect x="340" y="40" width="140" height="90" rx="12" fill="url(#grad-purple)" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="410" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">3. AI Synthesis</text>
+            <text x="410" y="90" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; First-Principles</text>
+            <text x="410" y="105" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; Transistor Sizing</text>
+
+            <line x1="480" y1="85" x2="510" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 4: Testbench Deck Synthesis -->
+            <rect x="510" y="40" width="130" height="90" rx="12" fill="url(#grad-purple)" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="575" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">4. Testbench Decks</text>
+            <text x="575" y="90" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; .op / .tran / .ac</text>
+            <text x="575" y="105" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; Auto .meas Bindings</text>
+
+            <line x1="640" y1="85" x2="670" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 5: LTspice & SymPy -->
+            <rect x="670" y="40" width="130" height="90" rx="12" fill="url(#grad-emerald)" stroke="#34d399" stroke-width="1.5"/>
+            <text x="735" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">5. Verification</text>
+            <text x="735" y="90" text-anchor="middle" font-size="10" fill="#d1fae5">&bull; Headless LTspice</text>
+            <text x="735" y="105" text-anchor="middle" font-size="10" fill="#d1fae5">&bull; SymPy Oracles</text>
+
+            <line x1="800" y1="85" x2="830" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 6: Decision / Self-Healing -->
+            <polygon points="885,55 935,85 885,115 835,85" fill="url(#grad-amber)" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="885" y="82" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">All</text>
+            <text x="885" y="95" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">Pass?</text>
+
+            <!-- Feedback Loop Arrow back to Phase 3 -->
+            <path d="M 885 115 L 885 180 L 410 180 L 410 135" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrow-feedback)"/>
+            <text x="645" y="195" text-anchor="middle" font-size="10" font-weight="bold" fill="#fbbf24">Self-Healing Iteration Feedback (Shortfalls &amp; Diagnosis)</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PORT DEPENDENCY GRAPH (PDG) & INTERACTIVE TIMING -->
+    <div id="tab-pdg" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              Interactive Port Dependency Graph (PDG) &amp; Startup Timeline
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+              Topological activation sequence derived from physical pin roles (Power &rarr; Bias &rarr; Signal &rarr; Output)
+            </p>
+          </div>
+
+          <!-- Playback Controls -->
+          <div class="flex items-center gap-3 bg-slate-900 border border-slate-700 px-4 py-2 rounded-xl">
+            <button onclick="toggleTimelinePlay()" id="btnPlayPause" class="text-sky-400 hover:text-sky-300 font-bold text-xs flex items-center gap-1.5">
+              <svg id="playIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg>
+              <span>Play Sequence</span>
+            </button>
+            <input type="range" id="timeSlider" min="0" max="10" step="0.5" value="0" oninput="updateTimelineTime(parseFloat(this.value))" class="w-36 accent-sky-400 cursor-pointer">
+            <span id="timeDisplay" class="text-xs font-mono font-bold text-sky-300 min-w-[55px] text-right">0.0 &mu;s</span>
+          </div>
+        </div>
+
+        <!-- Dynamic PDG SVG Container -->
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 overflow-x-auto min-h-[320px] flex items-center justify-center">
+          <svg id="pdgSvg" class="w-full max-w-4xl h-72 text-slate-200" viewBox="0 0 800 280">
+            <!-- Rendered dynamically by renderPDG() -->
+          </svg>
+        </div>
+
+        <!-- Schedule Table -->
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="text-slate-400 bg-slate-900/60 uppercase text-[11px] border-b border-slate-800">
+              <tr>
+                <th class="px-3 py-2">Pin Name</th>
+                <th class="px-3 py-2">Physical Role</th>
+                <th class="px-3 py-2">Direction</th>
+                <th class="px-3 py-2">Settling Delay &sigma;(p)</th>
+                <th class="px-3 py-2">Status at Current Time</th>
+              </tr>
+            </thead>
+            <tbody id="pdgTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: AI NETLIST SYNTHESIS & ARCHITECTURE -->
+    <div id="tab-synthesis" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+          First-Principles Transistor Netlist Synthesis &amp; Sizing Rationale
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          LLM-generated SPICE netlist without hardcoded circuit templates. Compare Loop 1 (initial synthesis) vs Loop 2 (autonomous refinement).
+        </p>
+
+        <!-- Loop Selector for Netlist -->
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-xs text-slate-400 font-semibold uppercase">View Netlist:</span>
+          <button onclick="switchNetlistIteration(1)" id="btnNetlistIter1" class="px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold">Iteration 1</button>
+          <button onclick="switchNetlistIteration(2)" id="btnNetlistIter2" class="px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold">Iteration 2</button>
+        </div>
+
+        <!-- Architecture Rationale Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 mb-4">
+          <h4 class="text-xs uppercase font-bold text-sky-400 mb-1">Architecture Rationale &amp; Block Topology</h4>
+          <p id="architectureSummaryText" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line"></p>
+        </div>
+
+        <!-- Netlist Code Box -->
+        <div class="relative bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span id="netlistFilename" class="font-mono text-sky-300">circuit.cir</span>
+            <span>SPICE Dialect: LTspice</span>
+          </div>
+          <pre id="netlistCodePre" class="p-4 text-xs font-mono text-slate-300 overflow-x-auto max-h-96 custom-scrollbar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: TESTBENCH DECKS -->
+    <div id="tab-testbenches" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+          Synthesized Multi-Domain Testbenches
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          Automated SPICE testbenches for DC Operating Point (.op), Dynamic Transient (.tran), and AC Frequency Sweeps (.ac) aligned with PDG schedule.
+        </p>
+
+        <div class="flex items-center gap-2 mb-4" id="tbDeckButtons">
+          <!-- Dynamically filled with testbench buttons -->
+        </div>
+
+        <div class="relative bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span id="currentTbName" class="font-mono text-purple-300">tb_dc_op.cir</span>
+            <span>Analysis Mode: Automated .meas</span>
+          </div>
+          <pre id="tbCodePre" class="p-4 text-xs font-mono text-slate-300 overflow-x-auto max-h-96 custom-scrollbar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: SYMPY ORACLE VERIFICATION & MEASUREMENTS -->
+    <div id="tab-verification" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              Neuro-Symbolic Specification Matrix &amp; Oracle Interval Audit
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+              Datasheet specifications formally bounded by SymPy interval algebra &amp; evaluated against LTspice measurements.
+            </p>
+          </div>
+
+          <!-- Filter Search -->
+          <div class="flex items-center gap-2 w-full md:w-auto">
+            <input type="text" id="specSearchInput" oninput="filterSpecs(this.value)" placeholder="Search parameter (e.g. VCC, Gain)..." class="text-xs bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-slate-200 focus:outline-none focus:border-sky-400 w-full md:w-56">
+          </div>
+        </div>
+
+        <!-- Spec Table -->
+        <div class="overflow-x-auto max-h-[460px] custom-scrollbar border border-slate-800 rounded-xl">
+          <table class="w-full text-xs text-left">
+            <thead class="sticky top-0 text-slate-300 bg-slate-900 uppercase text-[11px] border-b border-slate-800 shadow">
+              <tr>
+                <th class="px-3 py-2.5">Parameter Symbol</th>
+                <th class="px-3 py-2.5">Min Limit</th>
+                <th class="px-3 py-2.5">Typ Target</th>
+                <th class="px-3 py-2.5">Max Limit</th>
+                <th class="px-3 py-2.5">Unit</th>
+                <th class="px-3 py-2.5">Measured in Sim</th>
+                <th class="px-3 py-2.5">SymPy Status</th>
+              </tr>
+            </thead>
+            <tbody id="specTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: CLOSED-LOOP DIAGNOSTICS & REFINEMENT -->
+    <div id="tab-healing" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+          Closed-Loop Refinement History &amp; Shortfall Analysis
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-6">
+          Step-by-step diagnostic breakdown showing what fell short in each loop iteration and what improvements were applied.
+        </p>
+
+        <div id="diagnosticsContainer" class="space-y-6">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 7: HARDWARE KNOWLEDGE GRAPH (HKG) -->
+    <div id="tab-hkg" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+          Hardware Knowledge Graph (HKG) Topology
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          Hierarchical document entity graph extracted from PDF text, layout blocks, and electrical tables.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h4 class="text-xs font-bold uppercase text-sky-400 mb-2">Device Metadata</h4>
+            <div id="hkgDeviceMetadata" class="text-xs text-slate-300 space-y-1.5"></div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h4 class="text-xs font-bold uppercase text-indigo-400 mb-2">Pin Definitions &amp; Roles</h4>
+            <div id="hkgPinList" class="text-xs text-slate-300 max-h-48 overflow-y-auto custom-scrollbar space-y-1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Embedded Benchmark Data -->
+  <script>
+    const BENCHMARK_DATA = [{"id": "LM317", "folder_name": "LM317", "summary": {"part_name": "LM317", "subckt_name": "LM317", "pass_rate_percent": 0.0, "spec_count": 16, "iterations": [{"iteration": 1, "netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM317\\LM317_iter1.cir", "pass_rate_percent": 0.0, "passed_specs": 0, "failed_specs": 2, "unmeasured_specs": 10, "passed_symbols": [], "simulation_errors": [], "shortfalls": ["Param 'Output voltage range' violated: Parameter 'Output voltage range' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Output current' violated: Parameter 'Output current' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Line regulation' violated: Parameter 'Line regulation' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Load regulation' violated: Parameter 'Load regulation' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'PSRR' violated: Parameter 'PSRR' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Power dissipation' violated: Parameter 'Power dissipation' was not observed in simulation measurements. (Measured: Unobserved)"], "improvements": ["Initial first-principles topology and Level-1 parameter sizing synthesized from scratch."], "architecture_summary": "The LM317 adjustable voltage regulator is designed around a core error amplifier, a pass transistor, and a voltage reference. The overall architecture aims to provide a stable output voltage by comparing a fraction of the output voltage with a fixed internal reference voltage.\n\n**1. Reference Voltage Generation:**\nA critical component is the internal 1.25V reference voltage. This is typically generated using a bandgap reference circuit. For this SPICE model, a simplified approach is taken where a stable 1.25V is generated using a Zener diode (D_REF) and a current source (I_REF) to establish a stable voltage at node `VREF`. This reference voltage is then buffered to provide a low-impedance reference for the error amplifier.\n\n**2. Error Amplifier:**\nThe error amplifier is a differential amplifier responsible for comparing the feedback voltage from the output (via the ADJUST pin) with the internal 1.25V reference. A standard two-stage operational transconductance amplifier (OTA) topology is used.\n*   **Input Stage:** A differential pair (Q1, Q2) with a current mirror load (Q3, Q4) forms the input stage. This stage provides high input impedance and converts the differential input voltage into a differential current.\n*   **Second Stage:** A common-emitter amplifier (Q5) with an active load (Q6) provides additional gain.\n*   **Output Stage:** A buffer (Q7) drives the pass transistor.\n*   **Bias:** A current mirror (Q8, Q9) sets the bias current for the differential pair, ensuring consistent operation.\n*   **Frequency Compensation:** A compensation capacitor (C_COMP) is added between the output of the first stage and the input of the second stage to ensure stability and prevent oscillations. This capacitor is crucial for achieving the specified PSRR and transient response.\n\n**3. Pass Transistor:**\nA large NPN power transistor (Q_PASS) acts as the series pass element. Its collector is connected to the INPUT pin, its emitter to the OUTPUT pin, and its base is driven by the error amplifier. The size of this transistor is critical for handling the maximum output current of 1.5A and dissipating the power.\n\n**4. Feedback Network:**\nThe output voltage is set by an external resistor divider connected between the OUTPUT, ADJUST, and ground. Internally, the ADJUST pin is connected to the inverting input of the error amplifier. The non-inverting input receives the 1.25V reference. The error amplifier drives the base of the pass transistor to maintain a constant 1.25V across the external resistor R1 (between OUTPUT and ADJUST). This results in the output voltage formula: VOUT = VREF * (1 + R2/R1) + I_ADJ * R2. For the internal model, we assume R1 is internal and R2 is external, or more commonly, R1 is external and R2 is external. For the internal model, the feedback is taken directly from the ADJUST pin.\n\n**5. Current Limiting:**\nCurrent limiting is implemented using a sense resistor (R_SENSE) in series with the output of the pass transistor and a current-sensing transistor (Q_CL). When the current through R_SENSE exceeds a threshold, Q_CL turns on, shunting current away from the base of the pass transistor, thereby limiting the output current. The threshold is set to approximately 1.5A.\n\n**6. Thermal Overload Protection:**\nThermal shutdown is modeled behaviorally. A temperature-sensing element (e.g., a diode or BJT Vbe junction) is used to detect excessive die temperature. When the temperature exceeds a threshold (e.g., 150\u00b0C), a comparator triggers, shutting down the pass transistor. This is modeled using a behavioral voltage source that pulls down the error amplifier output if the internal temperature (represented by `TJ`) exceeds a limit.\n\n**7. Safe Operating Area (SOA) Protection:**\nSOA protection prevents the pass transistor from operating outside its safe region (high voltage and high current simultaneously). This is typically achieved by reducing the current limit as the input-output differential voltage increases. This is modeled by making the current limit threshold dependent on the `INPUT` and `OUTPUT` voltages.\n\n**8. Line and Load Regulation:**\nThese specifications are primarily achieved through the high gain of the error amplifier and the low output impedance of the pass transistor driven by the feedback loop. The chosen component values for the error amplifier (transistor sizes, bias currents) are selected to provide sufficient open-loop gain.\n\n**9. PSRR (Power Supply Rejection Ratio):**\nPSRR is improved by ensuring that the reference voltage and the error amplifier's bias currents are insensitive to variations in the input voltage. The bandgap reference inherently provides good PSRR. Additionally, the differential input stage of the error amplifier helps reject common-mode noise from the supply. The compensation capacitor also plays a role in filtering high-frequency noise.\n\n**Component Sizing Methodology:**\n\n*   **Reference Voltage (VREF):** A Zener diode with a breakdown voltage around 1.25V is ideal. A current source of a few hundred microamperes (e.g., 200uA) is used to bias it.\n*   **Error Amplifier:**\n    *   **Differential Pair (Q1, Q2):** Matched NPN transistors. W/L for MOSFETs or emitter area for BJTs are chosen for reasonable transconductance. Bias current is set by Q8, Q9.\n    *   **Current Mirror Load (Q3, Q4):** Matched PNP transistors.\n    *   **Second Stage (Q5, Q6):** Q5 (NPN) provides voltage gain. Q6 (PNP) acts as an active load.\n    *   **Output Buffer (Q7):** NPN emitter follower to drive the pass transistor base.\n    *   **Bias Current Mirror (Q8, Q9):** Sets the tail current for the differential pair, typically in the range of tens to hundreds of microamperes.\n    *   **Compensation Capacitor (C_COMP):** Typically in the range of 10pF to 100pF, chosen to set the dominant pole for stability.\n*   **Pass Transistor (Q_PASS):** A large NPN transistor capable of handling 1.5A. Its current gain (beta) should be high enough to ensure the error amplifier can drive it effectively. Emitter area is scaled significantly.\n*   **Current Limit (R_SENSE, Q_CL):** R_SENSE is chosen such that at 1.5A, the voltage drop across it is sufficient to turn on Q_CL (e.g., 0.7V). So, R_SENSE = 0.7V / 1.5A \u2248 0.47 Ohms. Q_CL is a small NPN transistor.\n*   **Thermal Shutdown:** Modeled behaviorally using a B-source that monitors `TJ` and disables the output if `TJ` exceeds 150\u00b0C.\n*   **SOA Protection:** Modeled behaviorally by adjusting the current limit threshold based on `V(INPUT) - V(OUTPUT)`.\n\n**Startup Sequence:**\nThe `PORT DEPENDENCY SCHEDULE` is handled by the inherent behavior of the circuit. The `INPUT` pin is activated first, providing power. The `ADJUST` pin is then activated, allowing the feedback network to establish. Finally, the `OUTPUT` pin becomes active as the regulator stabilizes. The internal circuit will naturally follow this sequence as power is applied and feedback is established. The behavioral sources for protection are designed to be active only when the circuit is powered up and operating.\n\nThis model provides a functional representation of the LM317's key features and protection mechanisms, allowing for simulation of its regulation characteristics, current limiting, and thermal behavior. The use of standard SPICE models and behavioral sources ensures compatibility and accuracy.", "design_rationale": {"summary": "The LM317 adjustable voltage regulator is designed around a core error amplifier, a pass transistor, and a voltage reference. The overall architecture aims to provide a stable output voltage by comparing a fraction of the output voltage with a fixed internal reference voltage.\n\n**1. Reference Voltage Generation:**\nA critical component is the internal 1.25V reference voltage. This is typically generated using a bandgap reference circuit. For this SPICE model, a simplified approach is taken where a stable 1.25V is generated using a Zener diode (D_REF) and a current source (I_REF) to establish a stable voltage at node `VREF`. This reference voltage is then buffered to provide a low-impedance reference for the error amplifier.\n\n**2. Error Amplifier:**\nThe error amplifier is a differential amplifier responsible for comparing the feedback voltage from the output (via the ADJUST pin) with the internal 1.25V reference. A standard two-stage operational transconductance amplifier (OTA) topology is used.\n*   **Input Stage:** A differential pair (Q1, Q2) with a current mirror load (Q3, Q4) forms the input stage. This stage provides high input impedance and converts the differential input voltage into a differential current.\n*   **Second Stage:** A common-emitter amplifier (Q5) with an active load (Q6) provides additional gain.\n*   **Output Stage:** A buffer (Q7) drives the pass transistor.\n*   **Bias:** A current mirror (Q8, Q9) sets the bias current for the differential pair, ensuring consistent operation.\n*   **Frequency Compensation:** A compensation capacitor (C_COMP) is added between the output of the first stage and the input of the second stage to ensure stability and prevent oscillations. This capacitor is crucial for achieving the specified PSRR and transient response.\n\n**3. Pass Transistor:**\nA large NPN power transistor (Q_PASS) acts as the series pass element. Its collector is connected to the INPUT pin, its emitter to the OUTPUT pin, and its base is driven by the error amplifier. The size of this transistor is critical for handling the maximum output current of 1.5A and dissipating the power.\n\n**4. Feedback Network:**\nThe output voltage is set by an external resistor divider connected between the OUTPUT, ADJUST, and ground. Internally, the ADJUST pin is connected to the inverting input of the error amplifier. The non-inverting input receives the 1.25V reference. The error amplifier drives the base of the pass transistor to maintain a constant 1.25V across the external resistor R1 (between OUTPUT and ADJUST). This results in the output voltage formula: VOUT = VREF * (1 + R2/R1) + I_ADJ * R2. For the internal model, we assume R1 is internal and R2 is external, or more commonly, R1 is external and R2 is external. For the internal model, the feedback is taken directly from the ADJUST pin.\n\n**5. Current Limiting:**\nCurrent limiting is implemented using a sense resistor (R_SENSE) in series with the output of the pass transistor and a current-sensing transistor (Q_CL). When the current through R_SENSE exceeds a threshold, Q_CL turns on, shunting current away from the base of the pass transistor, thereby limiting the output current. The threshold is set to approximately 1.5A.\n\n**6. Thermal Overload Protection:**\nThermal shutdown is modeled behaviorally. A temperature-sensing element (e.g., a diode or BJT Vbe junction) is used to detect excessive die temperature. When the temperature exceeds a threshold (e.g., 150\u00b0C), a comparator triggers, shutting down the pass transistor. This is modeled using a behavioral voltage source that pulls down the error amplifier output if the internal temperature (represented by `TJ`) exceeds a limit.\n\n**7. Safe Operating Area (SOA) Protection:**\nSOA protection prevents the pass transistor from operating outside its safe region (high voltage and high current simultaneously). This is typically achieved by reducing the current limit as the input-output differential voltage increases. This is modeled by making the current limit threshold dependent on the `INPUT` and `OUTPUT` voltages.\n\n**8. Line and Load Regulation:**\nThese specifications are primarily achieved through the high gain of the error amplifier and the low output impedance of the pass transistor driven by the feedback loop. The chosen component values for the error amplifier (transistor sizes, bias currents) are selected to provide sufficient open-loop gain.\n\n**9. PSRR (Power Supply Rejection Ratio):**\nPSRR is improved by ensuring that the reference voltage and the error amplifier's bias currents are insensitive to variations in the input voltage. The bandgap reference inherently provides good PSRR. Additionally, the differential input stage of the error amplifier helps reject common-mode noise from the supply. The compensation capacitor also plays a role in filtering high-frequency noise.\n\n**Component Sizing Methodology:**\n\n*   **Reference Voltage (VREF):** A Zener diode with a breakdown voltage around 1.25V is ideal. A current source of a few hundred microamperes (e.g., 200uA) is used to bias it.\n*   **Error Amplifier:**\n    *   **Differential Pair (Q1, Q2):** Matched NPN transistors. W/L for MOSFETs or emitter area for BJTs are chosen for reasonable transconductance. Bias current is set by Q8, Q9.\n    *   **Current Mirror Load (Q3, Q4):** Matched PNP transistors.\n    *   **Second Stage (Q5, Q6):** Q5 (NPN) provides voltage gain. Q6 (PNP) acts as an active load.\n    *   **Output Buffer (Q7):** NPN emitter follower to drive the pass transistor base.\n    *   **Bias Current Mirror (Q8, Q9):** Sets the tail current for the differential pair, typically in the range of tens to hundreds of microamperes.\n    *   **Compensation Capacitor (C_COMP):** Typically in the range of 10pF to 100pF, chosen to set the dominant pole for stability.\n*   **Pass Transistor (Q_PASS):** A large NPN transistor capable of handling 1.5A. Its current gain (beta) should be high enough to ensure the error amplifier can drive it effectively. Emitter area is scaled significantly.\n*   **Current Limit (R_SENSE, Q_CL):** R_SENSE is chosen such that at 1.5A, the voltage drop across it is sufficient to turn on Q_CL (e.g., 0.7V). So, R_SENSE = 0.7V / 1.5A \u2248 0.47 Ohms. Q_CL is a small NPN transistor.\n*   **Thermal Shutdown:** Modeled behaviorally using a B-source that monitors `TJ` and disables the output if `TJ` exceeds 150\u00b0C.\n*   **SOA Protection:** Modeled behaviorally by adjusting the current limit threshold based on `V(INPUT) - V(OUTPUT)`.\n\n**Startup Sequence:**\nThe `PORT DEPENDENCY SCHEDULE` is handled by the inherent behavior of the circuit. The `INPUT` pin is activated first, providing power. The `ADJUST` pin is then activated, allowing the feedback network to establish. Finally, the `OUTPUT` pin becomes active as the regulator stabilizes. The internal circuit will naturally follow this sequence as power is applied and feedback is established. The behavioral sources for protection are designed to be active only when the circuit is powered up and operating.\n\nThis model provides a functional representation of the LM317's key features and protection mechanisms, allowing for simulation of its regulation characteristics, current limiting, and thermal behavior. The use of standard SPICE models and behavioral sources ensures compatibility and accuracy."}}, {"iteration": 2, "netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM317\\LM317_iter2.cir", "pass_rate_percent": 0.0, "passed_specs": 0, "failed_specs": 0, "unmeasured_specs": 12, "passed_symbols": [], "simulation_errors": ["C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM317\\tb_ac_sweep.cir(30): syntax error", "  --> .meas AC PSRR_dB PARAM -20*log10(V(OUTPUT)) AT 120Hz", "  --> ^^^^^^^^^"], "shortfalls": ["Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM317\\tb_ac_sweep.cir(30): syntax error", "Compiler/Simulation Error:   --> .meas AC PSRR_dB PARAM -20*log10(V(OUTPUT)) AT 120Hz", "Compiler/Simulation Error:   --> ^^^^^^^^^", "Param 'Output voltage range' violated: Parameter 'Output voltage range' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Output current' violated: Parameter 'Output current' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Line regulation' violated: Parameter 'Line regulation' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Load regulation' violated: Parameter 'Load regulation' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'PSRR' violated: Parameter 'PSRR' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Power dissipation' violated: Parameter 'Power dissipation' was not observed in simulation measurements. (Measured: Unobserved)"], "improvements": ["Topology refinement: The LM317 is a classic adjustable linear voltage regulator. The core architecture consists of a precision voltage reference, an error amplif..."], "architecture_summary": "The LM317 is a classic adjustable linear voltage regulator. The core architecture consists of a precision voltage reference, an error amplifier, and a pass transistor. The output voltage is set by an external resistor divider connected between the OUTPUT, ADJUST, and ground pins.\n\n**Core Architecture Breakdown:**\n\n1.  **Voltage Reference (Vref):** A stable 1.25V reference voltage is crucial for the LM317's operation. This is typically generated using a bandgap reference circuit. For this SPICE model, a simplified behavioral voltage source will be used to represent the ideal 1.25V reference, connected to the non-inverting input of the error amplifier.\n\n2.  **Error Amplifier:** This is a differential amplifier that compares a fraction of the output voltage (from the resistor divider) with the internal 1.25V reference. The output of the error amplifier drives the pass transistor. A simple differential pair with an active load will be used, followed by a gain stage.\n\n3.  **Pass Transistor:** A large NPN bipolar junction transistor (BJT) or a power MOSFET acts as the series pass element, regulating the output voltage. Given the LM317's historical context, an NPN BJT is more appropriate. Its collector is connected to the INPUT, its emitter to the OUTPUT, and its base is driven by the error amplifier.\n\n4.  **Feedback Network:** The external resistor divider (R1 and R2 in a typical application circuit) forms the feedback network. The voltage at the ADJUST pin is the feedback point, which is compared to the internal reference. The LM317's internal circuitry ensures that the voltage between the OUTPUT and ADJUST pins is maintained at 1.25V. This is achieved by connecting the inverting input of the error amplifier to the ADJUST pin.\n\n5.  **Bias Circuitry:** Constant current sources are needed to bias the error amplifier and other internal stages. Simple current mirrors will be used for this purpose.\n\n6.  **Protection Circuits:**\n    *   **Current Limiting:** This prevents excessive output current by reducing the base drive to the pass transistor when the current exceeds a certain threshold (e.g., 1.5A). This can be implemented with a sense resistor in series with the output and a BJT that shunts current away from the pass transistor's base.\n    *   **Thermal Overload Protection:** This senses the die temperature and shuts down the device if it exceeds a safe limit (e.g., 150\u00b0C). A behavioral model or a simple BJT-based temperature sensor can be used. For this model, a behavioral shutdown will be implemented.\n    *   **Safe Operating Area (SOA) Protection:** This limits the power dissipation in the pass transistor by reducing the current limit as the input-output differential voltage increases. This is a more complex function, often implemented with a Vbe multiplier and current sense. A simplified behavioral model will be used.\n\n**Component Sizing Methodology:**\n\n*   **Voltage Reference (Vref):** Set to 1.25V.\n*   **Error Amplifier:**\n    *   **Differential Pair (M1, M2):** W/L ratio chosen for reasonable transconductance and input impedance. A typical W/L of 10u/1u for PMOS is a good starting point.\n    *   **Active Load (M3, M4):** Current mirror with W/L ratios to set the differential pair's tail current and provide high gain. W/L of 5u/1u for NMOS.\n    *   **Gain Stage (M5, M6):** Common source stage for additional gain. W/L of 20u/1u for M5 (PMOS) and 10u/1u for M6 (NMOS).\n    *   **Compensation Capacitor (Ccomp):** Crucial for stability. A value of 10pF-30pF is typical for linear regulators to ensure stability with various output capacitor loads. We'll start with 20pF.\n*   **Bias Current Sources:** Current mirrors (M7-M10) will be designed to provide appropriate bias currents (e.g., 100uA - 500uA) for the error amplifier and other stages. W/L ratios will be adjusted to achieve desired current levels.\n*   **Pass Transistor (Q_pass):** A large NPN BJT. Its current gain (beta) and saturation characteristics are important. A generic NPN model will be used. The base current will be driven by the error amplifier's output.\n*   **Current Limit (Q_cl, R_sense):**\n    *   `R_sense`: Placed in series with the output. Its value is chosen such that when the output current reaches 1.5A, the voltage drop across it (V_sense) is sufficient to turn on `Q_cl` (e.g., 0.7V). So, `R_sense = 0.7V / 1.5A = 0.467 Ohms`.\n    *   `Q_cl`: A small NPN BJT that shunts current from the base of `Q_pass` when `V_sense` is high enough.\n*   **Thermal Shutdown:** A behavioral model will be used, triggering at 150\u00b0C.\n*   **SOA Protection:** A behavioral model will be used to limit current based on `V_IN - V_OUT`.\n*   **Startup Sequence:** The `INPUT` pin is activated first, followed by `ADJUST`, and then `OUTPUT`. This ensures the internal circuitry has time to stabilize before the output is expected to regulate.\n\n**Addressing Previous Simulation Feedback:**\n\nThe previous simulation feedback indicates that none of the parameters were observed, and `VO` and `IO` were significantly off. This strongly suggests a fundamental issue with the previous netlist, likely a non-functional circuit or incorrect measurement setup.\n\nMy approach will ensure:\n1.  **Correct Subcircuit Definition and Pin Order:** Adhering strictly to `.subckt LM317 ADJUST INPUT OUTPUT`.\n2.  **Functional Core Circuit:** Building a robust error amplifier, reference, and pass transistor.\n3.  **Proper Biasing:** Ensuring all active components are in their correct operating regions.\n4.  **Protection Circuits:** Implementing current limit, thermal shutdown, and SOA protection behaviorally or with simplified transistor circuits.\n5.  **Measurement Setup (Implicit):** While I don't provide the testbench, the design will be robust enough to allow for proper measurement of all specified parameters. The `VO` and `IO` failures suggest the previous circuit might have been completely non-functional or had incorrect power connections. The current design will ensure a stable output voltage and current delivery capability.\n6.  **Parameter Calculation:** The W/L ratios and resistor values are chosen to meet the specified current and voltage levels. For instance, the 1.25V reference and the current limit of 1.5A are directly incorporated into the design.\n7.  **Line/Load Regulation:** These are inherent properties of the error amplifier's gain and the output impedance of the pass transistor. High open-loop gain in the error amplifier will lead to good regulation.\n8.  **PSRR:** This is primarily determined by the rejection of input voltage variations by the error amplifier and the pass transistor. A well-designed current mirror and high gain stages contribute to good PSRR.\n\nThis detailed architecture and sizing methodology aim to produce a convergent and accurate SPICE netlist that meets all specified requirements.", "design_rationale": {"summary": "The LM317 is a classic adjustable linear voltage regulator. The core architecture consists of a precision voltage reference, an error amplifier, and a pass transistor. The output voltage is set by an external resistor divider connected between the OUTPUT, ADJUST, and ground pins.\n\n**Core Architecture Breakdown:**\n\n1.  **Voltage Reference (Vref):** A stable 1.25V reference voltage is crucial for the LM317's operation. This is typically generated using a bandgap reference circuit. For this SPICE model, a simplified behavioral voltage source will be used to represent the ideal 1.25V reference, connected to the non-inverting input of the error amplifier.\n\n2.  **Error Amplifier:** This is a differential amplifier that compares a fraction of the output voltage (from the resistor divider) with the internal 1.25V reference. The output of the error amplifier drives the pass transistor. A simple differential pair with an active load will be used, followed by a gain stage.\n\n3.  **Pass Transistor:** A large NPN bipolar junction transistor (BJT) or a power MOSFET acts as the series pass element, regulating the output voltage. Given the LM317's historical context, an NPN BJT is more appropriate. Its collector is connected to the INPUT, its emitter to the OUTPUT, and its base is driven by the error amplifier.\n\n4.  **Feedback Network:** The external resistor divider (R1 and R2 in a typical application circuit) forms the feedback network. The voltage at the ADJUST pin is the feedback point, which is compared to the internal reference. The LM317's internal circuitry ensures that the voltage between the OUTPUT and ADJUST pins is maintained at 1.25V. This is achieved by connecting the inverting input of the error amplifier to the ADJUST pin.\n\n5.  **Bias Circuitry:** Constant current sources are needed to bias the error amplifier and other internal stages. Simple current mirrors will be used for this purpose.\n\n6.  **Protection Circuits:**\n    *   **Current Limiting:** This prevents excessive output current by reducing the base drive to the pass transistor when the current exceeds a certain threshold (e.g., 1.5A). This can be implemented with a sense resistor in series with the output and a BJT that shunts current away from the pass transistor's base.\n    *   **Thermal Overload Protection:** This senses the die temperature and shuts down the device if it exceeds a safe limit (e.g., 150\u00b0C). A behavioral model or a simple BJT-based temperature sensor can be used. For this model, a behavioral shutdown will be implemented.\n    *   **Safe Operating Area (SOA) Protection:** This limits the power dissipation in the pass transistor by reducing the current limit as the input-output differential voltage increases. This is a more complex function, often implemented with a Vbe multiplier and current sense. A simplified behavioral model will be used.\n\n**Component Sizing Methodology:**\n\n*   **Voltage Reference (Vref):** Set to 1.25V.\n*   **Error Amplifier:**\n    *   **Differential Pair (M1, M2):** W/L ratio chosen for reasonable transconductance and input impedance. A typical W/L of 10u/1u for PMOS is a good starting point.\n    *   **Active Load (M3, M4):** Current mirror with W/L ratios to set the differential pair's tail current and provide high gain. W/L of 5u/1u for NMOS.\n    *   **Gain Stage (M5, M6):** Common source stage for additional gain. W/L of 20u/1u for M5 (PMOS) and 10u/1u for M6 (NMOS).\n    *   **Compensation Capacitor (Ccomp):** Crucial for stability. A value of 10pF-30pF is typical for linear regulators to ensure stability with various output capacitor loads. We'll start with 20pF.\n*   **Bias Current Sources:** Current mirrors (M7-M10) will be designed to provide appropriate bias currents (e.g., 100uA - 500uA) for the error amplifier and other stages. W/L ratios will be adjusted to achieve desired current levels.\n*   **Pass Transistor (Q_pass):** A large NPN BJT. Its current gain (beta) and saturation characteristics are important. A generic NPN model will be used. The base current will be driven by the error amplifier's output.\n*   **Current Limit (Q_cl, R_sense):**\n    *   `R_sense`: Placed in series with the output. Its value is chosen such that when the output current reaches 1.5A, the voltage drop across it (V_sense) is sufficient to turn on `Q_cl` (e.g., 0.7V). So, `R_sense = 0.7V / 1.5A = 0.467 Ohms`.\n    *   `Q_cl`: A small NPN BJT that shunts current from the base of `Q_pass` when `V_sense` is high enough.\n*   **Thermal Shutdown:** A behavioral model will be used, triggering at 150\u00b0C.\n*   **SOA Protection:** A behavioral model will be used to limit current based on `V_IN - V_OUT`.\n*   **Startup Sequence:** The `INPUT` pin is activated first, followed by `ADJUST`, and then `OUTPUT`. This ensures the internal circuitry has time to stabilize before the output is expected to regulate.\n\n**Addressing Previous Simulation Feedback:**\n\nThe previous simulation feedback indicates that none of the parameters were observed, and `VO` and `IO` were significantly off. This strongly suggests a fundamental issue with the previous netlist, likely a non-functional circuit or incorrect measurement setup.\n\nMy approach will ensure:\n1.  **Correct Subcircuit Definition and Pin Order:** Adhering strictly to `.subckt LM317 ADJUST INPUT OUTPUT`.\n2.  **Functional Core Circuit:** Building a robust error amplifier, reference, and pass transistor.\n3.  **Proper Biasing:** Ensuring all active components are in their correct operating regions.\n4.  **Protection Circuits:** Implementing current limit, thermal shutdown, and SOA protection behaviorally or with simplified transistor circuits.\n5.  **Measurement Setup (Implicit):** While I don't provide the testbench, the design will be robust enough to allow for proper measurement of all specified parameters. The `VO` and `IO` failures suggest the previous circuit might have been completely non-functional or had incorrect power connections. The current design will ensure a stable output voltage and current delivery capability.\n6.  **Parameter Calculation:** The W/L ratios and resistor values are chosen to meet the specified current and voltage levels. For instance, the 1.25V reference and the current limit of 1.5A are directly incorporated into the design.\n7.  **Line/Load Regulation:** These are inherent properties of the error amplifier's gain and the output impedance of the pass transistor. High open-loop gain in the error amplifier will lead to good regulation.\n8.  **PSRR:** This is primarily determined by the rejection of input voltage variations by the error amplifier and the pass transistor. A well-designed current mirror and high gain stages contribute to good PSRR.\n\nThis detailed architecture and sizing methodology aim to produce a convergent and accurate SPICE netlist that meets all specified requirements."}}], "final_netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM317\\LM317_iter2.cir"}, "knowledge_graph": {"ic_device": {"name": "LM317", "category": "Adjustable Regulator", "description": "The LM317 is an adjustable three-pin, positive-voltage regulator capable of supplying more than 1.5A over an output voltage range of 1.25V to 37V. The device requires only two external resistors to set the output voltage. The device features a typical line regulation of 0.01% and typical load regulation of 0.1%. The LM317 includes current limiting, thermal overload protection, and safe operating area protection. Overload protection remains functional even if the ADJUST pin is disconnected."}, "pins": [{"name": "ADJUST", "pin_number": "1", "direction": "INPUT", "role": "BIAS", "description": "Output voltage adjustment pin. Connect to a resistor divider to set VOUT."}, {"name": "INPUT", "pin_number": "3", "direction": "INPUT", "role": "POWER", "description": "Input voltage pin for the regulator."}, {"name": "OUTPUT", "pin_number": "2, TAB", "direction": "OUTPUT", "role": "OUTPUT", "description": "Output voltage pin for the regulator."}], "electrical_parameters": [{"symbol": "Output voltage range", "name": "Output voltage range", "min": 1.25, "typ": null, "max": 37.0, "unit": "V", "test_conditions": "Adjustable", "related_pins": ["OUTPUT"], "category": "Features"}, {"symbol": "Output current", "name": "Output current", "min": null, "typ": null, "max": 1.5, "unit": "A", "test_conditions": null, "related_pins": ["OUTPUT"], "category": "Features"}, {"symbol": "Line regulation", "name": "Line regulation", "min": null, "typ": 0.01, "max": null, "unit": "%/V", "test_conditions": null, "related_pins": ["INPUT", "OUTPUT"], "category": "Features"}, {"symbol": "Load regulation", "name": "Load regulation", "min": null, "typ": 0.1, "max": null, "unit": "%", "test_conditions": null, "related_pins": ["OUTPUT"], "category": "Features"}, {"symbol": "PSRR", "name": "Power Supply Rejection Ratio", "min": null, "typ": 80.0, "max": null, "unit": "dB", "test_conditions": "at 120Hz for CADJ = 10\u03bcF (new chip)", "related_pins": ["INPUT", "ADJUST"], "category": "Features"}, {"symbol": "Power dissipation", "name": "Power dissipation", "min": null, "typ": null, "max": null, "unit": null, "test_conditions": "Internally limited", "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "Input-output voltage differential", "name": "Input-output voltage differential", "min": -0.3, "typ": null, "max": 40.0, "unit": "V", "test_conditions": null, "related_pins": ["INPUT", "OUTPUT"], "category": "Absolute Maximum Ratings"}, {"symbol": "Tstg", "name": "Storage temperature", "min": -65.0, "typ": null, "max": 150.0, "unit": "\u00b0C", "test_conditions": null, "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "TJ", "name": "Operating virtual junction temperature", "min": -65.0, "typ": null, "max": 150.0, "unit": "\u00b0C", "test_conditions": "legacy chip", "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "V(ESD)", "name": "Electrostatic discharge Human body model (HBM)", "min": null, "typ": null, "max": 2500.0, "unit": "V", "test_conditions": "per ANSI/ESDA/JEDEC JS-001 (Legacy Chip)", "related_pins": [], "category": "ESD Ratings"}, {"symbol": "V(ESD)", "name": "Electrostatic discharge Human body model (HBM)", "min": null, "typ": null, "max": 3000.0, "unit": "V", "test_conditions": "per ANSI/ESDA/JEDEC JS-001 (New Chip)", "related_pins": [], "category": "ESD Ratings"}, {"symbol": "V(ESD)", "name": "Charged device model (CDM)", "min": null, "typ": null, "max": 1000.0, "unit": "V", "test_conditions": "per JEDEC specification JESD22-C101 (Legacy Chip)", "related_pins": [], "category": "ESD Ratings"}, {"symbol": "VO", "name": "Output voltage", "min": 1.25, "typ": null, "max": 37.0, "unit": "V", "test_conditions": null, "related_pins": ["OUTPUT"], "category": "Recommended Operating Conditions"}, {"symbol": "VI \u2013 VO", "name": "Input-to-output differential voltage", "min": 3.0, "typ": null, "max": 40.0, "unit": "V", "test_conditions": null, "related_pins": ["INPUT", "OUTPUT"], "category": "Recommended Operating Conditions"}, {"symbol": "IO", "name": "Output current", "min": 0.01, "typ": null, "max": 1.5, "unit": "A", "test_conditions": null, "related_pins": ["OUTPUT"], "category": "Recommended Operating Conditions"}, {"symbol": "TJ", "name": "Operating virtual junction temperature", "min": 0.0, "typ": null, "max": 125.0, "unit": "\u00b0C", "test_conditions": null, "related_pins": [], "category": "Recommended Operating Conditions"}], "functional_blocks": ["Internal short-circuit current limiting", "Thermal overload protection", "Output safe-area compensation"]}, "report_md": "# Autonomous AI Analog Circuit Synthesis & Verification Report\n**Target IC:** `LM317` | **Subcircuit:** `LM317`\n**Overall Datasheet Specification Pass Rate:** `0.0%`\n\n## 1. Executive Summary\n- **IC Category:** The LM317 is an adjustable three-pin, positive-voltage regulator capable of supplying more than 1.5A over an output voltage range of 1.25V to 37V. The device requires only two external resistors to set the output voltage. The device features a typical line regulation of 0.01% and typical load regulation of 0.1%. The LM317 includes current limiting, thermal overload protection, and safe operating area protection. Overload protection remains functional even if the ADJUST pin is disconnected.\n- **Total Datasheet Specifications Extracted:** 16\n- **Design Iterations Required:** 2\n- **Synthesized Netlist Location:** `C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM317\\LM317_iter2.cir`\n\n## 2. Port Dependency Graph (PDG) Scheduling\nTopological activation sequence derived from physical pin roles:\n| Pin Name | Physical Role | Direction | Activation Time (us) |\n| :--- | :--- | :--- | :--- |\n| `ADJUST` | `BIAS` | `INPUT` | 10.00 us |\n| `INPUT` | `POWER` | `INPUT` | 0.00 us |\n| `OUTPUT` | `OUTPUT` | `OUTPUT` | 11.00 us |\n\n### 2.1 Port Dependency Graph Topology\n```mermaid\ngraph TD\n    ADJUST[\"ADJUST (BIAS)<br/>10.0us\"]\n    INPUT[\"INPUT (POWER)<br/>0.0us\"]\n    OUTPUT[\"OUTPUT (OUTPUT)<br/>11.0us\"]\n    ADJUST -->|0.0us| OUTPUT\n    INPUT -->|0.0us| ADJUST\n    INPUT -->|0.0us| OUTPUT\n```\n\n## 3. Specification Verification & SymPy Oracle Audit\nDetailed verification results evaluated against SymPy interval constraints:\n| Parameter | Min Target | Typ Target | Max Target | Measured Value | Unit | Status |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| `Output voltage range` | 1.25 | - | 37 | **N/A** | V | \u274c FAIL |\n| `Output current` | - | - | 1.5 | **N/A** | A | \u274c FAIL |\n| `Line regulation` | 0.008 | 0.01 | 0.012 | **N/A** | %/V | \u274c FAIL |\n| `Load regulation` | 0.08 | 0.1 | 0.12 | **N/A** | % | \u274c FAIL |\n| `PSRR` | 64 | 80 | 96 | **N/A** | dB | \u274c FAIL |\n| `Power dissipation` | - | - | - | **N/A** |  | \u274c FAIL |\n| `Input-output voltage differential` | -0.3 | - | 40 | **N/A** | V | \u274c FAIL |\n| `TJ` | -65 | - | 150 | **N/A** | \u00b0C | \u274c FAIL |\n| `VO` | 1.25 | - | 37 | **N/A** | V | \u274c FAIL |\n| `VI \u2013 VO` | 3 | - | 40 | **N/A** | V | \u274c FAIL |\n| `IO` | 0.01 | - | 1.5 | **N/A** | A | \u274c FAIL |\n| `TJ` | 0 | - | 125 | **N/A** | \u00b0C | \u274c FAIL |\n\n## 4. Closed-Loop Iteration History & Root Cause Analysis\n| Iteration | Pass Rate | Passed Specs | Failed Specs | Architecture Notes |\n| :--- | :--- | :--- | :--- | :--- |\n| Iteration 1 | 0.0% | 0 | 2 | The LM317 adjustable voltage regulator is designed around a core error amplifier... |\n| Iteration 2 | 0.0% | 0 | 0 | The LM317 is a classic adjustable linear voltage regulator. The core architectur... |\n\n### 4.1 Loop 1 Detailed Audit\n- **Pass Rate**: `0.0%` (0/2 specs passed)\n\n**Shortfall Audit (\ubbf8\ub2ec \uc6d0\uc778 \ubd84\uc11d):**\n- Param 'Output voltage range' violated: Parameter 'Output voltage range' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Output current' violated: Parameter 'Output current' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Line regulation' violated: Parameter 'Line regulation' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Load regulation' violated: Parameter 'Load regulation' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'PSRR' violated: Parameter 'PSRR' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Power dissipation' violated: Parameter 'Power dissipation' was not observed in simulation measurements. (Measured: Unobserved)\n\n**Improvement Actions (\uac1c\uc120 \ubc0f \uc218\uc815 \uc0ac\ud56d):**\n- Initial first-principles topology and Level-1 parameter sizing synthesized from scratch.\n\n### 4.2 Loop 2 Detailed Audit\n- **Pass Rate**: `0.0%` (0/0 specs passed)\n\n**Shortfall Audit (\ubbf8\ub2ec \uc6d0\uc778 \ubd84\uc11d):**\n- Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM317\\tb_ac_sweep.cir(30): syntax error\n- Compiler/Simulation Error:   --> .meas AC PSRR_dB PARAM -20*log10(V(OUTPUT)) AT 120Hz\n- Compiler/Simulation Error:   --> ^^^^^^^^^\n- Param 'Output voltage range' violated: Parameter 'Output voltage range' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Output current' violated: Parameter 'Output current' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Line regulation' violated: Parameter 'Line regulation' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Load regulation' violated: Parameter 'Load regulation' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'PSRR' violated: Parameter 'PSRR' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Power dissipation' violated: Parameter 'Power dissipation' was not observed in simulation measurements. (Measured: Unobserved)\n\n**Improvement Actions (\uac1c\uc120 \ubc0f \uc218\uc815 \uc0ac\ud56d):**\n- Topology refinement: The LM317 is a classic adjustable linear voltage regulator. The core architecture consists of a precision voltage reference, an error amplif...\n\n## 5. Synthesized SPICE Netlist Architecture\nNetlist file: `C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM317\\LM317_iter2.cir`\n```spice\n\n.subckt LM317 ADJUST INPUT OUTPUT\n* LM317 Adjustable Voltage Regulator Subcircuit\n\n* Node Definitions:\n* INPUT: Input voltage (Vin)\n* OUTPUT: Regulated output voltage (Vout)\n* ADJUST: Adjustment pin (Vadj)\n* VREF_NODE: Internal 1.25V reference node\n* EA_OUT: Error amplifier output (drives pass transistor base)\n* BIAS_N: Negative bias rail for current mirrors\n* BIAS_P: Positive bias rail for current mirrors\n* CL_SENSE: Current limit sense node\n* VCC_INT: Internal VCC for opamp/bias (derived from INPUT)\n* GND: Ground reference (implicit 0V)\n\n* Model Definitions (Generic BJT and MOSFET models)\n.model NPN NPN(Is=1e-14 Bf=100 Vaf=100 Ikf=0.1 Ise=1e-14 Ne=1.5 Rb=10 Rc=1 Re=0.1 Cjc=5p Cje=10p Tf=0.3n Tr=6n Vceo=40)\n.model PNP PNP(Is=1e-14 Bf=50 Vaf=50 Ikf=0.05 Ise=1e-14 Ne=1.5 Rb=20 Rc=2 Re=0.2 Cjc=10p Cje=20p Tf=0.6n Tr=12n Vceo=40)\n.model NMOS NMOS(Vto=0.7 Kp=100u Gamma=0.5 Lambda=0.02 Tox=10n Cgso=200p Cgdo=200p Cj=100u Mj=0.5 Pb=0.8)\n.model PMOS PMOS(Vto=-0.7 Kp=50u Gamma=0.5 Lambda=0.03 Tox=10n Cgso=200p Cgdo=200p Cj=100u Mj=0.5 Pb=0.8)\n\n* 1. Internal 1.25V Reference (VREF_NODE)\n* This is a simplified behavioral model for the bandgap reference.\nB_VREF VREF_NODE 0 V = {1.25}\n\n* 2. Bias Current Generation\n* Simple current mirrors to provide bias currents for the error amplifier.\n* M_BIAS_P1 and M_BIAS_P2 form a PMOS current mirror.\n* M_BIAS_N1 and M_BIAS_N2 form an NMOS current mirror.\n\n* PMOS Current Mirror (for tail current of diff pair)\nM_BIAS_P1 VCC_INT BIAS_P BIAS_P VCC_INT PMOS W=10u L=1u\nM_BIAS_P2 VCC_INT BIAS_P EA_TAIL VCC_INT PMOS W=10u L=1u ; Tail current for diff pair\n\n* NMOS Current Mirror (for active load of diff pair)\nM_BIAS_N1 0 BIAS_N BIAS_N 0 NMOS W=10u L=1u\nM_BIAS_N2 EA_LOAD_N BIAS_N 0 0 NMOS W=10u L=1u ; Active load for diff pair\n\n* Bias current setting resistor\nR_BIAS_P VCC_INT BIAS_P 10k\nR_BIAS_N BIAS_N 0 10k\n\n* 3. Error Amplifier (Differential Amplifier)\n* Input differential pair (M_EA_P1, M_EA_P2)\n* Active load (M_EA_N1, M_EA_N2)\n* Second gain stage (M_EA_P3, M_EA_N3)\n* Compensation capacitor (C_COMP)\n\n* Differential Pair (PMOS input for common-mode range closer to VCC)\nM_EA_P1 EA_OUT_DIFF ADJUST EA_TAIL VCC_INT PMOS W=20u L=1u\nM_EA_P2 EA_LOAD_P VREF_NODE EA_TAIL VCC_INT PMOS W=20u L=1u\n\n* Active Load (NMOS current mirror)\nM_EA_N1 EA_LOAD_P EA_LOAD_N 0 0 NMOS W=10u L=1u\nM_EA_N2 EA_OUT_DIFF EA_LOAD_N 0 0 NMOS W=10u L=1u\n\n* Second Gain Stage (Common Source)\nM_EA_P3 VCC_INT EA_OUT_DIFF EA_OUT VCC_INT PMOS W=40u L=1u\nM_EA_N3 EA_OUT EA_OUT_DIFF 0 0 NMOS W=20u L=1u\n\n* Compensation Capacitor for stability\nC_COMP EA_OUT VCC_INT 20p\n\n* 4. Pass Transistor (Q_PASS)\n* Large NPN BJT acting as the series regulator element.\nQ_PASS INPUT EA_OUT OUTPUT NPN\n\n* 5. Current Limiting Circuit\n* R_SENSE senses output current. Q_CL turns on when current exceeds limit, shunting base current from Q_PASS.\nR_SENSE OUTPUT CL_SENSE 0.467 ; 0.7V / 1.5A = 0.467 Ohm for 1.5A limit\nQ_CL EA_OUT CL_SENSE 0 NPN ; Shunts base current from Q_PASS\n\n* 6. Thermal Overload Protection (Behavioral)\n* Shuts down the regulator if junction temperature (TJ) exceeds 150C.\n* This is a simplified model. In reality, it would reduce EA_OUT to turn off Q_PASS.\n* For simulation, we'll model it as a current sink from EA_OUT to ground if temp is too high.\n* We'll assume a fixed TJ for now, as temperature simulation requires specific models.\n* For a more complete model, TJ would be a variable.\nB_THERMAL_SHUTDOWN EA_OUT 0 I = { (TJ > 150) ? 10m : 0 } ; If TJ > 150C, sink 10mA from EA_OUT\n\n* 7. Safe Operating Area (SOA) Protection (Behavioral)\n* Limits output current based on input-output differential voltage.\n* Simplified model: current limit reduces linearly with increasing V_DIFF.\n* Max current 1.5A at low V_DIFF, reduces to 0 at V_DIFF > 40V.\n* This will modulate the effective current limit set by R_SENSE and Q_CL.\n* A more accurate model would adjust the threshold for Q_CL.\n* For simplicity, we'll make the current limit resistor dynamic.\n* This is a placeholder for a more complex SOA circuit.\n* A more realistic SOA would involve a Vbe multiplier and current mirror.\n* For this model, we'll assume the current limit circuit (R_SENSE, Q_CL) is the primary current limit,\n* and SOA protection is implicitly handled by the power dissipation limits of the pass transistor.\n* The LM317 datasheet states \"Overload protection remains functional even if the ADJUST pin is disconnected.\"\n* This implies the current limit is robust.\n\n* 8. Internal Power Supply for Op-Amp (VCC_INT)\n* A simple Zener diode or a series resistor/capacitor filter could be used.\n* For simplicity, we'll assume VCC_INT is derived from INPUT, with a minimum dropout.\n* A simple voltage follower or a series resistor to drop some voltage.\n* Let's use a simple resistor to drop some voltage from INPUT for internal circuitry,\n* assuming the internal circuitry can operate at a slightly lower voltage than INPUT.\n* Or, more simply, assume the internal circuitry runs directly from INPUT,\n* as long as INPUT is above a certain threshold.\n* Given the LM317's dropout, the internal circuitry needs to operate down to ~3V below INPUT.\n* Let's assume the internal circuitry can operate directly from INPUT for simplicity,\n* and the minimum operating voltage is handled by the overall design.\n* For a more robust model, a separate internal LDO or charge pump might be needed.\n* For now, VCC_INT is directly connected to INPUT.\nR_VCC_INT INPUT VCC_INT 1 ; Small resistor to separate internal VCC from INPUT for current sensing if needed.\n\n* 9. Startup Sequence (Behavioral)\n* This is handled by the testbench, not within the subcircuit itself.\n* The subcircuit assumes INPUT is stable before ADJUST and OUTPUT are expected to regulate.\n\n* Output voltage range: 1.25V to 37V\n* Output current: Max 1.5A\n* Line regulation: 0.01%/V\n* Load regulation: 0.1%\n* PSRR: 80dB at 120Hz\n\n* Behavioral model for output voltage based on ADJUST pin and VREF_NODE\n* VOUT = VADJ + VREF_NODE\n* This is the fundamental equation for LM317.\n* The error amplifier ensures V(ADJUST) - V(VREF_NODE) = 0, effectively.\n* So, V(OUTPUT) - V(ADJUST) = V(VREF_NODE) = 1.25V.\n* The error amplifier drives the pass transistor to achieve this.\n\n* The previous errors indicate a non-functional circuit.\n* The current design provides a basic functional block diagram.\n* The `TJ` parameter is an external variable that needs to be set by the simulator.\n* `V(ESD)` is a robustness parameter, not a functional circuit parameter.\n\n.ends LM317\n```", "netlists": {"iter1": "* LM317 Adjustable Voltage Regulator\n* Subcircuit for LM317\n.subckt LM317 ADJUST INPUT OUTPUT\n\n* Node Definitions:\n* ADJUST: Output voltage adjustment pin\n* INPUT: Input voltage pin\n* OUTPUT: Output voltage pin\n* VREF_NODE: Internal 1.25V reference voltage node\n* EA_OUT: Error amplifier output node\n* CL_SENSE: Current limit sense node\n* THERMAL_NODE: Internal thermal shutdown node\n* SOA_NODE: Safe Operating Area protection node\n* VCC: Internal supply for analog blocks (derived from INPUT)\n* GND: Ground reference (implicit 0V)\n\n* Model Definitions\n.model NPN NPN(Is=1e-14 Bf=200 Vaf=50 Ikf=0.1 Cjc=2p Cje=3p Tr=10n Tf=300p Rb=10 Rc=1 Re=1)\n.model PNP PNP(Is=1e-14 Bf=100 Vaf=40 Ikf=0.05 Cjc=3p Cje=4p Tr=20n Tf=500p Rb=20 Rc=2 Re=2)\n.model D_ZENER D(Is=1e-14 Rs=1 N=1 Bv=1.25 Ibv=10u) ; Zener diode for 1.25V reference\n.model D_PROT D(Is=1e-14 Rs=1 N=1) ; Protection diode\n\n* Internal Supply and Ground\n* VCC is derived from INPUT, assuming a small drop for internal circuitry\nR_VCC_DROP INPUT VCC 10\nC_VCC VCC 0 100n ; Decoupling capacitor for internal VCC\n\n* 1.25V Reference Voltage Generation\n* Simplified Bandgap Reference: Zener diode and current source\nI_REF VCC VREF_NODE 200u ; Bias current for Zener\nD_REF VREF_NODE 0 D_ZENER ; 1.25V Zener diode\nC_REF VREF_NODE 0 100p ; Filter for reference voltage\n\n* Error Amplifier (Simplified Two-Stage OTA)\n* Input Differential Pair (Q1, Q2) with Current Mirror Load (Q3, Q4)\nQ1 EA_OUT ADJUST VCC NPN ; Inverting input (connected to ADJUST)\nQ2 EA_OUT_INV VREF_NODE VCC NPN ; Non-inverting input (connected to VREF_NODE)\n* Current mirror load\nQ3 VCC EA_OUT_INV EA_OUT PNP\nQ4 VCC VCC EA_OUT PNP\n* Bias current for differential pair\nI_BIAS VCC EA_BIAS 100u\nQ5 EA_BIAS EA_BIAS 0 NPN ; Diode-connected for current mirror\nQ6 EA_BIAS EA_BIAS VCC PNP ; Diode-connected for current mirror\n\n* Second Stage and Output Buffer\n* Common Emitter Amplifier\nQ7 EA_OUT EA_OUT_INV VCC NPN ; Amplifier stage\nR_EA_LOAD VCC EA_OUT 10k ; Load resistor for amplifier\nC_COMP EA_OUT EA_OUT_INV 50p ; Frequency compensation capacitor\n\n* Output Buffer to drive Pass Transistor\nQ8 EA_OUT_BUFFER EA_OUT 0 NPN ; Emitter follower buffer\nR_EA_BUFFER_PULLDOWN EA_OUT_BUFFER 0 10k ; Pull-down for buffer\n\n* Pass Transistor\nQ_PASS INPUT EA_OUT_BUFFER OUTPUT NPN ; Main series pass transistor\n* Emitter area scaled for 1.5A capability\n.model NPN_PASS NPN(Is=1e-14 Bf=200 Vaf=50 Ikf=1.5 Cjc=50p Cje=100p Tr=50n Tf=1u Rb=1 Rc=0.1 Re=0.1 Area=100)\nQ_PASS_INST INPUT EA_OUT_BUFFER OUTPUT NPN_PASS\n\n* Current Limiting (1.5A)\nR_SENSE OUTPUT CL_SENSE 0.47 ; Sense resistor for 1.5A (0.7V drop)\nQ_CL EA_OUT_BUFFER CL_SENSE 0 NPN ; Current limit transistor\n* When V(CL_SENSE) - V(OUTPUT) > 0.7V, Q_CL turns on, shunting base current from Q_PASS\n\n* Thermal Overload Protection (Behavioral)\n* TJ (Junction Temperature) is an internal parameter, assumed to be monitored.\n* For simulation, we can use a behavioral source to represent its effect.\n* Let's assume a node 'TJ_MONITOR' represents the internal temperature in Celsius.\n* If TJ_MONITOR > 150C, the output is pulled down.\nB_THERMAL_SHUTDOWN EA_OUT_BUFFER 0 V = { (V(TJ_MONITOR) > 150) ? 0 : V(EA_OUT_BUFFER) }\n* For a static simulation, we can set TJ_MONITOR to a fixed value.\n* For transient, it would be a function of power dissipation and thermal resistance.\n* For this model, we'll assume TJ_MONITOR is an external input for testing.\n* In a real chip, this would be an internal temperature sensor.\nV_TJ_MONITOR TJ_MONITOR 0 25 ; Default junction temperature (25C)\n\n* Safe Operating Area (SOA) Protection (Behavioral)\n* Reduces current limit as V_IN_OUT_DIFF increases.\n* Simplified model: If V_IN_OUT_DIFF > 20V, reduce current limit threshold.\n* This can be done by increasing the effective R_SENSE or lowering the turn-on Vbe of Q_CL.\n* Here, we'll make the current limit more aggressive (lower threshold) at high V_IN_OUT_DIFF.\nB_SOA_CURRENT_LIMIT CL_SENSE 0 V = { V(OUTPUT) + ( (V(INPUT) - V(OUTPUT) > 20) ? 0.5 : 0.7 ) }\n* This effectively changes the Vbe_on for Q_CL based on V_IN_OUT_DIFF.\n* If V(INPUT) - V(OUTPUT) > 20V, Q_CL turns on when V(CL_SENSE) - V(OUTPUT) > 0.5V (instead of 0.7V).\n\n* Output Protection Diodes (Internal to LM317, for reverse voltage protection)\n* D1: Protects against output voltage exceeding input voltage (e.g., when input is shorted)\nD_PROT1 OUTPUT INPUT D_PROT\n* D2: Protects against external capacitor discharge into ADJUST pin\nD_PROT2 ADJUST OUTPUT D_PROT\n\n* Internal Quiescent Current\n* A small current is drawn by the internal circuitry.\nI_QUIESCENT INPUT 0 5mA ; Typical quiescent current\n\n.ends LM317", "iter2": "\n.subckt LM317 ADJUST INPUT OUTPUT\n* LM317 Adjustable Voltage Regulator Subcircuit\n\n* Node Definitions:\n* INPUT: Input voltage (Vin)\n* OUTPUT: Regulated output voltage (Vout)\n* ADJUST: Adjustment pin (Vadj)\n* VREF_NODE: Internal 1.25V reference node\n* EA_OUT: Error amplifier output (drives pass transistor base)\n* BIAS_N: Negative bias rail for current mirrors\n* BIAS_P: Positive bias rail for current mirrors\n* CL_SENSE: Current limit sense node\n* VCC_INT: Internal VCC for opamp/bias (derived from INPUT)\n* GND: Ground reference (implicit 0V)\n\n* Model Definitions (Generic BJT and MOSFET models)\n.model NPN NPN(Is=1e-14 Bf=100 Vaf=100 Ikf=0.1 Ise=1e-14 Ne=1.5 Rb=10 Rc=1 Re=0.1 Cjc=5p Cje=10p Tf=0.3n Tr=6n Vceo=40)\n.model PNP PNP(Is=1e-14 Bf=50 Vaf=50 Ikf=0.05 Ise=1e-14 Ne=1.5 Rb=20 Rc=2 Re=0.2 Cjc=10p Cje=20p Tf=0.6n Tr=12n Vceo=40)\n.model NMOS NMOS(Vto=0.7 Kp=100u Gamma=0.5 Lambda=0.02 Tox=10n Cgso=200p Cgdo=200p Cj=100u Mj=0.5 Pb=0.8)\n.model PMOS PMOS(Vto=-0.7 Kp=50u Gamma=0.5 Lambda=0.03 Tox=10n Cgso=200p Cgdo=200p Cj=100u Mj=0.5 Pb=0.8)\n\n* 1. Internal 1.25V Reference (VREF_NODE)\n* This is a simplified behavioral model for the bandgap reference.\nB_VREF VREF_NODE 0 V = {1.25}\n\n* 2. Bias Current Generation\n* Simple current mirrors to provide bias currents for the error amplifier.\n* M_BIAS_P1 and M_BIAS_P2 form a PMOS current mirror.\n* M_BIAS_N1 and M_BIAS_N2 form an NMOS current mirror.\n\n* PMOS Current Mirror (for tail current of diff pair)\nM_BIAS_P1 VCC_INT BIAS_P BIAS_P VCC_INT PMOS W=10u L=1u\nM_BIAS_P2 VCC_INT BIAS_P EA_TAIL VCC_INT PMOS W=10u L=1u ; Tail current for diff pair\n\n* NMOS Current Mirror (for active load of diff pair)\nM_BIAS_N1 0 BIAS_N BIAS_N 0 NMOS W=10u L=1u\nM_BIAS_N2 EA_LOAD_N BIAS_N 0 0 NMOS W=10u L=1u ; Active load for diff pair\n\n* Bias current setting resistor\nR_BIAS_P VCC_INT BIAS_P 10k\nR_BIAS_N BIAS_N 0 10k\n\n* 3. Error Amplifier (Differential Amplifier)\n* Input differential pair (M_EA_P1, M_EA_P2)\n* Active load (M_EA_N1, M_EA_N2)\n* Second gain stage (M_EA_P3, M_EA_N3)\n* Compensation capacitor (C_COMP)\n\n* Differential Pair (PMOS input for common-mode range closer to VCC)\nM_EA_P1 EA_OUT_DIFF ADJUST EA_TAIL VCC_INT PMOS W=20u L=1u\nM_EA_P2 EA_LOAD_P VREF_NODE EA_TAIL VCC_INT PMOS W=20u L=1u\n\n* Active Load (NMOS current mirror)\nM_EA_N1 EA_LOAD_P EA_LOAD_N 0 0 NMOS W=10u L=1u\nM_EA_N2 EA_OUT_DIFF EA_LOAD_N 0 0 NMOS W=10u L=1u\n\n* Second Gain Stage (Common Source)\nM_EA_P3 VCC_INT EA_OUT_DIFF EA_OUT VCC_INT PMOS W=40u L=1u\nM_EA_N3 EA_OUT EA_OUT_DIFF 0 0 NMOS W=20u L=1u\n\n* Compensation Capacitor for stability\nC_COMP EA_OUT VCC_INT 20p\n\n* 4. Pass Transistor (Q_PASS)\n* Large NPN BJT acting as the series regulator element.\nQ_PASS INPUT EA_OUT OUTPUT NPN\n\n* 5. Current Limiting Circuit\n* R_SENSE senses output current. Q_CL turns on when current exceeds limit, shunting base current from Q_PASS.\nR_SENSE OUTPUT CL_SENSE 0.467 ; 0.7V / 1.5A = 0.467 Ohm for 1.5A limit\nQ_CL EA_OUT CL_SENSE 0 NPN ; Shunts base current from Q_PASS\n\n* 6. Thermal Overload Protection (Behavioral)\n* Shuts down the regulator if junction temperature (TJ) exceeds 150C.\n* This is a simplified model. In reality, it would reduce EA_OUT to turn off Q_PASS.\n* For simulation, we'll model it as a current sink from EA_OUT to ground if temp is too high.\n* We'll assume a fixed TJ for now, as temperature simulation requires specific models.\n* For a more complete model, TJ would be a variable.\nB_THERMAL_SHUTDOWN EA_OUT 0 I = { (TJ > 150) ? 10m : 0 } ; If TJ > 150C, sink 10mA from EA_OUT\n\n* 7. Safe Operating Area (SOA) Protection (Behavioral)\n* Limits output current based on input-output differential voltage.\n* Simplified model: current limit reduces linearly with increasing V_DIFF.\n* Max current 1.5A at low V_DIFF, reduces to 0 at V_DIFF > 40V.\n* This will modulate the effective current limit set by R_SENSE and Q_CL.\n* A more accurate model would adjust the threshold for Q_CL.\n* For simplicity, we'll make the current limit resistor dynamic.\n* This is a placeholder for a more complex SOA circuit.\n* A more realistic SOA would involve a Vbe multiplier and current mirror.\n* For this model, we'll assume the current limit circuit (R_SENSE, Q_CL) is the primary current limit,\n* and SOA protection is implicitly handled by the power dissipation limits of the pass transistor.\n* The LM317 datasheet states \"Overload protection remains functional even if the ADJUST pin is disconnected.\"\n* This implies the current limit is robust.\n\n* 8. Internal Power Supply for Op-Amp (VCC_INT)\n* A simple Zener diode or a series resistor/capacitor filter could be used.\n* For simplicity, we'll assume VCC_INT is derived from INPUT, with a minimum dropout.\n* A simple voltage follower or a series resistor to drop some voltage.\n* Let's use a simple resistor to drop some voltage from INPUT for internal circuitry,\n* assuming the internal circuitry can operate at a slightly lower voltage than INPUT.\n* Or, more simply, assume the internal circuitry runs directly from INPUT,\n* as long as INPUT is above a certain threshold.\n* Given the LM317's dropout, the internal circuitry needs to operate down to ~3V below INPUT.\n* Let's assume the internal circuitry can operate directly from INPUT for simplicity,\n* and the minimum operating voltage is handled by the overall design.\n* For a more robust model, a separate internal LDO or charge pump might be needed.\n* For now, VCC_INT is directly connected to INPUT.\nR_VCC_INT INPUT VCC_INT 1 ; Small resistor to separate internal VCC from INPUT for current sensing if needed.\n\n* 9. Startup Sequence (Behavioral)\n* This is handled by the testbench, not within the subcircuit itself.\n* The subcircuit assumes INPUT is stable before ADJUST and OUTPUT are expected to regulate.\n\n* Output voltage range: 1.25V to 37V\n* Output current: Max 1.5A\n* Line regulation: 0.01%/V\n* Load regulation: 0.1%\n* PSRR: 80dB at 120Hz\n\n* Behavioral model for output voltage based on ADJUST pin and VREF_NODE\n* VOUT = VADJ + VREF_NODE\n* This is the fundamental equation for LM317.\n* The error amplifier ensures V(ADJUST) - V(VREF_NODE) = 0, effectively.\n* So, V(OUTPUT) - V(ADJUST) = V(VREF_NODE) = 1.25V.\n* The error amplifier drives the pass transistor to achieve this.\n\n* The previous errors indicate a non-functional circuit.\n* The current design provides a basic functional block diagram.\n* The `TJ` parameter is an external variable that needs to be set by the simulator.\n* `V(ESD)` is a robustness parameter, not a functional circuit parameter.\n\n.ends LM317"}, "testbenches": {"tb_ac_sweep.cir": ".options gmin=1e-12 cshunt=1e-15\n* LM317 PSRR Testbench\n.include \"LM317_iter2.cir\"\n\n* Power Supplies\nV_INPUT INPUT 0 PULSE(0 10V 0us 0.1us 0.1us 100ms 200ms) ; INPUT activated at 0.00 us, DC bias for AC analysis\nV_ADJUST ADJUST 0 PULSE(0 1.25V 10us 0.1us 0.1us 100ms 200ms) ; ADJUST activated at 10.00 us, typical reference voltage\nV_OUTPUT_BIAS OUTPUT_BIAS 0 PULSE(0 5V 11us 0.1us 0.1us 100ms 200ms) ; OUTPUT activated at 11.00 us, for initial bias if needed, but LM317 is a regulator\n\n* AC stimulus for PSRR\nVAC_INPUT INPUT_AC 0 AC 1V\nR_INPUT_AC INPUT INPUT_AC 1m ; Small resistor to inject AC into INPUT\n\n* Load resistor for the output\nRLOAD OUTPUT 0 1k\n\n* Capacitor for CADJ\nCADJ ADJUST 0 10u\n\n* DUT Instance\nXDUT ADJUST INPUT OUTPUT LM317\n\n* Simulation commands\n.ac dec 20 1 100Meg\n\n* Measurement for PSRR\n* PSRR = 20 * log10(delta_Vin / delta_Vout)\n* Here, delta_Vin is 1V (from VAC_INPUT)\n* So, PSRR = 20 * log10(1 / V(OUTPUT)) = -20 * log10(V(OUTPUT))\n.meas AC PSRR_dB PARAM -20*log10(V(OUTPUT)) AT 120Hz\n\n.end\n", "tb_dc_op.cir": ".options gmin=1e-12 cshunt=1e-15\n* LM317 Testbench for Specification Verification\n\n.include \"LM317_iter2.cir\"\n\n* Voltage Sources for DUT Pins\n* INPUT: 0.00 us\n* ADJUST: 10.00 us\n* OUTPUT: 11.00 us (This is an output, not an input to be driven directly)\n\n* Power supply for INPUT (e.g., 15V for typical operation)\nV_INPUT INPUT 0 PWL(0u 0V 0.01u 15V)\n* Adjustable voltage for ADJUST pin (e.g., 1.25V for minimum output)\n* We'll use a resistor divider to set the ADJUST pin voltage for output voltage range and regulation tests.\n* For initial setup, let's set it for a nominal output.\n* R1 and R2 for setting output voltage: Vout = 1.25 * (1 + R2/R1) + I_adj * R2\n* Let R1 = 240 Ohm, R2 = 2.4k Ohm for Vout approx 13.75V\nR1 OUTPUT ADJUST 240\nR2 ADJUST 0 2.4k\n\n* Load for OUTPUT\nRLOAD OUTPUT 0 100 ; Nominal load of 100 Ohm\n\n* DUT Instance\nXDUT ADJUST INPUT OUTPUT LM317\n\n* Simulation commands\n.tran 0.1u 100u\n\n* Measurements for Target Specifications\n\n* 'Output voltage range': Min=1.25, Max=37.0 V | Conditions: Adjustable\n* This requires sweeping the ADJUST pin voltage or the resistor divider.\n* For a single run, we'll measure the current output.\n.meas tran V_OUT_NOM AVG V(OUTPUT) from=20u to=100u\n\n* 'Output current': Max=1.5 A\n* This requires a load sweep or a specific load to draw max current.\n* For this run, we'll measure the current through the load.\n.meas tran I_OUT_NOM AVG I(RLOAD) from=20u to=100u\n\n* 'Line regulation': Typ=0.01 %/V\n* This requires varying V_INPUT and observing V_OUT.\n* We'll need multiple runs or a stepped source for accurate measurement.\n* For a single run, we'll just measure the output.\n* To measure line regulation, we'd typically run two simulations with slightly different input voltages.\n* Let's assume a nominal input for this run.\n\n* 'Load regulation': Typ=0.1 %\n* This requires varying RLOAD and observing V_OUT.\n* Similar to line regulation, requires multiple runs or a stepped load.\n* For this run, we'll just measure the output with the nominal load.\n\n* 'Power dissipation': Internally limited (No specific value to measure directly from this run)\n\n* 'Input-output voltage differential': Min=-0.3, Max=40.0 V\n.meas tran V_DIFF_IO AVG V(INPUT,OUTPUT) from=20u to=100u\n\n* 'TJ': Min=-65.0, Max=150.0 \u00b0C (Legacy chip - not directly measurable in electrical simulation)\n\n* 'VO': Min=1.25, Max=37.0 V (Same as 'Output voltage range')\n.meas tran VO_MEAS AVG V(OUTPUT) from=20u to=100u\n\n* 'VI \u2013 VO': Min=3.0, Max=40.0 V (Same as 'Input-output voltage differential')\n.meas tran VI_VO_MEAS AVG V(INPUT,OUTPUT) from=20u to=100u\n\n* 'IO': Min=0.01, Max=1.5 A (Same as 'Output current')\n.meas tran IO_MEAS AVG I(RLOAD) from=20u to=100u\n\n* 'TJ': Min=0.0, Max=125.0 \u00b0C (Not directly measurable in electrical simulation)\n\n.end\n"}, "simulation_logs": {"tb_ac_sweep.log": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM317\\tb_ac_sweep.cir(30): syntax error\n.meas AC PSRR_dB PARAM -20*log10(V(OUTPUT)) AT 120Hz\n                                           ^^^^^^^^^\n", "tb_dc_op.log": "LTspice 24.1.10 for Windows\nCircuit: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM317\\tb_dc_op.cir\nStart Time: Wed Oct 14 00:47:30 2026\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM317\\LM317_iter2.cir(80): No such parameter defined.\nB_THERMAL_SHUTDOWN EA_OUT 0 I = { (TJ > 150) ? 10m : 0 } ; If TJ > 150C, sink 10mA from EA_OUT\n                                   ^^\n"}}];
+
+    let currentICIndex = 0;
+    let currentNetlistIter = 1;
+    let timelineTimer = null;
+    let isPlaying = false;
+    let currentTime = 0.0;
+
+    function init() {
+      const select = document.getElementById('icSelect');
+      select.innerHTML = '';
+      BENCHMARK_DATA.forEach((ic, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        const name = ic.summary.part_name || ic.id;
+        const cat = (ic.knowledge_graph.ic_device && ic.knowledge_graph.ic_device.category) || '';
+        opt.textContent = `${name} (${cat || ic.id})`;
+        select.appendChild(opt);
+      });
+
+      if (BENCHMARK_DATA.length > 0) {
+        switchIC(0);
+      }
+    }
+
+    function switchIC(index) {
+      currentICIndex = parseInt(index);
+      const ic = BENCHMARK_DATA[currentICIndex];
+      if (!ic) return;
+
+      const name = ic.summary.part_name || ic.id;
+      const cat = (ic.knowledge_graph.ic_device && ic.knowledge_graph.ic_device.category) || 'Analog IC';
+      const specCount = ic.summary.spec_count || (ic.knowledge_graph.electrical_parameters && ic.knowledge_graph.electrical_parameters.length) || 0;
+      const pins = (ic.knowledge_graph.pins || []);
+      const iters = ic.summary.iterations || [];
+      const passRate = ic.summary.pass_rate_percent || 0.0;
+
+      // Update Key Metrics
+      document.getElementById('statIcName').textContent = name;
+      document.getElementById('statCategory').textContent = cat;
+      document.getElementById('statSpecCount').textContent = specCount;
+      document.getElementById('statPinCount').textContent = `${pins.length} Pins Extracted`;
+      document.getElementById('statLoopCount').textContent = `${iters.length} Loops`;
+      document.getElementById('statPassRate').textContent = `${passRate.toFixed(1)}%`;
+      document.getElementById('statPassRateSub').textContent = passRate > 0 ? 'Verified Closed-Loop' : 'Simulated (Iter 2 Completed)';
+
+      // Render Sub-Sections
+      renderPDG(pins);
+      renderNetlist();
+      renderTestbenches();
+      renderSpecs();
+      renderDiagnostics(iters);
+      renderHKG(ic);
+    }
+
+    function selectTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+      const target = document.getElementById(tabId);
+      if (target) target.classList.remove('hidden');
+
+      const btn = document.getElementById('btn-' + tabId);
+      if (btn) btn.classList.add('active');
+    }
+
+    // -------------------------------------------------------------
+    // PDG & TIMELINE RENDERER
+    // -------------------------------------------------------------
+    function renderPDG(pins) {
+      const svg = document.getElementById('pdgSvg');
+      svg.innerHTML = '';
+      const tbody = document.getElementById('pdgTableBody');
+      tbody.innerHTML = '';
+
+      if (!pins || pins.length === 0) {
+        svg.innerHTML = '<text x="400" y="140" text-anchor="middle" fill="#64748b" font-size="14">No pin data available in knowledge graph</text>';
+        return;
+      }
+
+      // Group pins by role into columns
+      const roleCols = {
+        'POWER': { x: 100, color: '#38bdf8', label: 'Power Pins (0us)' },
+        'GROUND': { x: 100, color: '#94a3b8', label: 'Ground' },
+        'BIAS': { x: 300, color: '#fbbf24', label: 'Bias / Reg' },
+        'CONTROL': { x: 480, color: '#a855f7', label: 'Control' },
+        'SIGNAL': { x: 480, color: '#60a5fa', label: 'Signal Inputs' },
+        'OUTPUT': { x: 680, color: '#34d399', label: 'Output Nodes' }
+      };
+
+      const pinNodes = [];
+      const colCounts = {};
+
+      pins.forEach((p, idx) => {
+        const role = (p.role || 'SIGNAL').toUpperCase();
+        const baseCol = roleCols[role] || roleCols['SIGNAL'];
+        const colIdx = colCounts[baseCol.x] || 0;
+        colCounts[baseCol.x] = colIdx + 1;
+
+        let delay = 2.0;
+        if (role === 'POWER' || role === 'GROUND') delay = 0.0;
+        else if (role === 'BIAS') delay = 2.0;
+        else if (role === 'CONTROL' || role === 'SIGNAL') delay = 4.0;
+        else if (role === 'OUTPUT') delay = 7.0;
+
+        pinNodes.push({
+          name: p.name,
+          role: role,
+          direction: p.direction || 'BIDIRECTIONAL',
+          delay: delay,
+          x: baseCol.x,
+          y: 50 + colIdx * 45,
+          color: baseCol.color
+        });
+      });
+
+      // Draw Edges (Power -> Bias -> Signal -> Output)
+      pinNodes.forEach(p1 => {
+        pinNodes.forEach(p2 => {
+          if (p1.delay < p2.delay && (p2.delay - p1.delay <= 3.5)) {
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const d = `M ${p1.x + 40} ${p1.y} C ${p1.x + 90} ${p1.y}, ${p2.x - 90} ${p2.y}, ${p2.x - 40} ${p2.y}`;
+            path.setAttribute('d', d);
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', '#334155');
+            path.setAttribute('stroke-width', '1.2');
+            path.setAttribute('stroke-dasharray', '3,3');
+            svg.appendChild(path);
+          }
+        });
+      });
+
+      // Draw Nodes
+      pinNodes.forEach(node => {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'node-pin cursor-pointer');
+        g.setAttribute('id', `pin-node-${node.name}`);
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', node.x - 45);
+        rect.setAttribute('y', node.y - 18);
+        rect.setAttribute('width', 90);
+        rect.setAttribute('height', 36);
+        rect.setAttribute('rx', 8);
+        rect.setAttribute('fill', '#0f172a');
+        rect.setAttribute('stroke', node.color);
+        rect.setAttribute('stroke-width', '1.5');
+        rect.setAttribute('id', `pin-rect-${node.name}`);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', node.x);
+        text.setAttribute('y', node.y - 2);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', '11');
+        text.setAttribute('font-weight', 'bold');
+        text.setAttribute('fill', '#f8fafc');
+        text.textContent = node.name;
+
+        const subText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        subText.setAttribute('x', node.x);
+        subText.setAttribute('y', node.y + 11);
+        subText.setAttribute('text-anchor', 'middle');
+        subText.setAttribute('font-size', '9');
+        subText.setAttribute('fill', node.color);
+        subText.textContent = `${node.delay} μs`;
+
+        g.appendChild(rect);
+        g.appendChild(text);
+        g.appendChild(subText);
+        svg.appendChild(g);
+
+        // Add to Table
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40';
+        tr.innerHTML = `
+          <td class="px-3 py-2 font-mono font-bold text-sky-300">${node.name}</td>
+          <td class="px-3 py-2">${node.role}</td>
+          <td class="px-3 py-2 text-slate-400">${node.direction}</td>
+          <td class="px-3 py-2 font-mono">${node.delay.toFixed(1)} μs</td>
+          <td class="px-3 py-2" id="status-${node.name}"><span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">Waiting</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updateTimelineTime(currentTime);
+    }
+
+    function updateTimelineTime(val) {
+      currentTime = val;
+      document.getElementById('timeSlider').value = val;
+      document.getElementById('timeDisplay').textContent = `${val.toFixed(1)} μs`;
+
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const pins = (ic && ic.knowledge_graph.pins) || [];
+      pins.forEach(p => {
+        const role = (p.role || 'SIGNAL').toUpperCase();
+        let delay = 2.0;
+        if (role === 'POWER' || role === 'GROUND') delay = 0.0;
+        else if (role === 'BIAS') delay = 2.0;
+        else if (role === 'CONTROL' || role === 'SIGNAL') delay = 4.0;
+        else if (role === 'OUTPUT') delay = 7.0;
+
+        const rect = document.getElementById(`pin-rect-${p.name}`);
+        const statusEl = document.getElementById(`status-${p.name}`);
+        if (rect && statusEl) {
+          if (currentTime >= delay) {
+            rect.setAttribute('fill', '#1e293b');
+            rect.setAttribute('stroke-width', '2.5');
+            statusEl.innerHTML = '<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Active & Settled</span>';
+          } else {
+            rect.setAttribute('fill', '#0f172a');
+            rect.setAttribute('stroke-width', '1.0');
+            statusEl.innerHTML = '<span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-500">Prerequisite</span>';
+          }
+        }
+      });
+    }
+
+    function toggleTimelinePlay() {
+      const btn = document.getElementById('btnPlayPause');
+      if (isPlaying) {
+        clearInterval(timelineTimer);
+        isPlaying = false;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg><span>Play Sequence</span>';
+      } else {
+        isPlaying = true;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"/></svg><span>Pause</span>';
+        if (currentTime >= 10.0) currentTime = 0.0;
+        timelineTimer = setInterval(() => {
+          currentTime += 0.5;
+          if (currentTime > 10.0) {
+            currentTime = 10.0;
+            toggleTimelinePlay();
+          }
+          updateTimelineTime(currentTime);
+        }, 250);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // NETLIST & SIZING RENDERER
+    // -------------------------------------------------------------
+    function renderNetlist() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const iters = (ic && ic.summary.iterations) || [];
+      const curIterData = iters[currentNetlistIter - 1] || iters[0] || {};
+      const archText = curIterData.architecture_summary || 'First-principles netlist synthesized directly from datasheet specifications.';
+      document.getElementById('architectureSummaryText').textContent = archText;
+
+      const netlistContent = ic.netlists[`iter${currentNetlistIter}`] || ic.netlists['iter1'] || '* No netlist found for this iteration.';
+      document.getElementById('netlistCodePre').textContent = netlistContent;
+      document.getElementById('netlistFilename').textContent = `${ic.summary.subckt_name || ic.id}_iter${currentNetlistIter}.cir`;
+    }
+
+    function switchNetlistIteration(iter) {
+      currentNetlistIter = iter;
+      document.getElementById('btnNetlistIter1').className = iter === 1
+        ? 'px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold'
+        : 'px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold';
+      document.getElementById('btnNetlistIter2').className = iter === 2
+        ? 'px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold'
+        : 'px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold';
+      renderNetlist();
+    }
+
+    // -------------------------------------------------------------
+    // TESTBENCH RENDERER
+    // -------------------------------------------------------------
+    function renderTestbenches() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const container = document.getElementById('tbDeckButtons');
+      container.innerHTML = '';
+
+      const tbs = Object.keys(ic.testbenches || {});
+      if (tbs.length === 0) {
+        container.innerHTML = '<span class="text-xs text-slate-400">No testbenches available.</span>';
+        document.getElementById('tbCodePre').textContent = '* No testbench deck found.';
+        return;
+      }
+
+      tbs.forEach((tbName, idx) => {
+        const btn = document.createElement('button');
+        btn.className = idx === 0
+          ? 'px-3 py-1.5 text-xs rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono font-semibold'
+          : 'px-3 py-1.5 text-xs rounded-xl bg-slate-800 text-slate-400 border border-slate-700 font-mono font-semibold hover:text-white';
+        btn.textContent = tbName;
+        btn.onclick = () => {
+          document.querySelectorAll('#tbDeckButtons button').forEach(b => {
+            b.className = 'px-3 py-1.5 text-xs rounded-xl bg-slate-800 text-slate-400 border border-slate-700 font-mono font-semibold hover:text-white';
+          });
+          btn.className = 'px-3 py-1.5 text-xs rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono font-semibold';
+          document.getElementById('currentTbName').textContent = tbName;
+          document.getElementById('tbCodePre').textContent = ic.testbenches[tbName];
+        };
+        container.appendChild(btn);
+      });
+
+      document.getElementById('currentTbName').textContent = tbs[0];
+      document.getElementById('tbCodePre').textContent = ic.testbenches[tbs[0]];
+    }
+
+    // -------------------------------------------------------------
+    // SYMPY ORACLE SPEC MATRIX RENDERER
+    // -------------------------------------------------------------
+    function renderSpecs() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const tbody = document.getElementById('specTableBody');
+      tbody.innerHTML = '';
+
+      const specs = (ic.knowledge_graph && ic.knowledge_graph.electrical_parameters) || [];
+      if (specs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-slate-500">No electrical parameters found</td></tr>';
+        return;
+      }
+
+      specs.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition-colors';
+
+        const minVal = s.min !== null && s.min !== undefined ? s.min : '-';
+        const typVal = s.typ !== null && s.typ !== undefined ? s.typ : '-';
+        const maxVal = s.max !== null && s.max !== undefined ? s.max : '-';
+        const unit = s.unit || '';
+
+        tr.innerHTML = `
+          <td class="px-3 py-2 font-mono font-bold text-sky-300">${s.symbol || s.name}</td>
+          <td class="px-3 py-2 font-mono">${minVal}</td>
+          <td class="px-3 py-2 font-mono text-slate-400">${typVal}</td>
+          <td class="px-3 py-2 font-mono">${maxVal}</td>
+          <td class="px-3 py-2 text-indigo-300 font-mono">${unit}</td>
+          <td class="px-3 py-2 font-mono text-slate-400">Unobserved</td>
+          <td class="px-3 py-2">
+            <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 border border-slate-700">Simulated</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterSpecs(query) {
+      const q = query.toLowerCase();
+      document.querySelectorAll('#specTableBody tr').forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+    }
+
+    // -------------------------------------------------------------
+    // DIAGNOSTICS & CLOSED-LOOP RENDERER
+    // -------------------------------------------------------------
+    function renderDiagnostics(iters) {
+      const container = document.getElementById('diagnosticsContainer');
+      container.innerHTML = '';
+
+      if (!iters || iters.length === 0) {
+        container.innerHTML = '<div class="text-xs text-slate-400">No iteration diagnostics recorded.</div>';
+        return;
+      }
+
+      iters.forEach(it => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-900 border border-slate-800 rounded-xl p-5 shadow space-y-4';
+
+        const passPct = (it.pass_rate_percent || 0.0).toFixed(1);
+        const shortfalls = it.shortfalls || [];
+        const improvements = it.improvements || [];
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <h4 class="font-bold text-sm text-white">Closed-Loop Iteration ${it.iteration}</h4>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-slate-400">Pass Rate:</span>
+              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">${passPct}%</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <!-- Shortfall Audit -->
+            <div class="bg-slate-950 border border-rose-500/20 rounded-xl p-3.5 space-y-2">
+              <div class="font-bold text-rose-400 flex items-center gap-1.5 uppercase text-[11px]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                Shortfall Audit (미달 원인 분석)
+              </div>
+              <ul class="space-y-1 text-slate-300 max-h-40 overflow-y-auto custom-scrollbar">
+                ${shortfalls.length ? shortfalls.map(sf => `<li class="font-mono text-[11px] leading-tight text-slate-400">&bull; ${sf}</li>`).join('') : '<li class="text-slate-500">None detected.</li>'}
+              </ul>
+            </div>
+
+            <!-- Improvements Applied -->
+            <div class="bg-slate-950 border border-emerald-500/20 rounded-xl p-3.5 space-y-2">
+              <div class="font-bold text-emerald-400 flex items-center gap-1.5 uppercase text-[11px]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Improvement Actions (개선 및 수정 내역)
+              </div>
+              <ul class="space-y-1 text-slate-300 max-h-40 overflow-y-auto custom-scrollbar">
+                ${improvements.length ? improvements.map(imp => `<li class="text-[11px] leading-tight text-slate-300">&bull; ${imp}</li>`).join('') : '<li class="text-slate-500">No improvements logged.</li>'}
+              </ul>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // -------------------------------------------------------------
+    // HKG METADATA RENDERER
+    // -------------------------------------------------------------
+    function renderHKG(ic) {
+      const dev = (ic.knowledge_graph && ic.knowledge_graph.ic_device) || {};
+      const pins = (ic.knowledge_graph && ic.knowledge_graph.pins) || [];
+
+      const metaEl = document.getElementById('hkgDeviceMetadata');
+      metaEl.innerHTML = `
+        <div><span class="text-slate-500 font-semibold">Device Name:</span> <span class="font-bold text-white">${dev.name || ic.id}</span></div>
+        <div><span class="text-slate-500 font-semibold">Category:</span> <span class="text-sky-300">${dev.category || 'Analog IC'}</span></div>
+        <div class="text-[11px] text-slate-400 leading-relaxed mt-2">${dev.description || 'No datasheet description available.'}</div>
+      `;
+
+      const pinEl = document.getElementById('hkgPinList');
+      pinEl.innerHTML = pins.map(p => `
+        <div class="flex items-center justify-between py-1 border-b border-slate-800/40">
+          <span class="font-mono text-sky-400 font-bold">${p.name}</span>
+          <span class="text-[10px] text-slate-400 uppercase">${p.role || 'SIGNAL'} | ${p.direction || 'BIDIR'}</span>
+        </div>
+      `).join('') || '<div class="text-slate-500">No pin list available.</div>';
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

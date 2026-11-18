@@ -1,0 +1,156 @@
+.options gmin=1e-12 cshunt=1e-15
+* CDCVF2505_Q1 Testbench
+.include "CDCVF2505_Q1_iter2.cir"
+
+* Voltage Sources for Power and Inputs
+VGND GND 0 0
+V_VDD_3_3_V VDD_3_3_V 0 PWL(0us 0V 0.1us 3.3V)
+V_CLKIN CLKIN 0 PWL(0us 0V 1.9us 0V 2.0us 0V 2.1us 3.3V)
+; Sanitized output driver short: V_1Y0 1Y0 0 PWL(0us 0V 2.9us 0V 3.0us 0V 3.1us 3.3V)
+; Sanitized output driver short: V_1Y1 1Y1 0 PWL(0us 0V 2.9us 0V 3.0us 0V 3.1us 3.3V)
+; Sanitized output driver short: V_1Y2 1Y2 0 PWL(0us 0V 2.9us 0V 3.0us 0V 3.1us 3.3V)
+; Sanitized output driver short: V_1Y3 1Y3 0 PWL(0us 0V 2.9us 0V 3.0us 0V 3.1us 3.3V)
+* CLKOUT is an output, no input voltage source needed
+
+* DUT Instance
+XDUT 1Y0 1Y1 1Y2 1Y3 CLKIN CLKOUT GND VDD_3_3_V CDCVF2505_Q1
+
+* Load Capacitors for outputs (typical 25pF for timing measurements)
+C_1Y0_load 1Y0 0 25p
+C_1Y1_load 1Y1 0 25p
+C_1Y2_load 1Y2 0 25p
+C_1Y3_load 1Y3 0 25p
+C_CLKOUT_load CLKOUT 0 25p
+
+* Input stimulus for fclk, odc, tsk(o), tc(jit_cc)
+* Using a pulse for CLKIN to generate a 200MHz clock (5ns period)
+* For fclk, odc, tsk(o), tc(jit_cc) conditions: f = 24 MHz to 200 MHz, CL = 25 pF, VDD = 3.3 V ± 0.3 V
+* Let's use 200MHz for initial test (5ns period, 2.5ns high, 2.5ns low)
+* V_CLKIN CLKIN 0 PULSE(0V 3.3V 2.0us 0.1ns 0.1ns 2.4ns 2.5ns) ; 200MHz clock after 2us startup
+; Sanitized duplicate parallel voltage source short: V_CLKIN_freq CLKIN 0 PULSE(0V 3.3V 2.0us 0.1ns 0.1ns 2.4ns 5ns) ; 200MHz clock (2.5ns high, 2.5ns low)
+
+* Simulation commands
+.tran 0 10us 0 0.1ns
+.op
+
+* MEASUREMENTS
+
+* VDD (Absolute Maximum Rating)
+.meas tran VDD_abs_max MAX V(VDD_3_3_V) from=0 to=10us
+.meas tran VDD_abs_min MIN V(VDD_3_3_V) from=0 to=10us
+
+* VI (Absolute Maximum Rating) - Assuming all input pins are 1Y0, 1Y1, 1Y2, 1Y3, CLKIN
+.meas tran VI_abs_max_1Y0 MAX V(1Y0) from=0 to=10us
+.meas tran VI_abs_min_1Y0 MIN V(1Y0) from=0 to=10us
+.meas tran VI_abs_max_1Y1 MAX V(1Y1) from=0 to=10us
+.meas tran VI_abs_min_1Y1 MIN V(1Y1) from=0 to=10us
+.meas tran VI_abs_max_1Y2 MAX V(1Y2) from=0 to=10us
+.meas tran VI_abs_min_1Y2 MIN V(1Y2) from=0 to=10us
+.meas tran VI_abs_max_1Y3 MAX V(1Y3) from=0 to=10us
+.meas tran VI_abs_min_1Y3 MIN V(1Y3) from=0 to=10us
+.meas tran VI_abs_max_CLKIN MAX V(CLKIN) from=0 to=10us
+.meas tran VI_abs_min_CLKIN MIN V(CLKIN) from=0 to=10us
+
+* VO (Absolute Maximum Rating) - Assuming all output pins are 1Y0, 1Y1, 1Y2, 1Y3, CLKOUT
+.meas tran VO_abs_max_1Y0 MAX V(1Y0) from=0 to=10us
+.meas tran VO_abs_min_1Y0 MIN V(1Y0) from=0 to=10us
+.meas tran VO_abs_max_1Y1 MAX V(1Y1) from=0 to=10us
+.meas tran VO_abs_min_1Y1 MIN V(1Y1) from=0 to=10us
+.meas tran VO_abs_max_1Y2 MAX V(1Y2) from=0 to=10us
+.meas tran VO_abs_min_1Y2 MIN V(1Y2) from=0 to=10us
+.meas tran VO_abs_max_1Y3 MAX V(1Y3) from=0 to=10us
+.meas tran VO_abs_min_1Y3 MIN V(1Y3) from=0 to=10us
+.meas tran VO_abs_max_CLKOUT MAX V(CLKOUT) from=0 to=10us
+.meas tran VO_abs_min_CLKOUT MIN V(CLKOUT) from=0 to=10us
+
+* IIK (Input Clamp Current) - Requires separate tests for VI < 0 and VI > VDD
+* This requires specific test setups, not directly measurable in a general functional test.
+* For VI < 0, apply negative voltage to input and measure current.
+* For VI > VDD, apply voltage > VDD to input and measure current.
+* Not implemented in this general functional test.
+
+* IOK (Output Clamp Current) - Requires separate tests for VO < 0 and VO > VDD
+* Similar to IIK, requires specific test setups.
+* Not implemented in this general functional test.
+
+* IO (Output Current) - Requires specific load conditions and output states.
+* Not implemented in this general functional test.
+
+* VDD (Recommended Operating Conditions)
+.meas tran VDD_op_max MAX V(VDD_3_3_V) from=3.5us to=10us
+.meas tran VDD_op_min MIN V(VDD_3_3_V) from=3.5us to=10us
+
+* VIH (Input High Voltage) - Requires specific input voltage levels.
+* VIL (Input Low Voltage) - Requires specific input voltage levels.
+* VI (Input Voltage) - Covered by absolute max and min.
+
+* IOH (Output High Current) - Requires specific output voltage and load.
+* IOL (Output Low Current) - Requires specific output voltage and load.
+* These require specific DC operating points with current sources as loads.
+* Not implemented in this general functional test.
+
+* TA (Operating Free-Air Temperature) - Not measurable in SPICE.
+
+* fclk (Operating Frequency)
+* Measure CLKOUT frequency
+.meas tran t_clkout_rise1 when V(CLKOUT)=1.65 rise=1
+.meas tran t_clkout_rise2 when V(CLKOUT)=1.65 rise=2
+.meas tran fclk param 1/(t_clkout_rise2 - t_clkout_rise1)
+
+* Stabilization time
+* Measure time until CLKOUT starts oscillating stably.
+* This is hard to define precisely without a specific stability criterion.
+* For now, we'll assume the clock is stable after the power-up sequence.
+* The PDG schedule implies CLKOUT is active after 3.0us.
+* Let's measure the first clock edge after 3.0us.
+.meas tran t_clkout_first_rise when V(CLKOUT)=1.65 rise=1
+
+* VIK (Input Clamp Voltage) - Requires specific input current.
+* Not implemented in this general functional test.
+
+* VOH (Output High Voltage) - Requires specific load conditions.
+* VOL (Output Low Voltage) - Requires specific load conditions.
+* These require specific DC operating points with current sources as loads.
+* Not implemented in this general functional test.
+
+* II (Input Leakage Current) - Requires specific input voltage (0V or VDD).
+* To measure II, we need to apply 0V or VDD to inputs and measure current.
+* Let's measure average current into CLKIN when it's high and low.
+.meas tran II_CLKIN_high AVG I(V_CLKIN) from=3.0us to=3.5us ; During high phase
+.meas tran II_CLKIN_low AVG I(V_CLKIN) from=3.5us to=4.0us ; During low phase
+
+* Ci (Input Capacitance) - Requires AC analysis.
+* Co (Output Capacitance) - Requires AC analysis.
+* Not implemented in this transient analysis.
+
+* tsk(o) (Output Skew) - Yn to Yn
+* Requires all Yn outputs to be active and driven by the same clock.
+* We have 1Y0, 1Y1, 1Y2, 1Y3. Let's measure skew between 1Y0 and 1Y1.
+* Assuming all 1Yn outputs are driven by CLKIN.
+.meas tran t_1Y0_rise when V(1Y0)=1.65 rise=1
+.meas tran t_1Y1_rise when V(1Y1)=1.65 rise=1
+.meas tran tsk_o_1Y0_1Y1 param abs(t_1Y0_rise - t_1Y1_rise)
+
+* tc(jit_cc) (Cycle-to-Cycle Jitter)
+* For f = 200 MHz, CL = 25 pF, VDD = 3.3 V ± 0.3 V
+* Measure period of CLKOUT for several cycles and calculate jitter.
+.meas tran p1 when V(CLKOUT)=1.65 rise=1
+.meas tran p2 when V(CLKOUT)=1.65 rise=2
+.meas tran p3 when V(CLKOUT)=1.65 rise=3
+.meas tran p4 when V(CLKOUT)=1.65 rise=4
+.meas tran period1 param p2-p1
+.meas tran period2 param p3-p2
+.meas tran period3 param p4-p3
+.meas tran jit_cc_1 param abs(period2-period1)
+.meas tran jit_cc_2 param abs(period3-period2)
+.meas tran jit_cc_max param MAX(jit_cc_1, jit_cc_2)
+
+* odc (Output Duty Cycle)
+* For f = 200 MHz at 50% VDD, CL = 25 pF, VDD = 3.3 V ± 0.3 V
+.meas tran t_clkout_high_start when V(CLKOUT)=1.65 rise=1
+.meas tran t_clkout_high_end when V(CLKOUT)=1.65 fall=1
+.meas tran t_clkout_period_start when V(CLKOUT)=1.65 rise=1
+.meas tran t_clkout_period_end when V(CLKOUT)=1.65 rise=2
+.meas tran odc_clkout param (t_clkout_high_end - t_clkout_high_start) / (t_clkout_period_end - t_clkout_period_start) * 100
+
+.end

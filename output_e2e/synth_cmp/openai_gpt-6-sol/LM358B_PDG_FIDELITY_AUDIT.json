@@ -1,0 +1,320 @@
+{
+  "mode": "groundtruth_free_provenance",
+  "fidelity_score_pct": 85.7,
+  "status": "TRUSTWORTHY",
+  "pin_provenance": {
+    "pins": 8,
+    "grounded": 8,
+    "grounded_pct": 100.0,
+    "ungrounded": []
+  },
+  "spec_provenance": {
+    "specs": 260,
+    "grounded": 241,
+    "grounded_pct": 92.7,
+    "by_category": {
+      "ABS_MAX": 16,
+      "ESD": 4,
+      "RECOMMENDED": 9,
+      "THERMAL": 36,
+      "ELECTRICAL": 195
+    },
+    "ungrounded_examples": [
+      {
+        "symbol": "tSC",
+        "category": "ABS_MAX",
+        "page": 4,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VCM",
+        "category": "RECOMMENDED",
+        "page": 5,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "R\u03b8JC(bot)",
+        "category": "THERMAL",
+        "page": 5,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VCM",
+        "category": "ELECTRICAL",
+        "page": 6,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VCM",
+        "category": "ELECTRICAL",
+        "page": 6,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VCM",
+        "category": "ELECTRICAL",
+        "page": 8,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VCM",
+        "category": "ELECTRICAL",
+        "page": 8,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VCM",
+        "category": "ELECTRICAL",
+        "page": 10,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VCM",
+        "category": "ELECTRICAL",
+        "page": 10,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VCM",
+        "category": "ELECTRICAL",
+        "page": 10,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "IQ",
+        "category": "ELECTRICAL",
+        "page": 10,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VCM",
+        "category": "ELECTRICAL",
+        "page": 11,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VCM",
+        "category": "ELECTRICAL",
+        "page": 11,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VO",
+        "category": "ELECTRICAL",
+        "page": 11,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "IQ",
+        "category": "ELECTRICAL",
+        "page": 11,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      }
+    ]
+  },
+  "topological_validity": {
+    "is_dag": true,
+    "unreachable_outputs": [],
+    "isolated_pins": []
+  },
+  "edge_origin": {
+    "edges": 16,
+    "datasheet_derived": 8,
+    "rule_injected": 8,
+    "datasheet_pct": 50.0
+  },
+  "timing_grounding": {
+    "delay_grounded_edges": 8,
+    "grounded_pct": 50.0,
+    "timing_specs_used": {
+      "turnon_settling_us": 4.0,
+      "propagation_delay_us": null,
+      "slew_rate_v_us": 0.3,
+      "bandwidth_mhz": 0.7,
+      "sources": {
+        "bandwidth_mhz": "GBW",
+        "slew_rate_v_us": "SR",
+        "turnon_settling_us": "ts"
+      }
+    }
+  },
+  "edge_details": [
+    {
+      "from": "IN1",
+      "to": "OUT1",
+      "delay_us": 4.0,
+      "type": "SIGNAL_PATH",
+      "origin": "datasheet",
+      "delay_source": "ts",
+      "condition": "Common-mode input range includes ground"
+    },
+    {
+      "from": "IN1_P",
+      "to": "OUT1",
+      "delay_us": 4.0,
+      "type": "SIGNAL_PATH",
+      "origin": "datasheet",
+      "delay_source": "ts",
+      "condition": "Common-mode input range includes ground"
+    },
+    {
+      "from": "V",
+      "to": "OUT1",
+      "delay_us": 4.0,
+      "type": "POWER_FEED",
+      "origin": "datasheet",
+      "delay_source": "ts",
+      "condition": "Negative supply or ground reference"
+    },
+    {
+      "from": "V",
+      "to": "OUT2",
+      "delay_us": 4.0,
+      "type": "POWER_FEED",
+      "origin": "datasheet",
+      "delay_source": "ts",
+      "condition": "Negative supply or ground reference"
+    },
+    {
+      "from": "V",
+      "to": "IN1",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "V",
+      "to": "IN1_P",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "V",
+      "to": "IN2_P",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "V",
+      "to": "IN2",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "IN2_P",
+      "to": "OUT2",
+      "delay_us": 4.0,
+      "type": "SIGNAL_PATH",
+      "origin": "datasheet",
+      "delay_source": "ts",
+      "condition": "Common-mode input range includes ground"
+    },
+    {
+      "from": "IN2",
+      "to": "OUT2",
+      "delay_us": 4.0,
+      "type": "SIGNAL_PATH",
+      "origin": "datasheet",
+      "delay_source": "ts",
+      "condition": "Common-mode input range includes ground"
+    },
+    {
+      "from": "V_P",
+      "to": "OUT1",
+      "delay_us": 4.0,
+      "type": "POWER_FEED",
+      "origin": "datasheet",
+      "delay_source": "ts",
+      "condition": "Supply voltage 3V to 36V"
+    },
+    {
+      "from": "V_P",
+      "to": "OUT2",
+      "delay_us": 4.0,
+      "type": "POWER_FEED",
+      "origin": "datasheet",
+      "delay_source": "ts",
+      "condition": "Supply voltage 3V to 36V"
+    },
+    {
+      "from": "V_P",
+      "to": "IN1",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "V_P",
+      "to": "IN1_P",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "V_P",
+      "to": "IN2_P",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "V_P",
+      "to": "IN2",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    }
+  ],
+  "pin_coverage": {
+    "coverage_pct": 100.0
+  }
+}

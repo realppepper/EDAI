@@ -1,0 +1,745 @@
+{
+  "ic_device": {
+    "name": "TLC2932A",
+    "category": "Phase-Locked Loop (PLL)",
+    "description": "The TLC2932A is designed for phase-locked loop (PLL) systems and is composed of a voltage-controlled oscillator (VCO) and an edge-triggered type phase frequency detector (PFD). The oscillation frequency range of the VCO is set by an external bias resistor (RBIAS). The VCO has a 1/2 frequency divider at the output stage. The high speed PFD with internal charge pump detects the phase difference between the reference frequency input and signal frequency input from the external counter. Both the VCO and the PFD have inhibit functions, which can be used as power-down mode. Due to the TLC2932A high speed and stable oscillation capability, the TLC2932A is suitable for use as a high-performance PLL."
+  },
+  "pins": [
+    {
+      "name": "LOGIC_VDD",
+      "pin_number": "1",
+      "direction": "POWER",
+      "role": "POWER",
+      "description": "Power supply for the internal logic. This power supply should be separated from VCO VDD to reduce cross-coupling between supplies."
+    },
+    {
+      "name": "SELECT",
+      "pin_number": "2",
+      "direction": "INPUT",
+      "role": "CONTROL",
+      "description": "VCO output frequency select. When SELECT is high, the VCO output frequency is \u00d71/2 and when low. The output frequency is \u00d71."
+    },
+    {
+      "name": "VCO_OUT",
+      "pin_number": "3",
+      "direction": "OUTPUT",
+      "role": "OUTPUT",
+      "description": "VCO output. When the VCO INHIBIT is high, VCO output is low."
+    },
+    {
+      "name": "FIN_A",
+      "pin_number": "4",
+      "direction": "INPUT",
+      "role": "SIGNAL",
+      "description": "Input reference frequency f(REF IN) is applied to FIN\u2212A."
+    },
+    {
+      "name": "FIN_B",
+      "pin_number": "5",
+      "direction": "INPUT",
+      "role": "SIGNAL",
+      "description": "Input for VCO external counter output frequency f(FIN\u2212B). FIN\u2212B is nominally provided from the external counter."
+    },
+    {
+      "name": "PFD_OUT",
+      "pin_number": "6",
+      "direction": "OUTPUT",
+      "role": "OUTPUT",
+      "description": "PFD output. When the PFD INHIBIT is high, PFD output is in the high-impedance state."
+    },
+    {
+      "name": "LOGIC_GND",
+      "pin_number": "7",
+      "direction": "GROUND",
+      "role": "GROUND",
+      "description": "GND for the internal logic."
+    },
+    {
+      "name": "TEST",
+      "pin_number": "8",
+      "direction": "INPUT",
+      "role": "CONTROL",
+      "description": "Connect to GND."
+    },
+    {
+      "name": "PFD_INHIBIT",
+      "pin_number": "9",
+      "direction": "INPUT",
+      "role": "ENABLE",
+      "description": "PFD inhibit control. When PFD INHIBIT is high, PFD output is in the high-impedance state."
+    },
+    {
+      "name": "VCO_INHIBIT",
+      "pin_number": "10",
+      "direction": "INPUT",
+      "role": "ENABLE",
+      "description": "VCO inhibit control. When VCO INHIBIT is high, VCO output is low."
+    },
+    {
+      "name": "VCO_GND",
+      "pin_number": "11",
+      "direction": "GROUND",
+      "role": "GROUND",
+      "description": "GND for VCO."
+    },
+    {
+      "name": "VCO_IN",
+      "pin_number": "12",
+      "direction": "INPUT",
+      "role": "CONTROL",
+      "description": "VCO control voltage input. Nominally the external loop filter output connects to VCO IN to control VCO oscillation frequency."
+    },
+    {
+      "name": "RBIAS",
+      "pin_number": "13",
+      "direction": "INPUT",
+      "role": "BIAS",
+      "description": "Bias supply. An external resistor (RBIAS) between VCO VDD and RBIAS supplies bias for adjusting the oscillation frequency range."
+    },
+    {
+      "name": "VCO_VDD",
+      "pin_number": "14",
+      "direction": "POWER",
+      "role": "POWER",
+      "description": "Power supply for VCO. This power supply should be separated from LOGIC VDD to reduce cross-coupling between supplies."
+    }
+  ],
+  "electrical_parameters": [
+    {
+      "symbol": "VDD",
+      "name": "Supply voltage (each supply)",
+      "min": null,
+      "typ": null,
+      "max": 7.0,
+      "unit": "V",
+      "test_conditions": "absolute maximum ratings",
+      "related_pins": [
+        "LOGIC VDD",
+        "VCO VDD"
+      ],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "VIN",
+      "name": "Input voltage range (each input)",
+      "min": -0.5,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "absolute maximum ratings, with respect to VDD + 0.5 V",
+      "related_pins": [],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "IIN",
+      "name": "Input current (each input)",
+      "min": -20.0,
+      "typ": null,
+      "max": 20.0,
+      "unit": "mA",
+      "test_conditions": "absolute maximum ratings",
+      "related_pins": [],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "IO",
+      "name": "Output current (each output)",
+      "min": -20.0,
+      "typ": null,
+      "max": 20.0,
+      "unit": "mA",
+      "test_conditions": "absolute maximum ratings",
+      "related_pins": [],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating free-air temperature range",
+      "min": -20.0,
+      "typ": null,
+      "max": 75.0,
+      "unit": "\u00b0C",
+      "test_conditions": "absolute maximum ratings",
+      "related_pins": [],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "Tstg",
+      "name": "Storage temperature range",
+      "min": -65.0,
+      "typ": null,
+      "max": 150.0,
+      "unit": "\u00b0C",
+      "test_conditions": "absolute maximum ratings",
+      "related_pins": [],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "VDD",
+      "name": "Supply voltage (each supply)",
+      "min": 2.85,
+      "typ": 3.0,
+      "max": 3.15,
+      "unit": "V",
+      "test_conditions": "VDD = 3 V",
+      "related_pins": [
+        "LOGIC VDD",
+        "VCO VDD"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "VDD",
+      "name": "Supply voltage (each supply)",
+      "min": 3.135,
+      "typ": 3.3,
+      "max": 3.465,
+      "unit": "V",
+      "test_conditions": "VDD = 3.3 V",
+      "related_pins": [
+        "LOGIC VDD",
+        "VCO VDD"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "VDD",
+      "name": "Supply voltage (each supply)",
+      "min": 4.75,
+      "typ": 5.0,
+      "max": 5.25,
+      "unit": "V",
+      "test_conditions": "VDD = 5 V",
+      "related_pins": [
+        "LOGIC VDD",
+        "VCO VDD"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "Input voltage, (inputs except VCO IN)",
+      "name": "Input voltage, (inputs except VCO IN)",
+      "min": 0.0,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VDD",
+      "related_pins": [],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "Output current, (each output)",
+      "name": "Output current, (each output)",
+      "min": 0.0,
+      "typ": null,
+      "max": 2.0,
+      "unit": "mA",
+      "test_conditions": null,
+      "related_pins": [],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "VCO control voltage at VCO IN",
+      "name": "VCO control voltage at VCO IN",
+      "min": 0.9,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VDD",
+      "related_pins": [
+        "VCO IN"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "Lock frequency",
+      "name": "Lock frequency",
+      "min": 13.0,
+      "typ": null,
+      "max": 32.0,
+      "unit": "MHz",
+      "test_conditions": "VDD = 3 V",
+      "related_pins": [],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "Lock frequency",
+      "name": "Lock frequency",
+      "min": 13.0,
+      "typ": null,
+      "max": 35.0,
+      "unit": "MHz",
+      "test_conditions": "VDD = 3.3 V",
+      "related_pins": [],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "Lock frequency",
+      "name": "Lock frequency",
+      "min": 15.0,
+      "typ": null,
+      "max": 55.0,
+      "unit": "MHz",
+      "test_conditions": "VDD = 5 V",
+      "related_pins": [],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "Bias Resistor",
+      "name": "Bias Resistor",
+      "min": 2.2,
+      "typ": null,
+      "max": 5.1,
+      "unit": "k\u2126",
+      "test_conditions": "VDD = 3 V",
+      "related_pins": [
+        "RBIAS"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "Bias Resistor",
+      "name": "Bias Resistor",
+      "min": 2.2,
+      "typ": null,
+      "max": 5.1,
+      "unit": "k\u2126",
+      "test_conditions": "VDD = 3.3 V",
+      "related_pins": [
+        "RBIAS"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "Bias Resistor",
+      "name": "Bias Resistor",
+      "min": 2.2,
+      "typ": null,
+      "max": 5.1,
+      "unit": "k\u2126",
+      "test_conditions": "VDD = 5 V",
+      "related_pins": [
+        "RBIAS"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "VOH",
+      "name": "High level output voltage",
+      "min": 2.4,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "IOH = \u20132 mA",
+      "related_pins": [
+        "VCO OUT"
+      ],
+      "category": "Electrical Characteristics (VCO section)"
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low level output voltage",
+      "min": null,
+      "typ": null,
+      "max": 0.3,
+      "unit": "V",
+      "test_conditions": "IOL = 2 mA",
+      "related_pins": [
+        "VCO OUT"
+      ],
+      "category": "Electrical Characteristics (VCO section)"
+    },
+    {
+      "symbol": "VTH",
+      "name": "Input threshold voltage at select, VCO inhibit",
+      "min": 0.9,
+      "typ": 1.5,
+      "max": 2.1,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [
+        "SELECT",
+        "VCO INHIBIT"
+      ],
+      "category": "Electrical Characteristics (VCO section)"
+    },
+    {
+      "symbol": "II",
+      "name": "Input current at Select, VCO inhibit",
+      "min": -1.0,
+      "typ": null,
+      "max": 1.0,
+      "unit": "\u00b5A",
+      "test_conditions": "VI = VDD or GND",
+      "related_pins": [
+        "SELECT",
+        "VCO INHIBIT"
+      ],
+      "category": "Electrical Characteristics (VCO section)"
+    },
+    {
+      "symbol": "ZI(VCO IN)",
+      "name": "VCO IN input impedance",
+      "min": 10.0,
+      "typ": null,
+      "max": null,
+      "unit": "M\u2126",
+      "test_conditions": "VCO IN = 1/2 VDD",
+      "related_pins": [
+        "VCO IN"
+      ],
+      "category": "Electrical Characteristics (VCO section)"
+    },
+    {
+      "symbol": "IDD(INH)",
+      "name": "VCO supply current (inhibit)",
+      "min": null,
+      "typ": 0.35,
+      "max": 1.0,
+      "unit": "\u00b5A",
+      "test_conditions": "VCO INHIBIT = high, PFD is inhibited",
+      "related_pins": [
+        "VCO VDD"
+      ],
+      "category": "Electrical Characteristics (VCO section)"
+    },
+    {
+      "symbol": "IDD(VCO)",
+      "name": "VCO supply current",
+      "min": null,
+      "typ": 8.4,
+      "max": 17.0,
+      "unit": "mA",
+      "test_conditions": "VCO IN = 1/2 VDD, RBIAS = 3.3 k\u2126, VCOOUT = 15\u2212pF Load, VCO INHIBIT = GND, and PFD INHIBIT = GND",
+      "related_pins": [
+        "VCO VDD"
+      ],
+      "category": "Electrical Characteristics (VCO section)"
+    },
+    {
+      "symbol": "VOH",
+      "name": "High level output voltage",
+      "min": 2.4,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "IOH = \u20132 mA",
+      "related_pins": [
+        "PFD OUT"
+      ],
+      "category": "Electrical Characteristics (PFD section)"
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low level output voltage",
+      "min": null,
+      "typ": null,
+      "max": 0.3,
+      "unit": "V",
+      "test_conditions": "IOL = 2 mA",
+      "related_pins": [
+        "PFD OUT"
+      ],
+      "category": "Electrical Characteristics (PFD section)"
+    },
+    {
+      "symbol": "IOZ",
+      "name": "High impedance state output current",
+      "min": -1.0,
+      "typ": null,
+      "max": 1.0,
+      "unit": "\u00b5A",
+      "test_conditions": "PFD inhibit = high, VO = VDD or GND",
+      "related_pins": [
+        "PFD OUT"
+      ],
+      "category": "Electrical Characteristics (PFD section)"
+    },
+    {
+      "symbol": "VIH",
+      "name": "High level input voltage at Fin\u2212A, Fin\u2212B",
+      "min": 2.1,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [
+        "FIN-A",
+        "FIN-B"
+      ],
+      "category": "Electrical Characteristics (PFD section)"
+    },
+    {
+      "symbol": "VIL",
+      "name": "Low level input voltage at Fin\u2212A, Fin\u2212B",
+      "min": null,
+      "typ": null,
+      "max": 0.5,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [
+        "FIN-A",
+        "FIN-B"
+      ],
+      "category": "Electrical Characteristics (PFD section)"
+    },
+    {
+      "symbol": "VTH",
+      "name": "Input threshold voltage at PFD inhibit",
+      "min": 0.9,
+      "typ": 1.5,
+      "max": 2.1,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [
+        "PFD INHIBIT"
+      ],
+      "category": "Electrical Characteristics (PFD section)"
+    },
+    {
+      "symbol": "CIN",
+      "name": "Input capacitance at Fin\u2212A, Fin\u2212B",
+      "min": null,
+      "typ": 5.6,
+      "max": null,
+      "unit": "pF",
+      "test_conditions": null,
+      "related_pins": [
+        "FIN-A",
+        "FIN-B"
+      ],
+      "category": "Electrical Characteristics (PFD section)"
+    },
+    {
+      "symbol": "ZIN",
+      "name": "Input impedance at Fin\u2212A, Fin\u2212B",
+      "min": 10.0,
+      "typ": null,
+      "max": null,
+      "unit": "M\u2126",
+      "test_conditions": null,
+      "related_pins": [
+        "FIN-A",
+        "FIN-B"
+      ],
+      "category": "Electrical Characteristics (PFD section)"
+    },
+    {
+      "symbol": "IDD(Z)",
+      "name": "High impedance state PFD supply current",
+      "min": null,
+      "typ": null,
+      "max": 1.0,
+      "unit": "\u00b5A",
+      "test_conditions": "FIN\u2212A and FIN\u2212B = ground, PFD INHIBIT = VDD, PFD OUT open, and VCO OUT is inhibited",
+      "related_pins": [
+        "LOGIC VDD"
+      ],
+      "category": "Electrical Characteristics (PFD section)"
+    },
+    {
+      "symbol": "IDD(PFD)",
+      "name": "PFD supply current",
+      "min": null,
+      "typ": null,
+      "max": 3.0,
+      "unit": "mA",
+      "test_conditions": "FIN\u2212A = 1 MHz and FIN\u2212B = 1 MHz (VI(PP) = 3 V, rectangular wave), PFD INHIBIT = GND, PFD OUT open, and VCO OUT is inhibited",
+      "related_pins": [
+        "LOGIC VDD"
+      ],
+      "category": "Electrical Characteristics (PFD section)"
+    },
+    {
+      "symbol": "fOSC",
+      "name": "Operation oscillation frequency",
+      "min": 17.0,
+      "typ": 25.0,
+      "max": 33.0,
+      "unit": "MHz",
+      "test_conditions": "RBIAS = 3.3 k\u2126, VCO IN = 1/2 VDD",
+      "related_pins": [
+        "VCO OUT"
+      ],
+      "category": "Operation Characteristics (VCO section)"
+    },
+    {
+      "symbol": "fSTB",
+      "name": "Time to stable oscillation",
+      "min": null,
+      "typ": 10.0,
+      "max": null,
+      "unit": "\u00b5s",
+      "test_conditions": null,
+      "related_pins": [],
+      "category": "Operation Characteristics (VCO section)"
+    },
+    {
+      "symbol": "tr",
+      "name": "Rise time",
+      "min": null,
+      "typ": 9.0,
+      "max": 14.0,
+      "unit": "ns",
+      "test_conditions": "CL = 15 pF",
+      "related_pins": [
+        "VCO OUT"
+      ],
+      "category": "Operation Characteristics (VCO section)"
+    },
+    {
+      "symbol": "tf",
+      "name": "Fall time",
+      "min": null,
+      "typ": 7.6,
+      "max": 12.0,
+      "unit": "ns",
+      "test_conditions": "CL = 15 pF",
+      "related_pins": [
+        "VCO OUT"
+      ],
+      "category": "Operation Characteristics (VCO section)"
+    },
+    {
+      "symbol": "Duty cycle at VCO OUT",
+      "name": "Duty cycle at VCO OUT",
+      "min": 45.0,
+      "typ": 50.0,
+      "max": 55.0,
+      "unit": "%",
+      "test_conditions": "RBIAS = 3.3 k\u2126, VCO IN = 1/2 VDD",
+      "related_pins": [
+        "VCO OUT"
+      ],
+      "category": "Operation Characteristics (VCO section)"
+    },
+    {
+      "symbol": "\u03b1 (fOSC)",
+      "name": "Temperature coefficient of oscillation frequency",
+      "min": null,
+      "typ": -0.264,
+      "max": null,
+      "unit": "%/\u00b0C",
+      "test_conditions": "VCO IN = 1/2 VDD, TA = \u201320\u00b0C to 75\u00b0C",
+      "related_pins": [],
+      "category": "Operation Characteristics (VCO section)"
+    },
+    {
+      "symbol": "kSVS (fosc)",
+      "name": "Supply voltage coefficient of oscillation frequency",
+      "min": null,
+      "typ": 0.004,
+      "max": null,
+      "unit": "%/mV",
+      "test_conditions": "VCO IN = 1/2 VDD, VDD = 4.75 V to 5.25 V",
+      "related_pins": [],
+      "category": "Operation Characteristics (VCO section)"
+    },
+    {
+      "symbol": "Jitter absolute",
+      "name": "Jitter absolute",
+      "min": null,
+      "typ": 325.0,
+      "max": null,
+      "unit": "ps",
+      "test_conditions": "PLL jitter, N = 128",
+      "related_pins": [],
+      "category": "Operation Characteristics (VCO section)"
+    },
+    {
+      "symbol": "fmax",
+      "name": "Maximum operation frequency",
+      "min": null,
+      "typ": 17.0,
+      "max": null,
+      "unit": "MH",
+      "test_conditions": null,
+      "related_pins": [],
+      "category": "Operation Characteristics (PFD section)"
+    },
+    {
+      "symbol": "tPLZ",
+      "name": "PFD output disable time from low level",
+      "min": null,
+      "typ": 22.0,
+      "max": 50.0,
+      "unit": "ns",
+      "test_conditions": null,
+      "related_pins": [
+        "PFD OUT"
+      ],
+      "category": "Operation Characteristics (PFD section)"
+    },
+    {
+      "symbol": "tPHZ",
+      "name": "PFD output disable time from high level",
+      "min": null,
+      "typ": 21.0,
+      "max": 50.0,
+      "unit": "ns",
+      "test_conditions": null,
+      "related_pins": [
+        "PFD OUT"
+      ],
+      "category": "Operation Characteristics (PFD section)"
+    },
+    {
+      "symbol": "tPZL",
+      "name": "PFD output enable time to low level",
+      "min": null,
+      "typ": 6.5,
+      "max": 30.0,
+      "unit": "ns",
+      "test_conditions": null,
+      "related_pins": [
+        "PFD OUT"
+      ],
+      "category": "Operation Characteristics (PFD section)"
+    },
+    {
+      "symbol": "tPZH",
+      "name": "PFD output enable time to high level",
+      "min": null,
+      "typ": 7.0,
+      "max": 30.0,
+      "unit": "ns",
+      "test_conditions": null,
+      "related_pins": [
+        "PFD OUT"
+      ],
+      "category": "Operation Characteristics (PFD section)"
+    },
+    {
+      "symbol": "tr",
+      "name": "Rise time",
+      "min": null,
+      "typ": 3.4,
+      "max": 10.0,
+      "unit": "ns",
+      "test_conditions": "CL = 15 pF",
+      "related_pins": [
+        "PFD OUT"
+      ],
+      "category": "Operation Characteristics (PFD section)"
+    },
+    {
+      "symbol": "tf",
+      "name": "Fall time",
+      "min": null,
+      "typ": 1.9,
+      "max": 10.0,
+      "unit": "ns",
+      "test_conditions": "CL = 15 pF",
+      "related_pins": [
+        "PFD OUT"
+      ],
+      "category": "Operation Characteristics (PFD section)"
+    }
+  ],
+  "functional_blocks": [
+    "Voltage-Controlled Oscillator (VCO)",
+    "Phase Frequency Detector (PFD)",
+    "Charge Pump",
+    "1/2 Frequency Divider"
+  ]
+}

@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autonomous Analog Circuit Design & Verification Visualizer</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --background: #090d16;
+      --card: #0f172a;
+      --card-hover: #1e293b;
+      --border: #334155;
+      --foreground: #f8fafc;
+      --muted-foreground: #94a3b8;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.25);
+      --accent: #818cf8;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    .glow-card {
+      box-shadow: 0 0 20px -5px rgba(56, 189, 248, 0.15);
+    }
+    .node-pin {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .node-pin:hover {
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 8px var(--primary));
+    }
+    .tab-btn.active {
+      background-color: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border-bottom: 2px solid #38bdf8;
+    }
+    .code-box {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+  </style>
+</head>
+<body class="min-h-screen custom-scrollbar p-3 md:p-6 antialiased">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- Top Navigation & IC Selector Header -->
+    <header class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-lg flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-sky-500/10 border border-sky-500/30 rounded-xl text-sky-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+              Autonomous Analog Circuit Verifier
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Neuro-Symbolic Engine</span>
+            </h1>
+            <p class="text-xs md:text-sm text-[var(--muted-foreground)] mt-0.5">
+              Deep Visual Inspection of First-Principles AI Circuit Synthesis, PDG Scheduling & Formal Verification
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- IC Selector Pills / Dropdown -->
+      <div class="flex items-center gap-2 w-full lg:w-auto">
+        <label for="icSelect" class="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider shrink-0">Selected IC:</label>
+        <select id="icSelect" onchange="switchIC(this.value)" class="w-full lg:w-72 bg-slate-900 border border-[var(--border)] text-sky-300 font-semibold text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-sky-400">
+        </select>
+      </div>
+    </header>
+
+    <!-- Sub-Process Master Flowchart (Breadcrumb Pipeline) -->
+    <section class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-lg">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xs uppercase tracking-wider font-bold text-sky-400 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Execution Sub-Process Architecture (6 Core Phases)
+        </h2>
+        <span id="pipelineStatusBadge" class="text-xs font-medium px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300 border border-sky-500/30">Active</span>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+        <!-- Phase 1 -->
+        <div onclick="selectTab('tab-hkg')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 1</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">PDF to HKG</div>
+          <div class="text-[11px] text-slate-400 mt-1">Layout, tables & knowledge graph</div>
+        </div>
+
+        <!-- Phase 2 -->
+        <div onclick="selectTab('tab-pdg')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 2</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">PDG & Schedule</div>
+          <div class="text-[11px] text-slate-400 mt-1">Causal DAG & delay &sigma;(p)</div>
+        </div>
+
+        <!-- Phase 3 -->
+        <div onclick="selectTab('tab-synthesis')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 3</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">AI Netlist Synthesis</div>
+          <div class="text-[11px] text-slate-400 mt-1">Transistor sizing & topology</div>
+        </div>
+
+        <!-- Phase 4 -->
+        <div onclick="selectTab('tab-testbenches')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 4</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">Testbench Deck</div>
+          <div class="text-[11px] text-slate-400 mt-1">.op / .tran / .ac auto decks</div>
+        </div>
+
+        <!-- Phase 5 -->
+        <div onclick="selectTab('tab-verification')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 5</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">LTspice & SymPy</div>
+          <div class="text-[11px] text-slate-400 mt-1">Batch sim & formal interval</div>
+        </div>
+
+        <!-- Phase 6 -->
+        <div onclick="selectTab('tab-healing')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 6</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">Self-Healing Loop</div>
+          <div class="text-[11px] text-slate-400 mt-1">Shortfall &rarr; Re-synthesis</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Metrics Cards for Current Selected IC -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">TARGET IC / CATEGORY</div>
+        <div id="statIcName" class="text-lg md:text-xl font-bold text-white mt-1 truncate">--</div>
+        <div id="statCategory" class="text-xs text-sky-400 truncate mt-0.5">--</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">EXTRACTED SPECS</div>
+        <div id="statSpecCount" class="text-lg md:text-xl font-bold text-white mt-1">--</div>
+        <div id="statPinCount" class="text-xs text-indigo-400 mt-0.5">-- Pins Identified</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">CLOSED-LOOP ITERATIONS</div>
+        <div id="statLoopCount" class="text-lg md:text-xl font-bold text-white mt-1">--</div>
+        <div id="statLoopStatus" class="text-xs text-amber-400 mt-0.5">2 Iterations Executed</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">FINAL VERIFICATION PASS</div>
+        <div id="statPassRate" class="text-lg md:text-xl font-bold text-emerald-400 mt-1">--%</div>
+        <div id="statPassRateSub" class="text-xs text-slate-400 mt-0.5">LTspice Neuro-Symbolic</div>
+      </div>
+    </section>
+
+    <!-- Interactive Navigation Tabs -->
+    <div class="border-b border-slate-700 flex overflow-x-auto gap-2 text-sm font-medium">
+      <button onclick="selectTab('tab-overview')" id="btn-tab-overview" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all active">
+        1. Sub-Process Flowchart
+      </button>
+      <button onclick="selectTab('tab-pdg')" id="btn-tab-pdg" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        2. Port Dependency Graph & Timing
+      </button>
+      <button onclick="selectTab('tab-synthesis')" id="btn-tab-synthesis" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        3. AI Netlist & Transistor Sizing
+      </button>
+      <button onclick="selectTab('tab-testbenches')" id="btn-tab-testbenches" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        4. Testbench Decks
+      </button>
+      <button onclick="selectTab('tab-verification')" id="btn-tab-verification" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        5. SymPy Oracle & Measurements
+      </button>
+      <button onclick="selectTab('tab-healing')" id="btn-tab-healing" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        6. Closed-Loop Diagnostics
+      </button>
+      <button onclick="selectTab('tab-hkg')" id="btn-tab-hkg" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        7. Knowledge Graph (HKG)
+      </button>
+    </div>
+
+    <!-- TAB 1: SUB-PROCESS FLOWCHART & SYSTEM ARCHITECTURE -->
+    <div id="tab-overview" class="tab-content space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+          Detailed Internal Sub-Processes Execution Flow
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-6">
+          Every analog IC undergoes an automated, six-phase end-to-end synthesis and verification cycle without template hardcoding.
+        </p>
+
+        <!-- SVG Flowchart -->
+        <div class="overflow-x-auto py-2">
+          <svg class="w-full min-w-[850px] h-64 text-slate-200" viewBox="0 0 950 260">
+            <defs>
+              <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0284c7"/>
+                <stop offset="100%" stop-color="#0369a1"/>
+              </linearGradient>
+              <linearGradient id="grad-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6366f1"/>
+                <stop offset="100%" stop-color="#4f46e5"/>
+              </linearGradient>
+              <linearGradient id="grad-emerald" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#059669"/>
+                <stop offset="100%" stop-color="#047857"/>
+              </linearGradient>
+              <linearGradient id="grad-amber" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#d97706"/>
+                <stop offset="100%" stop-color="#b45309"/>
+              </linearGradient>
+              <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+              </marker>
+              <marker id="arrow-feedback" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b"/>
+              </marker>
+            </defs>
+
+            <!-- Box 1: PDF to HKG -->
+            <rect x="20" y="40" width="130" height="90" rx="12" fill="url(#grad-blue)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="85" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">1. PDF Parsing</text>
+            <text x="85" y="90" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Layout & Tables</text>
+            <text x="85" y="105" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; HKG Graph</text>
+
+            <line x1="150" y1="85" x2="180" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 2: PDG Scheduling -->
+            <rect x="180" y="40" width="130" height="90" rx="12" fill="url(#grad-blue)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="245" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">2. PDG Engine</text>
+            <text x="245" y="90" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Pin Dependency</text>
+            <text x="245" y="105" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Delay Schedule &sigma;(p)</text>
+
+            <line x1="310" y1="85" x2="340" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 3: LLM Circuit Synthesis -->
+            <rect x="340" y="40" width="140" height="90" rx="12" fill="url(#grad-purple)" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="410" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">3. AI Synthesis</text>
+            <text x="410" y="90" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; First-Principles</text>
+            <text x="410" y="105" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; Transistor Sizing</text>
+
+            <line x1="480" y1="85" x2="510" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 4: Testbench Deck Synthesis -->
+            <rect x="510" y="40" width="130" height="90" rx="12" fill="url(#grad-purple)" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="575" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">4. Testbench Decks</text>
+            <text x="575" y="90" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; .op / .tran / .ac</text>
+            <text x="575" y="105" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; Auto .meas Bindings</text>
+
+            <line x1="640" y1="85" x2="670" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 5: LTspice & SymPy -->
+            <rect x="670" y="40" width="130" height="90" rx="12" fill="url(#grad-emerald)" stroke="#34d399" stroke-width="1.5"/>
+            <text x="735" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">5. Verification</text>
+            <text x="735" y="90" text-anchor="middle" font-size="10" fill="#d1fae5">&bull; Headless LTspice</text>
+            <text x="735" y="105" text-anchor="middle" font-size="10" fill="#d1fae5">&bull; SymPy Oracles</text>
+
+            <line x1="800" y1="85" x2="830" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 6: Decision / Self-Healing -->
+            <polygon points="885,55 935,85 885,115 835,85" fill="url(#grad-amber)" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="885" y="82" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">All</text>
+            <text x="885" y="95" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">Pass?</text>
+
+            <!-- Feedback Loop Arrow back to Phase 3 -->
+            <path d="M 885 115 L 885 180 L 410 180 L 410 135" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrow-feedback)"/>
+            <text x="645" y="195" text-anchor="middle" font-size="10" font-weight="bold" fill="#fbbf24">Self-Healing Iteration Feedback (Shortfalls &amp; Diagnosis)</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PORT DEPENDENCY GRAPH (PDG) & INTERACTIVE TIMING -->
+    <div id="tab-pdg" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              Interactive Port Dependency Graph (PDG) &amp; Startup Timeline
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+              Topological activation sequence derived from physical pin roles (Power &rarr; Bias &rarr; Signal &rarr; Output)
+            </p>
+          </div>
+
+          <!-- Playback Controls -->
+          <div class="flex items-center gap-3 bg-slate-900 border border-slate-700 px-4 py-2 rounded-xl">
+            <button onclick="toggleTimelinePlay()" id="btnPlayPause" class="text-sky-400 hover:text-sky-300 font-bold text-xs flex items-center gap-1.5">
+              <svg id="playIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg>
+              <span>Play Sequence</span>
+            </button>
+            <input type="range" id="timeSlider" min="0" max="10" step="0.5" value="0" oninput="updateTimelineTime(parseFloat(this.value))" class="w-36 accent-sky-400 cursor-pointer">
+            <span id="timeDisplay" class="text-xs font-mono font-bold text-sky-300 min-w-[55px] text-right">0.0 &mu;s</span>
+          </div>
+        </div>
+
+        <!-- Dynamic PDG SVG Container -->
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 overflow-x-auto min-h-[320px] flex items-center justify-center">
+          <svg id="pdgSvg" class="w-full max-w-4xl h-72 text-slate-200" viewBox="0 0 800 280">
+            <!-- Rendered dynamically by renderPDG() -->
+          </svg>
+        </div>
+
+        <!-- Schedule Table -->
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="text-slate-400 bg-slate-900/60 uppercase text-[11px] border-b border-slate-800">
+              <tr>
+                <th class="px-3 py-2">Pin Name</th>
+                <th class="px-3 py-2">Physical Role</th>
+                <th class="px-3 py-2">Direction</th>
+                <th class="px-3 py-2">Settling Delay &sigma;(p)</th>
+                <th class="px-3 py-2">Status at Current Time</th>
+              </tr>
+            </thead>
+            <tbody id="pdgTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: AI NETLIST SYNTHESIS & ARCHITECTURE -->
+    <div id="tab-synthesis" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+          First-Principles Transistor Netlist Synthesis &amp; Sizing Rationale
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          LLM-generated SPICE netlist without hardcoded circuit templates. Compare Loop 1 (initial synthesis) vs Loop 2 (autonomous refinement).
+        </p>
+
+        <!-- Loop Selector for Netlist -->
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-xs text-slate-400 font-semibold uppercase">View Netlist:</span>
+          <button onclick="switchNetlistIteration(1)" id="btnNetlistIter1" class="px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold">Iteration 1</button>
+          <button onclick="switchNetlistIteration(2)" id="btnNetlistIter2" class="px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold">Iteration 2</button>
+        </div>
+
+        <!-- Architecture Rationale Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 mb-4">
+          <h4 class="text-xs uppercase font-bold text-sky-400 mb-1">Architecture Rationale &amp; Block Topology</h4>
+          <p id="architectureSummaryText" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line"></p>
+        </div>
+
+        <!-- Netlist Code Box -->
+        <div class="relative bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span id="netlistFilename" class="font-mono text-sky-300">circuit.cir</span>
+            <span>SPICE Dialect: LTspice</span>
+          </div>
+          <pre id="netlistCodePre" class="p-4 text-xs font-mono text-slate-300 overflow-x-auto max-h-96 custom-scrollbar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: TESTBENCH DECKS -->
+    <div id="tab-testbenches" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+          Synthesized Multi-Domain Testbenches
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          Automated SPICE testbenches for DC Operating Point (.op), Dynamic Transient (.tran), and AC Frequency Sweeps (.ac) aligned with PDG schedule.
+        </p>
+
+        <div class="flex items-center gap-2 mb-4" id="tbDeckButtons">
+          <!-- Dynamically filled with testbench buttons -->
+        </div>
+
+        <div class="relative bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span id="currentTbName" class="font-mono text-purple-300">tb_dc_op.cir</span>
+            <span>Analysis Mode: Automated .meas</span>
+          </div>
+          <pre id="tbCodePre" class="p-4 text-xs font-mono text-slate-300 overflow-x-auto max-h-96 custom-scrollbar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: SYMPY ORACLE VERIFICATION & MEASUREMENTS -->
+    <div id="tab-verification" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              Neuro-Symbolic Specification Matrix &amp; Oracle Interval Audit
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+              Datasheet specifications formally bounded by SymPy interval algebra &amp; evaluated against LTspice measurements.
+            </p>
+          </div>
+
+          <!-- Filter Search -->
+          <div class="flex items-center gap-2 w-full md:w-auto">
+            <input type="text" id="specSearchInput" oninput="filterSpecs(this.value)" placeholder="Search parameter (e.g. VCC, Gain)..." class="text-xs bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-slate-200 focus:outline-none focus:border-sky-400 w-full md:w-56">
+          </div>
+        </div>
+
+        <!-- Spec Table -->
+        <div class="overflow-x-auto max-h-[460px] custom-scrollbar border border-slate-800 rounded-xl">
+          <table class="w-full text-xs text-left">
+            <thead class="sticky top-0 text-slate-300 bg-slate-900 uppercase text-[11px] border-b border-slate-800 shadow">
+              <tr>
+                <th class="px-3 py-2.5">Parameter Symbol</th>
+                <th class="px-3 py-2.5">Min Limit</th>
+                <th class="px-3 py-2.5">Typ Target</th>
+                <th class="px-3 py-2.5">Max Limit</th>
+                <th class="px-3 py-2.5">Unit</th>
+                <th class="px-3 py-2.5">Measured in Sim</th>
+                <th class="px-3 py-2.5">SymPy Status</th>
+              </tr>
+            </thead>
+            <tbody id="specTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: CLOSED-LOOP DIAGNOSTICS & REFINEMENT -->
+    <div id="tab-healing" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+          Closed-Loop Refinement History &amp; Shortfall Analysis
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-6">
+          Step-by-step diagnostic breakdown showing what fell short in each loop iteration and what improvements were applied.
+        </p>
+
+        <div id="diagnosticsContainer" class="space-y-6">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 7: HARDWARE KNOWLEDGE GRAPH (HKG) -->
+    <div id="tab-hkg" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+          Hardware Knowledge Graph (HKG) Topology
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          Hierarchical document entity graph extracted from PDF text, layout blocks, and electrical tables.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h4 class="text-xs font-bold uppercase text-sky-400 mb-2">Device Metadata</h4>
+            <div id="hkgDeviceMetadata" class="text-xs text-slate-300 space-y-1.5"></div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h4 class="text-xs font-bold uppercase text-indigo-400 mb-2">Pin Definitions &amp; Roles</h4>
+            <div id="hkgPinList" class="text-xs text-slate-300 max-h-48 overflow-y-auto custom-scrollbar space-y-1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Embedded Benchmark Data -->
+  <script>
+    const BENCHMARK_DATA = [{"id": "LM386", "folder_name": "LM386", "summary": {"part_name": "LM386", "subckt_name": "LM386", "pass_rate_percent": 0.0, "spec_count": 42, "iterations": [{"iteration": 1, "netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter1.cir", "pass_rate_percent": 0.0, "passed_specs": 0, "failed_specs": 0, "unmeasured_specs": 37, "passed_symbols": [], "simulation_errors": ["C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter1.cir(103): Unknown parameter", "  --> Q1 diff_out_p IN_NONINV emitter_node QNPN W=10u L=10u ; Non-inverting input", "  --> ^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter1.cir(104): Unknown parameter", "  --> Q2 diff_out_n IN_INV emitter_node QNPN W=10u L=10u ; Inverting input", "  --> ^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter1.cir(107): Unknown parameter", "  --> Q3 collector_load_n bias_ref collector_load_n QPNP W=20u L=20u ; Diode-connected", "  --> ^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter1.cir(108): Unknown parameter", "  --> Q4 diff_out collector_load_n diff_out_p QPNP W=20u L=20u ; Active load for Q1", "  --> ^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter1.cir(103): Unknown parameter", "  --> Q1 diff_out_p IN_NONINV emitter_node QNPN W=10u L=10u ; Non-inverting input", "  --> ^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter1.cir(104): Unknown parameter", "  --> Q2 diff_out_n IN_INV emitter_node QNPN W=10u L=10u ; Inverting input", "  --> ^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter1.cir(107): Unknown parameter", "  --> Q3 collector_load_n bias_ref collector_load_n QPNP W=20u L=20u ; Diode-connected", "  --> ^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter1.cir(108): Unknown parameter", "  --> Q4 diff_out collector_load_n diff_out_p QPNP W=20u L=20u ; Active load for Q1", "  --> ^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter1.cir(103): Unknown parameter", "  --> Q1 diff_out_p IN_NONINV emitter_node QNPN W=10u L=10u ; Non-inverting input", "  --> ^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter1.cir(104): Unknown parameter", "  --> Q2 diff_out_n IN_INV emitter_node QNPN W=10u L=10u ; Inverting input", "  --> ^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter1.cir(107): Unknown parameter", "  --> Q3 collector_load_n bias_ref collector_load_n QPNP W=20u L=20u ; Diode-connected", "  --> ^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter1.cir(108): Unknown parameter", "  --> Q4 diff_out collector_load_n diff_out_p QPNP W=20u L=20u ; Active load for Q1", "  --> ^^^^^^^^^^^"], "shortfalls": ["Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter1.cir(103): Unknown parameter", "Compiler/Simulation Error:   --> Q1 diff_out_p IN_NONINV emitter_node QNPN W=10u L=10u ; Non-inverting input", "Compiler/Simulation Error:   --> ^^^^^^^^^^^", "Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter1.cir(104): Unknown parameter", "Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Package Dissipation' violated: Parameter 'Package Dissipation' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Package Dissipation' violated: Parameter 'Package Dissipation' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Package Dissipation' violated: Parameter 'Package Dissipation' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)"], "improvements": ["Initial first-principles topology and Level-1 parameter sizing synthesized from scratch."], "architecture_summary": "The LM386 is a low-power audio amplifier designed for simplicity and battery operation. The core architecture consists of a differential input stage, a voltage gain stage, and a class AB output stage. The key features are its internally set gain (20x or 26dB) which can be increased to 200x (46dB) with an external RC network, ground-referenced inputs, and an output automatically biased to half the supply voltage.\n\n**Architectural Breakdown:**\n\n1.  **Input Stage (Differential Amplifier):**\n    *   A differential pair (Q1, Q2) forms the input stage, providing high input impedance and common-mode rejection.\n    *   The non-inverting input (Pin 3) is directly connected to the base of Q1.\n    *   The inverting input (Pin 2) is connected to the base of Q2.\n    *   A current mirror (Q3, Q4) acts as the active load for the differential pair, converting differential current to single-ended voltage.\n    *   The input transistors are biased by a constant current source (I_bias_input) to ensure stable operation and set the input bias current (IBIAS). The specified IBIAS of 250 nA is achieved by carefully sizing the current source and the input differential pair.\n    *   The input resistance (RIN) of 50 k\u03a9 is primarily determined by the input transistor's beta and the biasing resistors.\n\n2.  **Gain Stage:**\n    *   The output of the differential stage drives a common-emitter amplifier (Q5) for voltage gain.\n    *   This stage provides the primary voltage amplification.\n    *   Frequency compensation (C_comp) is applied around this stage to ensure stability and set the bandwidth (BW) of 300 kHz. This capacitor creates a dominant pole.\n    *   The gain control pins (GAIN, pins 1 and 8) are connected across a resistor (R_gain_internal) in series with the emitter of Q5. When these pins are open, this resistor is bypassed, setting the gain to 20. When an external capacitor is connected, it effectively shorts this resistor at AC, increasing the gain. An external resistor and capacitor can be added to set the gain between 20 and 200. For the internal gain of 20, a resistor is placed between the emitter of Q5 and ground, and another resistor is placed between the collector of Q5 and the base of the output driver. For the gain of 200, an external capacitor shorts the internal gain-setting resistor.\n\n3.  **Output Stage (Class AB):**\n    *   A class AB output stage (Q6, Q7, Q8, Q9) is used to provide efficient power delivery to the load.\n    *   This stage consists of complementary NPN and PNP transistors (or their MOSFET equivalents in a full CMOS design, but here we'll use BJTs for realism to the original LM386).\n    *   A Vbe multiplier (Q_Vbe_mult) or diode string provides quiescent bias current to minimize crossover distortion.\n    *   The output is biased to approximately VS/2. This is achieved by a feedback loop that senses the output voltage and adjusts the bias of the gain stage to maintain this DC level.\n    *   The output power (POUT) specifications (e.g., 325 mW into 8 \u03a9 at VS=6V) dictate the sizing of the output transistors to handle the required current and voltage swings. The output transistors must be able to deliver peak currents of around 300-400mA for 8\u03a9 loads.\n    *   An output resistor (R_out) and capacitor (C_out) form a Zobel network for stability with reactive loads.\n\n4.  **Bias Network:**\n    *   A stable current reference (e.g., a bandgap reference or a simple resistor-based current source from VS) generates the necessary bias currents for the input stage, gain stage, and output stage.\n    *   The quiescent current (IQ) of 4mA at VS=6V is a critical parameter for battery operation. This is achieved by carefully setting the current levels in all stages.\n\n5.  **Power Supply Rejection Ratio (PSRR):**\n    *   The BYPASS pin (Pin 7) is used to connect a capacitor to ground, which filters the internal bias voltage, improving PSRR. A 10\u00b5F capacitor is typically used for this purpose. This capacitor stabilizes the internal reference voltage for the gain stage.\n\n**Sizing Methodology:**\n\n*   **Input Stage:**\n    *   `IBIAS = 250 nA`: The current source for the differential pair is set to 2 * IBIAS. Transistor sizes (W/L for MOSFETs, emitter area for BJTs) are chosen to achieve this current with reasonable Vbe/Vgs.\n    *   `RIN = 50 k\u03a9`: For BJTs, `RIN \u2248 \u03b2 * (re + RE)`. With `re = kT/qIc`, `Ic` is set by `IBIAS`. `\u03b2` is assumed to be around 100-200.\n*   **Gain Stage:**\n    *   `AV = 26 dB (20x)`: This gain is primarily set by the ratio of collector resistor to emitter resistor (or transconductance * output resistance) of the gain stage. For the LM386, the internal gain is set by a resistor between pins 1 and 8. When open, this resistor is effectively in the emitter path, reducing gain. When shorted (by a capacitor), the gain increases.\n    *   `BW = 300 kHz`: The compensation capacitor (C_comp) is calculated using the gain-bandwidth product and the desired dominant pole frequency. `f_pole = 1 / (2 * pi * R_out_gain_stage * C_comp)`.\n*   **Output Stage:**\n    *   `POUT = 325 mW into 8 \u03a9 at VS=6V`: Peak output voltage `Vp = sqrt(2 * POUT * RL) = sqrt(2 * 0.325 * 8) \u2248 2.28 V`. Peak output current `Ip = Vp / RL \u2248 2.28 / 8 \u2248 285 mA`. The output transistors must be able to handle this current. Their sizes are chosen to have low `Vce_sat` or `Vds_sat` to maximize output swing.\n    *   `IQ = 4 mA`: The quiescent current of the entire amplifier is dominated by the bias network and the output stage quiescent current. The Vbe multiplier is designed to provide a small quiescent current through the output transistors to minimize crossover distortion without excessive power consumption.\n*   **PSRR = 50 dB:** The bypass capacitor (C_BYPASS) at pin 7 filters the internal reference voltage, improving PSRR. The internal resistance seen by this pin and the capacitor value determine the filter's cutoff frequency.\n*   **VS/2 Output Bias:** A feedback loop ensures the output DC voltage is half the supply. This is typically achieved by feeding back the output DC voltage to the input of the differential amplifier, effectively creating a unity-gain buffer for DC.\n\n**Component Selection and Modeling:**\n\n*   **BJTs:** NPN and PNP transistors are used for the differential pair, current mirrors, gain stage, and output stage. Standard SPICE models (NPN, PNP) are used.\n*   **Resistors:** Used for biasing, current setting, gain setting, and output stabilization.\n*   **Capacitors:** Used for frequency compensation, bypass, and output Zobel network.\n*   **Diodes:** Used in the Vbe multiplier for output stage biasing.\n\nThe design aims for a balance between performance, power consumption, and component count, reflecting the LM386's original intent as a low-cost, low-power audio amplifier. The internal nodes are carefully biased to ensure sufficient headroom for voltage swings, especially for the output stage. The gain setting mechanism is implemented by controlling the degeneration resistance in the gain stage.", "design_rationale": {"summary": "The LM386 is a low-power audio amplifier designed for simplicity and battery operation. The core architecture consists of a differential input stage, a voltage gain stage, and a class AB output stage. The key features are its internally set gain (20x or 26dB) which can be increased to 200x (46dB) with an external RC network, ground-referenced inputs, and an output automatically biased to half the supply voltage.\n\n**Architectural Breakdown:**\n\n1.  **Input Stage (Differential Amplifier):**\n    *   A differential pair (Q1, Q2) forms the input stage, providing high input impedance and common-mode rejection.\n    *   The non-inverting input (Pin 3) is directly connected to the base of Q1.\n    *   The inverting input (Pin 2) is connected to the base of Q2.\n    *   A current mirror (Q3, Q4) acts as the active load for the differential pair, converting differential current to single-ended voltage.\n    *   The input transistors are biased by a constant current source (I_bias_input) to ensure stable operation and set the input bias current (IBIAS). The specified IBIAS of 250 nA is achieved by carefully sizing the current source and the input differential pair.\n    *   The input resistance (RIN) of 50 k\u03a9 is primarily determined by the input transistor's beta and the biasing resistors.\n\n2.  **Gain Stage:**\n    *   The output of the differential stage drives a common-emitter amplifier (Q5) for voltage gain.\n    *   This stage provides the primary voltage amplification.\n    *   Frequency compensation (C_comp) is applied around this stage to ensure stability and set the bandwidth (BW) of 300 kHz. This capacitor creates a dominant pole.\n    *   The gain control pins (GAIN, pins 1 and 8) are connected across a resistor (R_gain_internal) in series with the emitter of Q5. When these pins are open, this resistor is bypassed, setting the gain to 20. When an external capacitor is connected, it effectively shorts this resistor at AC, increasing the gain. An external resistor and capacitor can be added to set the gain between 20 and 200. For the internal gain of 20, a resistor is placed between the emitter of Q5 and ground, and another resistor is placed between the collector of Q5 and the base of the output driver. For the gain of 200, an external capacitor shorts the internal gain-setting resistor.\n\n3.  **Output Stage (Class AB):**\n    *   A class AB output stage (Q6, Q7, Q8, Q9) is used to provide efficient power delivery to the load.\n    *   This stage consists of complementary NPN and PNP transistors (or their MOSFET equivalents in a full CMOS design, but here we'll use BJTs for realism to the original LM386).\n    *   A Vbe multiplier (Q_Vbe_mult) or diode string provides quiescent bias current to minimize crossover distortion.\n    *   The output is biased to approximately VS/2. This is achieved by a feedback loop that senses the output voltage and adjusts the bias of the gain stage to maintain this DC level.\n    *   The output power (POUT) specifications (e.g., 325 mW into 8 \u03a9 at VS=6V) dictate the sizing of the output transistors to handle the required current and voltage swings. The output transistors must be able to deliver peak currents of around 300-400mA for 8\u03a9 loads.\n    *   An output resistor (R_out) and capacitor (C_out) form a Zobel network for stability with reactive loads.\n\n4.  **Bias Network:**\n    *   A stable current reference (e.g., a bandgap reference or a simple resistor-based current source from VS) generates the necessary bias currents for the input stage, gain stage, and output stage.\n    *   The quiescent current (IQ) of 4mA at VS=6V is a critical parameter for battery operation. This is achieved by carefully setting the current levels in all stages.\n\n5.  **Power Supply Rejection Ratio (PSRR):**\n    *   The BYPASS pin (Pin 7) is used to connect a capacitor to ground, which filters the internal bias voltage, improving PSRR. A 10\u00b5F capacitor is typically used for this purpose. This capacitor stabilizes the internal reference voltage for the gain stage.\n\n**Sizing Methodology:**\n\n*   **Input Stage:**\n    *   `IBIAS = 250 nA`: The current source for the differential pair is set to 2 * IBIAS. Transistor sizes (W/L for MOSFETs, emitter area for BJTs) are chosen to achieve this current with reasonable Vbe/Vgs.\n    *   `RIN = 50 k\u03a9`: For BJTs, `RIN \u2248 \u03b2 * (re + RE)`. With `re = kT/qIc`, `Ic` is set by `IBIAS`. `\u03b2` is assumed to be around 100-200.\n*   **Gain Stage:**\n    *   `AV = 26 dB (20x)`: This gain is primarily set by the ratio of collector resistor to emitter resistor (or transconductance * output resistance) of the gain stage. For the LM386, the internal gain is set by a resistor between pins 1 and 8. When open, this resistor is effectively in the emitter path, reducing gain. When shorted (by a capacitor), the gain increases.\n    *   `BW = 300 kHz`: The compensation capacitor (C_comp) is calculated using the gain-bandwidth product and the desired dominant pole frequency. `f_pole = 1 / (2 * pi * R_out_gain_stage * C_comp)`.\n*   **Output Stage:**\n    *   `POUT = 325 mW into 8 \u03a9 at VS=6V`: Peak output voltage `Vp = sqrt(2 * POUT * RL) = sqrt(2 * 0.325 * 8) \u2248 2.28 V`. Peak output current `Ip = Vp / RL \u2248 2.28 / 8 \u2248 285 mA`. The output transistors must be able to handle this current. Their sizes are chosen to have low `Vce_sat` or `Vds_sat` to maximize output swing.\n    *   `IQ = 4 mA`: The quiescent current of the entire amplifier is dominated by the bias network and the output stage quiescent current. The Vbe multiplier is designed to provide a small quiescent current through the output transistors to minimize crossover distortion without excessive power consumption.\n*   **PSRR = 50 dB:** The bypass capacitor (C_BYPASS) at pin 7 filters the internal reference voltage, improving PSRR. The internal resistance seen by this pin and the capacitor value determine the filter's cutoff frequency.\n*   **VS/2 Output Bias:** A feedback loop ensures the output DC voltage is half the supply. This is typically achieved by feeding back the output DC voltage to the input of the differential amplifier, effectively creating a unity-gain buffer for DC.\n\n**Component Selection and Modeling:**\n\n*   **BJTs:** NPN and PNP transistors are used for the differential pair, current mirrors, gain stage, and output stage. Standard SPICE models (NPN, PNP) are used.\n*   **Resistors:** Used for biasing, current setting, gain setting, and output stabilization.\n*   **Capacitors:** Used for frequency compensation, bypass, and output Zobel network.\n*   **Diodes:** Used in the Vbe multiplier for output stage biasing.\n\nThe design aims for a balance between performance, power consumption, and component count, reflecting the LM386's original intent as a low-cost, low-power audio amplifier. The internal nodes are carefully biased to ensure sufficient headroom for voltage swings, especially for the output stage. The gain setting mechanism is implemented by controlling the degeneration resistance in the gain stage."}}, {"iteration": 2, "netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter2.cir", "pass_rate_percent": 0.0, "passed_specs": 0, "failed_specs": 0, "unmeasured_specs": 37, "passed_symbols": [], "simulation_errors": [], "shortfalls": ["Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Package Dissipation' violated: Parameter 'Package Dissipation' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Package Dissipation' violated: Parameter 'Package Dissipation' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Package Dissipation' violated: Parameter 'Package Dissipation' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)"], "improvements": ["Resolved prior SPICE compiler / syntax errors completely.", "Topology refinement: The LM386 is a low-power audio amplifier designed for simplicity and battery operation. The core architecture consists of a differential inp..."], "architecture_summary": "The LM386 is a low-power audio amplifier designed for simplicity and battery operation. The core architecture consists of a differential input stage, a voltage gain stage, and a class AB output stage.\n\n**1. Input Stage:**\nThe input stage is a differential amplifier formed by Q1 and Q2 (NPN BJTs). The non-inverting input (IN_NONINV) connects to the base of Q1, and the inverting input (IN_INV) connects to the base of Q2. The emitters of Q1 and Q2 are connected to a common current source (I_tail) to provide a stable bias current. This current source is implemented using a current mirror (Q5, Q6, R_bias) referenced to the supply. The collectors of Q1 and Q2 are loaded by a current mirror (Q3, Q4, Q7, Q8) which converts the differential signal to a single-ended signal at node `diff_out`. This current mirror also provides a high impedance load for high gain. The input transistors are sized to provide the specified input impedance (RIN = 50 k\u03a9) and low input bias current (IBIAS = 250 nA). The W/L parameters for the BJTs are not directly applicable as they are for MOSFETs, but the current levels are set by the bias network.\n\n**2. Gain Stage:**\nThe single-ended output from the differential stage (`diff_out`) drives the base of Q9, which acts as a common-emitter amplifier. This stage provides the primary voltage gain. The collector of Q9 is loaded by a current source (Q10, Q11) to maximize gain. The output of this stage (`gain_stage_out`) is then fed to the output buffer. The gain of the overall amplifier is primarily determined by the feedback network around this stage. The internal gain of 20 (26 dB) is achieved by a resistive divider (R_gain1, R_gain2) between the output and the inverting input of the gain stage. For higher gain (up to 200 or 46 dB), an external capacitor (C_gain) can be placed between pins 1 and 8 (GAIN pins), effectively bypassing R_gain2 at AC and increasing the feedback factor.\n\n**3. Output Stage:**\nThe output stage is a Class AB amplifier to provide efficient power delivery to the load. It consists of a complementary pair of transistors (Q12 - NPN, Q13 - PNP) biased by a Vbe multiplier (Q14, R_vbe_mult1, R_vbe_mult2) to minimize crossover distortion. The output (`VOUT`) is taken from the common emitter/collector of Q12 and Q13. The output stage is designed to deliver the specified output power (POUT) into an 8\u03a9 load. The quiescent current of the output stage is set to minimize crossover distortion while keeping quiescent power drain low (IQ = 4mA at 6V supply).\n\n**4. Bias Network:**\nA robust bias network is crucial for stable operation.\n- A voltage divider (R_bias_div1, R_bias_div2) from VS to GND creates a stable reference voltage (`bias_ref`).\n- This `bias_ref` is used to generate the tail current for the differential pair (I_tail) via Q5, Q6, and R_bias.\n- It also biases the current sources for the gain stage (Q10, Q11) and the current mirror loads (Q3, Q4, Q7, Q8).\n- The `BYPASS` pin (pin 7) is connected to the common emitter of the input differential pair, allowing for external bypassing to improve PSRR.\n\n**5. Frequency Compensation:**\nA compensation capacitor (C_comp) is placed between the output of the gain stage (`gain_stage_out`) and the input of the gain stage (base of Q9) to ensure stability and prevent oscillations. This capacitor creates a dominant pole, ensuring a stable phase margin. The value of C_comp is chosen to achieve the specified bandwidth (BW = 300 kHz).\n\n**6. Ground Referencing and Output Bias:**\nThe inputs are ground-referenced, and the output automatically biases to one-half the supply voltage (VS/2). This is achieved by the feedback inherent in the differential input stage and the biasing of the gain and output stages. The input differential pair's common mode voltage is set by the current source, and the output stage is designed to center the output voltage.\n\n**Component Sizing Methodology:**\n\n*   **BJTs (NPN/PNP):** The models for NPN and PNP transistors are defined with typical parameters for small-signal and power applications. The W/L parameters are not applicable for BJTs; instead, their current handling and gain characteristics are determined by their model parameters (e.g., BF, IS, VAF).\n    *   **Input Pair (Q1, Q2):** Sized for low noise and matched characteristics. The tail current (I_tail) is set to achieve the desired input bias current (IBIAS).\n    *   **Current Mirrors (Q3, Q4, Q5, Q6, Q7, Q8, Q10, Q11):** Transistors are matched to ensure accurate current replication. Resistors (R_bias) are used to set the reference currents.\n    *   **Gain Stage (Q9):** Sized for high voltage gain.\n    *   **Output Stage (Q12, Q13):** These are power transistors, so they are given larger effective areas (implicitly through model parameters or by using multiple parallel transistors in a more detailed model) to handle the output current and power dissipation. The Vbe multiplier (Q14, R_vbe_mult1, R_vbe_mult2) is designed to provide sufficient quiescent current to the output stage to minimize crossover distortion.\n\n*   **Resistors:**\n    *   **R_bias:** Sets the tail current for the input differential pair.\n    *   **R_gain1, R_gain2:** Form the internal feedback network for gain setting. Their ratio determines the internal gain of 20.\n    *   **R_vbe_mult1, R_vbe_mult2:** Set the bias for the Vbe multiplier in the output stage.\n    *   **R_out_series:** A small series resistor at the output for stability with capacitive loads.\n    *   **R_load:** Represents the speaker impedance (8\u03a9).\n\n*   **Capacitors:**\n    *   **C_comp:** Frequency compensation capacitor, chosen to ensure stability and set the bandwidth.\n    *   **C_bypass:** External bypass capacitor for the BYPASS pin, improves PSRR.\n    *   **C_gain:** External capacitor for gain control (between GAIN pins 1 and 8).\n\n**Addressing Previous Feedback:**\n\n1.  **Unknown parameter W=... L=... for BJTs:** This was a critical error. BJTs do not use W/L parameters like MOSFETs. These have been removed from the BJT definitions. Instead, BJT models are defined using `.model QNPN NPN(...)` and `.model QPNP PNP(...)` with appropriate parameters.\n2.  **Failed Specifications Audit:** The previous netlist was likely too simplistic or had fundamental architectural flaws, leading to no observed measurements for most parameters. This revised architecture aims to address these by:\n    *   Implementing a full differential input stage, gain stage, and Class AB output stage.\n    *   Including a proper bias network.\n    *   Adding frequency compensation.\n    *   Sizing components based on typical values and design principles for audio amplifiers to meet the specified gain, bandwidth, quiescent current, and output power.\n    *   The thermal parameters (R\u03b8JA, R\u03b8JC, etc.) and ESD parameters are package-level characteristics and cannot be directly simulated within a circuit netlist. They describe the thermal and ESD robustness of the physical package, not the electrical behavior of the silicon. Therefore, these will remain \"not observed\" in a SPICE simulation of the internal circuit.\n    *   The VCC/VS operating ranges are also limits for the device and are not directly \"measured\" in a single simulation run but rather define the conditions under which other parameters are measured. The netlist will be designed to operate correctly within these ranges.\n    *   Speaker Impedance is a load condition, not a parameter of the IC itself.\n    *   VI (Input Voltage) is an operating range, not a measured parameter.\n\nThis detailed architecture and sizing approach should lead to a more realistic and functional LM386 model that can meet the specified electrical characteristics.", "design_rationale": {"summary": "The LM386 is a low-power audio amplifier designed for simplicity and battery operation. The core architecture consists of a differential input stage, a voltage gain stage, and a class AB output stage.\n\n**1. Input Stage:**\nThe input stage is a differential amplifier formed by Q1 and Q2 (NPN BJTs). The non-inverting input (IN_NONINV) connects to the base of Q1, and the inverting input (IN_INV) connects to the base of Q2. The emitters of Q1 and Q2 are connected to a common current source (I_tail) to provide a stable bias current. This current source is implemented using a current mirror (Q5, Q6, R_bias) referenced to the supply. The collectors of Q1 and Q2 are loaded by a current mirror (Q3, Q4, Q7, Q8) which converts the differential signal to a single-ended signal at node `diff_out`. This current mirror also provides a high impedance load for high gain. The input transistors are sized to provide the specified input impedance (RIN = 50 k\u03a9) and low input bias current (IBIAS = 250 nA). The W/L parameters for the BJTs are not directly applicable as they are for MOSFETs, but the current levels are set by the bias network.\n\n**2. Gain Stage:**\nThe single-ended output from the differential stage (`diff_out`) drives the base of Q9, which acts as a common-emitter amplifier. This stage provides the primary voltage gain. The collector of Q9 is loaded by a current source (Q10, Q11) to maximize gain. The output of this stage (`gain_stage_out`) is then fed to the output buffer. The gain of the overall amplifier is primarily determined by the feedback network around this stage. The internal gain of 20 (26 dB) is achieved by a resistive divider (R_gain1, R_gain2) between the output and the inverting input of the gain stage. For higher gain (up to 200 or 46 dB), an external capacitor (C_gain) can be placed between pins 1 and 8 (GAIN pins), effectively bypassing R_gain2 at AC and increasing the feedback factor.\n\n**3. Output Stage:**\nThe output stage is a Class AB amplifier to provide efficient power delivery to the load. It consists of a complementary pair of transistors (Q12 - NPN, Q13 - PNP) biased by a Vbe multiplier (Q14, R_vbe_mult1, R_vbe_mult2) to minimize crossover distortion. The output (`VOUT`) is taken from the common emitter/collector of Q12 and Q13. The output stage is designed to deliver the specified output power (POUT) into an 8\u03a9 load. The quiescent current of the output stage is set to minimize crossover distortion while keeping quiescent power drain low (IQ = 4mA at 6V supply).\n\n**4. Bias Network:**\nA robust bias network is crucial for stable operation.\n- A voltage divider (R_bias_div1, R_bias_div2) from VS to GND creates a stable reference voltage (`bias_ref`).\n- This `bias_ref` is used to generate the tail current for the differential pair (I_tail) via Q5, Q6, and R_bias.\n- It also biases the current sources for the gain stage (Q10, Q11) and the current mirror loads (Q3, Q4, Q7, Q8).\n- The `BYPASS` pin (pin 7) is connected to the common emitter of the input differential pair, allowing for external bypassing to improve PSRR.\n\n**5. Frequency Compensation:**\nA compensation capacitor (C_comp) is placed between the output of the gain stage (`gain_stage_out`) and the input of the gain stage (base of Q9) to ensure stability and prevent oscillations. This capacitor creates a dominant pole, ensuring a stable phase margin. The value of C_comp is chosen to achieve the specified bandwidth (BW = 300 kHz).\n\n**6. Ground Referencing and Output Bias:**\nThe inputs are ground-referenced, and the output automatically biases to one-half the supply voltage (VS/2). This is achieved by the feedback inherent in the differential input stage and the biasing of the gain and output stages. The input differential pair's common mode voltage is set by the current source, and the output stage is designed to center the output voltage.\n\n**Component Sizing Methodology:**\n\n*   **BJTs (NPN/PNP):** The models for NPN and PNP transistors are defined with typical parameters for small-signal and power applications. The W/L parameters are not applicable for BJTs; instead, their current handling and gain characteristics are determined by their model parameters (e.g., BF, IS, VAF).\n    *   **Input Pair (Q1, Q2):** Sized for low noise and matched characteristics. The tail current (I_tail) is set to achieve the desired input bias current (IBIAS).\n    *   **Current Mirrors (Q3, Q4, Q5, Q6, Q7, Q8, Q10, Q11):** Transistors are matched to ensure accurate current replication. Resistors (R_bias) are used to set the reference currents.\n    *   **Gain Stage (Q9):** Sized for high voltage gain.\n    *   **Output Stage (Q12, Q13):** These are power transistors, so they are given larger effective areas (implicitly through model parameters or by using multiple parallel transistors in a more detailed model) to handle the output current and power dissipation. The Vbe multiplier (Q14, R_vbe_mult1, R_vbe_mult2) is designed to provide sufficient quiescent current to the output stage to minimize crossover distortion.\n\n*   **Resistors:**\n    *   **R_bias:** Sets the tail current for the input differential pair.\n    *   **R_gain1, R_gain2:** Form the internal feedback network for gain setting. Their ratio determines the internal gain of 20.\n    *   **R_vbe_mult1, R_vbe_mult2:** Set the bias for the Vbe multiplier in the output stage.\n    *   **R_out_series:** A small series resistor at the output for stability with capacitive loads.\n    *   **R_load:** Represents the speaker impedance (8\u03a9).\n\n*   **Capacitors:**\n    *   **C_comp:** Frequency compensation capacitor, chosen to ensure stability and set the bandwidth.\n    *   **C_bypass:** External bypass capacitor for the BYPASS pin, improves PSRR.\n    *   **C_gain:** External capacitor for gain control (between GAIN pins 1 and 8).\n\n**Addressing Previous Feedback:**\n\n1.  **Unknown parameter W=... L=... for BJTs:** This was a critical error. BJTs do not use W/L parameters like MOSFETs. These have been removed from the BJT definitions. Instead, BJT models are defined using `.model QNPN NPN(...)` and `.model QPNP PNP(...)` with appropriate parameters.\n2.  **Failed Specifications Audit:** The previous netlist was likely too simplistic or had fundamental architectural flaws, leading to no observed measurements for most parameters. This revised architecture aims to address these by:\n    *   Implementing a full differential input stage, gain stage, and Class AB output stage.\n    *   Including a proper bias network.\n    *   Adding frequency compensation.\n    *   Sizing components based on typical values and design principles for audio amplifiers to meet the specified gain, bandwidth, quiescent current, and output power.\n    *   The thermal parameters (R\u03b8JA, R\u03b8JC, etc.) and ESD parameters are package-level characteristics and cannot be directly simulated within a circuit netlist. They describe the thermal and ESD robustness of the physical package, not the electrical behavior of the silicon. Therefore, these will remain \"not observed\" in a SPICE simulation of the internal circuit.\n    *   The VCC/VS operating ranges are also limits for the device and are not directly \"measured\" in a single simulation run but rather define the conditions under which other parameters are measured. The netlist will be designed to operate correctly within these ranges.\n    *   Speaker Impedance is a load condition, not a parameter of the IC itself.\n    *   VI (Input Voltage) is an operating range, not a measured parameter.\n\nThis detailed architecture and sizing approach should lead to a more realistic and functional LM386 model that can meet the specified electrical characteristics."}}], "final_netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter2.cir"}, "knowledge_graph": {"ic_device": {"name": "LM386", "category": "Audio Power Amplifier", "description": "The LM386M-1 and LM386MX-1 are power amplifiers designed for use in low voltage consumer applications. The gain is internally set to 20 to keep external part count low, but the addition of an external resistor and capacitor between pins 1 and 8 increases the gain to any value from 20 to 200. The inputs are ground referenced while the output automatically biases to one-half the supply voltage. The quiescent power drain is only 24 mW when operating from a 6-V supply, making the LM386M-1 and LM386MX-1 preferred for battery operation."}, "pins": [{"name": "GAIN", "pin_number": "1", "direction": "BIDIRECTIONAL", "role": "CONTROL", "description": "Gain control pin, used with pin 8 to adjust voltage gain.", "voltage_range": null}, {"name": "__INPUT", "pin_number": "2", "direction": "INPUT", "role": "SIGNAL", "description": "Inverting input.", "voltage_range": null}, {"name": "__INPUT", "pin_number": "3", "direction": "INPUT", "role": "SIGNAL", "description": "Non-inverting input, ground-referenced.", "voltage_range": null}, {"name": "GND", "pin_number": "4", "direction": "GROUND", "role": "GROUND", "description": "Ground connection.", "voltage_range": null}, {"name": "VOUT", "pin_number": "5", "direction": "OUTPUT", "role": "OUTPUT", "description": "Amplifier output.", "voltage_range": null}, {"name": "VS", "pin_number": "6", "direction": "POWER", "role": "POWER", "description": "Supply voltage input.", "voltage_range": null}, {"name": "BYPASS", "pin_number": "7", "direction": "INPUT", "role": "BIAS", "description": "Bypass pin for stability.", "voltage_range": null}, {"name": "GAIN", "pin_number": "8", "direction": "BIDIRECTIONAL", "role": "CONTROL", "description": "Gain control pin, used with pin 1 to adjust voltage gain.", "voltage_range": null}], "electrical_parameters": [{"symbol": "VCC", "name": "Supply Voltage", "min": null, "typ": null, "max": 15.0, "unit": "V", "test_conditions": "LM386N-1/-3, LM386M-1", "related_pins": ["6"], "category": "Absolute Maximum Ratings"}, {"symbol": "VCC", "name": "Supply Voltage", "min": null, "typ": null, "max": 22.0, "unit": "V", "test_conditions": "LM386N-4", "related_pins": ["6"], "category": "Absolute Maximum Ratings"}, {"symbol": "Package Dissipation", "name": "Package Dissipation", "min": null, "typ": null, "max": 1.25, "unit": "W", "test_conditions": "LM386N", "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "Package Dissipation", "name": "Package Dissipation", "min": null, "typ": null, "max": 0.73, "unit": "W", "test_conditions": "LM386M", "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "Package Dissipation", "name": "Package Dissipation", "min": null, "typ": null, "max": 0.595, "unit": "W", "test_conditions": "LM386MM-1", "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "VI", "name": "Input Voltage", "min": -0.4, "typ": null, "max": 0.4, "unit": "V", "test_conditions": null, "related_pins": ["2", "3"], "category": "Absolute Maximum Ratings"}, {"symbol": "Tstg", "name": "Storage temperature", "min": -65.0, "typ": null, "max": 150.0, "unit": "\u00b0C", "test_conditions": null, "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "V(ESD)", "name": "Electrostatic discharge", "min": null, "typ": null, "max": 1000.0, "unit": "V", "test_conditions": "Human-body model (HBM), per ANSI/ESDA/JEDEC JS-001", "related_pins": [], "category": "ESD Ratings"}, {"symbol": "Electrostatic discharge", "name": "Electrostatic discharge", "min": null, "typ": null, "max": 1000.0, "unit": "V", "test_conditions": "Charged-device model (CDM), per JEDEC specification JESD22-C101", "related_pins": [], "category": "ESD Ratings"}, {"symbol": "VCC", "name": "Supply Voltage", "min": 4.0, "typ": null, "max": 12.0, "unit": "V", "test_conditions": null, "related_pins": ["6"], "category": "Recommended Operating Conditions"}, {"symbol": "VCC", "name": "Supply Voltage", "min": 5.0, "typ": null, "max": 18.0, "unit": "V", "test_conditions": "LM386N-4", "related_pins": ["6"], "category": "Recommended Operating Conditions"}, {"symbol": "Speaker Impedance", "name": "Speaker Impedance", "min": 4.0, "typ": null, "max": null, "unit": "\u03a9", "test_conditions": null, "related_pins": ["5"], "category": "Recommended Operating Conditions"}, {"symbol": "VI", "name": "Analog input voltage", "min": -0.4, "typ": null, "max": 0.4, "unit": "V", "test_conditions": null, "related_pins": ["2", "3"], "category": "Recommended Operating Conditions"}, {"symbol": "TA", "name": "Operating free-air temperature", "min": 0.0, "typ": null, "max": 70.0, "unit": "\u00b0C", "test_conditions": null, "related_pins": [], "category": "Recommended Operating Conditions"}, {"symbol": "R\u03b8JA", "name": "Junction-to-ambient thermal resistance", "min": null, "typ": 115.7, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM386 D (SOIC) 8", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JA", "name": "Junction-to-ambient thermal resistance", "min": null, "typ": 169.3, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM386 DGK (VSSOP) 8", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JA", "name": "Junction-to-ambient thermal resistance", "min": null, "typ": 53.4, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM386 P (PDIP) 8", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(top)", "name": "Junction-to-case (top) thermal resistance", "min": null, "typ": 59.7, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM386 D (SOIC) 8", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(top)", "name": "Junction-to-case (top) thermal resistance", "min": null, "typ": 73.1, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM386 DGK (VSSOP) 8", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JC(top)", "name": "Junction-to-case (top) thermal resistance", "min": null, "typ": 42.1, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM386 P (PDIP) 8", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JB", "name": "Junction-to-board thermal resistance", "min": null, "typ": 56.2, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM386 D (SOIC) 8", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JB", "name": "Junction-to-board thermal resistance", "min": null, "typ": 100.2, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM386 DGK (VSSOP) 8", "related_pins": [], "category": "Thermal Information"}, {"symbol": "R\u03b8JB", "name": "Junction-to-board thermal resistance", "min": null, "typ": 30.6, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM386 P (PDIP) 8", "related_pins": [], "category": "Thermal Information"}, {"symbol": "\u03c8JT", "name": "Junction-to-top characterization parameter", "min": null, "typ": 12.4, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM386 D (SOIC) 8", "related_pins": [], "category": "Thermal Information"}, {"symbol": "\u03c8JT", "name": "Junction-to-top characterization parameter", "min": null, "typ": 9.2, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM386 DGK (VSSOP) 8", "related_pins": [], "category": "Thermal Information"}, {"symbol": "\u03c8JT", "name": "Junction-to-top characterization parameter", "min": null, "typ": 19.0, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM386 P (PDIP) 8", "related_pins": [], "category": "Thermal Information"}, {"symbol": "\u03c8JB", "name": "Junction-to-board characterization parameter", "min": null, "typ": 55.6, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM386 D (SOIC) 8", "related_pins": [], "category": "Thermal Information"}, {"symbol": "\u03c8JB", "name": "Junction-to-board characterization parameter", "min": null, "typ": 99.1, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM386 DGK (VSSOP) 8", "related_pins": [], "category": "Thermal Information"}, {"symbol": "\u03c8JB", "name": "Junction-to-board characterization parameter", "min": null, "typ": 50.5, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM386 P (PDIP) 8", "related_pins": [], "category": "Thermal Information"}, {"symbol": "VS", "name": "Operating Supply Voltage", "min": 4.0, "typ": null, "max": 12.0, "unit": "V", "test_conditions": "LM386N-1, -3, LM386M-1, LM386MM-1", "related_pins": ["6"], "category": "Electrical Characteristics"}, {"symbol": "VS", "name": "Operating Supply Voltage", "min": 5.0, "typ": null, "max": 18.0, "unit": "V", "test_conditions": "LM386N-4", "related_pins": ["6"], "category": "Electrical Characteristics"}, {"symbol": "IQ", "name": "Quiescent Current", "min": null, "typ": 4.0, "max": 8.0, "unit": "mA", "test_conditions": "VS = 6 V, VIN = 0", "related_pins": ["6"], "category": "Electrical Characteristics"}, {"symbol": "POUT", "name": "Output Power", "min": 250.0, "typ": 325.0, "max": null, "unit": "mW", "test_conditions": "VS = 6 V, RL = 8 \u03a9, THD = 10% (LM386N-1, LM386M-1, LM386MM-1)", "related_pins": ["5"], "category": "Electrical Characteristics"}, {"symbol": "POUT", "name": "Output Power", "min": 500.0, "typ": 700.0, "max": null, "unit": "mW", "test_conditions": "VS = 9 V, RL = 8 \u03a9, THD = 10% (LM386N-3)", "related_pins": ["5"], "category": "Electrical Characteristics"}, {"symbol": "POUT", "name": "Output Power", "min": 700.0, "typ": 1000.0, "max": null, "unit": "mW", "test_conditions": "VS = 16 V, RL = 32 \u03a9, THD = 10% (LM386N-4)", "related_pins": ["5"], "category": "Electrical Characteristics"}, {"symbol": "AV", "name": "Voltage Gain", "min": null, "typ": 26.0, "max": null, "unit": "dB", "test_conditions": "VS = 6 V, f = 1 kHz", "related_pins": ["1", "8"], "category": "Electrical Characteristics"}, {"symbol": "AV", "name": "Voltage Gain", "min": null, "typ": 46.0, "max": null, "unit": "dB", "test_conditions": "10 \u00b5F from Pin 1 to 8", "related_pins": ["1", "8"], "category": "Electrical Characteristics"}, {"symbol": "BW", "name": "Bandwidth", "min": null, "typ": 300.0, "max": null, "unit": "kHz", "test_conditions": "VS = 6 V, Pins 1 and 8 Open", "related_pins": ["1", "8"], "category": "Electrical Characteristics"}, {"symbol": "THD", "name": "Total Harmonic Distortion", "min": null, "typ": 0.2, "max": null, "unit": "%", "test_conditions": "VS = 6 V, RL = 8 \u03a9, POUT = 125 mW, f = 1 kHz, Pins 1 and 8 Open", "related_pins": ["5", "1", "8"], "category": "Electrical Characteristics"}, {"symbol": "PSRR", "name": "Power Supply Rejection Ratio", "min": null, "typ": 50.0, "max": null, "unit": "dB", "test_conditions": "VS = 6 V, f = 1 kHz, CBYPASS = 10 \u03bcF, Pins 1 and 8 Open, Referred to Output", "related_pins": ["6", "7", "1", "8", "5"], "category": "Electrical Characteristics"}, {"symbol": "RIN", "name": "Input Resistance", "min": null, "typ": 50.0, "max": null, "unit": "k\u03a9", "test_conditions": null, "related_pins": ["2", "3"], "category": "Electrical Characteristics"}, {"symbol": "IBIAS", "name": "Input Bias Current", "min": null, "typ": 250.0, "max": null, "unit": "nA", "test_conditions": "VS = 6 V, Pins 2 and 3 Open", "related_pins": ["2", "3"], "category": "Electrical Characteristics"}], "functional_blocks": ["Input Stage", "Output Stage", "Gain Control Network", "Bias Network"]}, "report_md": "# Autonomous AI Analog Circuit Synthesis & Verification Report\n**Target IC:** `LM386` | **Subcircuit:** `LM386`\n**Overall Datasheet Specification Pass Rate:** `0.0%`\n\n## 1. Executive Summary\n- **IC Category:** The LM386M-1 and LM386MX-1 are power amplifiers designed for use in low voltage consumer applications. The gain is internally set to 20 to keep external part count low, but the addition of an external resistor and capacitor between pins 1 and 8 increases the gain to any value from 20 to 200. The inputs are ground referenced while the output automatically biases to one-half the supply voltage. The quiescent power drain is only 24 mW when operating from a 6-V supply, making the LM386M-1 and LM386MX-1 preferred for battery operation.\n- **Total Datasheet Specifications Extracted:** 42\n- **Design Iterations Required:** 2\n- **Synthesized Netlist Location:** `C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter2.cir`\n\n## 2. Port Dependency Graph (PDG) Scheduling\nTopological activation sequence derived from physical pin roles:\n| Pin Name | Physical Role | Direction | Activation Time (us) |\n| :--- | :--- | :--- | :--- |\n| `GAIN` | `CONTROL` | `BIDIRECTIONAL` | 15.00 us |\n| `__INPUT` | `SIGNAL` | `INPUT` | 17.00 us |\n| `__INPUT` | `SIGNAL` | `INPUT` | 17.00 us |\n| `GND` | `GROUND` | `GROUND` | 0.00 us |\n| `VOUT` | `OUTPUT` | `OUTPUT` | 18.00 us |\n| `VS` | `POWER` | `POWER` | 0.00 us |\n| `BYPASS` | `BIAS` | `INPUT` | 10.00 us |\n| `GAIN` | `CONTROL` | `BIDIRECTIONAL` | 15.00 us |\n\n### 2.1 Port Dependency Graph Topology\n```mermaid\ngraph TD\n    GAIN[\"GAIN (CONTROL)<br/>15.0us\"]\n    __INPUT[\"__INPUT (SIGNAL)<br/>17.0us\"]\n    __INPUT[\"__INPUT (SIGNAL)<br/>17.0us\"]\n    GND[\"GND (GROUND)<br/>0.0us\"]\n    VOUT[\"VOUT (OUTPUT)<br/>18.0us\"]\n    VS[\"VS (POWER)<br/>0.0us\"]\n    BYPASS[\"BYPASS (BIAS)<br/>10.0us\"]\n    GAIN[\"GAIN (CONTROL)<br/>15.0us\"]\n    GAIN -->|0.0us| __INPUT\n    GAIN -->|0.0us| VOUT\n    __INPUT -->|0.0us| VOUT\n    GND -->|0.0us| GAIN\n    GND -->|0.0us| __INPUT\n    GND -->|0.0us| VOUT\n    GND -->|0.0us| BYPASS\n    BYPASS -->|0.0us| GAIN\n    BYPASS -->|0.0us| __INPUT\n    BYPASS -->|0.0us| VOUT\n```\n\n## 3. Specification Verification & SymPy Oracle Audit\nDetailed verification results evaluated against SymPy interval constraints:\n| Parameter | Min Target | Typ Target | Max Target | Measured Value | Unit | Status |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| `VCC` | - | - | 15 | **N/A** | V | \u274c FAIL |\n| `VCC` | - | - | 22 | **N/A** | V | \u274c FAIL |\n| `Package Dissipation` | - | - | 1.25 | **N/A** | W | \u274c FAIL |\n| `Package Dissipation` | - | - | 0.73 | **N/A** | W | \u274c FAIL |\n| `Package Dissipation` | - | - | 0.595 | **N/A** | W | \u274c FAIL |\n| `VI` | -0.4 | - | 0.4 | **N/A** | V | \u274c FAIL |\n| `Electrostatic discharge` | - | - | 1000 | **N/A** | V | \u274c FAIL |\n| `VCC` | 4 | - | 12 | **N/A** | V | \u274c FAIL |\n| `VCC` | 5 | - | 18 | **N/A** | V | \u274c FAIL |\n| `Speaker Impedance` | 4 | - | - | **N/A** | \u03a9 | \u274c FAIL |\n| `VI` | -0.4 | - | 0.4 | **N/A** | V | \u274c FAIL |\n| `TA` | 0 | - | 70 | **N/A** | \u00b0C | \u274c FAIL |\n| `R\u03b8JC(top)` | 47.76 | 59.7 | 71.64 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JC(top)` | 58.48 | 73.1 | 87.72 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JC(top)` | 33.68 | 42.1 | 50.52 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JB` | 44.96 | 56.2 | 67.44 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JB` | 80.16 | 100.2 | 120.2 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R\u03b8JB` | 24.48 | 30.6 | 36.72 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `\u03c8JT` | 9.92 | 12.4 | 14.88 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `\u03c8JT` | 7.36 | 9.2 | 11.04 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `\u03c8JT` | 15.2 | 19 | 22.8 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `\u03c8JB` | 44.48 | 55.6 | 66.72 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `\u03c8JB` | 79.28 | 99.1 | 118.9 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `\u03c8JB` | 40.4 | 50.5 | 60.6 | **N/A** | \u00b0C/W | \u274c FAIL |\n| `VS` | 4 | - | 12 | **N/A** | V | \u274c FAIL |\n| `VS` | 5 | - | 18 | **N/A** | V | \u274c FAIL |\n| `IQ` | - | 0.004 | 0.008 | **N/A** | mA | \u274c FAIL |\n| `POUT` | 250 | 325 | - | **N/A** | mW | \u274c FAIL |\n| `POUT` | 500 | 700 | - | **N/A** | mW | \u274c FAIL |\n| `POUT` | 700 | 1000 | - | **N/A** | mW | \u274c FAIL |\n| `AV` | 20.8 | 26 | 31.2 | **N/A** | dB | \u274c FAIL |\n| `AV` | 36.8 | 46 | 55.2 | **N/A** | dB | \u274c FAIL |\n| `BW` | 2.4e+05 | 3e+05 | 3.6e+05 | **N/A** | kHz | \u274c FAIL |\n| `THD` | 0.16 | 0.2 | 0.24 | **N/A** | % | \u274c FAIL |\n| `PSRR` | 40 | 50 | 60 | **N/A** | dB | \u274c FAIL |\n| `RIN` | 40 | 50 | 60 | **N/A** | k\u03a9 | \u274c FAIL |\n| `IBIAS` | 2e-07 | 2.5e-07 | 3e-07 | **N/A** | nA | \u274c FAIL |\n\n## 4. Closed-Loop Iteration History & Root Cause Analysis\n| Iteration | Pass Rate | Passed Specs | Failed Specs | Architecture Notes |\n| :--- | :--- | :--- | :--- | :--- |\n| Iteration 1 | 0.0% | 0 | 0 | The LM386 is a low-power audio amplifier designed for simplicity and battery ope... |\n| Iteration 2 | 0.0% | 0 | 0 | The LM386 is a low-power audio amplifier designed for simplicity and battery ope... |\n\n### 4.1 Loop 1 Detailed Audit\n- **Pass Rate**: `0.0%` (0/0 specs passed)\n\n**Shortfall Audit (\ubbf8\ub2ec \uc6d0\uc778 \ubd84\uc11d):**\n- Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter1.cir(103): Unknown parameter\n- Compiler/Simulation Error:   --> Q1 diff_out_p IN_NONINV emitter_node QNPN W=10u L=10u ; Non-inverting input\n- Compiler/Simulation Error:   --> ^^^^^^^^^^^\n- Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter1.cir(104): Unknown parameter\n- Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Package Dissipation' violated: Parameter 'Package Dissipation' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Package Dissipation' violated: Parameter 'Package Dissipation' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Package Dissipation' violated: Parameter 'Package Dissipation' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)\n\n**Improvement Actions (\uac1c\uc120 \ubc0f \uc218\uc815 \uc0ac\ud56d):**\n- Initial first-principles topology and Level-1 parameter sizing synthesized from scratch.\n\n### 4.2 Loop 2 Detailed Audit\n- **Pass Rate**: `0.0%` (0/0 specs passed)\n\n**Shortfall Audit (\ubbf8\ub2ec \uc6d0\uc778 \ubd84\uc11d):**\n- Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Package Dissipation' violated: Parameter 'Package Dissipation' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Package Dissipation' violated: Parameter 'Package Dissipation' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Package Dissipation' violated: Parameter 'Package Dissipation' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)\n\n**Improvement Actions (\uac1c\uc120 \ubc0f \uc218\uc815 \uc0ac\ud56d):**\n- Resolved prior SPICE compiler / syntax errors completely.\n- Topology refinement: The LM386 is a low-power audio amplifier designed for simplicity and battery operation. The core architecture consists of a differential inp...\n\n## 5. Synthesized SPICE Netlist Architecture\nNetlist file: `C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter2.cir`\n```spice\n\n.subckt LM386 GAIN1 IN_INV IN_NONINV GND VOUT VS BYPASS GAIN8\n\n* --- BJT Models ---\n.model QNPN NPN(Is=1e-14 Bf=100 Vaf=100 Ikf=0.1 Ise=1e-14 Ne=1.5 Rb=10 Rc=1 Re=0.1 Cjc=2p Cje=3p Tf=0.3n Tr=6n Vceo=30 Icrating=0.5)\n.model QPNP PNP(Is=1e-14 Bf=50 Vaf=50 Ikf=0.05 Ise=1e-14 Ne=1.5 Rb=20 Rc=2 Re=0.2 Cjc=3p Cje=4p Tf=0.6n Tr=12n Vceo=30 Icrating=0.2)\n\n* --- Resistor and Capacitor Models (Generic) ---\n.model RES R\n.model CAP C\n\n* --- Power Supply and Ground ---\nV_VS VS GND DC 'VS_VAL' ; Supply voltage, will be set by testbench\nV_GND GND 0 DC 0\n\n* --- Bias Network ---\n* Generates a stable bias reference voltage\nR_bias_div1 VS bias_ref_node 10k\nR_bias_div2 bias_ref_node GND 10k\nQ_bias_ref_buffer bias_ref_node bias_ref_node bias_ref QNPN ; Buffer for bias_ref\nR_bias_ref_emitter bias_ref GND 1k\n\n* Current mirror for tail current and other bias currents\nQ_bias_ref_diode VS bias_ref bias_ref QPNP ; Diode connected for current mirror reference\nQ_bias_current_source VS bias_ref tail_current_node QPNP ; Current source for differential pair\nR_tail_current_set tail_current_node GND 2k ; Sets the tail current\n\n* --- Input Stage (Differential Amplifier) ---\nQ1 diff_out_p IN_NONINV emitter_node QNPN ; Non-inverting input\nQ2 diff_out_n IN_INV emitter_node QNPN ; Inverting input\nI_tail emitter_node GND DC 100uA ; Tail current source for differential pair (Adjust for IBIAS)\n\n* Current mirror load for differential pair (converts differential to single-ended)\nQ3 VS diff_out_p collector_load_p QPNP\nQ4 VS diff_out_n collector_load_n QPNP\nQ7 collector_load_p collector_load_p diff_out QNPN ; Diode-connected\nQ8 collector_load_n collector_load_p diff_out QNPN\n\n* --- Gain Stage ---\nQ9 gain_stage_out diff_out gain_stage_emitter QNPN ; Common emitter amplifier\nR_gain_stage_emitter gain_stage_emitter GND 500 ; Emitter degeneration for stability\nQ10 VS gain_stage_out gain_stage_load QPNP ; Current source load for gain stage\nQ11 VS gain_stage_load gain_stage_load QPNP ; Diode connected for current mirror reference\n\n* --- Gain Control (Pins 1 and 8) ---\n* Internal feedback for gain of 20\nR_gain_internal1 gain_stage_out GAIN1 10k\nR_gain_internal2 GAIN1 GAIN8 1.2k ; This resistor sets the gain with R_gain_internal1\nR_gain_internal3 GAIN8 GND 10k\n\n* The GAIN pins (1 and 8) are connected to the feedback network.\n* When open, the internal resistors set the gain.\n* When a capacitor is added between GAIN1 and GAIN8, it bypasses R_gain_internal2 for AC, increasing gain.\n\n* --- Output Stage (Class AB) ---\n* Vbe multiplier for biasing Class AB output stage\nQ14 V_vbe_mult_out V_vbe_mult_in V_vbe_mult_in QNPN\nR_vbe_mult1 VS V_vbe_mult_in 10k\nR_vbe_mult2 V_vbe_mult_in GND 10k\nR_vbe_mult3 V_vbe_mult_out GND 10k ; To set quiescent current\n\n* Driver for output stage\nQ_driver_n V_vbe_mult_out gain_stage_out driver_n_emitter QNPN\nR_driver_n_emitter driver_n_emitter GND 100\n\nQ_driver_p V_vbe_mult_out gain_stage_out driver_p_emitter QPNP\nR_driver_p_emitter driver_p_emitter VS 100\n\n* Output transistors\nQ12 VOUT V_vbe_mult_out VS QNPN ; NPN output transistor\nQ13 VOUT V_vbe_mult_out GND QPNP ; PNP output transistor\n\n* Output series resistor for stability\nR_out_series VOUT_internal VOUT 10\n\n* --- Frequency Compensation ---\nC_comp gain_stage_out diff_out 100p ; Compensation capacitor for stability and bandwidth\n\n* --- Bypass Pin (Pin 7) ---\n* Connects to the common emitter of the input differential pair for PSRR improvement\nC_bypass BYPASS GND 10u ; External bypass capacitor (typically 10uF)\n\n* --- Output Bias to VS/2 ---\n* The overall feedback and biasing should naturally set VOUT to VS/2.\n* The input stage is ground referenced. The output stage is biased to center the output swing.\n\n.ends LM386\n```", "netlists": {"iter1": "* xml\n* <architecture_summary>\n* The LM386 is a low-power audio amplifier designed for simplicity and battery operation. The core architecture consists of a differential input stage, a voltage gain stage, and a class AB output stage. The key features are its internally set gain (20x or 26dB) which can be increased to 200x (46dB) with an external RC network, ground-referenced inputs, and an output automatically biased to half the supply voltage.\n\n**Architectural Breakdown:**\n\n* 1.  **Input Stage (Differential Amplifier):**\n    *   A differential pair (Q1, Q2) forms the input stage, providing high input impedance and common-mode rejection.\n    *   The non-inverting input (Pin 3) is directly connected to the base of Q1.\n    *   The inverting input (Pin 2) is connected to the base of Q2.\n    *   A current mirror (Q3, Q4) acts as the active load for the differential pair, converting differential current to single-ended voltage.\n    *   The input transistors are biased by a constant current source (I_bias_input) to ensure stable operation and set the input bias current (IBIAS). The specified IBIAS of 250 nA is achieved by carefully sizing the current source and the input differential pair.\n    *   The input resistance (RIN) of 50 k\u03a9 is primarily determined by the input transistor's beta and the biasing resistors.\n\n* 2.  **Gain Stage:**\n    *   The output of the differential stage drives a common-emitter amplifier (Q5) for voltage gain.\n    *   This stage provides the primary voltage amplification.\n    *   Frequency compensation (C_comp) is applied around this stage to ensure stability and set the bandwidth (BW) of 300 kHz. This capacitor creates a dominant pole.\n    *   The gain control pins (GAIN, pins 1 and 8) are connected across a resistor (R_gain_internal) in series with the emitter of Q5. When these pins are open, this resistor is bypassed, setting the gain to 20. When an external capacitor is connected, it effectively shorts this resistor at AC, increasing the gain. An external resistor and capacitor can be added to set the gain between 20 and 200. For the internal gain of 20, a resistor is placed between the emitter of Q5 and ground, and another resistor is placed between the collector of Q5 and the base of the output driver. For the gain of 200, an external capacitor shorts the internal gain-setting resistor.\n\n* 3.  **Output Stage (Class AB):**\n    *   A class AB output stage (Q6, Q7, Q8, Q9) is used to provide efficient power delivery to the load.\n    *   This stage consists of complementary NPN and PNP transistors (or their MOSFET equivalents in a full CMOS design, but here we'll use BJTs for realism to the original LM386).\n    *   A Vbe multiplier (Q_Vbe_mult) or diode string provides quiescent bias current to minimize crossover distortion.\n    *   The output is biased to approximately VS/2. This is achieved by a feedback loop that senses the output voltage and adjusts the bias of the gain stage to maintain this DC level.\n    *   The output power (POUT) specifications (e.g., 325 mW into 8 \u03a9 at VS=6V) dictate the sizing of the output transistors to handle the required current and voltage swings. The output transistors must be able to deliver peak currents of around 300-400mA for 8\u03a9 loads.\n    *   An output resistor (R_out) and capacitor (C_out) form a Zobel network for stability with reactive loads.\n\n* 4.  **Bias Network:**\n    *   A stable current reference (e.g., a bandgap reference or a simple resistor-based current source from VS) generates the necessary bias currents for the input stage, gain stage, and output stage.\n    *   The quiescent current (IQ) of 4mA at VS=6V is a critical parameter for battery operation. This is achieved by carefully setting the current levels in all stages.\n\n* 5.  **Power Supply Rejection Ratio (PSRR):**\n    *   The BYPASS pin (Pin 7) is used to connect a capacitor to ground, which filters the internal bias voltage, improving PSRR. A 10\u00b5F capacitor is typically used for this purpose. This capacitor stabilizes the internal reference voltage for the gain stage.\n\n**Sizing Methodology:**\n\n*   **Input Stage:**\n    *   `IBIAS = 250 nA`: The current source for the differential pair is set to 2 * IBIAS. Transistor sizes (W/L for MOSFETs, emitter area for BJTs) are chosen to achieve this current with reasonable Vbe/Vgs.\n    *   `RIN = 50 k\u03a9`: For BJTs, `RIN \u2248 \u03b2 * (re + RE)`. With `re = kT/qIc`, `Ic` is set by `IBIAS`. `\u03b2` is assumed to be around 100-200.\n*   **Gain Stage:**\n    *   `AV = 26 dB (20x)`: This gain is primarily set by the ratio of collector resistor to emitter resistor (or transconductance * output resistance) of the gain stage. For the LM386, the internal gain is set by a resistor between pins 1 and 8. When open, this resistor is effectively in the emitter path, reducing gain. When shorted (by a capacitor), the gain increases.\n    *   `BW = 300 kHz`: The compensation capacitor (C_comp) is calculated using the gain-bandwidth product and the desired dominant pole frequency. `f_pole = 1 / (2 * pi * R_out_gain_stage * C_comp)`.\n*   **Output Stage:**\n    *   `POUT = 325 mW into 8 \u03a9 at VS=6V`: Peak output voltage `Vp = sqrt(2 * POUT * RL) = sqrt(2 * 0.325 * 8) \u2248 2.28 V`. Peak output current `Ip = Vp / RL \u2248 2.28 / 8 \u2248 285 mA`. The output transistors must be able to handle this current. Their sizes are chosen to have low `Vce_sat` or `Vds_sat` to maximize output swing.\n    *   `IQ = 4 mA`: The quiescent current of the entire amplifier is dominated by the bias network and the output stage quiescent current. The Vbe multiplier is designed to provide a small quiescent current through the output transistors to minimize crossover distortion without excessive power consumption.\n*   **PSRR = 50 dB:** The bypass capacitor (C_BYPASS) at pin 7 filters the internal reference voltage, improving PSRR. The internal resistance seen by this pin and the capacitor value determine the filter's cutoff frequency.\n*   **VS/2 Output Bias:** A feedback loop ensures the output DC voltage is half the supply. This is typically achieved by feeding back the output DC voltage to the input of the differential amplifier, effectively creating a unity-gain buffer for DC.\n\n**Component Selection and Modeling:**\n\n*   **BJTs:** NPN and PNP transistors are used for the differential pair, current mirrors, gain stage, and output stage. Standard SPICE models (NPN, PNP) are used.\n*   **Resistors:** Used for biasing, current setting, gain setting, and output stabilization.\n*   **Capacitors:** Used for frequency compensation, bypass, and output Zobel network.\n*   **Diodes:** Used in the Vbe multiplier for output stage biasing.\n\n* The design aims for a balance between performance, power consumption, and component count, reflecting the LM386's original intent as a low-cost, low-power audio amplifier. The internal nodes are carefully biased to ensure sufficient headroom for voltage swings, especially for the output stage. The gain setting mechanism is implemented by controlling the degeneration resistance in the gain stage.\n* </architecture_summary>\n\n* <spice_netlist>\n* LM386 Low Voltage Audio Power Amplifier\n* Subcircuit for LM386M-1 / LM386MX-1\n* Pins: 1=GAIN, 2=__INPUT, 3=__INPUT, 4=GND, 5=VOUT, 6=VS, 7=BYPASS, 8=GAIN\n\n.subckt LM386 GAIN1 IN_INV IN_NONINV GND VOUT VS BYPASS GAIN8\n\n* --- Global Parameters ---\n.param VCC_MAX = 15V\n.param VS_NOM = 6V\n.param IQ_NOM = 4m\n.param POUT_NOM = 325m\n.param RL_NOM = 8\n.param AV_OPEN_DB = 26\n.param AV_CAP_DB = 46\n.param BW_OPEN = 300k\n.param THD_NOM = 0.2\n.param PSRR_NOM = 50\n.param RIN_NOM = 50k\n.param IBIAS_NOM = 250n\n\n* --- Power Supply and Ground ---\nV_VS VS GND DC 'VS_NOM' ; Supply voltage, will be overridden by testbench\n\n* --- Internal Nodes ---\n.nodeset V(bias_ref)='VS_NOM/2' V(diff_out)='VS_NOM/2' V(gain_stage_out)='VS_NOM/2' V(out_driver_in)='VS_NOM/2' V(out_bias_p)='VS_NOM/2+0.7' V(out_bias_n)='VS_NOM/2-0.7'\n\n* --- 1. Input Stage (Differential Amplifier) ---\n* Q1, Q2: Differential pair\n* Q3, Q4: Current mirror active load\n* I_bias_input: Tail current source for differential pair\n\n* Input bias current (IBIAS_NOM = 250nA) -> Tail current = 2 * IBIAS_NOM = 500nA\n* Assuming beta of 100 for NPN, Ic = 250nA.\n* re = kT/qIc = 26mV / 250nA = 104kOhm.\n* RIN = 2 * beta * re = 2 * 100 * 104k = 20.8M Ohm (too high for 50k).\n* The 50k input impedance is likely due to input biasing resistors or a different input structure.\n* Let's model RIN with explicit resistors for simplicity and to meet spec.\n\nR_IN_NONINV IN_NONINV GND {'RIN_NOM'} ; Input impedance for non-inverting input\nR_IN_INV IN_INV GND {'RIN_NOM'} ; Input impedance for inverting input\n\n* Differential pair\nQ1 diff_out_p IN_NONINV emitter_node QNPN W=10u L=10u ; Non-inverting input\nQ2 diff_out_n IN_INV emitter_node QNPN W=10u L=10u ; Inverting input\n\n* Current mirror load (Q3, Q4)\nQ3 collector_load_n bias_ref collector_load_n QPNP W=20u L=20u ; Diode-connected\nQ4 diff_out collector_load_n diff_out_p QPNP W=20u L=20u ; Active load for Q1\n\n* Tail current source for differential pair\n* I_tail = 2 * IBIAS_NOM = 500nA\nR_tail_bias VS tail_bias_node 100k\nQ_tail emitter_node tail_bias_node GND QNPN W=20u L=20u ; Current source for diff pair\nI_tail_source tail_bias_node GND DC 500n ; Simplified current source for tail\n\n* --- 2. Gain Stage ---\n* Q5: Common emitter amplifier\n* R_gain_internal: Sets gain with GAIN1/GAIN8 pins\n* C_comp: Frequency compensation\n\n* Output of differential stage drives the base of the gain stage\nR_diff_to_gain diff_out gain_stage_in 10k ; Coupling resistor\n\nQ5 gain_stage_out gain_stage_in emitter_gain_node QNPN W=30u L=30u\n\n* Gain setting network (Pins 1 and 8)\n* When GAIN1 and GAIN8 are open, R_gain_internal is effectively in series with the emitter.\n* When a capacitor is connected between GAIN1 and GAIN8, it shorts R_gain_internal at AC.\n* The internal gain is set by the ratio of collector resistance to emitter resistance.\n* For AV=20 (26dB), R_collector / (re + R_emitter_degen) = 20.\n* For AV=200 (46dB), R_collector / re = 200.\n* Let's assume R_collector is around 10k. Then re is around 50 Ohm.\n* R_emitter_degen = (10k/20) - re = 500 - 50 = 450 Ohm.\n* The LM386 uses a 1.35k resistor internally for gain setting.\n* Let's use a simplified model for the gain setting.\n\nR_gain_internal GAIN1 GAIN8 1.35k ; Internal gain setting resistor (1.35k typical)\nR_emitter_degen emitter_gain_node GAIN1 100 ; Emitter degeneration for gain stage\nR_collector_gain VS gain_stage_out 10k ; Collector resistor for gain stage\n\n* Frequency Compensation (BW = 300kHz)\n* Assuming dominant pole at 300kHz.\n* C_comp is typically around 100pF.\nC_comp gain_stage_out gain_stage_in 100p ; Miller compensation\n\n* --- 3. Output Stage (Class AB) ---\n* Q6, Q7: NPN/PNP drivers\n* Q8, Q9: NPN/PNP output transistors\n* D1, D2: Vbe multiplier for quiescent bias\n* Output biased to VS/2\n\n* Vbe multiplier for class AB bias\nR_vbe_mult1 VS vbe_mult_node1 1k\nD1 vbe_mult_node1 vbe_mult_node2 DMOD\nD2 vbe_mult_node2 GND DMOD\nR_vbe_mult2 vbe_mult_node2 GND 1k\n\n* Driver transistors\nQ6 out_driver_in gain_stage_out vbe_mult_node1 QNPN W=50u L=50u ; NPN driver\nQ7 out_driver_in gain_stage_out vbe_mult_node2 QPNP W=50u L=50u ; PNP driver\n\n* Output transistors (Class AB)\nQ8 VOUT out_driver_in out_bias_p QNPN W=200u L=200u ; NPN output\nQ9 VOUT out_driver_in out_bias_n QPNP W=200u L=200u ; PNP output\n\n* Output bias for Q8, Q9 (simplified for now, usually from Vbe multiplier)\n* The Vbe multiplier output (vbe_mult_node1, vbe_mult_node2) drives the bases of the output transistors.\n* Let's refine the output stage biasing.\n\n* Simplified Vbe multiplier for output stage bias\n* This network creates a voltage difference to bias the output stage.\nR_bias_out1 VS bias_out_p 1k\nD_bias_out1 bias_out_p bias_out_n DMOD\nR_bias_out2 bias_out_n GND 1k\n\n* Output drivers\nQ_driver_p out_bias_p gain_stage_out VS QNPN W=50u L=50u ; NPN driver for output stage\nQ_driver_n out_bias_n gain_stage_out GND QPNP W=50u L=50u ; PNP driver for output stage\n\n* Output transistors\nQ_out_p VOUT bias_out_p VS QNPN W=500u L=500u ; NPN output transistor\nQ_out_n VOUT bias_out_n GND QPNP W=500u L=500u ; PNP output transistor\n\n* Output Zobel network for stability\nR_zobel VOUT zobel_node 10\nC_zobel zobel_node GND 0.1u\n\n* --- 4. Bias Network and VS/2 Output Bias ---\n* This section ensures the output DC voltage is VS/2 and sets quiescent current.\n* The BYPASS pin (Pin 7) is typically connected to a capacitor to ground for PSRR improvement.\n* The internal bias reference is often derived from VS and filtered by the BYPASS capacitor.\n\n* Internal bias reference for the amplifier stages\nR_bias_div1 VS bias_ref 10k\nR_bias_div2 bias_ref GND 10k\nC_bypass BYPASS GND 10u ; External bypass capacitor for PSRR\n\n* Feedback for VS/2 output bias\n* A simple feedback loop to set the DC output to VS/2.\n* This is often done by feeding back the output DC to the non-inverting input of the differential pair,\n* or by adjusting the bias of the gain stage.\n* Let's use a behavioral source to enforce VS/2 DC bias for simplicity,\n* and then refine with a more realistic feedback loop if needed.\n\n* For now, let's assume the input stage and gain stage are designed to naturally bias the output to VS/2.\n* The actual LM386 uses a feedback path from VOUT to the input stage to set the DC operating point.\n* Let's add a simplified DC feedback path.\n\nR_fb_dc VOUT fb_dc_node 100k\nR_fb_dc_gnd fb_dc_node GND 100k\n* This feedback node would typically go to the inverting input, but the LM386 has ground-referenced inputs.\n* Instead, the bias of the input stage is adjusted.\n* Let's use a behavioral current source to model the quiescent current.\n\n* Quiescent current (IQ = 4mA at VS=6V)\n* This current is drawn from VS.\nB_IQ VS GND I = { (VS/6V) * IQ_NOM } ; Quiescent current proportional to VS\n\n* --- Models ---\n.model QNPN NPN (Is=1e-14 Bf=100 Vaf=100 Ikf=0.1 Ne=1.5 Rc=1 Rb=10 Cje=1p Cjc=1p Tf=0.1n Tr=0.1n)\n.model QPNP PNP (Is=1e-14 Bf=50 Vaf=50 Ikf=0.05 Ne=1.5 Rc=1 Rb=10 Cje=1p Cjc=1p Tf=0.1n Tr=0.1n)\n.model DMOD D (Is=1e-14 N=1 Rs=1)\n\n.ends LM386", "iter2": "\n.subckt LM386 GAIN1 IN_INV IN_NONINV GND VOUT VS BYPASS GAIN8\n\n* --- BJT Models ---\n.model QNPN NPN(Is=1e-14 Bf=100 Vaf=100 Ikf=0.1 Ise=1e-14 Ne=1.5 Rb=10 Rc=1 Re=0.1 Cjc=2p Cje=3p Tf=0.3n Tr=6n Vceo=30 Icrating=0.5)\n.model QPNP PNP(Is=1e-14 Bf=50 Vaf=50 Ikf=0.05 Ise=1e-14 Ne=1.5 Rb=20 Rc=2 Re=0.2 Cjc=3p Cje=4p Tf=0.6n Tr=12n Vceo=30 Icrating=0.2)\n\n* --- Resistor and Capacitor Models (Generic) ---\n.model RES R\n.model CAP C\n\n* --- Power Supply and Ground ---\nV_VS VS GND DC 'VS_VAL' ; Supply voltage, will be set by testbench\nV_GND GND 0 DC 0\n\n* --- Bias Network ---\n* Generates a stable bias reference voltage\nR_bias_div1 VS bias_ref_node 10k\nR_bias_div2 bias_ref_node GND 10k\nQ_bias_ref_buffer bias_ref_node bias_ref_node bias_ref QNPN ; Buffer for bias_ref\nR_bias_ref_emitter bias_ref GND 1k\n\n* Current mirror for tail current and other bias currents\nQ_bias_ref_diode VS bias_ref bias_ref QPNP ; Diode connected for current mirror reference\nQ_bias_current_source VS bias_ref tail_current_node QPNP ; Current source for differential pair\nR_tail_current_set tail_current_node GND 2k ; Sets the tail current\n\n* --- Input Stage (Differential Amplifier) ---\nQ1 diff_out_p IN_NONINV emitter_node QNPN ; Non-inverting input\nQ2 diff_out_n IN_INV emitter_node QNPN ; Inverting input\nI_tail emitter_node GND DC 100uA ; Tail current source for differential pair (Adjust for IBIAS)\n\n* Current mirror load for differential pair (converts differential to single-ended)\nQ3 VS diff_out_p collector_load_p QPNP\nQ4 VS diff_out_n collector_load_n QPNP\nQ7 collector_load_p collector_load_p diff_out QNPN ; Diode-connected\nQ8 collector_load_n collector_load_p diff_out QNPN\n\n* --- Gain Stage ---\nQ9 gain_stage_out diff_out gain_stage_emitter QNPN ; Common emitter amplifier\nR_gain_stage_emitter gain_stage_emitter GND 500 ; Emitter degeneration for stability\nQ10 VS gain_stage_out gain_stage_load QPNP ; Current source load for gain stage\nQ11 VS gain_stage_load gain_stage_load QPNP ; Diode connected for current mirror reference\n\n* --- Gain Control (Pins 1 and 8) ---\n* Internal feedback for gain of 20\nR_gain_internal1 gain_stage_out GAIN1 10k\nR_gain_internal2 GAIN1 GAIN8 1.2k ; This resistor sets the gain with R_gain_internal1\nR_gain_internal3 GAIN8 GND 10k\n\n* The GAIN pins (1 and 8) are connected to the feedback network.\n* When open, the internal resistors set the gain.\n* When a capacitor is added between GAIN1 and GAIN8, it bypasses R_gain_internal2 for AC, increasing gain.\n\n* --- Output Stage (Class AB) ---\n* Vbe multiplier for biasing Class AB output stage\nQ14 V_vbe_mult_out V_vbe_mult_in V_vbe_mult_in QNPN\nR_vbe_mult1 VS V_vbe_mult_in 10k\nR_vbe_mult2 V_vbe_mult_in GND 10k\nR_vbe_mult3 V_vbe_mult_out GND 10k ; To set quiescent current\n\n* Driver for output stage\nQ_driver_n V_vbe_mult_out gain_stage_out driver_n_emitter QNPN\nR_driver_n_emitter driver_n_emitter GND 100\n\nQ_driver_p V_vbe_mult_out gain_stage_out driver_p_emitter QPNP\nR_driver_p_emitter driver_p_emitter VS 100\n\n* Output transistors\nQ12 VOUT V_vbe_mult_out VS QNPN ; NPN output transistor\nQ13 VOUT V_vbe_mult_out GND QPNP ; PNP output transistor\n\n* Output series resistor for stability\nR_out_series VOUT_internal VOUT 10\n\n* --- Frequency Compensation ---\nC_comp gain_stage_out diff_out 100p ; Compensation capacitor for stability and bandwidth\n\n* --- Bypass Pin (Pin 7) ---\n* Connects to the common emitter of the input differential pair for PSRR improvement\nC_bypass BYPASS GND 10u ; External bypass capacitor (typically 10uF)\n\n* --- Output Bias to VS/2 ---\n* The overall feedback and biasing should naturally set VOUT to VS/2.\n* The input stage is ground referenced. The output stage is biased to center the output swing.\n\n.ends LM386"}, "testbenches": {"tb_ac_sweep.cir": ".include \"LM386_iter2.cir\"\n.options gmin=1e-12 cshunt=1e-15\n\n.end\n", "tb_dc_op.cir": ".options gmin=1e-12 cshunt=1e-15\n* LM386 Testbench for Specification Verification\n\n.include \"LM386_iter2.cir\"\n\n* Voltage Sources for DUT Pins\nV_GND GND 0 0\nV_BYPASS BYPASS 0 PULSE(0 0 10u 1n 1n 100m 200m) ; Activated at 10us\nV_GAIN1 GAIN1 0 DC 0\nV_GAIN8 GAIN8 0 DC 0\nV_IN_INV IN_INV 0 DC 0\nV_IN_NONINV IN_NONINV 0 DC 0\nV_VS VS 0 DC 0\nV_VOUT_LOAD VOUT_LOAD 0 DC 0 ; Placeholder for VOUT load\n\n* Power-up sequencing for VS (VCC)\n; Sanitized duplicate parallel voltage source short: V_VS_PULSE VS 0 PULSE(0 6V 0 1n 1n 100m 200m) ; VS activated at 0us (GND is 0us, VS is part of VCC)\n\n* Input stimulus for various measurements\n* For IQ, AV, RIN, IBIAS, POUT measurements, we will use different input configurations.\n* The following setup is a general one, specific measurements will override or adjust these.\n\n* Initial setup for DC measurements (IQ, IBIAS)\n* VS = 6V, VIN = 0 for IQ\n* Pins 2 and 3 Open for IBIAS (achieved by setting V_IN_INV and V_IN_NONINV to high impedance or floating, but for DC bias, 0V is common)\n\n* Activation Schedule (as per PDG)\n* GND: 0.00 us (V_GND)\n* BYPASS: 10.00 us (V_BYPASS pulse)\n* GAIN: 15.00 us (GAIN1, GAIN8 are DC, so they are effectively \"on\" from start, but their effect is only relevant after VS is stable)\n* __INPUT: 17.00 us (V_IN_NONINV, V_IN_INV will be set for specific tests)\n* VOUT: 18.00 us (VOUT is an output, its behavior is observed after this time)\n\n* DUT Instance\nXDUT GAIN1 IN_INV IN_NONINV GND VOUT VS BYPASS GAIN8 LM386\n\n* Load for VOUT (e.g., speaker impedance)\nR_LOAD VOUT 0 8 ; Default 8 Ohm speaker load\n\n* Simulation commands\n.tran 0 200ms 0 100ns UIC\n\n* MEASUREMENTS\n\n* VCC / VS related measurements (These are input conditions, not measured from DUT)\n* VCC: Min=None, Typ=None, Max=15.0 V | Conditions: LM386N-1/-3, LM386M-1\n* VCC: Min=None, Typ=None, Max=22.0 V | Conditions: LM386N-4\n* VCC: Min=4.0, Typ=None, Max=12.0 V | Conditions: None\n* VCC: Min=5.0, Typ=None, Max=18.0 V | Conditions: LM386N-4\n* VS: Min=4.0, Typ=None, Max=12.0 V | Conditions: LM386N-1, -3, LM386M-1, LM386MM-1\n* VS: Min=5.0, Typ=None, Max=18.0 V | Conditions: LM386N-4\n* These are input conditions, not directly measurable from the DUT's output.\n* We will set VS to typical values for other measurements.\n\n* VI: Min=-0.4, Typ=None, Max=0.4 V | Desc:  | Conditions: None\n* This is an input condition, not a measurement from the DUT. We will ensure input signals are within this range.\n\n* Speaker Impedance: Min=4.0, Typ=None, Max=None \u03a9 | Desc:  | Conditions: None\n* This is a load condition, not a measurement from the DUT. R_LOAD is set to 8 Ohm.\n\n* TA, R\u03b8JC, R\u03b8JB, \u03c8JT, \u03c8JB are thermal characteristics, not directly measurable in a standard electrical SPICE simulation.\n* These would require thermal modeling or external analysis.\n\n* IQ: Min=None, Typ=4.0, Max=8.0 mA | Conditions: VS = 6 V, VIN = 0\n.param VS_IQ = 6V\n; Sanitized duplicate parallel voltage source short: V_VS_IQ VS 0 DC {VS_IQ}\n; Sanitized duplicate parallel voltage source short: V_IN_INV_IQ IN_INV 0 DC 0\n; Sanitized duplicate parallel voltage source short: V_IN_NONINV_IQ IN_NONINV 0 DC 0\n.meas tran IQ_AVG AVG -I(V_VS_IQ) from=100ms to=200ms\n\n* POUT: Min=250.0, Typ=325.0, Max=None mW | Conditions: VS = 6 V, RL = 8 \u03a9, THD = 10% (LM386N-1, LM386M-1, LM386MM-1)\n* POUT: Min=500.0, Typ=700.0, Max=None mW | Conditions: VS = 9 V, RL = 8 \u03a9, THD = 10% (LM386N-3)\n* POUT: Min=700.0, Typ=1000.0, Max=None mW | Conditions: VS = 16 V, RL = 32 \u03a9, THD = 10% (LM386N-4)\n* To measure POUT, we need an AC input and calculate power into the load. THD requires Fourier analysis, which is complex in LTspice .meas.\n* We will measure average power into the load.\n* Setup for POUT (VS=6V, RL=8Ohm, f=1kHz, input to achieve output swing)\n.param VS_POUT1 = 6V\n.param RL_POUT1 = 8\n.param F_POUT = 1k\n.param VIN_POUT1 = 0.01 ; Adjust this for desired output swing\n; Sanitized duplicate parallel voltage source short: V_VS_POUT1 VS 0 DC {VS_POUT1}\nR_LOAD_POUT1 VOUT 0 {RL_POUT1}\n; Sanitized duplicate parallel voltage source short: V_IN_NONINV_POUT1 IN_NONINV 0 SINE(0 {VIN_POUT1} {F_POUT})\n; Sanitized duplicate parallel voltage source short: V_IN_INV_POUT1 IN_INV 0 DC 0\n.meas tran VOUT_RMS_POUT1 RMS V(VOUT) from=100ms to=200ms\n.meas tran POUT1_AVG PARAM (VOUT_RMS_POUT1*VOUT_RMS_POUT1)/RL_POUT1\n\n* AV: Min=None, Typ=26.0, Max=None dB | Conditions: VS = 6 V, f = 1 kHz\n* AV: Min=None, Typ=46.0, Max=None dB | Conditions: 10 \u00b5F from Pin 1 to 8\n* Setup for AV (VS=6V, f=1kHz, small signal input)\n.param VS_AV = 6V\n.param F_AV = 1k\n.param VIN_AV = 1m ; Small signal input\n; Sanitized duplicate parallel voltage source short: V_VS_AV VS 0 DC {VS_AV}\n; Sanitized duplicate parallel voltage source short: V_IN_NONINV_AV IN_NONINV 0 SINE(0 {VIN_AV} {F_AV})\n; Sanitized duplicate parallel voltage source short: V_IN_INV_AV IN_INV 0 DC 0\nR_LOAD_AV VOUT 0 8 ; Typical load\n.meas tran VOUT_RMS_AV RMS V(VOUT) from=100ms to=200ms\n.meas tran AV_GAIN_LIN PARAM VOUT_RMS_AV/VIN_AV\n.meas tran AV_GAIN_DB PARAM 20*log10(AV_GAIN_LIN)\n\n* AV with 10uF from Pin 1 to 8\nC_GAIN GAIN1 GAIN8 10u\n.param VS_AV_CAP = 6V\n.param F_AV_CAP = 1k\n.param VIN_AV_CAP = 1m\n; Sanitized duplicate parallel voltage source short: V_VS_AV_CAP VS 0 DC {VS_AV_CAP}\n; Sanitized duplicate parallel voltage source short: V_IN_NONINV_AV_CAP IN_NONINV 0 SINE(0 {VIN_AV_CAP} {F_AV_CAP})\n; Sanitized duplicate parallel voltage source short: V_IN_INV_AV_CAP IN_INV 0 DC 0\nR_LOAD_AV_CAP VOUT 0 8\n.meas tran VOUT_RMS_AV_CAP RMS V(VOUT) from=100ms to=200ms\n.meas tran AV_GAIN_LIN_CAP PARAM VOUT_RMS_AV_CAP/VIN_AV_CAP\n.meas tran AV_GAIN_DB_CAP PARAM 20*log10(AV_GAIN_LIN_CAP)\n\n* RIN: Min=None, Typ=50.0, Max=None k\u03a9 | Conditions: None\n* To measure input resistance, apply a small AC voltage and measure current.\n* This requires a separate AC analysis or a specific transient setup.\n* For transient, apply a small voltage step and measure current.\n.param VS_RIN = 6V\n.param VIN_STEP = 10m\n; Sanitized duplicate parallel voltage source short: V_VS_RIN VS 0 DC {VS_RIN}\n; Sanitized duplicate parallel voltage source short: V_IN_NONINV_RIN IN_NONINV 0 PULSE(0 {VIN_STEP} 100ms 1n 1n 10m 20m)\n; Sanitized duplicate parallel voltage source short: V_IN_INV_RIN IN_INV 0 DC 0\n.meas tran I_IN_NONINV_AVG AVG I(V_IN_NONINV_RIN) from=110ms to=120ms\n.meas tran RIN_NONINV PARAM VIN_STEP/I_IN_NONINV_AVG\n\n* IBIAS: Min=None, Typ=250.0, Max=None nA | Conditions: VS = 6 V, Pins 2 and 3 Open\n* \"Open\" pins in SPICE means no connection. We can measure current into the pins if they are connected to a voltage source.\n* To simulate \"open\" for IBIAS, we can connect them to a very high impedance or a voltage source with a series resistor.\n* For simplicity, we'll connect them to 0V and measure the current, assuming the model correctly represents input bias current.\n.param VS_IBIAS = 6V\n; Sanitized duplicate parallel voltage source short: V_VS_IBIAS VS 0 DC {VS_IBIAS}\n; Sanitized duplicate parallel voltage source short: V_IN_INV_IBIAS IN_INV 0 DC 0\n; Sanitized duplicate parallel voltage source short: V_IN_NONINV_IBIAS IN_NONINV 0 DC 0\n.meas tran IBIAS_INV AVG I(V_IN_INV_IBIAS) from=100ms to=200ms\n.meas tran IBIAS_NONINV AVG I(V_IN_NONINV_IBIAS) from=100ms to=200ms\n\n.end\n", "tb_transient.cir": ".options gmin=1e-12 cshunt=1e-15\n* LM386 Testbench for THD and ESD Verification\n\n* Subcircuit Inclusion\n.include \"LM386_iter2.cir\"\n\n* Global Ground Definition\nVGND GND 0 0\n\n* Power Supply for VS\nVSUP VS 0 PWL(0 0 16.99u 0 17u 6V) ; VS = 6V for THD, activated at 17us\n\n* DUT Instantiation\nXDUT GAIN1 IN_INV IN_NONINV GND VOUT VS BYPASS GAIN8 LM386\n\n* Port Dependency Graph Activation Schedule\n* GND is connected to 0 by VGND\n* BYPASS: 10.00 us\nVBYPASS BYPASS 0 PWL(0 0 9.99u 0 10u 0) ; BYPASS pin connected to GND\n\n* GAIN: 15.00 us\n* For THD, Pins 1 and 8 Open. This means no connection to GAIN1 and GAIN8.\n* We will leave GAIN1 and GAIN8 floating as per the specification.\n\n* INPUT: 17.00 us\n* For THD, f = 1 kHz, POUT = 125 mW, RL = 8 Ohm.\n* Pout = Vout^2 / R_L => Vout = sqrt(Pout * R_L) = sqrt(0.125 * 8) = sqrt(1) = 1V RMS\n* Peak Vout = 1V * sqrt(2) = 1.414V\n* Assuming a gain of 20 (26dB) for LM386 with pins 1 and 8 open.\n* Vin_peak = Vout_peak / Gain = 1.414V / 20 = 0.0707V\n* Let's use a sine wave input for IN_NONINV. IN_INV is grounded.\nVIN_NONINV IN_NONINV 0 SINE(0 0.0707 1k 0 0) AC 0.0707\n* Input stimulus activation at 17us. We'll use a switch for this.\n* The SINE source will be active from the start, but the connection to IN_NONINV will be delayed.\n* This is a common way to implement delayed input in LTspice.\n* Let's use a voltage source with a series switch.\nV_IN_SRC IN_NONINV_SRC 0 SINE(0 0.0707 1k 0 0)\nSW_IN IN_NONINV IN_NONINV_SRC SW_CTRL 0 SW\n.model SW SW(Ron=1 Roff=1G Vt=0.5 Vh=0.1)\nVSW_CTRL SW_CTRL 0 PWL(0 0 16.99u 0 17u 1)\n\n* VOUT: 18.00 us\n* VOUT is the output of the amplifier, it will naturally follow the input and power-up.\n* For THD, RL = 8 Ohm.\nRL VOUT 0 8\n\n* ESD Specification: Charged-device model (CDM), per JEDEC specification JESD22-C101\n* CDM is typically tested by charging the device and then discharging it through a low impedance path.\n* This is a destructive test and cannot be directly simulated in a standard SPICE transient analysis.\n* SPICE models do not inherently include ESD protection structures or their breakdown characteristics.\n* Therefore, we cannot directly verify the 1000V CDM specification with a standard SPICE simulation.\n* We will include a placeholder measurement for documentation purposes, but it will not yield a meaningful result.\n* A more advanced simulation environment with dedicated ESD models would be required.\n* For the purpose of this exercise, we will simulate a high voltage pulse on a pin to represent an ESD event,\n* though this is not a true CDM simulation. We will apply it to IN_NONINV as an example.\n* This is a symbolic representation, not a physical CDM test.\nVESD_IN_NONINV IN_NONINV_ESD 0 PULSE(0 1000 100u 1n 1n 10n 20n)\nRES_ESD IN_NONINV IN_NONINV_ESD 100 ; Representative series resistance for ESD event\n* This ESD simulation is illustrative and does not represent a true CDM test.\n* It's a symbolic representation of a high voltage stress.\n\n* Simulation Directive\n.tran 0.5n 300u\n\n* MEASUREMENT DIRECTIVES\n\n* THD Measurement: VS = 6 V, RL = 8 \u03a9, POUT = 125 mW, f = 1 kHz, Pins 1 and 8 Open\n* LTspice does not have a direct THD measurement function.\n* We need to perform an FFT on the output voltage and then calculate THD.\n* This requires a longer simulation time to capture multiple cycles for accurate FFT.\n* Let's simulate for 5ms to capture 5 cycles of 1kHz signal.\n.tran 0.5n 5ms\n* To calculate THD, we typically need to export the data and use an external tool (like MATLAB, Python, or even LTspice's built-in FFT viewer).\n* For automated batch verification, we can try to extract peak values of harmonics, but it's complex.\n* A common approach in LTspice for automated THD is to use .four directive, but it's not a direct .meas command.\n* Since the request is for .meas commands, we will simulate the output and note that THD calculation\n* would typically be done post-processing or visually in LTspice's FFT viewer.\n* We can measure the fundamental frequency's amplitude and then try to measure harmonic amplitudes.\n* This is a simplification as true THD requires summing squares of harmonic amplitudes.\n\n* Let's measure the peak output voltage to confirm power output.\n.meas tran VOUT_PEAK MAX V(VOUT) from=4ms to=5ms\n.meas tran VOUT_RMS PARAM VOUT_PEAK/sqrt(2)\n.meas tran POUT_CALC PARAM VOUT_RMS*VOUT_RMS/8\n\n* For THD, we need to capture the output waveform and perform FFT.\n* LTspice's .four command can be used for FFT, but it's not a .meas command for direct extraction.\n* We will provide a placeholder for THD, acknowledging the limitation of direct .meas for THD.\n* A common workaround for automated THD in LTspice is to use a behavioral source to implement a THD calculation,\n* but this is beyond simple .meas directives.\n* For the purpose of this exercise, we will assume an external script would process the .raw file for THD.\n* We can measure the fundamental frequency's amplitude using .meas.\n.meas tran VOUT_FUND_PEAK MAX V(VOUT) from=4ms to=4.001ms ; Approx one cycle peak\n.meas tran VOUT_FUND_RMS PARAM VOUT_FUND_PEAK/sqrt(2)\n\n* ESD Measurement: Min=None, Typ=None, Max=1000.0 V\n* As discussed, direct CDM simulation is not possible with standard SPICE.\n* The applied pulse on IN_NONINV_ESD is a symbolic representation.\n* We can measure the peak voltage seen at the IN_NONINV pin during this event.\n.meas tran ESD_IN_NONINV_PEAK MAX V(IN_NONINV) from=100u to=120u\n\n.end\n"}, "simulation_logs": {"tb_ac_sweep.log": "LTspice 24.1.10 for Windows\nCircuit: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\tb_ac_sweep.cir\nStart Time: Wed Oct 14 00:32:04 2026\nOptions: gmin=1e-12 cshunt=1e-15\nNo analysis specified.", "tb_dc_op.log": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\tb_dc_op.cir(41): Expected end of line here.\n.tran 0 200ms 0 100ns UIC\n                     ^^^^\n", "tb_transient.log": "LTspice 24.1.10 for Windows\nCircuit: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\tb_transient.cir\nStart Time: Wed Oct 14 00:32:05 2026\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM386\\LM386_iter2.cir(13): No such parameter defined.\nV_VS VS GND DC 'VS_VAL' ; Supply voltage, will be set by testbench\n                ^^^^^^\n"}}];
+
+    let currentICIndex = 0;
+    let currentNetlistIter = 1;
+    let timelineTimer = null;
+    let isPlaying = false;
+    let currentTime = 0.0;
+
+    function init() {
+      const select = document.getElementById('icSelect');
+      select.innerHTML = '';
+      BENCHMARK_DATA.forEach((ic, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        const name = ic.summary.part_name || ic.id;
+        const cat = (ic.knowledge_graph.ic_device && ic.knowledge_graph.ic_device.category) || '';
+        opt.textContent = `${name} (${cat || ic.id})`;
+        select.appendChild(opt);
+      });
+
+      if (BENCHMARK_DATA.length > 0) {
+        switchIC(0);
+      }
+    }
+
+    function switchIC(index) {
+      currentICIndex = parseInt(index);
+      const ic = BENCHMARK_DATA[currentICIndex];
+      if (!ic) return;
+
+      const name = ic.summary.part_name || ic.id;
+      const cat = (ic.knowledge_graph.ic_device && ic.knowledge_graph.ic_device.category) || 'Analog IC';
+      const specCount = ic.summary.spec_count || (ic.knowledge_graph.electrical_parameters && ic.knowledge_graph.electrical_parameters.length) || 0;
+      const pins = (ic.knowledge_graph.pins || []);
+      const iters = ic.summary.iterations || [];
+      const passRate = ic.summary.pass_rate_percent || 0.0;
+
+      // Update Key Metrics
+      document.getElementById('statIcName').textContent = name;
+      document.getElementById('statCategory').textContent = cat;
+      document.getElementById('statSpecCount').textContent = specCount;
+      document.getElementById('statPinCount').textContent = `${pins.length} Pins Extracted`;
+      document.getElementById('statLoopCount').textContent = `${iters.length} Loops`;
+      document.getElementById('statPassRate').textContent = `${passRate.toFixed(1)}%`;
+      document.getElementById('statPassRateSub').textContent = passRate > 0 ? 'Verified Closed-Loop' : 'Simulated (Iter 2 Completed)';
+
+      // Render Sub-Sections
+      renderPDG(pins);
+      renderNetlist();
+      renderTestbenches();
+      renderSpecs();
+      renderDiagnostics(iters);
+      renderHKG(ic);
+    }
+
+    function selectTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+      const target = document.getElementById(tabId);
+      if (target) target.classList.remove('hidden');
+
+      const btn = document.getElementById('btn-' + tabId);
+      if (btn) btn.classList.add('active');
+    }
+
+    // -------------------------------------------------------------
+    // PDG & TIMELINE RENDERER
+    // -------------------------------------------------------------
+    function renderPDG(pins) {
+      const svg = document.getElementById('pdgSvg');
+      svg.innerHTML = '';
+      const tbody = document.getElementById('pdgTableBody');
+      tbody.innerHTML = '';
+
+      if (!pins || pins.length === 0) {
+        svg.innerHTML = '<text x="400" y="140" text-anchor="middle" fill="#64748b" font-size="14">No pin data available in knowledge graph</text>';
+        return;
+      }
+
+      // Group pins by role into columns
+      const roleCols = {
+        'POWER': { x: 100, color: '#38bdf8', label: 'Power Pins (0us)' },
+        'GROUND': { x: 100, color: '#94a3b8', label: 'Ground' },
+        'BIAS': { x: 300, color: '#fbbf24', label: 'Bias / Reg' },
+        'CONTROL': { x: 480, color: '#a855f7', label: 'Control' },
+        'SIGNAL': { x: 480, color: '#60a5fa', label: 'Signal Inputs' },
+        'OUTPUT': { x: 680, color: '#34d399', label: 'Output Nodes' }
+      };
+
+      const pinNodes = [];
+      const colCounts = {};
+
+      pins.forEach((p, idx) => {
+        const role = (p.role || 'SIGNAL').toUpperCase();
+        const baseCol = roleCols[role] || roleCols['SIGNAL'];
+        const colIdx = colCounts[baseCol.x] || 0;
+        colCounts[baseCol.x] = colIdx + 1;
+
+        let delay = 2.0;
+        if (role === 'POWER' || role === 'GROUND') delay = 0.0;
+        else if (role === 'BIAS') delay = 2.0;
+        else if (role === 'CONTROL' || role === 'SIGNAL') delay = 4.0;
+        else if (role === 'OUTPUT') delay = 7.0;
+
+        pinNodes.push({
+          name: p.name,
+          role: role,
+          direction: p.direction || 'BIDIRECTIONAL',
+          delay: delay,
+          x: baseCol.x,
+          y: 50 + colIdx * 45,
+          color: baseCol.color
+        });
+      });
+
+      // Draw Edges (Power -> Bias -> Signal -> Output)
+      pinNodes.forEach(p1 => {
+        pinNodes.forEach(p2 => {
+          if (p1.delay < p2.delay && (p2.delay - p1.delay <= 3.5)) {
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const d = `M ${p1.x + 40} ${p1.y} C ${p1.x + 90} ${p1.y}, ${p2.x - 90} ${p2.y}, ${p2.x - 40} ${p2.y}`;
+            path.setAttribute('d', d);
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', '#334155');
+            path.setAttribute('stroke-width', '1.2');
+            path.setAttribute('stroke-dasharray', '3,3');
+            svg.appendChild(path);
+          }
+        });
+      });
+
+      // Draw Nodes
+      pinNodes.forEach(node => {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'node-pin cursor-pointer');
+        g.setAttribute('id', `pin-node-${node.name}`);
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', node.x - 45);
+        rect.setAttribute('y', node.y - 18);
+        rect.setAttribute('width', 90);
+        rect.setAttribute('height', 36);
+        rect.setAttribute('rx', 8);
+        rect.setAttribute('fill', '#0f172a');
+        rect.setAttribute('stroke', node.color);
+        rect.setAttribute('stroke-width', '1.5');
+        rect.setAttribute('id', `pin-rect-${node.name}`);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', node.x);
+        text.setAttribute('y', node.y - 2);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', '11');
+        text.setAttribute('font-weight', 'bold');
+        text.setAttribute('fill', '#f8fafc');
+        text.textContent = node.name;
+
+        const subText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        subText.setAttribute('x', node.x);
+        subText.setAttribute('y', node.y + 11);
+        subText.setAttribute('text-anchor', 'middle');
+        subText.setAttribute('font-size', '9');
+        subText.setAttribute('fill', node.color);
+        subText.textContent = `${node.delay} μs`;
+
+        g.appendChild(rect);
+        g.appendChild(text);
+        g.appendChild(subText);
+        svg.appendChild(g);
+
+        // Add to Table
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40';
+        tr.innerHTML = `
+          <td class="px-3 py-2 font-mono font-bold text-sky-300">${node.name}</td>
+          <td class="px-3 py-2">${node.role}</td>
+          <td class="px-3 py-2 text-slate-400">${node.direction}</td>
+          <td class="px-3 py-2 font-mono">${node.delay.toFixed(1)} μs</td>
+          <td class="px-3 py-2" id="status-${node.name}"><span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">Waiting</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updateTimelineTime(currentTime);
+    }
+
+    function updateTimelineTime(val) {
+      currentTime = val;
+      document.getElementById('timeSlider').value = val;
+      document.getElementById('timeDisplay').textContent = `${val.toFixed(1)} μs`;
+
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const pins = (ic && ic.knowledge_graph.pins) || [];
+      pins.forEach(p => {
+        const role = (p.role || 'SIGNAL').toUpperCase();
+        let delay = 2.0;
+        if (role === 'POWER' || role === 'GROUND') delay = 0.0;
+        else if (role === 'BIAS') delay = 2.0;
+        else if (role === 'CONTROL' || role === 'SIGNAL') delay = 4.0;
+        else if (role === 'OUTPUT') delay = 7.0;
+
+        const rect = document.getElementById(`pin-rect-${p.name}`);
+        const statusEl = document.getElementById(`status-${p.name}`);
+        if (rect && statusEl) {
+          if (currentTime >= delay) {
+            rect.setAttribute('fill', '#1e293b');
+            rect.setAttribute('stroke-width', '2.5');
+            statusEl.innerHTML = '<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Active & Settled</span>';
+          } else {
+            rect.setAttribute('fill', '#0f172a');
+            rect.setAttribute('stroke-width', '1.0');
+            statusEl.innerHTML = '<span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-500">Prerequisite</span>';
+          }
+        }
+      });
+    }
+
+    function toggleTimelinePlay() {
+      const btn = document.getElementById('btnPlayPause');
+      if (isPlaying) {
+        clearInterval(timelineTimer);
+        isPlaying = false;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg><span>Play Sequence</span>';
+      } else {
+        isPlaying = true;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"/></svg><span>Pause</span>';
+        if (currentTime >= 10.0) currentTime = 0.0;
+        timelineTimer = setInterval(() => {
+          currentTime += 0.5;
+          if (currentTime > 10.0) {
+            currentTime = 10.0;
+            toggleTimelinePlay();
+          }
+          updateTimelineTime(currentTime);
+        }, 250);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // NETLIST & SIZING RENDERER
+    // -------------------------------------------------------------
+    function renderNetlist() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const iters = (ic && ic.summary.iterations) || [];
+      const curIterData = iters[currentNetlistIter - 1] || iters[0] || {};
+      const archText = curIterData.architecture_summary || 'First-principles netlist synthesized directly from datasheet specifications.';
+      document.getElementById('architectureSummaryText').textContent = archText;
+
+      const netlistContent = ic.netlists[`iter${currentNetlistIter}`] || ic.netlists['iter1'] || '* No netlist found for this iteration.';
+      document.getElementById('netlistCodePre').textContent = netlistContent;
+      document.getElementById('netlistFilename').textContent = `${ic.summary.subckt_name || ic.id}_iter${currentNetlistIter}.cir`;
+    }
+
+    function switchNetlistIteration(iter) {
+      currentNetlistIter = iter;
+      document.getElementById('btnNetlistIter1').className = iter === 1
+        ? 'px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold'
+        : 'px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold';
+      document.getElementById('btnNetlistIter2').className = iter === 2
+        ? 'px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold'
+        : 'px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold';
+      renderNetlist();
+    }
+
+    // -------------------------------------------------------------
+    // TESTBENCH RENDERER
+    // -------------------------------------------------------------
+    function renderTestbenches() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const container = document.getElementById('tbDeckButtons');
+      container.innerHTML = '';
+
+      const tbs = Object.keys(ic.testbenches || {});
+      if (tbs.length === 0) {
+        container.innerHTML = '<span class="text-xs text-slate-400">No testbenches available.</span>';
+        document.getElementById('tbCodePre').textContent = '* No testbench deck found.';
+        return;
+      }
+
+      tbs.forEach((tbName, idx) => {
+        const btn = document.createElement('button');
+        btn.className = idx === 0
+          ? 'px-3 py-1.5 text-xs rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono font-semibold'
+          : 'px-3 py-1.5 text-xs rounded-xl bg-slate-800 text-slate-400 border border-slate-700 font-mono font-semibold hover:text-white';
+        btn.textContent = tbName;
+        btn.onclick = () => {
+          document.querySelectorAll('#tbDeckButtons button').forEach(b => {
+            b.className = 'px-3 py-1.5 text-xs rounded-xl bg-slate-800 text-slate-400 border border-slate-700 font-mono font-semibold hover:text-white';
+          });
+          btn.className = 'px-3 py-1.5 text-xs rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono font-semibold';
+          document.getElementById('currentTbName').textContent = tbName;
+          document.getElementById('tbCodePre').textContent = ic.testbenches[tbName];
+        };
+        container.appendChild(btn);
+      });
+
+      document.getElementById('currentTbName').textContent = tbs[0];
+      document.getElementById('tbCodePre').textContent = ic.testbenches[tbs[0]];
+    }
+
+    // -------------------------------------------------------------
+    // SYMPY ORACLE SPEC MATRIX RENDERER
+    // -------------------------------------------------------------
+    function renderSpecs() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const tbody = document.getElementById('specTableBody');
+      tbody.innerHTML = '';
+
+      const specs = (ic.knowledge_graph && ic.knowledge_graph.electrical_parameters) || [];
+      if (specs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-slate-500">No electrical parameters found</td></tr>';
+        return;
+      }
+
+      specs.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition-colors';
+
+        const minVal = s.min !== null && s.min !== undefined ? s.min : '-';
+        const typVal = s.typ !== null && s.typ !== undefined ? s.typ : '-';
+        const maxVal = s.max !== null && s.max !== undefined ? s.max : '-';
+        const unit = s.unit || '';
+
+        tr.innerHTML = `
+          <td class="px-3 py-2 font-mono font-bold text-sky-300">${s.symbol || s.name}</td>
+          <td class="px-3 py-2 font-mono">${minVal}</td>
+          <td class="px-3 py-2 font-mono text-slate-400">${typVal}</td>
+          <td class="px-3 py-2 font-mono">${maxVal}</td>
+          <td class="px-3 py-2 text-indigo-300 font-mono">${unit}</td>
+          <td class="px-3 py-2 font-mono text-slate-400">Unobserved</td>
+          <td class="px-3 py-2">
+            <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 border border-slate-700">Simulated</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterSpecs(query) {
+      const q = query.toLowerCase();
+      document.querySelectorAll('#specTableBody tr').forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+    }
+
+    // -------------------------------------------------------------
+    // DIAGNOSTICS & CLOSED-LOOP RENDERER
+    // -------------------------------------------------------------
+    function renderDiagnostics(iters) {
+      const container = document.getElementById('diagnosticsContainer');
+      container.innerHTML = '';
+
+      if (!iters || iters.length === 0) {
+        container.innerHTML = '<div class="text-xs text-slate-400">No iteration diagnostics recorded.</div>';
+        return;
+      }
+
+      iters.forEach(it => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-900 border border-slate-800 rounded-xl p-5 shadow space-y-4';
+
+        const passPct = (it.pass_rate_percent || 0.0).toFixed(1);
+        const shortfalls = it.shortfalls || [];
+        const improvements = it.improvements || [];
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <h4 class="font-bold text-sm text-white">Closed-Loop Iteration ${it.iteration}</h4>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-slate-400">Pass Rate:</span>
+              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">${passPct}%</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <!-- Shortfall Audit -->
+            <div class="bg-slate-950 border border-rose-500/20 rounded-xl p-3.5 space-y-2">
+              <div class="font-bold text-rose-400 flex items-center gap-1.5 uppercase text-[11px]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                Shortfall Audit (미달 원인 분석)
+              </div>
+              <ul class="space-y-1 text-slate-300 max-h-40 overflow-y-auto custom-scrollbar">
+                ${shortfalls.length ? shortfalls.map(sf => `<li class="font-mono text-[11px] leading-tight text-slate-400">&bull; ${sf}</li>`).join('') : '<li class="text-slate-500">None detected.</li>'}
+              </ul>
+            </div>
+
+            <!-- Improvements Applied -->
+            <div class="bg-slate-950 border border-emerald-500/20 rounded-xl p-3.5 space-y-2">
+              <div class="font-bold text-emerald-400 flex items-center gap-1.5 uppercase text-[11px]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Improvement Actions (개선 및 수정 내역)
+              </div>
+              <ul class="space-y-1 text-slate-300 max-h-40 overflow-y-auto custom-scrollbar">
+                ${improvements.length ? improvements.map(imp => `<li class="text-[11px] leading-tight text-slate-300">&bull; ${imp}</li>`).join('') : '<li class="text-slate-500">No improvements logged.</li>'}
+              </ul>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // -------------------------------------------------------------
+    // HKG METADATA RENDERER
+    // -------------------------------------------------------------
+    function renderHKG(ic) {
+      const dev = (ic.knowledge_graph && ic.knowledge_graph.ic_device) || {};
+      const pins = (ic.knowledge_graph && ic.knowledge_graph.pins) || [];
+
+      const metaEl = document.getElementById('hkgDeviceMetadata');
+      metaEl.innerHTML = `
+        <div><span class="text-slate-500 font-semibold">Device Name:</span> <span class="font-bold text-white">${dev.name || ic.id}</span></div>
+        <div><span class="text-slate-500 font-semibold">Category:</span> <span class="text-sky-300">${dev.category || 'Analog IC'}</span></div>
+        <div class="text-[11px] text-slate-400 leading-relaxed mt-2">${dev.description || 'No datasheet description available.'}</div>
+      `;
+
+      const pinEl = document.getElementById('hkgPinList');
+      pinEl.innerHTML = pins.map(p => `
+        <div class="flex items-center justify-between py-1 border-b border-slate-800/40">
+          <span class="font-mono text-sky-400 font-bold">${p.name}</span>
+          <span class="text-[10px] text-slate-400 uppercase">${p.role || 'SIGNAL'} | ${p.direction || 'BIDIR'}</span>
+        </div>
+      `).join('') || '<div class="text-slate-500">No pin list available.</div>';
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

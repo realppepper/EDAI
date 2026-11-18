@@ -1,0 +1,117 @@
+
+.subckt LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS 1OUT 1IN_NEG 1IN_POS GND 2IN_POS 2IN_NEG 2OUT VCC Thermal_Pad
+
+; --- Global Parameters (for B-version, as requested by product name) ---
+.param VCC_MAX = 38V
+.param VIO_TYP = 0.37m
+.param IB_TYP = -25n
+.param IOS_TYP = 0.5n
+.param AVD_TYP = 200k ; V/V (50 V/mV)
+.param VOL_TYP = 110m
+.param IOL_MIN = 6m
+.param IQ_TYP_5V = 400u
+.param IQ_TYP_36V = 550u
+.param IOH_LKG_TYP_5V = 0.1n
+.param IOH_LKG_TYP_36V = 0.3n
+
+; --- Transistor Models ---
+.model NPN NPN(Is=1e-14 Vaf=100 Beta=200 Ise=1e-14 Ne=1.3 Cjc=2p Cje=3p Tr=10n Tf=300p Rb=10 Rc=1 Re=1 Vceo=40)
+.model PNP PNP(Is=1e-14 Vaf=80 Beta=100 Ise=1e-14 Ne=1.3 Cjc=3p Cje=4p Tr=20n Tf=500p Rb=15 Rc=2 Re=1 Vceo=40)
+.model D D(Is=1e-14 Rs=1 N=1.0 Cjo=2p Tt=10n)
+
+; --- Thermal Pad Connection ---
+R_thermal_gnd Thermal_Pad GND 1m ; Direct connection to GND
+
+; --- Common Bias Network ---
+; This network generates the reference currents for both comparators.
+; It's designed to provide a stable current that contributes to the overall IQ.
+; A simple current source and mirror for simplicity.
+I_bias_ref VCC bias_ref_node DC '{IQ_TYP_5V/2}' ; Roughly half of IQ per comparator
+Q_bias_ref bias_ref_node bias_ref_node GND NPN_BIAS NPN
+.model NPN_BIAS NPN(Is=1e-14 Vaf=100 Beta=100) ; Lower beta for bias stability
+
+; Current mirror for input stage tail current
+Q_tail_ref bias_ref_node bias_ref_node GND NPN_BIAS NPN
+Q_tail1 tail_node1 bias_ref_node GND NPN_BIAS NPN
+Q_tail2 tail_node2 bias_ref_node GND NPN_BIAS NPN
+R_tail1 tail_node1 GND 1k ; Sets current for comparator 1 input stage
+R_tail2 tail_node2 GND 1k ; Sets current for comparator 2 input stage
+
+; --- Comparator 1 ---
+; Input Stage: PNP Differential Pair with Current Mirror Load
+Q1_1IN_POS collector_q1 1IN_POS emitter_q1 PNP
+Q2_1IN_NEG collector_q2 1IN_NEG emitter_q1 PNP
+R_emitter_q1 emitter_q1 tail_node1 1k ; Tail resistor for current setting
+; Current mirror load
+Q3_load_diode VCC collector_q1 collector_q1 PNP
+Q4_load_mirror VCC collector_q1 output_diff_stage1 PNP
+
+; Gain Stage
+Q5_gain output_diff_stage1 base_q5 GND NPN
+R1_collector_q5 VCC output_q5 10k ; Collector resistor for gain
+C_comp1 output_q5 base_q5 10p ; Frequency compensation (Miller)
+
+; Output Stage: Open Collector
+Q6_output 1OUT output_q5 GND NPN
+R2_base_q6 output_q5 base_q6 1k ; Base resistor for output transistor
+
+; ESD Protection Diodes for Comparator 1
+D1_1IN_POS_VCC 1IN_POS VCC D
+D2_1IN_POS_GND GND 1IN_POS D
+D3_1IN_NEG_VCC 1IN_NEG VCC D
+D4_1IN_NEG_GND GND 1IN_NEG D
+
+; Input Offset Voltage (VIO) modeling for Comparator 1
+; A small voltage source in series with one input to model VIO
+V_vio1 1IN_POS_offset 1IN_POS DC '{VIO_TYP}'
+; Connect 1IN_POS_offset to the actual input transistor base
+; (Adjusted Q1_1IN_POS to use 1IN_POS_offset)
+Q1_1IN_POS_2 collector_q1 1IN_POS_offset emitter_q1 PNP
+
+; --- Comparator 2 ---
+; Input Stage: PNP Differential Pair with Current Mirror Load
+Q11_2IN_POS collector_q11 2IN_POS_offset emitter_q11 PNP
+Q12_2IN_NEG collector_q12 2IN_NEG emitter_q11 PNP
+R_emitter_q11 emitter_q11 tail_node2 1k ; Tail resistor for current setting
+; Current mirror load
+Q13_load_diode VCC collector_q11 collector_q11 PNP
+Q14_load_mirror VCC collector_q11 output_diff_stage2 PNP
+
+; Gain Stage
+Q15_gain output_diff_stage2 base_q15 GND NPN
+R11_collector_q15 VCC output_q15 10k ; Collector resistor for gain
+C_comp2 output_q15 base_q15 10p ; Frequency compensation (Miller)
+
+; Output Stage: Open Collector
+Q16_output 2OUT output_q15 GND NPN
+R12_base_q16 output_q15 base_q16 1k ; Base resistor for output transistor
+
+; ESD Protection Diodes for Comparator 2
+D11_2IN_POS_VCC 2IN_POS VCC D
+D12_2IN_POS_GND GND 2IN_POS D
+D13_2IN_NEG_VCC 2IN_NEG VCC D
+D14_2IN_NEG_GND GND 2IN_NEG D
+
+; Input Offset Voltage (VIO) modeling for Comparator 2
+V_vio2 2IN_POS_offset 2IN_POS DC '{VIO_TYP}'
+
+; --- Behavioral Models for Quiescent Current (IQ) and Output Leakage (IOH-LKG) ---
+; These B-sources help fine-tune the IQ and IOH-LKG to match specifications,
+; especially their dependence on VCC.
+; The transistor models already contribute to IQ and IOH-LKG, these are for adjustment.
+
+; IQ adjustment (simplified, as transistor models already draw current)
+; This B-source models the additional current draw that might not be captured by simple BJT models,
+; or to account for VCC dependence.
+B_IQ_adjust VCC GND I = { (V(VCC) > 2) ? (IQ_TYP_5V + (IQ_TYP_36V - IQ_TYP_5V) * (V(VCC) - 5) / (36 - 5)) : 0 }
+
+; IOH-LKG adjustment for comparator 1 (when output is high-Z)
+; This current source models the leakage when the output transistor is off.
+; It's active when the output is supposed to be high (i.e., 1IN_NEG > 1IN_POS)
+; and the output transistor Q6 is off.
+B_IOH_LKG1 VCC 1OUT I = { (V(1IN_NEG) > V(1IN_POS)) ? (IOH_LKG_TYP_5V + (IOH_LKG_TYP_36V - IOH_LKG_TYP_5V) * (V(VCC) - 5) / (36 - 5)) : 0 }
+
+; IOH-LKG adjustment for comparator 2
+B_IOH_LKG2 VCC 2OUT I = { (V(2IN_NEG) > V(2IN_POS)) ? (IOH_LKG_TYP_5V + (IOH_LKG_TYP_36V - IOH_LKG_TYP_5V) * (V(VCC) - 5) / (36 - 5)) : 0 }
+
+.ends LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS

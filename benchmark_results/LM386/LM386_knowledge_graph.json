@@ -1,0 +1,596 @@
+{
+  "ic_device": {
+    "name": "LM386",
+    "category": "Audio Power Amplifier",
+    "description": "The LM386M-1 and LM386MX-1 are power amplifiers designed for use in low voltage consumer applications. The gain is internally set to 20 to keep external part count low, but the addition of an external resistor and capacitor between pins 1 and 8 increases the gain to any value from 20 to 200. The inputs are ground referenced while the output automatically biases to one-half the supply voltage. The quiescent power drain is only 24 mW when operating from a 6-V supply, making the LM386M-1 and LM386MX-1 preferred for battery operation."
+  },
+  "pins": [
+    {
+      "name": "GAIN",
+      "pin_number": "1",
+      "direction": "BIDIRECTIONAL",
+      "role": "CONTROL",
+      "description": "Gain control pin, used with pin 8 to adjust voltage gain.",
+      "voltage_range": null
+    },
+    {
+      "name": "__INPUT",
+      "pin_number": "2",
+      "direction": "INPUT",
+      "role": "SIGNAL",
+      "description": "Inverting input.",
+      "voltage_range": null
+    },
+    {
+      "name": "__INPUT",
+      "pin_number": "3",
+      "direction": "INPUT",
+      "role": "SIGNAL",
+      "description": "Non-inverting input, ground-referenced.",
+      "voltage_range": null
+    },
+    {
+      "name": "GND",
+      "pin_number": "4",
+      "direction": "GROUND",
+      "role": "GROUND",
+      "description": "Ground connection.",
+      "voltage_range": null
+    },
+    {
+      "name": "VOUT",
+      "pin_number": "5",
+      "direction": "OUTPUT",
+      "role": "OUTPUT",
+      "description": "Amplifier output.",
+      "voltage_range": null
+    },
+    {
+      "name": "VS",
+      "pin_number": "6",
+      "direction": "POWER",
+      "role": "POWER",
+      "description": "Supply voltage input.",
+      "voltage_range": null
+    },
+    {
+      "name": "BYPASS",
+      "pin_number": "7",
+      "direction": "INPUT",
+      "role": "BIAS",
+      "description": "Bypass pin for stability.",
+      "voltage_range": null
+    },
+    {
+      "name": "GAIN",
+      "pin_number": "8",
+      "direction": "BIDIRECTIONAL",
+      "role": "CONTROL",
+      "description": "Gain control pin, used with pin 1 to adjust voltage gain.",
+      "voltage_range": null
+    }
+  ],
+  "electrical_parameters": [
+    {
+      "symbol": "VCC",
+      "name": "Supply Voltage",
+      "min": null,
+      "typ": null,
+      "max": 15.0,
+      "unit": "V",
+      "test_conditions": "LM386N-1/-3, LM386M-1",
+      "related_pins": [
+        "6"
+      ],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "VCC",
+      "name": "Supply Voltage",
+      "min": null,
+      "typ": null,
+      "max": 22.0,
+      "unit": "V",
+      "test_conditions": "LM386N-4",
+      "related_pins": [
+        "6"
+      ],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "Package Dissipation",
+      "name": "Package Dissipation",
+      "min": null,
+      "typ": null,
+      "max": 1.25,
+      "unit": "W",
+      "test_conditions": "LM386N",
+      "related_pins": [],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "Package Dissipation",
+      "name": "Package Dissipation",
+      "min": null,
+      "typ": null,
+      "max": 0.73,
+      "unit": "W",
+      "test_conditions": "LM386M",
+      "related_pins": [],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "Package Dissipation",
+      "name": "Package Dissipation",
+      "min": null,
+      "typ": null,
+      "max": 0.595,
+      "unit": "W",
+      "test_conditions": "LM386MM-1",
+      "related_pins": [],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "VI",
+      "name": "Input Voltage",
+      "min": -0.4,
+      "typ": null,
+      "max": 0.4,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [
+        "2",
+        "3"
+      ],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "Tstg",
+      "name": "Storage temperature",
+      "min": -65.0,
+      "typ": null,
+      "max": 150.0,
+      "unit": "\u00b0C",
+      "test_conditions": null,
+      "related_pins": [],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge",
+      "min": null,
+      "typ": null,
+      "max": 1000.0,
+      "unit": "V",
+      "test_conditions": "Human-body model (HBM), per ANSI/ESDA/JEDEC JS-001",
+      "related_pins": [],
+      "category": "ESD Ratings"
+    },
+    {
+      "symbol": "Electrostatic discharge",
+      "name": "Electrostatic discharge",
+      "min": null,
+      "typ": null,
+      "max": 1000.0,
+      "unit": "V",
+      "test_conditions": "Charged-device model (CDM), per JEDEC specification JESD22-C101",
+      "related_pins": [],
+      "category": "ESD Ratings"
+    },
+    {
+      "symbol": "VCC",
+      "name": "Supply Voltage",
+      "min": 4.0,
+      "typ": null,
+      "max": 12.0,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [
+        "6"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "VCC",
+      "name": "Supply Voltage",
+      "min": 5.0,
+      "typ": null,
+      "max": 18.0,
+      "unit": "V",
+      "test_conditions": "LM386N-4",
+      "related_pins": [
+        "6"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "Speaker Impedance",
+      "name": "Speaker Impedance",
+      "min": 4.0,
+      "typ": null,
+      "max": null,
+      "unit": "\u03a9",
+      "test_conditions": null,
+      "related_pins": [
+        "5"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "VI",
+      "name": "Analog input voltage",
+      "min": -0.4,
+      "typ": null,
+      "max": 0.4,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [
+        "2",
+        "3"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating free-air temperature",
+      "min": 0.0,
+      "typ": null,
+      "max": 70.0,
+      "unit": "\u00b0C",
+      "test_conditions": null,
+      "related_pins": [],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "min": null,
+      "typ": 115.7,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LM386 D (SOIC) 8",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "min": null,
+      "typ": 169.3,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LM386 DGK (VSSOP) 8",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "min": null,
+      "typ": 53.4,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LM386 P (PDIP) 8",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "min": null,
+      "typ": 59.7,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LM386 D (SOIC) 8",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "min": null,
+      "typ": 73.1,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LM386 DGK (VSSOP) 8",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "min": null,
+      "typ": 42.1,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LM386 P (PDIP) 8",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "min": null,
+      "typ": 56.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LM386 D (SOIC) 8",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "min": null,
+      "typ": 100.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LM386 DGK (VSSOP) 8",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "min": null,
+      "typ": 30.6,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LM386 P (PDIP) 8",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "min": null,
+      "typ": 12.4,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LM386 D (SOIC) 8",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "min": null,
+      "typ": 9.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LM386 DGK (VSSOP) 8",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "min": null,
+      "typ": 19.0,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LM386 P (PDIP) 8",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "min": null,
+      "typ": 55.6,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LM386 D (SOIC) 8",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "min": null,
+      "typ": 99.1,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LM386 DGK (VSSOP) 8",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "min": null,
+      "typ": 50.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LM386 P (PDIP) 8",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "VS",
+      "name": "Operating Supply Voltage",
+      "min": 4.0,
+      "typ": null,
+      "max": 12.0,
+      "unit": "V",
+      "test_conditions": "LM386N-1, -3, LM386M-1, LM386MM-1",
+      "related_pins": [
+        "6"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "VS",
+      "name": "Operating Supply Voltage",
+      "min": 5.0,
+      "typ": null,
+      "max": 18.0,
+      "unit": "V",
+      "test_conditions": "LM386N-4",
+      "related_pins": [
+        "6"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "IQ",
+      "name": "Quiescent Current",
+      "min": null,
+      "typ": 4.0,
+      "max": 8.0,
+      "unit": "mA",
+      "test_conditions": "VS = 6 V, VIN = 0",
+      "related_pins": [
+        "6"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "POUT",
+      "name": "Output Power",
+      "min": 250.0,
+      "typ": 325.0,
+      "max": null,
+      "unit": "mW",
+      "test_conditions": "VS = 6 V, RL = 8 \u03a9, THD = 10% (LM386N-1, LM386M-1, LM386MM-1)",
+      "related_pins": [
+        "5"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "POUT",
+      "name": "Output Power",
+      "min": 500.0,
+      "typ": 700.0,
+      "max": null,
+      "unit": "mW",
+      "test_conditions": "VS = 9 V, RL = 8 \u03a9, THD = 10% (LM386N-3)",
+      "related_pins": [
+        "5"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "POUT",
+      "name": "Output Power",
+      "min": 700.0,
+      "typ": 1000.0,
+      "max": null,
+      "unit": "mW",
+      "test_conditions": "VS = 16 V, RL = 32 \u03a9, THD = 10% (LM386N-4)",
+      "related_pins": [
+        "5"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "AV",
+      "name": "Voltage Gain",
+      "min": null,
+      "typ": 26.0,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "VS = 6 V, f = 1 kHz",
+      "related_pins": [
+        "1",
+        "8"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "AV",
+      "name": "Voltage Gain",
+      "min": null,
+      "typ": 46.0,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "10 \u00b5F from Pin 1 to 8",
+      "related_pins": [
+        "1",
+        "8"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "BW",
+      "name": "Bandwidth",
+      "min": null,
+      "typ": 300.0,
+      "max": null,
+      "unit": "kHz",
+      "test_conditions": "VS = 6 V, Pins 1 and 8 Open",
+      "related_pins": [
+        "1",
+        "8"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "THD",
+      "name": "Total Harmonic Distortion",
+      "min": null,
+      "typ": 0.2,
+      "max": null,
+      "unit": "%",
+      "test_conditions": "VS = 6 V, RL = 8 \u03a9, POUT = 125 mW, f = 1 kHz, Pins 1 and 8 Open",
+      "related_pins": [
+        "5",
+        "1",
+        "8"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "PSRR",
+      "name": "Power Supply Rejection Ratio",
+      "min": null,
+      "typ": 50.0,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "VS = 6 V, f = 1 kHz, CBYPASS = 10 \u03bcF, Pins 1 and 8 Open, Referred to Output",
+      "related_pins": [
+        "6",
+        "7",
+        "1",
+        "8",
+        "5"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "RIN",
+      "name": "Input Resistance",
+      "min": null,
+      "typ": 50.0,
+      "max": null,
+      "unit": "k\u03a9",
+      "test_conditions": null,
+      "related_pins": [
+        "2",
+        "3"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "IBIAS",
+      "name": "Input Bias Current",
+      "min": null,
+      "typ": 250.0,
+      "max": null,
+      "unit": "nA",
+      "test_conditions": "VS = 6 V, Pins 2 and 3 Open",
+      "related_pins": [
+        "2",
+        "3"
+      ],
+      "category": "Electrical Characteristics"
+    }
+  ],
+  "functional_blocks": [
+    "Input Stage",
+    "Output Stage",
+    "Gain Control Network",
+    "Bias Network"
+  ]
+}

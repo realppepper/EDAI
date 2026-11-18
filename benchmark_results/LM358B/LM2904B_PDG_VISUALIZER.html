@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Port Dependency Graph (PDG) — LM358B/LM2904B</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    body { background: #090d16; color: #f8fafc; font-family: ui-sans-serif, system-ui, sans-serif; }
+    .node-pin { transition: all 0.3s ease; }
+    .node-pin:hover { transform: scale(1.08); }
+  </style>
+</head>
+<body class="p-6 min-h-screen">
+  <div class="max-w-5xl mx-auto space-y-6">
+
+    <header class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow flex items-center justify-between">
+      <div>
+        <h1 class="text-xl font-bold text-white flex items-center gap-2">
+          Port Dependency Graph (PDG) Visualizer
+          <span class="text-xs px-2.5 py-0.5 rounded-full bg-sky-500/10 text-sky-400 border border-sky-500/30">LM358B/LM2904B</span>
+        </h1>
+        <p class="text-xs text-slate-400 mt-1">Datasheet Source: <span class="font-mono text-slate-300">lm358.pdf</span> | Extracted Pins: 9</p>
+      </div>
+
+      <!-- Timeline Controls -->
+      <div class="flex items-center gap-3 bg-slate-950 border border-slate-800 px-4 py-2 rounded-xl text-xs">
+        <button onclick="togglePlay()" id="btnPlay" class="text-sky-400 font-bold hover:text-sky-300 flex items-center gap-1">
+          <span>Play &sigma;(p)</span>
+        </button>
+        <input type="range" id="slider" min="0" max="10" step="0.5" value="0" oninput="setTime(parseFloat(this.value))" class="w-32 accent-sky-400">
+        <span id="timeVal" class="font-mono text-sky-300 font-bold w-12 text-right">0.0 &mu;s</span>
+      </div>
+    </header>
+
+    <!-- Graph Container -->
+    <div class="bg-slate-950 border border-slate-800 rounded-2xl p-6 flex items-center justify-center min-h-[340px] shadow-inner">
+      <svg class="w-full h-full text-slate-200" viewBox="0 0 860 300" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <marker id="pdg-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+    <path d="M 0 0 L 10 5 L 0 10 z" fill="#475569"/>
+  </marker>
+</defs>
+<path d="M 535 45 C 580 45, 620 45, 665 45" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 535 45 C 580 45, 620 93, 665 93" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 535 93 C 580 93, 620 45, 665 45" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 535 93 C 580 93, 620 93, 665 93" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 535 141 C 580 141, 620 45, 665 45" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 535 141 C 580 141, 620 93, 665 93" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 535 189 C 580 189, 620 45, 665 45" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 535 189 C 580 189, 620 93, 665 93" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 155 45 C 200 45, 400 45, 445 45" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 155 45 C 200 45, 400 93, 445 93" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 155 45 C 200 45, 400 141, 445 141" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 155 45 C 200 45, 400 189, 445 189" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 155 45 C 200 45, 620 45, 665 45" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 155 45 C 200 45, 620 93, 665 93" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 155 45 C 200 45, 400 237, 445 237" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 535 237 C 580 237, 620 45, 665 45" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 535 237 C 580 237, 620 93, 665 93" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 155 93 C 200 93, 400 45, 445 45" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 155 93 C 200 93, 400 93, 445 93" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 155 93 C 200 93, 400 141, 445 141" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 155 93 C 200 93, 400 189, 445 189" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 155 93 C 200 93, 620 45, 665 45" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 155 93 C 200 93, 620 93, 665 93" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<path d="M 155 93 C 200 93, 400 237, 445 237" fill="none" stroke="#334155" stroke-width="1.3" stroke-dasharray="3,3" marker-end="url(#pdg-arr)"/>
+<g class="node-pin" id="node-IN1_">
+  <rect x="445" y="27" width="90" height="36" rx="8" fill="#0f172a" stroke="#60a5fa" stroke-width="1.5" />
+  <text x="490" y="43" text-anchor="middle" font-size="11" font-weight="bold" fill="#f8fafc">IN1_</text>
+  <text x="490" y="56" text-anchor="middle" font-size="9" fill="#60a5fa">2.0 μs</text>
+</g>
+<g class="node-pin" id="node-IN1_">
+  <rect x="445" y="75" width="90" height="36" rx="8" fill="#0f172a" stroke="#60a5fa" stroke-width="1.5" />
+  <text x="490" y="91" text-anchor="middle" font-size="11" font-weight="bold" fill="#f8fafc">IN1_</text>
+  <text x="490" y="104" text-anchor="middle" font-size="9" fill="#60a5fa">2.0 μs</text>
+</g>
+<g class="node-pin" id="node-IN2_">
+  <rect x="445" y="123" width="90" height="36" rx="8" fill="#0f172a" stroke="#60a5fa" stroke-width="1.5" />
+  <text x="490" y="139" text-anchor="middle" font-size="11" font-weight="bold" fill="#f8fafc">IN2_</text>
+  <text x="490" y="152" text-anchor="middle" font-size="9" fill="#60a5fa">2.0 μs</text>
+</g>
+<g class="node-pin" id="node-IN2_">
+  <rect x="445" y="171" width="90" height="36" rx="8" fill="#0f172a" stroke="#60a5fa" stroke-width="1.5" />
+  <text x="490" y="187" text-anchor="middle" font-size="11" font-weight="bold" fill="#f8fafc">IN2_</text>
+  <text x="490" y="200" text-anchor="middle" font-size="9" fill="#60a5fa">2.0 μs</text>
+</g>
+<g class="node-pin" id="node-OUT1">
+  <rect x="665" y="27" width="90" height="36" rx="8" fill="#0f172a" stroke="#34d399" stroke-width="1.5" />
+  <text x="710" y="43" text-anchor="middle" font-size="11" font-weight="bold" fill="#f8fafc">OUT1</text>
+  <text x="710" y="56" text-anchor="middle" font-size="9" fill="#34d399">3.0 μs</text>
+</g>
+<g class="node-pin" id="node-OUT2">
+  <rect x="665" y="75" width="90" height="36" rx="8" fill="#0f172a" stroke="#34d399" stroke-width="1.5" />
+  <text x="710" y="91" text-anchor="middle" font-size="11" font-weight="bold" fill="#f8fafc">OUT2</text>
+  <text x="710" y="104" text-anchor="middle" font-size="9" fill="#34d399">3.0 μs</text>
+</g>
+<g class="node-pin" id="node-V_">
+  <rect x="65" y="27" width="90" height="36" rx="8" fill="#0f172a" stroke="#94a3b8" stroke-width="1.5" />
+  <text x="110" y="43" text-anchor="middle" font-size="11" font-weight="bold" fill="#f8fafc">V_</text>
+  <text x="110" y="56" text-anchor="middle" font-size="9" fill="#94a3b8">0.0 μs</text>
+</g>
+<g class="node-pin" id="node-NC">
+  <rect x="445" y="219" width="90" height="36" rx="8" fill="#0f172a" stroke="#60a5fa" stroke-width="1.5" />
+  <text x="490" y="235" text-anchor="middle" font-size="11" font-weight="bold" fill="#f8fafc">NC</text>
+  <text x="490" y="248" text-anchor="middle" font-size="9" fill="#60a5fa">2.0 μs</text>
+</g>
+<g class="node-pin" id="node-V_">
+  <rect x="65" y="75" width="90" height="36" rx="8" fill="#0f172a" stroke="#38bdf8" stroke-width="1.5" />
+  <text x="110" y="91" text-anchor="middle" font-size="11" font-weight="bold" fill="#f8fafc">V_</text>
+  <text x="110" y="104" text-anchor="middle" font-size="9" fill="#38bdf8">0.0 μs</text>
+</g>
+</svg>
+    </div>
+
+    <!-- Activation Schedule Table -->
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-3">
+      <h3 class="text-xs font-bold uppercase tracking-wider text-slate-400">Topological Settling Sequence &sigma;(p)</h3>
+      <table class="w-full text-xs text-left">
+        <thead class="text-slate-400 uppercase text-[10px] border-b border-slate-800">
+          <tr>
+            <th class="py-2">Pin Name</th>
+            <th class="py-2">Physical Role</th>
+            <th class="py-2">Direction</th>
+            <th class="py-2">Settling Delay</th>
+            <th class="py-2">State</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800 text-slate-300" id="tableBody">
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    const PINS = [{"name": "IN1_", "role": "SIGNAL", "direction": "INPUT", "description": "Negative input"}, {"name": "IN1_", "role": "SIGNAL", "direction": "INPUT", "description": "Positive input"}, {"name": "IN2_", "role": "SIGNAL", "direction": "INPUT", "description": "Negative input"}, {"name": "IN2_", "role": "SIGNAL", "direction": "INPUT", "description": "Positive input"}, {"name": "OUT1", "role": "OUTPUT", "direction": "OUTPUT", "description": "Output"}, {"name": "OUT2", "role": "OUTPUT", "direction": "OUTPUT", "description": "Output"}, {"name": "V_", "role": "GROUND", "direction": "POWER", "description": "Negative (lowest) supply or ground (for single-supply operation)"}, {"name": "NC", "role": "NULL", "direction": "NULL", "description": "No internal connection"}, {"name": "V_", "role": "POWER", "direction": "POWER", "description": "Positive (highest) supply"}];
+    const SCHED = {"V_": 0.0, "IN1_": 2e-06, "IN2_": 2e-06, "NC": 2e-06, "OUT1": 3e-06, "OUT2": 3e-06};
+    let curTime = 0.0;
+    let timer = null;
+
+    function renderTable() {
+      const tbody = document.getElementById('tableBody');
+      tbody.innerHTML = '';
+      PINS.forEach(p => {
+        const delay = SCHED[p.name] || 0.0;
+        const d_us = delay * 1e6;
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="py-2 font-mono font-bold text-sky-400">${p.name}</td>
+          <td class="py-2">${p.role || 'SIGNAL'}</td>
+          <td class="py-2 text-slate-400">${p.direction || 'INPUT'}</td>
+          <td class="py-2 font-mono">${d_us.toFixed(1)} &mu;s</td>
+          <td class="py-2" id="state-${p.name}">Waiting</td>
+        `;
+        tbody.appendChild(tr);
+      });
+      setTime(0.0);
+    }
+
+    function setTime(val) {
+      curTime = val;
+      document.getElementById('slider').value = val;
+      document.getElementById('timeVal').textContent = `${val.toFixed(1)} μs`;
+
+      PINS.forEach(p => {
+        const delay = (SCHED[p.name] || 0.0) * 1e6;
+        const stateEl = document.getElementById(`state-${p.name}`);
+        const nodeG = document.getElementById(`node-${p.name}`);
+        if (curTime >= delay) {
+          if (stateEl) stateEl.innerHTML = '<span class="text-emerald-400 font-bold">Active & Settled</span>';
+          if (nodeG) nodeG.querySelector('rect').setAttribute('fill', '#1e293b');
+        } else {
+          if (stateEl) stateEl.innerHTML = '<span class="text-slate-500">Waiting</span>';
+          if (nodeG) nodeG.querySelector('rect').setAttribute('fill', '#0f172a');
+        }
+      });
+    }
+
+    function togglePlay() {
+      const btn = document.getElementById('btnPlay');
+      if (timer) {
+        clearInterval(timer);
+        timer = null;
+        btn.textContent = 'Play σ(p)';
+      } else {
+        btn.textContent = 'Pause';
+        if (curTime >= 10.0) curTime = 0.0;
+        timer = setInterval(() => {
+          curTime += 0.5;
+          if (curTime > 10.0) {
+            curTime = 10.0;
+            togglePlay();
+          }
+          setTime(curTime);
+        }, 250);
+      }
+    }
+
+    window.onload = renderTable;
+  </script>
+</body>
+</html>

@@ -1,0 +1,171 @@
+* xml
+* <architecture_summary>
+* The LM358B/LM2904B is a dual operational amplifier, and the netlist will implement two identical op-amp subcircuits. The core architecture for each op-amp will follow a classic three-stage design: a differential input stage, a gain stage, and an output stage. This topology is well-suited for general-purpose op-amps like the LM358/LM2904 series, offering good gain, common-mode rejection, and output drive capability.
+
+**1. Differential Input Stage:**
+* The input stage will be a PNP differential pair with an active current mirror load. This configuration allows the common-mode input range to extend down to the negative supply rail (ground in single-supply operation), a key feature of the LM358/LM2904.
+*   **PNP Differential Pair:** Q1, Q2 (PNP transistors) will form the differential pair, with their emitters connected to a current source. This provides high input impedance and converts the differential input voltage into a differential current.
+*   **Current Mirror Load:** Q3, Q4 (NPN transistors) will form an active current mirror load, converting the differential current into a single-ended voltage at the input of the gain stage. This also provides additional gain.
+*   **Tail Current Source:** A current source (e.g., M1, M2, R1) will bias the differential pair, setting the quiescent current and influencing parameters like slew rate and input bias current. The current will be set to achieve the specified quiescent current and input characteristics.
+
+**2. Gain Stage:**
+* The gain stage will be a common-emitter amplifier with an active load, providing the majority of the op-amp's voltage gain.
+*   **Common-Emitter Amplifier:** Q5 (NPN transistor) will act as the common-emitter amplifier, driven by the output of the differential stage.
+*   **Active Load:** Q6 (PNP transistor) will serve as an active load, providing high impedance and maximizing the gain of this stage.
+*   **Frequency Compensation:** A compensation capacitor (Cc) will be placed between the output of the gain stage and the input of the output stage (or across the gain stage transistor) to ensure unity-gain stability. The value of Cc will be chosen to achieve the specified unity-gain bandwidth and phase margin. A resistor in series with Cc (Rz) can be added for zero cancellation to improve phase margin.
+
+**3. Output Stage:**
+* The output stage will be a Class AB push-pull emitter-follower configuration, providing low output impedance and current drive capability.
+*   **Push-Pull Emitter Followers:** Q7 (NPN) and Q8 (PNP) will form the push-pull stage.
+*   **Bias Network:** Diodes or Vbe multiplier (Q9, R2, R3) will be used to provide a small quiescent current through Q7 and Q8, minimizing crossover distortion.
+*   **Current Limiting:** Resistors (R_out_lim) in series with the output transistors will provide short-circuit current limiting, protecting the device from damage when the output is shorted to ground or either supply rail. The value will be chosen to limit the output current to a safe level, consistent with the "Duration of output short circuit" specification.
+
+**4. Bias Circuitry:**
+* A robust bias circuit will generate stable reference currents for the input stage tail current source, current mirrors, and output stage quiescent current. This typically involves a Vbe reference or a bandgap reference (simplified for this model) and current mirrors.
+*   **Current Mirrors:** Multiple current mirrors (e.g., M1-M2, M3-M4, M5-M6) will be used to replicate and distribute bias currents throughout the circuit.
+*   **Start-up Circuit:** (Implicitly handled by initial conditions in SPICE, but in a real design, a start-up circuit ensures the bias network powers up correctly).
+
+**5. ESD Protection and EMI/RF Filters:**
+*   **ESD Diodes:** Diodes (D_esd_pos, D_esd_neg) will be placed from the input pins to the positive and negative supply rails to protect against electrostatic discharge. These will be modeled as simple diodes with appropriate breakdown characteristics.
+*   **EMI/RF Filters:** Simple RC low-pass filters (R_emi, C_emi) will be added at the input pins to provide basic EMI/RF filtering. The values will be chosen to attenuate high-frequency noise without significantly affecting the op-amp's normal operation.
+
+**Component Sizing Methodology:**
+
+*   **Voltage Rails (VS):** The maximum supply voltage (36V for LM358B/LM2904B) dictates the breakdown voltage requirements for all transistors. All transistors will be chosen to withstand at least 40V. The minimum supply voltage (3V) requires careful biasing to ensure all stages operate correctly at low voltages.
+*   **Quiescent Current (IQ):** The quiescent current (typically a few hundred microamperes for LM358B) will be set by the bias current sources. This influences power consumption and slew rate.
+*   **Input Offset Voltage (VOS):** While not explicitly specified as a target, minimizing VOS requires careful matching of the differential pair transistors (Q1, Q2) and their load (Q3, Q4). In SPICE, this is achieved by ensuring identical W/L ratios and model parameters.
+*   **Common-Mode Input Range (VICR):** The PNP input stage inherently supports input down to V-. The upper limit is typically V+ - 1.5V to V+ - 2V, determined by the saturation voltage of the current mirror load and the input differential pair.
+*   **Output Voltage Swing (VO):** The output stage design (Class AB emitter follower) allows the output to swing close to the supply rails, typically within 1V to 2V of each rail, especially with a current sink to V- for single-supply operation.
+*   **Gain (AVOL):** The open-loop gain is primarily determined by the transconductance of the input stage and the output impedance of the gain stage. Large W/L ratios for gain stage transistors and high output impedance loads contribute to high gain.
+*   **Bandwidth and Stability:** The compensation capacitor (Cc) is crucial for stability. Its value is chosen to set the dominant pole, ensuring a stable unity-gain frequency. The slew rate is also related to Cc and the input stage tail current (SR = I_tail / Cc).
+*   **Output Current (IOUT):** The output transistors (Q7, Q8) will be sized to deliver the required output current (typically tens of mA) without excessive voltage drop. Current limiting resistors will be sized based on the maximum short-circuit current.
+*   **ESD Protection:** The ESD diodes will be modeled with appropriate reverse breakdown voltages and forward voltage drops.
+*   **EMI/RF Filters:** R_emi and C_emi values will be chosen to create a low-pass filter with a cutoff frequency in the MHz range, effectively attenuating high-frequency noise.
+
+**Dual Op-Amp Implementation:**
+* The netlist will instantiate two identical op-amp subcircuits, each with its own set of input, output, and internal nodes, sharing only the global supply rails (V+ and V-). The `NC` pin will be left unconnected internally.
+
+**SPICE Model Parameters:**
+* Standard Level 1 MOSFET models and NPN/PNP BJT models will be used. Parameters like VTO, KP, GAMMA, PHI for MOSFETs and IS, BF, BR, VAF, VAR for BJTs will be chosen to represent typical silicon characteristics for a general-purpose analog process, ensuring realistic behavior. Junction capacitances (CJC, CJE) and transit times (TF, TR) will be included for frequency response accuracy.
+
+* The provided pin interface has duplicate pins for OUT1, IN1_, IN1_, V_, IN2_, IN2_, OUT2, V_. This suggests a dual op-amp package where the pins are listed for both op-amps. The subcircuit definition will reflect this, with unique internal node names for each op-amp. The `NC` pin will be left floating.
+* </architecture_summary>
+
+* <spice_netlist>
+* LM358B/LM2904B Dual Operational Amplifier
+* Next-generation, high-voltage (36V) operation, low offset, common-mode to ground.
+* This model implements two identical op-amp channels.
+
+.subckt LM358B_LM2904B OUT1_A IN1N_A IN1P_A VNEG IN2P_B IN2N_B OUT2_B VPOS NC OUT1_C IN1N_C IN1P_C VNEG_C IN2P_D IN2N_D OUT2_D VPOS_D
+
+* Global Supply Rails (shared for both op-amps in a typical package)
+* For this subcircuit, we'll assume VNEG and VPOS are the primary supplies.
+* The duplicate VNEG_C and VPOS_D pins will be tied to VNEG and VPOS respectively.
+* The NC pin is left unconnected.
+
+* Tie duplicate supply pins
+R_tie_vneg_c VNEG_C VNEG 1m ; Tie VNEG_C to VNEG
+R_tie_vpos_d VPOS_D VPOS 1m ; Tie VPOS_D to VPOS
+
+* Op-Amp A (Channel 1)
+X_OPAMP_A OUT1_A IN1N_A IN1P_A VNEG VPOS OPAMP_CORE
+
+* Op-Amp B (Channel 2)
+X_OPAMP_B OUT2_B IN2N_B IN2P_B VNEG VPOS OPAMP_CORE
+
+* The NC pin is intentionally left unconnected as per specification.
+* No internal connection for NC pin.
+
+.ends LM358B_LM2904B
+
+
+* Subcircuit for a single Op-Amp Core
+* .subckt OPAMP_CORE OUT INN INP VNEG VPOS
+
+* Node Definitions:
+* INN: Inverting Input
+* INP: Non-Inverting Input
+* OUT: Output
+* VNEG: Negative Supply Rail (e.g., GND)
+* VPOS: Positive Supply Rail
+
+* --- ESD Protection and EMI/RF Filters (Simplified) ---
+* ESD diodes to VPOS and VNEG
+* D_esd_inn_pos INN VPOS DESD
+* D_esd_inn_neg VNEG INN DESD
+* D_esd_inp_pos INP VPOS DESD
+* D_esd_inp_neg VNEG INP DESD
+
+* EMI/RF Input Filters (RC low-pass)
+* R_emi_inn INN_filt INN 100
+* C_emi_inn INN_filt VNEG 10p
+* R_emi_inp INP_filt INP 100
+* C_emi_inp INP_filt VNEG 10p
+
+* --- Bias Circuitry ---
+* Simple current mirror for biasing
+* M1, M2 form a current mirror to generate reference current
+* M_bias_ref VPOS bias_node1 bias_node1 VPOS PMOS W=10u L=2u
+* R_bias_set bias_node1 VNEG 100k ; Sets the reference current (approx (VPOS-VNEG-Vth)/R)
+
+* Current mirror to generate tail current for input stage
+* M_tail_src_diode bias_node2 bias_node1 bias_node2 VPOS PMOS W=20u L=2u
+* M_tail_src tail_node bias_node2 VNEG VNEG NMOS W=40u L=2u ; Tail current source for input diff pair
+
+* --- Input Stage (PNP Differential Pair with NPN Current Mirror Load) ---
+* PNP Differential Pair
+* Q_in_pnp1 collector_q1 INP tail_node QPNP W=20u L=2u
+* Q_in_pnp2 collector_q2 INN tail_node QPNP W=20u L=2u
+
+* NPN Current Mirror Load
+* Q_load_diode collector_q1 collector_q1 VNEG QNPN W=10u L=2u
+* Q_load_mirror gain_stage_in collector_q1 VNEG QNPN W=10u L=2u
+
+* --- Gain Stage (Common Emitter with Active Load) ---
+* NPN Common Emitter Amplifier
+* Q_gain_ce gain_stage_out gain_stage_in VNEG QNPN W=50u L=2u
+
+* PNP Active Load for Gain Stage
+* M_gain_load_diode VPOS bias_node3 bias_node3 VPOS PMOS W=20u L=2u
+* M_gain_load gain_stage_out bias_node3 VPOS VPOS PMOS W=20u L=2u
+
+* Frequency Compensation (Miller Compensation)
+* C_comp gain_stage_in gain_stage_out 10p ; Compensation capacitor for stability
+* R_comp_zero gain_stage_out gain_stage_out_zero 100 ; Optional zero for phase margin improvement
+
+* --- Output Stage (Class AB Push-Pull Emitter Follower with Current Limiting) ---
+* Vbe Multiplier for Class AB bias
+* Q_vbe_mult bias_vbe_mult_c bias_vbe_mult_b VNEG QNPN W=10u L=2u
+* R_vbe_mult1 VPOS bias_vbe_mult_b 10k
+* R_vbe_mult2 bias_vbe_mult_b bias_vbe_mult_c 1k
+
+* NPN Emitter Follower (Pull-up)
+* Q_out_n VPOS gain_stage_out_zero out_pre_n QNPN W=100u L=2u
+* R_out_lim_n out_pre_n OUT 50 ; Output current limiting resistor
+
+* PNP Emitter Follower (Pull-down)
+* Q_out_p out_pre_p gain_stage_out_zero VNEG QPNP W=100u L=2u
+* R_out_lim_p OUT out_pre_p 50 ; Output current limiting resistor
+
+* Output current sink to ensure output can pull to VNEG (for single supply operation)
+* This is a common feature in LM358-style op-amps.
+* M_out_sink VNEG out_sink_gate VNEG VNEG NMOS W=50u L=2u
+* R_out_sink_bias out_sink_gate VPOS 100k
+* R_out_sink_set out_sink_gate VNEG 10k
+
+* --- Models ---
+* .model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u GAMMA=0.5 PHI=0.6 LAMBDA=0.01
+* + TOX=10n CJO=100f MJ=0.5 PB=0.8 CGSO=500p CGDO=500p)
+* .model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.5 PHI=0.6 LAMBDA=0.01
+* + TOX=10n CJO=100f MJ=0.5 PB=0.8 CGSO=500p CGDO=500p)
+* .model QNPN NPN (IS=1e-14 BF=200 VAF=50 IKF=0.1 NE=1.5
+* + BR=10 VAR=10 IKR=0.01 NC=1.2
+* + RB=10 RC=1 RE=0.1
+* + CJE=1p CJC=2p TF=0.3n TR=10n)
+* .model QPNP PNP (IS=1e-14 BF=100 VAF=30 IKF=0.05 NE=1.5
+* + BR=5 VAR=5 IKR=0.005 NC=1.2
+* + RB=20 RC=2 RE=0.2
+* + CJE=2p CJC=3p TF=0.5n TR=20n)
+* .model DESD D (IS=1e-12 BV=45 IBV=1u RS=1) ; ESD diode model with breakdown voltage
+
+* .ends OPAMP_CORE

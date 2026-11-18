@@ -1,0 +1,17 @@
+{
+  "title": "공통 소스 증폭기 · 실제 SPICE 예제",
+  "parameters": [
+    {"name":"RD","min":10000,"max":50000,"initial":10000,"step":5000},
+    {"name":"VG","min":0.95,"max":1.2,"initial":1.1,"step":0.05}
+  ],
+  "goals": [
+    {"measure":"gain","op":">=","value":12,"unit":"V/V"},
+    {"measure":"power_mw","op":"<=","value":0.6,"unit":"mW"},
+    {"measure":"bias_v","op":">=","value":1,"unit":"V"},
+    {"measure":"bias_v","op":"<=","value":4,"unit":"V"}
+  ],
+  "objective":{"measure":"power_mw","sense":"min"},
+  "method":"feedback",
+  "max_runs":32,
+  "timeout_s":20
+}

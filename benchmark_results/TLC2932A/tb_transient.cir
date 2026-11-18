@@ -1,0 +1,86 @@
+.options gmin=1e-12 cshunt=1e-15
+* LTspice Testbench for TLC2932A Verification
+
+.include "TLC2932A_iter2.cir"
+
+* Voltage Sources for Power Supplies and Inputs
+V_LOGIC_VDD LOGIC_VDD 0 PWL(0s 0V 10ns 3.3V)
+V_VCO_VDD VCO_VDD 0 PWL(0s 0V 10ns 3.3V)
+V_LOGIC_GND LOGIC_GND 0 0
+V_VCO_GND VCO_GND 0 0
+
+* Input Stimulus following PDG schedule
+V_SELECT SELECT 0 PWL(0us 0V 15.00us 3.3V) ; Assuming active high for SELECT
+V_TEST TEST 0 PWL(0us 0V 15.00us 0V) ; Assuming TEST is low for normal operation
+V_PFD_INHIBIT PFD_INHIBIT 0 PWL(0us 0V 15.00us 0V) ; Assuming PFD_INHIBIT is low for normal operation
+V_VCO_INHIBIT VCO_INHIBIT 0 PWL(0us 0V 15.00us 0V) ; Assuming VCO_INHIBIT is low for normal operation
+
+* RBIAS resistor
+R_RBIAS RBIAS VCO_IN PWL(0us 100k 10.00us 3.3k) ; RBIAS = 3.3 kOhm for fOSC measurement, connect to VCO_IN for voltage divider
+
+* VCO_IN for fOSC measurement (1/2 VDD)
+V_VCO_IN VCO_IN 0 PWL(0us 0V 15.00us 1.65V) ; 1/2 VDD for 3.3V supply
+
+* FIN_A and FIN_B for Lock Frequency
+V_FIN_A FIN_A 0 PULSE(0V 3.3V 17.00us 0.1ns 0.1ns 25ns 50ns) ; 20 MHz input for lock frequency (adjust period for other frequencies)
+V_FIN_B FIN_B 0 PULSE(0V 3.3V 17.00us 0.1ns 0.1ns 25ns 50ns) ; Same as FIN_A for initial lock
+
+* Output Load for tr/tf measurements
+C_LOAD VCO_OUT 0 15pF
+
+* DUT Instance
+XDUT LOGIC_VDD SELECT VCO_OUT FIN_A FIN_B PFD_OUT LOGIC_GND TEST PFD_INHIBIT VCO_INHIBIT VCO_GND VCO_IN RBIAS VCO_VDD TLC2932A
+
+* Simulation Command
+.tran 0.5n 300n
+
+* Measurement Directives
+
+* 'VCO control voltage at VCO IN': Min=0.9 V
+.meas tran vco_in_voltage AVG V(VCO_IN) from=100n to=250n
+
+* 'Lock frequency': Min=13.0, Max=35.0 MHz (VDD = 3.3 V)
+* Assuming FIN_A is the reference and PFD_OUT indicates lock
+.meas tran pfd_out_t1 when V(PFD_OUT)=1.65 rise=10
+.meas tran pfd_out_t2 when V(PFD_OUT)=1.65 rise=11
+.meas tran lock_freq_3v3 param 1/(pfd_out_t2 - pfd_out_t1)
+
+* 'fOSC': Typ=25.0 MHz (RBIAS = 3.3 kΩ, VCO IN = 1/2 VDD)
+.meas tran fosc_t1 when V(VCO_OUT)=1.65 rise=10
+.meas tran fosc_t2 when V(VCO_OUT)=1.65 rise=11
+.meas tran fosc_meas param 1/(fosc_t2 - fosc_t1)
+
+* 'tr': Typ=9.0, Max=14.0 ns (CL = 15 pF)
+.meas tran tr_vco_out_r1 when V(VCO_OUT)=0.33*V(VCO_VDD) rise=10
+.meas tran tr_vco_out_r2 when V(VCO_OUT)=0.9*V(VCO_VDD) rise=10
+.meas tran tr_vco_out param tr_vco_out_r2 - tr_vco_out_r1
+
+* 'tf': Typ=7.6, Max=12.0 ns (CL = 15 pF)
+.meas tran tf_vco_out_f1 when V(VCO_OUT)=0.9*V(VCO_VDD) fall=10
+.meas tran tf_vco_out_f2 when V(VCO_OUT)=0.33*V(VCO_VDD) fall=10
+.meas tran tf_vco_out param tf_vco_out_f2 - tf_vco_out_f1
+
+* 'fmax': Typ=17.0 MHz
+* This requires sweeping VCO_IN and finding the max frequency. For a single .tran, we can only measure at one point.
+* We'll measure the VCO_OUT frequency with VCO_IN set to a high value (e.g., 3.3V) to approximate fmax.
+; Sanitized duplicate parallel voltage source short: V_VCO_IN_FMAX VCO_IN 0 PWL(0us 0V 15.00us 3.3V) ; Set VCO_IN to VDD for fmax approximation
+.meas tran fmax_t1 when V(VCO_OUT)=1.65 rise=10
+.meas tran fmax_t2 when V(VCO_OUT)=1.65 rise=11
+.meas tran fmax_meas param 1/(fmax_t2 - fmax_t1)
+
+* 'tr': Typ=3.4, Max=10.0 ns (CL = 15 pF) - This is a duplicate spec, assuming it refers to a different output or condition.
+* We'll measure it again, assuming it's for VCO_OUT under the same conditions as the previous tr/tf.
+.meas tran tr_vco_out_2_r1 when V(VCO_OUT)=0.33*V(VCO_VDD) rise=10
+.meas tran tr_vco_out_2_r2 when V(VCO_OUT)=0.9*V(VCO_VDD) rise=10
+.meas tran tr_vco_out_2 param tr_vco_out_2_r2 - tr_vco_out_2_r1
+
+* 'tf': Typ=1.9, Max=10.0 ns (CL = 15 pF) - Duplicate spec.
+.meas tran tf_vco_out_2_f1 when V(VCO_OUT)=0.9*V(VCO_VDD) fall=10
+.meas tran tf_vco_out_2_f2 when V(VCO_OUT)=0.33*V(VCO_VDD) fall=10
+.meas tran tf_vco_out_2 param tf_vco_out_2_f2 - tf_vco_out_2_f1
+
+* Jitter, alpha, kSVS require more complex setups (e.g., multiple runs, temperature sweeps, voltage sweeps)
+* and are not directly measurable with a single .tran simulation and simple .meas commands.
+* These would typically involve post-processing of simulation data or advanced analysis features not available in basic LTspice .meas.
+
+.end

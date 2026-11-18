@@ -1,0 +1,189 @@
+
+.subckt CDCVF2505_Q1 1Y0 1Y1 1Y2 1Y3 CLKIN CLKOUT GND VDD_3_3_V
+
+; --- Global Parameters ---
+.param VDD_NOM = 3.3V
+.param VTH_NMOS = 0.7V
+.param VTH_PMOS = -0.7V
+.param KP_NMOS = 100uA/V^2 ; Transconductance parameter for NMOS
+.param KP_PMOS = 50uA/V^2  ; Transconductance parameter for PMOS (typically half of NMOS)
+.param R_DAMP = 25         ; Integrated series damping resistor
+
+; --- MOSFET Models (Level 1 for simplicity and convergence) ---
+.model NMOS NMOS (LEVEL=1 VTO={VTH_NMOS} KP={KP_NMOS} GAMMA=0 PHI=0.6 LAMBDA=0.01)
+.model PMOS PMOS (LEVEL=1 VTO={VTH_PMOS} KP={KP_PMOS} GAMMA=0 PHI=0.6 LAMBDA=0.01)
+.model D_CLAMP D (IS=1e-14 RS=1 N=1 BV=50 IBV=1u) ; Generic diode model for clamping
+
+; --- ESD/Input/Output Clamping Diodes ---
+; Diodes to VDD and GND for CLKIN
+D_CLKIN_P CLKIN VDD_3_3_V D_CLAMP
+D_CLKIN_N GND CLKIN D_CLAMP
+
+; Diodes to VDD and GND for 1Y0-1Y3 and CLKOUT
+D_1Y0_P 1Y0 VDD_3_3_V D_CLAMP
+D_1Y0_N GND 1Y0 D_CLAMP
+D_1Y1_P 1Y1 VDD_3_3_V D_CLAMP
+D_1Y1_N GND 1Y1 D_CLAMP
+D_1Y2_P 1Y2 VDD_3_3_V D_CLAMP
+D_1Y2_N GND 1Y2 D_CLAMP
+D_1Y3_P 1Y3 VDD_3_3_V D_CLAMP
+D_1Y3_N GND 1Y3 D_CLAMP
+D_CLKOUT_P CLKOUT VDD_3_3_V D_CLAMP
+D_CLKOUT_N GND CLKOUT D_CLAMP
+
+; --- Input Buffer and Power-Down Detection ---
+; CLKIN buffer with Schmitt trigger characteristics
+; VIH = 0.7*VDD, VIL = 0.3*VDD
+.param VTH_SCHMITT_H = '0.7 * VDD_NOM'
+.param VTH_SCHMITT_L = '0.3 * VDD_NOM'
+B_CLKIN_BUF_OUT clkin_buf_out GND V = { V(CLKIN) > VTH_SCHMITT_H ? VDD_NOM : (V(CLKIN) < VTH_SCHMITT_L ? 0 : V(clkin_buf_out)) }
+
+; Power-down detection: If CLKIN is low for > 100ns, activate power-down
+; This is a simplified model. A real circuit would use a retriggerable monostable.
+; Here, we assume power-down if CLKIN_BUF_OUT is consistently low.
+; For a more robust model, a counter or integrator would be needed.
+; For now, we'll assume the PLL is always active if CLKIN is present and stable.
+; The datasheet states "automatically goes in power-down mode when no input signal is applied to CLKIN".
+; This implies a DC level detector or a frequency detector.
+; Let's use a simple threshold for power-down. If CLKIN_BUF_OUT is below VIL for a long time.
+; For this simulation, we'll assume CLKIN is always present and valid during operation.
+; A more complex power-down would involve a B-source with time-dependent logic.
+; For now, we'll assume the PLL is always enabled if VDD is present and CLKIN is active.
+; Let's add a simple activity detector for CLKIN.
+R_pd_filter clkin_activity_avg GND 100k
+C_pd_filter clkin_activity_avg GND 100n
+G_pd_charge clkin_activity_avg GND VALUE = { (V(clkin_buf_out) > VDD_NOM/2) ? 10u : -10u } ; Charge if active, discharge if inactive
+B_power_down_active power_down_active GND V = { V(clkin_activity_avg) < VDD_NOM/4 ? 0 : VDD_NOM } ; Power down if average is low
+
+; --- PLL Core ---
+; 1. Phase-Frequency Detector (PFD)
+; Generates UP and DOWN pulses based on rising edges of CLKIN_BUF_OUT and CLKOUT_FB
+; Simplified behavioral model for PFD
+; UP pulse when CLKIN_BUF_OUT rises and CLKOUT_FB is low
+; DOWN pulse when CLKOUT_FB rises and CLKIN_BUF_OUT is low
+; Reset when both are high (or after a short delay)
+; This is a simplified PFD. A real PFD has memory and reset logic.
+; For SPICE, we'll use edge detection and pulse generation.
+.param PFD_PULSE_WIDTH = 1n ; Short pulse width for PFD output
+
+B_CLKIN_RISE clkin_rise GND V = { ddt(V(clkin_buf_out)) > 0.1*VDD_NOM/1n ? VDD_NOM : 0 } ; Detect rising edge of CLKIN
+B_CLKOUT_RISE clkout_rise GND V = { ddt(V(clkout_fb)) > 0.1*VDD_NOM/1n ? VDD_NOM : 0 } ; Detect rising edge of CLKOUT_FB
+
+; UP pulse generation
+B_UP_PULSE up_node GND V = { (V(clkin_rise) > VDD_NOM/2) & (V(clkout_fb) < VDD_NOM/2) ? VDD_NOM : 0 }
+R_UP_DELAY up_node up_delay 100
+C_UP_DELAY up_delay GND 1p
+B_UP up GND V = { V(up_delay) > VDD_NOM/2 ? VDD_NOM : 0 }
+
+; DOWN pulse generation
+B_DOWN_PULSE down_node GND V = { (V(clkout_rise) > VDD_NOM/2) & (V(clkin_buf_out) < VDD_NOM/2) ? VDD_NOM : 0 }
+R_DOWN_DELAY down_node down_delay 100
+C_DOWN_DELAY down_delay GND 1p
+B_DOWN down GND V = { V(down_delay) > VDD_NOM/2 ? VDD_NOM : 0 }
+
+; 2. Charge Pump (CP)
+; Converts UP/DOWN pulses into current for the loop filter
+; Icp = 50uA (chosen for reasonable loop bandwidth and settling time)
+.param ICP = 50uA
+G_CP_UP VDD_3_3_V v_ctrl VALUE = { V(up) > VDD_NOM/2 ? ICP : 0 }
+G_CP_DOWN v_ctrl GND VALUE = { V(down) > VDD_NOM/2 ? ICP : 0 }
+
+; 3. Loop Filter (LF) - Integrated on-chip
+; Second-order passive filter: R1 in series with C1, C2 to ground
+; Values chosen for ~100us stabilization time, damping factor ~0.707
+; Kvco = 75 MHz/V = 75e6 Hz/V
+; Kp = ICP / (2*PI) = 50uA / (2*PI) = 7.95uA/rad
+; Target natural frequency wn = 2*PI / (100us * 2) = 31.4 krad/s (approx for settling)
+; R_LF = 1k, C_LF1 = 1nF, C_LF2 = 100pF
+R_LF1 v_ctrl lf_node 1k
+C_LF1 lf_node GND 1n
+C_LF2 v_ctrl GND 100p
+
+; Clamp VCO control voltage to VDD and GND
+D_VCTRL_P v_ctrl VDD_3_3_V D_CLAMP
+D_VCTRL_N GND v_ctrl D_CLAMP
+
+; 4. Voltage Controlled Oscillator (VCO) with Duty Cycle Correction
+; Frequency range: 24 MHz to 200 MHz
+; Kvco = 75 MHz/V (from 0V to VDD_NOM)
+; F_min = 24 MHz, F_max = 200 MHz
+; V_ctrl range: 0 to VDD_NOM
+; F_vco = F_min + (V_ctrl / VDD_NOM) * (F_max - F_min)
+.param F_MIN_VCO = 24e6
+.param F_MAX_VCO = 200e6
+.param KVCO_BEHAV = '(F_MAX_VCO - F_MIN_VCO) / VDD_NOM'
+
+B_VCO_OUT vco_out GND V = { V(power_down_active) < VDD_NOM/2 ? 0 : ( (sin(2*PI*(F_MIN_VCO + KVCO_BEHAV * V(v_ctrl))*time) > 0) ? VDD_NOM : 0 ) }
+; Ensure 50% duty cycle by design of the behavioral source.
+
+; 5. Output Buffers with Integrated Series Damping Resistors
+; Each output has a 25-ohm series resistor.
+; Output drive strength: IOH/IOL = 12mA
+; VOH > 2.1V @ -12mA, VOL < 0.8V @ 12mA (at VDD=3V)
+; Co = 2.8pF for Yn, 5.2pF for CLKOUT
+
+; Output buffer subcircuit for reusability
+.subckt OUTPUT_BUFFER OUT IN GND VDD
+; Input buffer stage
+X_INV1 inv_out1 IN GND VDD INV_BUF
+X_INV2 inv_out2 inv_out1 GND VDD INV_BUF
+
+; Output stage (strong drive)
+M_POUT OUT inv_out2 VDD VDD PMOS W=100u L=0.18u ; Sized for 12mA drive
+M_NOUT OUT inv_out2 GND GND NMOS W=200u L=0.18u ; Sized for 12mA drive
+.ends OUTPUT_BUFFER
+
+
+; Simple inverter buffer for internal stages
+* .subckt INV_BUF OUT IN GND VDD
+* M_P OUT IN VDD VDD PMOS W=10u L=0.18u
+* M_N OUT IN GND GND NMOS W=5u L=0.18u
+* .ends INV_BUF
+
+; CLKOUT feedback path
+; CLKOUT is a copy of VCO_OUT, with its own buffer and capacitance
+* X_CLKOUT_BUF clkout_driver_out vco_out GND VDD_3_3_V OUTPUT_BUFFER
+* R_CLKOUT_DAMP clkout_driver_out CLKOUT {R_DAMP}
+* C_CLKOUT CLKOUT GND 5.2p ; Co for CLKOUT
+
+; Internal feedback to PFD
+; This path should have minimal delay and be robust.
+; For zero delay between CLKIN and Y outputs, CLKOUT is used for feedback.
+; The datasheet says "CLKOUT completes the internal feedback loop of the PLL."
+; This means CLKOUT is the actual feedback signal, not just a monitor.
+; So, the PFD compares CLKIN_BUF_OUT and CLKOUT.
+; We need a clean feedback signal from CLKOUT.
+; Let's assume CLKOUT_FB is taken directly from the CLKOUT pin,
+; or from an internal node before the damping resistor for better PLL performance.
+; Given the "zero delay" comment, it's likely an internal node.
+; Let's use clkout_driver_out as the feedback point.
+* B_CLKOUT_FB clkout_fb GND V = { V(clkout_driver_out) }
+
+; 1Y0-1Y3 Outputs
+; Each output has its own buffer and series damping resistor
+* X_1Y0_BUF 1Y0_driver_out vco_out GND VDD_3_3_V OUTPUT_BUFFER
+* R_1Y0_DAMP 1Y0_driver_out 1Y0 {R_DAMP}
+* C_1Y0 1Y0 GND 2.8p ; Co for Yn
+
+* X_1Y1_BUF 1Y1_driver_out vco_out GND VDD_3_3_V OUTPUT_BUFFER
+* R_1Y1_DAMP 1Y1_driver_out 1Y1 {R_DAMP}
+* C_1Y1 1Y1 GND 2.8p ; Co for Yn
+
+* X_1Y2_BUF 1Y2_driver_out vco_out GND VDD_3_3_V OUTPUT_BUFFER
+* R_1Y2_DAMP 1Y2_driver_out 1Y2 {R_DAMP}
+* C_1Y2 1Y2 GND 2.8p ; Co for Yn
+
+* X_1Y3_BUF 1Y3_driver_out vco_out GND VDD_3_3_V OUTPUT_BUFFER
+* R_1Y3_DAMP 1Y3_driver_out 1Y3 {R_DAMP}
+* C_1Y3 1Y3 GND 2.8p ; Co for Yn
+
+; --- Input Capacitance (Ci) ---
+; Ci = 4.2pF for CLKIN
+* C_CLKIN_IN CLKIN GND 4.2p
+
+; --- Current Consumption (Simplified) ---
+; Add a quiescent current draw for the internal circuitry
+; This is a very rough estimate. A real design would have detailed current paths.
+* R_QUIESCENT VDD_3_3_V GND 10k ; Represents ~330uA quiescent current
+
+* .ends CDCVF2505_Q1

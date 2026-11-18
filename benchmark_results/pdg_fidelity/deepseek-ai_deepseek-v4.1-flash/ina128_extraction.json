@@ -1,0 +1,537 @@
+{
+  "ic_device": {
+    "name": "INA128",
+    "category": "Instrumentation Amplifier",
+    "description": "Precision, low-power instrumentation amplifier with low offset voltage, low drift, low input bias current, and wide supply range.",
+    "package": "D (8-Pin SOIC)"
+  },
+  "pins": [
+    {
+      "name": "RG",
+      "pin_number": "1",
+      "role": "CONTROL",
+      "direction": "BIDIRECTIONAL",
+      "description": "Gain setting pin. For gains greater than 1, place a gain resistor between pin 1 and pin 8.",
+      "page": 3,
+      "evidence": "Gain setting pin. For gains greater than 1, place a gain resistor between pin 1 and pin 8."
+    },
+    {
+      "name": "VIN-",
+      "pin_number": "2",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Negative input",
+      "page": 3,
+      "evidence": "Negative input"
+    },
+    {
+      "name": "VIN+",
+      "pin_number": "3",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Positive input",
+      "page": 3,
+      "evidence": "Positive input"
+    },
+    {
+      "name": "V-",
+      "pin_number": "4",
+      "role": "POWER",
+      "direction": "POWER",
+      "description": "Negative supply",
+      "page": 3,
+      "evidence": "Negative supply"
+    },
+    {
+      "name": "REF",
+      "pin_number": "5",
+      "role": "REFERENCE",
+      "direction": "INPUT",
+      "description": "Reference input. This pin must be driven by low impedance or connected to ground.",
+      "page": 3,
+      "evidence": "Reference input. This pin must be driven by low impedance or connected to ground."
+    },
+    {
+      "name": "VO",
+      "pin_number": "6",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "description": "Output",
+      "page": 3,
+      "evidence": "Output"
+    },
+    {
+      "name": "V+",
+      "pin_number": "7",
+      "role": "POWER",
+      "direction": "POWER",
+      "description": "Positive supply",
+      "page": 3,
+      "evidence": "Positive supply"
+    },
+    {
+      "name": "RG",
+      "pin_number": "8",
+      "role": "CONTROL",
+      "direction": "BIDIRECTIONAL",
+      "description": "Gain setting pin. For gains greater than 1, place a gain resistor between pin 1 and pin 8.",
+      "page": 3,
+      "evidence": "Gain setting pin. For gains greater than 1, place a gain resistor between pin 1 and pin 8."
+    }
+  ],
+  "port_dependencies": [
+    {
+      "source": "V+",
+      "target": "VO",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "Power supply voltage greater than 4.5V (\u00b12.25V)"
+    },
+    {
+      "source": "V-",
+      "target": "VO",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "Power supply voltage greater than 4.5V (\u00b12.25V)"
+    },
+    {
+      "source": "VIN+",
+      "target": "VO",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": null
+    },
+    {
+      "source": "VIN-",
+      "target": "VO",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": null
+    },
+    {
+      "source": "REF",
+      "target": "VO",
+      "dependency_type": "FEEDBACK_LOOP",
+      "settling_delay_us": null,
+      "condition": null
+    },
+    {
+      "source": "RG",
+      "target": "VO",
+      "dependency_type": "CONTROL_GATE",
+      "settling_delay_us": null,
+      "condition": "For gains greater than 1, place a gain resistor between pin 1 and pin 8"
+    }
+  ],
+  "functional_blocks": [
+    {
+      "name": "Instrumentation Amplifier",
+      "type": "Amplifier",
+      "description": "Three op amp design with current-feedback input circuitry, input protection, and gain set by external resistor.",
+      "input_ports": [
+        "VIN+",
+        "VIN-",
+        "REF",
+        "RG"
+      ],
+      "output_ports": [
+        "VO"
+      ]
+    }
+  ],
+  "electrical_parameters": [
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 2,
+      "max": 5,
+      "unit": "nA",
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, G = 1, CSO: SHE, INA12xP, INA12xU",
+      "page": 6,
+      "evidence": "Input bias current CSO: SHE INA12xP, INA12xU \u00b12 \u00b15 nA",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 10,
+      "unit": "nA",
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, G = 1, CSO: SHE, INA12xPA, INA12xUA",
+      "page": 6,
+      "evidence": "INA12xPA, INA12xUA \u00b110",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.15,
+      "max": 0.6,
+      "unit": "nA",
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, G = 1, CSO: FRE, INA12xU",
+      "page": 6,
+      "evidence": "CSO: FRE INA12xU \u00b10.15 \u00b10.6",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 1.2,
+      "unit": "nA",
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, G = 1, CSO: FRE, INA12xUA",
+      "page": 6,
+      "evidence": "INA12xUA \u00b11.2",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current drift",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 30,
+      "max": null,
+      "unit": "pA/\u2103",
+      "test_conditions": "TA = \u201340\u00b0C to +85\u00b0C",
+      "page": 6,
+      "evidence": "Input bias current drift TA = \u201340\u00b0C to +85\u00b0C \u00b130 pA/\u2103",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1,
+      "max": 5,
+      "unit": "nA",
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, G = 1, CSO: SHE, INA12xP, INA12xU",
+      "page": 6,
+      "evidence": "Input offset current CSO: SHE INA12xP, INA12xU \u00b11 \u00b15 nA",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 10,
+      "unit": "nA",
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, G = 1, CSO: SHE, INA12xPA, INA12xUA",
+      "page": 6,
+      "evidence": "INA12xPA, INA12xUA \u00b110",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.15,
+      "max": 0.6,
+      "unit": "nA",
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, G = 1, CSO: FRE, INA12xU",
+      "page": 6,
+      "evidence": "CSO: FRE INA12xU \u00b10.15 \u00b10.6",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 1.2,
+      "unit": "nA",
+      "test_conditions": "TA = 25\u00b0C, VS = \u00b115 V, RL = 10 k\u03a9, VREF = 0 V, VCM = VS / 2, G = 1, CSO: FRE, INA12xUA",
+      "page": 6,
+      "evidence": "INA12xUA \u00b11.2",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input offset current drift",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 30,
+      "max": null,
+      "unit": "pA/\u2103",
+      "test_conditions": "TA = \u201340\u00b0C to +85\u00b0C",
+      "page": 6,
+      "evidence": "Input offset current drift TA = \u201340\u00b0C to +85\u00b0C \u00b130 pA/\u2103",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "eN",
+      "name": "Voltage noise (RTI)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 10,
+      "max": null,
+      "unit": "nV/\u221aHz",
+      "test_conditions": "G = 1000, RS = 0\u03a9, f = 10Hz, CSO: SHE",
+      "page": 6,
+      "evidence": "Voltage noise (RTI) G = 1000, RS = 0\u03a9 f = 10Hz CSO: SHE 10 nV/\u221aHz",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "eN",
+      "name": "Voltage noise (RTI)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 7,
+      "max": null,
+      "unit": "nV/\u221aHz",
+      "test_conditions": "G = 1000, RS = 0\u03a9, f = 10Hz, CSO: FRE",
+      "page": 6,
+      "evidence": "CSO: FRE 7",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "eN",
+      "name": "Voltage noise (RTI)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 8,
+      "max": null,
+      "unit": "nV/\u221aHz",
+      "test_conditions": "G = 1000, RS = 0\u03a9, f = 100Hz, CSO: SHE",
+      "page": 6,
+      "evidence": "f = 100Hz CSO: SHE 8",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "eN",
+      "name": "Voltage noise (RTI)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 6.9,
+      "max": null,
+      "unit": "nV/\u221aHz",
+      "test_conditions": "G = 1000, RS = 0\u03a9, f = 100Hz, CSO: FRE",
+      "page": 6,
+      "evidence": "CSO: FRE 6.9",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "eN",
+      "name": "Voltage noise (RTI)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 8,
+      "max": null,
+      "unit": "nV/\u221aHz",
+      "test_conditions": "G = 1000, RS = 0\u03a9, f = 1kHz, CSO: SHE",
+      "page": 6,
+      "evidence": "f = 1kHz CSO: SHE 8",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "eN",
+      "name": "Voltage noise (RTI)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 6.9,
+      "max": null,
+      "unit": "nV/\u221aHz",
+      "test_conditions": "G = 1000, RS = 0\u03a9, f = 1kHz, CSO: FRE",
+      "page": 6,
+      "evidence": "CSO: FRE 6.9",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "eN",
+      "name": "Voltage noise (RTI)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.2,
+      "max": null,
+      "unit": "\u00b5VPP",
+      "test_conditions": "G = 1000, RS = 0\u03a9, fB = 0.1Hz to 10Hz",
+      "page": 6,
+      "evidence": "fB = 0.1Hz to 10Hz 0.2 \u00b5VPP",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "In",
+      "name": "Current noise",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.9,
+      "max": null,
+      "unit": "pA/\u221aHz",
+      "test_conditions": "f = 10Hz",
+      "page": 6,
+      "evidence": "Current noise f = 10Hz 0.9 pA/\u221aHz",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "In",
+      "name": "Current noise",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.3,
+      "max": null,
+      "unit": "pA/\u221aHz",
+      "test_conditions": "f = 1kHz, CSO: SHE",
+      "page": 6,
+      "evidence": "f = 1kHz CSO: SHE 0.3",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "In",
+      "name": "Current noise",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.17,
+      "max": null,
+      "unit": "pA/\u221aHz",
+      "test_conditions": "f = 1kHz, CSO: FRE",
+      "page": 6,
+      "evidence": "CSO: FRE 0.17",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "In",
+      "name": "Current noise",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 30,
+      "max": null,
+      "unit": "pAPP",
+      "test_conditions": "fB = 0.1Hz to 10Hz, CSO: SHE",
+      "page": 6,
+      "evidence": "fB = 0.1Hz to 10Hz CSO: SHE 30 pAPP",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    },
+    {
+      "symbol": "In",
+      "name": "Current noise",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 4.7,
+      "max": null,
+      "unit": "pAPP",
+      "test_conditions": "fB = 0.1Hz to 10Hz, CSO: FRE",
+      "page": 6,
+      "evidence": "CSO: FRE 4.7",
+      "related_pins": [
+        "+IN",
+        "-IN"
+      ]
+    }
+  ],
+  "provenance": {
+    "pin_pages": [
+      1,
+      3
+    ],
+    "spec_pages": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      20
+    ],
+    "func_pages": [
+      16,
+      17
+    ],
+    "failed_spec_pages": [
+      {
+        "page": 4,
+        "error": "LLM call failed on all models ['deepseek-ai/deepseek-v4.1-flash']: HTTP 429: {\"status\":429,\"title\":\"Too Many Requests\"}"
+      },
+      {
+        "page": 5,
+        "error": "LLM call failed on all models ['deepseek-ai/deepseek-v4.1-flash']: HTTP 429: {\"status\":429,\"title\":\"Too Many Requests\"}"
+      },
+      {
+        "page": 7,
+        "error": "LLM call failed on all models ['deepseek-ai/deepseek-v4.1-flash']: HTTP 429: {\"status\":429,\"title\":\"Too Many Requests\"}"
+      },
+      {
+        "page": 8,
+        "error": "LLM call failed on all models ['deepseek-ai/deepseek-v4.1-flash']: HTTP 429: {\"status\":429,\"title\":\"Too Many Requests\"}"
+      },
+      {
+        "page": 20,
+        "error": "LLM call failed on all models ['deepseek-ai/deepseek-v4.1-flash']: HTTP 429: {\"status\":429,\"title\":\"Too Many Requests\"}"
+      }
+    ],
+    "source_file": "ina128.pdf"
+  }
+}

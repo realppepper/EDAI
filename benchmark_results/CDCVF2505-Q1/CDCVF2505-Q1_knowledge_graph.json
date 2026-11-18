@@ -1,0 +1,709 @@
+{
+  "ic_device": {
+    "name": "CDCVF2505-Q1",
+    "category": "CLOCK PHASE-LOCKED LOOP CLOCK DRIVER",
+    "description": "The CDCVF2505 is a high-performance, low-skew, low-jitter, phase-lock loop (PLL) clock driver. It uses a PLL to precisely align, in both frequency and phase, the output clocks (1Y[0\u20133] and CLKOUT) to the input clock signal (CLKIN). The CDCVF2505 operates at 3.3 V. It also provides integrated series-damping resistors that make it ideal for driving point-to-point loads. One bank of five outputs provides low-skew, low-jitter copies of CLKIN. Output duty cycles are adjusted to 50 percent, independent of duty cycle at CLKIN. The device automatically goes in power-down mode when no input signal is applied to CLKIN. Unlike many products containing PLLs, the CDCVF2505 does not require an external RC network. The loop filter for the PLLs is included on-chip, minimizing component count, space, and cost. Because it is based on the PLL circuitry, the CDCVF2505 requires a stabilization time to achieve phase lock of the feedback signal to the reference signal. This stabilization is required following power up and application of a fixed-frequency, fixed-phase signal at CLKIN, and following any changes to the PLL reference. The CDCVF2505 is characterized for operation from \u201340\u00b0C to 85\u00b0C."
+  },
+  "pins": [
+    {
+      "name": "1Y0",
+      "pin_number": "3",
+      "direction": "OUTPUT",
+      "role": "OUTPUT",
+      "description": "Clock outputs. These outputs are low-skew copies of CLKIN. Each output has an integrated 25-\u2126 series damping resistor."
+    },
+    {
+      "name": "1Y1",
+      "pin_number": "2",
+      "direction": "OUTPUT",
+      "role": "OUTPUT",
+      "description": "Clock outputs. These outputs are low-skew copies of CLKIN. Each output has an integrated 25-\u2126 series damping resistor."
+    },
+    {
+      "name": "1Y2",
+      "pin_number": "5",
+      "direction": "OUTPUT",
+      "role": "OUTPUT",
+      "description": "Clock outputs. These outputs are low-skew copies of CLKIN. Each output has an integrated 25-\u2126 series damping resistor."
+    },
+    {
+      "name": "1Y3",
+      "pin_number": "7",
+      "direction": "OUTPUT",
+      "role": "OUTPUT",
+      "description": "Clock outputs. These outputs are low-skew copies of CLKIN. Each output has an integrated 25-\u2126 series damping resistor."
+    },
+    {
+      "name": "CLKIN",
+      "pin_number": "1",
+      "direction": "INPUT",
+      "role": "SIGNAL",
+      "description": "Clock input. CLKIN provides the clock signal to be distributed by the CDCVF2505 clock driver. CLKIN is used to provide the reference signal to the integrated PLL that generates the clock output signals. CLKIN must have a fixed frequency and fixed phase for the PLL to obtain phase lock. Once the circuit is powered up and a valid signal is applied, a stabilization time (100 \u00b5s) is required for the PLL to phase lock the feedback signal to CLKIN."
+    },
+    {
+      "name": "CLKOUT",
+      "pin_number": "8",
+      "direction": "OUTPUT",
+      "role": "FEEDBACK",
+      "description": "Feedback output. CLKOUT completes the internal feedback loop of the PLL. This connection is made inside the chip and an external feedback loop should NOT be connected. CLKOUT can be loaded with a capacitor to achieve zero delay between CLKIN and the Y outputs."
+    },
+    {
+      "name": "GND",
+      "pin_number": "4",
+      "direction": "GROUND",
+      "role": "GROUND",
+      "description": "Ground"
+    },
+    {
+      "name": "VDD_3_3_V",
+      "pin_number": "6",
+      "direction": "POWER",
+      "role": "POWER",
+      "description": "3.3-V supply"
+    }
+  ],
+  "electrical_parameters": [
+    {
+      "symbol": "VDD",
+      "name": "Supply voltage range",
+      "min": -0.5,
+      "typ": null,
+      "max": 4.3,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [
+        "VDD 3.3 V"
+      ],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "VI",
+      "name": "Input voltage range",
+      "min": -0.5,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [
+        "CLKIN"
+      ],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "VO",
+      "name": "Output voltage range",
+      "min": -0.5,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3",
+        "CLKOUT"
+      ],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "IIK",
+      "name": "Input clamp current",
+      "min": -50.0,
+      "typ": null,
+      "max": 50.0,
+      "unit": "mA",
+      "test_conditions": "VI < 0 or VI > VDD",
+      "related_pins": [
+        "CLKIN"
+      ],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "IOK",
+      "name": "Output clamp current",
+      "min": -50.0,
+      "typ": null,
+      "max": 50.0,
+      "unit": "mA",
+      "test_conditions": "VO < 0 or VO > VDD",
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3",
+        "CLKOUT"
+      ],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "IO",
+      "name": "Continuous total output current",
+      "min": -50.0,
+      "typ": null,
+      "max": 50.0,
+      "unit": "mA",
+      "test_conditions": "VO = 0 to VDD",
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3",
+        "CLKOUT"
+      ],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "\u03b8JA",
+      "name": "Package thermal impedance",
+      "min": null,
+      "typ": null,
+      "max": 97.1,
+      "unit": "\u00b0C/W",
+      "test_conditions": null,
+      "related_pins": [],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "Tstg",
+      "name": "Storage temperature range",
+      "min": -65.0,
+      "typ": null,
+      "max": 150.0,
+      "unit": "\u00b0C",
+      "test_conditions": null,
+      "related_pins": [],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "HBM",
+      "name": "Human-Body Model",
+      "min": null,
+      "typ": null,
+      "max": 2000.0,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [],
+      "category": "Electrostatic Discharge Information"
+    },
+    {
+      "symbol": "MM",
+      "name": "Machine Model",
+      "min": null,
+      "typ": null,
+      "max": 300.0,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [],
+      "category": "Electrostatic Discharge Information"
+    },
+    {
+      "symbol": "CDM",
+      "name": "Charged-Device Model",
+      "min": null,
+      "typ": null,
+      "max": 1000.0,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [],
+      "category": "Electrostatic Discharge Information"
+    },
+    {
+      "symbol": "VDD",
+      "name": "Supply voltage",
+      "min": 3.0,
+      "typ": 3.3,
+      "max": 3.6,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [
+        "VDD 3.3 V"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "VIH",
+      "name": "High-level input voltage",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "0.7 \u00d7 VDD",
+      "related_pins": [
+        "CLKIN"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "VIL",
+      "name": "Low-level input voltage",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "0.3 \u00d7 VDD",
+      "related_pins": [
+        "CLKIN"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "VI",
+      "name": "Input voltage",
+      "min": 0.0,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VDD",
+      "related_pins": [
+        "CLKIN"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "IOH",
+      "name": "High-level output current",
+      "min": null,
+      "typ": null,
+      "max": -12.0,
+      "unit": "mA",
+      "test_conditions": null,
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3",
+        "CLKOUT"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "IOL",
+      "name": "Low-level output current",
+      "min": null,
+      "typ": null,
+      "max": 12.0,
+      "unit": "mA",
+      "test_conditions": null,
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3",
+        "CLKOUT"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating free-air temperature",
+      "min": -40.0,
+      "typ": null,
+      "max": 85.0,
+      "unit": "\u00b0C",
+      "test_conditions": null,
+      "related_pins": [],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "fclk",
+      "name": "Clock frequency",
+      "min": 24.0,
+      "typ": null,
+      "max": 200.0,
+      "unit": "MHz",
+      "test_conditions": null,
+      "related_pins": [
+        "CLKIN"
+      ],
+      "category": "Timing Requirements"
+    },
+    {
+      "symbol": "Input clock duty cycle",
+      "name": "Input clock duty cycle",
+      "min": 30.0,
+      "typ": null,
+      "max": 85.0,
+      "unit": "%",
+      "test_conditions": "24 MHz to 85 MHz",
+      "related_pins": [
+        "CLKIN"
+      ],
+      "category": "Timing Requirements"
+    },
+    {
+      "symbol": "Input clock duty cycle",
+      "name": "Input clock duty cycle",
+      "min": 40.0,
+      "typ": 50.0,
+      "max": 60.0,
+      "unit": "%",
+      "test_conditions": "86 MHz to 200 MHz",
+      "related_pins": [
+        "CLKIN"
+      ],
+      "category": "Timing Requirements"
+    },
+    {
+      "symbol": "Stabilization time",
+      "name": "Stabilization time",
+      "min": null,
+      "typ": null,
+      "max": 100.0,
+      "unit": "\u00b5s",
+      "test_conditions": null,
+      "related_pins": [],
+      "category": "Timing Requirements"
+    },
+    {
+      "symbol": "VIK",
+      "name": "Input voltage",
+      "min": null,
+      "typ": -1.2,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "II = \u201318 mA, VDD = 3 V",
+      "related_pins": [
+        "CLKIN"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "VOH",
+      "name": "High-level output voltage",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "IOH = \u2013100 \u00b5A, MIN to MAX",
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3",
+        "CLKOUT"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "VOH",
+      "name": "High-level output voltage",
+      "min": 2.1,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "IOH = \u201312 mA, VDD = 3 V",
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3",
+        "CLKOUT"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "VOH",
+      "name": "High-level output voltage",
+      "min": 2.4,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "IOH = \u20136 mA, VDD = 3 V",
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3",
+        "CLKOUT"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "min": null,
+      "typ": null,
+      "max": 0.2,
+      "unit": "V",
+      "test_conditions": "IOL = 100 \u00b5A, MIN to MAX",
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3",
+        "CLKOUT"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "min": null,
+      "typ": null,
+      "max": 0.8,
+      "unit": "V",
+      "test_conditions": "IOL = 12 mA, VDD = 3 V",
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3",
+        "CLKOUT"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "min": null,
+      "typ": null,
+      "max": 0.55,
+      "unit": "V",
+      "test_conditions": "IOL = 6 mA, VDD = 3 V",
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3",
+        "CLKOUT"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "IOH",
+      "name": "High-level output current",
+      "min": null,
+      "typ": -27.0,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "VO = 1 V, VDD = 3 V",
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3",
+        "CLKOUT"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "IOH",
+      "name": "High-level output current",
+      "min": null,
+      "typ": -36.0,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "VO = 1.65 V, VDD = 3.3 V",
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3",
+        "CLKOUT"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "IOL",
+      "name": "Low-level output current",
+      "min": null,
+      "typ": 27.0,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "VO = 2 V, VDD = 3 V",
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3",
+        "CLKOUT"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "IOL",
+      "name": "Low-level output current",
+      "min": null,
+      "typ": 40.0,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "VO = 1.65 V, VDD = 3.3 V",
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3",
+        "CLKOUT"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "II",
+      "name": "Input current",
+      "min": -5.0,
+      "typ": null,
+      "max": 5.0,
+      "unit": "\u00b5A",
+      "test_conditions": "VI = 0 V or VDD",
+      "related_pins": [
+        "CLKIN"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "Ci",
+      "name": "Input capacitance",
+      "min": null,
+      "typ": 4.2,
+      "max": null,
+      "unit": "pF",
+      "test_conditions": "VI = 0 V or VDD, VDD = 3.3 V",
+      "related_pins": [
+        "CLKIN"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "Co",
+      "name": "Output capacitance",
+      "min": null,
+      "typ": 2.8,
+      "max": null,
+      "unit": "pF",
+      "test_conditions": "VI = 0 V or VDD, VDD = 3.3 V, Yn",
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "Co",
+      "name": "Output capacitance",
+      "min": null,
+      "typ": 5.2,
+      "max": null,
+      "unit": "pF",
+      "test_conditions": "VI = 0 V or VDD, VDD = 3.3 V, CLKOUT",
+      "related_pins": [
+        "CLKOUT"
+      ],
+      "category": "Electrical Characteristics"
+    },
+    {
+      "symbol": "tpd",
+      "name": "Propagation delay, normalized",
+      "min": -150.0,
+      "typ": null,
+      "max": 150.0,
+      "unit": "ps",
+      "test_conditions": "CLKIN to Yn, f = 66 MHz to 200 MHz, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V",
+      "related_pins": [
+        "CLKIN",
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3"
+      ],
+      "category": "Switching Characteristics"
+    },
+    {
+      "symbol": "tsk(o)",
+      "name": "Output skew",
+      "min": null,
+      "typ": null,
+      "max": 150.0,
+      "unit": "ps",
+      "test_conditions": "Yn to Yn, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V",
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3"
+      ],
+      "category": "Switching Characteristics"
+    },
+    {
+      "symbol": "tc(jit_cc)",
+      "name": "Jitter (cycle to cycle)",
+      "min": null,
+      "typ": 70.0,
+      "max": 150.0,
+      "unit": "ps",
+      "test_conditions": "f = 66 MHz to 200 MHz, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V",
+      "related_pins": [],
+      "category": "Switching Characteristics"
+    },
+    {
+      "symbol": "tc(jit_cc)",
+      "name": "Jitter (cycle to cycle)",
+      "min": null,
+      "typ": 200.0,
+      "max": 400.0,
+      "unit": "ps",
+      "test_conditions": "f = 24 MHz to 50 MHz, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V",
+      "related_pins": [],
+      "category": "Switching Characteristics"
+    },
+    {
+      "symbol": "odc",
+      "name": "Output duty cycle",
+      "min": 45.0,
+      "typ": null,
+      "max": 55.0,
+      "unit": "%",
+      "test_conditions": "f = 24 MHz to 200 MHz at 50% VDD, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V",
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3",
+        "CLKOUT"
+      ],
+      "category": "Switching Characteristics"
+    },
+    {
+      "symbol": "tr",
+      "name": "Rise time",
+      "min": null,
+      "typ": 0.5,
+      "max": 2.0,
+      "unit": "ns",
+      "test_conditions": "VO = 0.4 V to 2 V, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V",
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3",
+        "CLKOUT"
+      ],
+      "category": "Switching Characteristics"
+    },
+    {
+      "symbol": "tf",
+      "name": "Fall time",
+      "min": null,
+      "typ": 0.5,
+      "max": 2.0,
+      "unit": "ns",
+      "test_conditions": "VO = 2 V to 0.4 V, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V",
+      "related_pins": [
+        "1Y0",
+        "1Y1",
+        "1Y2",
+        "1Y3",
+        "CLKOUT"
+      ],
+      "category": "Switching Characteristics"
+    }
+  ],
+  "functional_blocks": [
+    "PLL",
+    "Edge Detect",
+    "Power Down",
+    "3-State"
+  ]
+}

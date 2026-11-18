@@ -1,0 +1,1647 @@
+{
+  "ic_device": {
+    "name": "LM393B, LM2903B, LM193, LM293, LM293A, LM393, LM393A, LM2903, LM2903V",
+    "category": "Dual Comparators",
+    "description": "Dual independent voltage comparators designed to operate from a single power supply over a wide range of voltages, with open-collector outputs.",
+    "package": "SOIC (8)"
+  },
+  "pins": [
+    {
+      "name": "1OUT",
+      "pin_number": "1",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "description": "Output pin of comparator 1",
+      "page": 3,
+      "evidence": "Output pin of comparator 1"
+    },
+    {
+      "name": "1IN-",
+      "pin_number": "2",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Negative input pin of comparator 1",
+      "page": 3,
+      "evidence": "Negative input pin of comparator 1"
+    },
+    {
+      "name": "1IN+",
+      "pin_number": "3",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Positive input pin of comparator 1",
+      "page": 3,
+      "evidence": "Positive input pin of comparator 1"
+    },
+    {
+      "name": "GND",
+      "pin_number": "4",
+      "role": "GROUND",
+      "direction": "GROUND",
+      "description": "Ground",
+      "page": 3,
+      "evidence": "Ground"
+    },
+    {
+      "name": "2IN+",
+      "pin_number": "5",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Positive input pin of comparator 2",
+      "page": 3,
+      "evidence": "Positive input pin of comparator 2"
+    },
+    {
+      "name": "2IN-",
+      "pin_number": "6",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Negative input pin of comparator 2",
+      "page": 3,
+      "evidence": "Negative input pin of comparator 2"
+    },
+    {
+      "name": "2OUT",
+      "pin_number": "7",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "description": "Output pin of comparator 2",
+      "page": 3,
+      "evidence": "Output pin of comparator 2"
+    },
+    {
+      "name": "VCC",
+      "pin_number": "8",
+      "role": "POWER",
+      "direction": "POWER",
+      "description": "Positive Supply",
+      "page": 3,
+      "evidence": "Positive Supply"
+    }
+  ],
+  "port_dependencies": [
+    {
+      "source": "VCC",
+      "target": "1OUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "Always required for operation"
+    },
+    {
+      "source": "VCC",
+      "target": "2OUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "Always required for operation"
+    },
+    {
+      "source": "1IN+",
+      "target": "1OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "Comparator 1 output responds to differential voltage between 1IN+ and 1IN-"
+    },
+    {
+      "source": "1IN-",
+      "target": "1OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "Comparator 1 output responds to differential voltage between 1IN+ and 1IN-"
+    },
+    {
+      "source": "2IN+",
+      "target": "2OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "Comparator 2 output responds to differential voltage between 2IN+ and 2IN-"
+    },
+    {
+      "source": "2IN-",
+      "target": "2OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "Comparator 2 output responds to differential voltage between 2IN+ and 2IN-"
+    }
+  ],
+  "functional_blocks": [
+    {
+      "name": "Comparator 1",
+      "type": "Voltage Comparator",
+      "description": "Compares differential voltage between 1IN+ and 1IN- and outputs logic low or high impedance on 1OUT.",
+      "input_ports": [
+        "1IN+",
+        "1IN-"
+      ],
+      "output_ports": [
+        "1OUT"
+      ]
+    },
+    {
+      "name": "Comparator 2",
+      "type": "Voltage Comparator",
+      "description": "Compares differential voltage between 2IN+ and 2IN- and outputs logic low or high impedance on 2OUT.",
+      "input_ports": [
+        "2IN+",
+        "2IN-"
+      ],
+      "output_ports": [
+        "2OUT"
+      ]
+    }
+  ],
+  "electrical_parameters": [
+    {
+      "symbol": "VCC",
+      "name": "Supply voltage",
+      "category": "ABS_MAX",
+      "min": -0.3,
+      "typ": null,
+      "max": 36,
+      "unit": "V",
+      "test_conditions": "Non-B Versions",
+      "page": 4,
+      "evidence": "VCC Supply voltage(2) Non-B Versions \u20130.3 36 V",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "VID",
+      "name": "Differential input voltage",
+      "category": "ABS_MAX",
+      "min": -36,
+      "typ": null,
+      "max": 36,
+      "unit": "V",
+      "test_conditions": "Non-B Versions",
+      "page": 4,
+      "evidence": "VID Differential input voltage(3) Non-B Versions -36 36 V",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VI",
+      "name": "Input voltage (either input)",
+      "category": "ABS_MAX",
+      "min": -0.3,
+      "typ": null,
+      "max": 36,
+      "unit": "V",
+      "test_conditions": "Non-B Versions",
+      "page": 4,
+      "evidence": "VI Input voltage (either input) Non-B Versions \u20130.3 36 V",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IIK",
+      "name": "Input current",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": -50,
+      "unit": "mA",
+      "test_conditions": null,
+      "page": 4,
+      "evidence": "IIK Input current(5) -50 mA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VO",
+      "name": "Output voltage",
+      "category": "ABS_MAX",
+      "min": -0.3,
+      "typ": null,
+      "max": 36,
+      "unit": "V",
+      "test_conditions": "Non-B Versions",
+      "page": 4,
+      "evidence": "VO Output voltage Non-B Versions \u20130.3 36 V",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IO",
+      "name": "Output current",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 20,
+      "unit": "mA",
+      "test_conditions": "Non-B Versions",
+      "page": 4,
+      "evidence": "IO Output current Non-B Versions 20 mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "ISC",
+      "name": "Duration of output short circuit to ground",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": null,
+      "test_conditions": "Unlimited",
+      "page": 4,
+      "evidence": "ISC Duration of output short circuit to ground(4) Unlimited",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "TJ",
+      "name": "Operating virtual-junction temperature",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": null,
+      "page": 4,
+      "evidence": "TJ Operating virtual-junction temperature 150 \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "Tstg",
+      "name": "Storage temperature",
+      "category": "ABS_MAX",
+      "min": -65,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": null,
+      "page": 4,
+      "evidence": "Tstg Storage temperature \u201365 150 \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "VS",
+      "name": "Supply voltage, VS = (V+) \u2013 (V\u2013)",
+      "category": "RECOMMENDED",
+      "min": 2,
+      "typ": null,
+      "max": 30,
+      "unit": "V",
+      "test_conditions": "non-V devices",
+      "page": 4,
+      "evidence": "Supply voltage, VS = (V+) \u2013 (V\u2013) non-V devices 2 30 V",
+      "related_pins": [
+        "V+",
+        "V-"
+      ]
+    },
+    {
+      "symbol": "VIVR",
+      "name": "Input voltage range",
+      "category": "RECOMMENDED",
+      "min": 0,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "non-B devices, (V+) \u2013 2.0",
+      "page": 4,
+      "evidence": "Input voltage range, VIVR non-B devices 0 (V+) \u2013 2.0 V",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "TA",
+      "name": "Ambient temperature",
+      "category": "RECOMMENDED",
+      "min": 0,
+      "typ": null,
+      "max": 70,
+      "unit": "\u00b0C",
+      "test_conditions": "LM393, LM393A",
+      "page": 4,
+      "evidence": "LM393, LM393A 0 70 \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": 148.5,
+      "unit": "\u00b0C/W",
+      "test_conditions": "D (SOIC) 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JA Junction-to-ambient thermal resistance 148.5",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": 90.2,
+      "unit": "\u00b0C/W",
+      "test_conditions": "D (SOIC) 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) Junction-to-case (top) thermal resistance 90.2",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": 91.8,
+      "unit": "\u00b0C/W",
+      "test_conditions": "D (SOIC) 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JB Junction-to-board thermal resistance 91.8",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": 38.5,
+      "unit": "\u00b0C/W",
+      "test_conditions": "D (SOIC) 8 PINS",
+      "page": 5,
+      "evidence": "\u03c8JT Junction-to-top characterization parameter 38.5",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": 91.1,
+      "unit": "\u00b0C/W",
+      "test_conditions": "D (SOIC) 8 PINS",
+      "page": 5,
+      "evidence": "\u03c8JB Junction-to-board characterization parameter 91.1",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "D (SOIC) 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JC(bot) Junction-to-case (bottom) thermal resistance -",
+      "related_pins": []
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge Human body model (HBM), per ANSI/ESDA/JEDEC JS-001",
+      "category": "ESD",
+      "min": null,
+      "typ": null,
+      "max": 2000,
+      "unit": "V",
+      "test_conditions": "Human body model (HBM), per ANSI/ESDA/JEDEC JS-001",
+      "page": 5,
+      "evidence": "Human body model (HBM), per ANSI/ESDA/JEDEC JS-001 \u00b12000",
+      "related_pins": []
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge Charged-device model (CDM), per JEDEC specification JESD22-C101",
+      "category": "ESD",
+      "min": null,
+      "typ": null,
+      "max": 1000,
+      "unit": "V",
+      "test_conditions": "Charged-device model (CDM), per JEDEC specification JESD22-C101",
+      "page": 5,
+      "evidence": "Charged-device model (CDM), per JEDEC specification JESD22-C101 \u00b11000",
+      "related_pins": []
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": -2.5,
+      "typ": 0.37,
+      "max": 2.5,
+      "unit": "mV",
+      "test_conditions": "VS = 5V, VCM = (V-); TA = 25\u00b0C; VS = 5 to 36V",
+      "page": 6,
+      "evidence": "VIO Input offset voltage VS = 5 to 36V \u20132.5 \u00b10.37 2.5 mV",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": -4,
+      "typ": null,
+      "max": 4,
+      "unit": "mV",
+      "test_conditions": "VS = 5V, VCM = (V-); VS = 5 to 36V, TA = \u201340\u00b0C to +85\u00b0C",
+      "page": 6,
+      "evidence": "VS = 5 to 36V, TA = \u201340\u00b0C to +85\u00b0C -4 4",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage, DGK package only",
+      "category": "ELECTRICAL",
+      "min": -3.5,
+      "typ": 0.37,
+      "max": 3.5,
+      "unit": "mV",
+      "test_conditions": "VS = 5V, VCM = (V-); TA = 25\u00b0C; VS = 5 to 36V",
+      "page": 6,
+      "evidence": "Input offset voltage, DGK package only VS = 5 to 36V \u20133.5 \u00b10.37 3.5",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage, DGK package only",
+      "category": "ELECTRICAL",
+      "min": -5,
+      "typ": null,
+      "max": 5,
+      "unit": "mV",
+      "test_conditions": "VS = 5V, VCM = (V-); VS = 5 to 36V, TA = \u201340\u00b0C to +85\u00b0C",
+      "page": 6,
+      "evidence": "VS = 5 to 36V, TA = \u201340\u00b0C to +85\u00b0C \u20135 5",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": -3.5,
+      "typ": -25,
+      "max": null,
+      "unit": "nA",
+      "test_conditions": "VS = 5V, VCM = (V-); TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "IB Input bias current \u20133.5 \u201325 nA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -50,
+      "unit": "nA",
+      "test_conditions": "VS = 5V, VCM = (V-); TA = \u201340\u00b0C to +85\u00b0C",
+      "page": 6,
+      "evidence": "TA = \u201340\u00b0C to +85\u00b0C \u201350 nA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": -10,
+      "typ": 0.5,
+      "max": 10,
+      "unit": "nA",
+      "test_conditions": "VS = 5V, VCM = (V-); TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "IOS Input offset current \u201310 \u00b10.5 10 nA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": -25,
+      "typ": null,
+      "max": 25,
+      "unit": "nA",
+      "test_conditions": "VS = 5V, VCM = (V-); TA = \u201340\u00b0C to +85\u00b0C",
+      "page": 6,
+      "evidence": "TA = \u201340\u00b0C to +85\u00b0C \u201325 25 nA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VCM",
+      "name": "Common mode range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VS = 5V, VCM = (V-); TA = 25\u00b0C; VS = 3 to 36V; (V-) to (V+) \u2013 1.5",
+      "page": 6,
+      "evidence": "VCM Common mode range (1) VS = 3 to 36V (V\u2013) (V+) \u2013 1.5 V",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VCM",
+      "name": "Common mode range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VS = 5V, VCM = (V-); VS = 3 to 36V, TA = \u201340\u00b0C to +85\u00b0C; (V-) to (V+) \u2013 2.0",
+      "page": 6,
+      "evidence": "VS = 3 to 36V, TA = \u201340\u00b0C to +85\u00b0C (V\u2013) (V+) \u2013 2.0 V",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "AVD",
+      "name": "Large signal differential voltage amplification",
+      "category": "ELECTRICAL",
+      "min": 50,
+      "typ": 200,
+      "max": null,
+      "unit": "V/mV",
+      "test_conditions": "VS = 5V, VCM = (V-); TA = 25\u00b0C; VS = 15V, VO = 1.4V to 11.4V; RL \u2265 15k to (V+)",
+      "page": 6,
+      "evidence": "AVD Large signal differential voltage amplification VS = 15V, VO = 1.4V to 11.4V; RL \u2265 15k to (V+) 50 200 V/mV",
+      "related_pins": [
+        "OUT",
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low level output Voltage {swing from (V\u2013)}",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 110,
+      "max": 400,
+      "unit": "mV",
+      "test_conditions": "VS = 5V, VCM = (V-); TA = 25\u00b0C; ISINK \u2264 4mA, VID = -1V",
+      "page": 6,
+      "evidence": "VOL Low level output Voltage {swing from (V\u2013)} ISINK \u2264 4mA, VID = -1V 110 400 mV",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low level output Voltage {swing from (V\u2013)}",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 550,
+      "unit": "mV",
+      "test_conditions": "VS = 5V, VCM = (V-); ISINK \u2264 4mA, VID = -1V; TA = \u201340\u00b0C to +85\u00b0C",
+      "page": 6,
+      "evidence": "ISINK \u2264 4mA, VID = -1V TA = \u201340\u00b0C to +85\u00b0C 550 mV",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IOH-LKG",
+      "name": "High-level output leakage current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": 20,
+      "unit": "nA",
+      "test_conditions": "VS = 5V, VCM = (V-); TA = 25\u00b0C; (V+) = VO = 5V; VID = 1V",
+      "page": 6,
+      "evidence": "IOH-LKG High-level output leakage current (V+) = VO = 5V; VID = 1V 0.1 20 nA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IOH-LKG",
+      "name": "High-level output leakage current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.3,
+      "max": 50,
+      "unit": "nA",
+      "test_conditions": "VS = 5V, VCM = (V-); TA = 25\u00b0C; (V+) = VO = 36V; VID = 1V",
+      "page": 6,
+      "evidence": "(V+) = VO = 36V; VID = 1V 0.3 50 nA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IOL",
+      "name": "Low level output current",
+      "category": "ELECTRICAL",
+      "min": 6,
+      "typ": 21,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "VS = 5V, VCM = (V-); TA = 25\u00b0C; VOL = 1.5V; VID = -1V; VS = 5V",
+      "page": 6,
+      "evidence": "IOL Low level output current VOL = 1.5V; VID = -1V; VS = 5V 6 21 mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IQ",
+      "name": "Quiescent current (all comparators)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 400,
+      "max": 600,
+      "unit": "\u00b5A",
+      "test_conditions": "VS = 5V, VCM = (V-); TA = 25\u00b0C; VS = 5V, no load",
+      "page": 6,
+      "evidence": "IQ Quiescent current (all comparators) VS = 5V, no load 400 600 \u00b5A",
+      "related_pins": [
+        "V+"
+      ]
+    },
+    {
+      "symbol": "IQ",
+      "name": "Quiescent current (all comparators)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 550,
+      "max": 800,
+      "unit": "\u00b5A",
+      "test_conditions": "VS = 5V, VCM = (V-); VS = 36V, no load, TA = \u201340\u00b0C to +85\u00b0C",
+      "page": 6,
+      "evidence": "VS = 36V, no load, TA = \u201340\u00b0C to +85\u00b0C 550 800 \u00b5A",
+      "related_pins": [
+        "V+"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": -2.5,
+      "typ": 0.37,
+      "max": 2.5,
+      "unit": "mV",
+      "test_conditions": "VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; VS = 5 to 36V",
+      "page": 7,
+      "evidence": "VIO Input offset voltage VS = 5 to 36V \u20132.5 \u00b10.37 2.5 mV",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": -4,
+      "typ": null,
+      "max": 4,
+      "unit": "mV",
+      "test_conditions": "VS = 5V, VCM = (V\u2013); VS = 5 to 36V, TA = \u201340\u00b0C to +125\u00b0C",
+      "page": 7,
+      "evidence": "VS = 5 to 36V, TA = \u201340\u00b0C to +125\u00b0C \u20134 4",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage, DGK package only",
+      "category": "ELECTRICAL",
+      "min": -3.5,
+      "typ": 0.37,
+      "max": 3.5,
+      "unit": "mV",
+      "test_conditions": "VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; VS = 5 to 36V",
+      "page": 7,
+      "evidence": "Input offset voltage, DGK package only VS = 5 to 36V -3.5 \u00b10.37 3.5",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage, DGK package only",
+      "category": "ELECTRICAL",
+      "min": -5,
+      "typ": null,
+      "max": 5,
+      "unit": "mV",
+      "test_conditions": "VS = 5V, VCM = (V\u2013); VS = 5 to 36V, TA = \u201340\u00b0C to +125\u00b0C",
+      "page": 7,
+      "evidence": "VS = 5 to 36V, TA = \u201340\u00b0C to +125\u00b0C -5 5",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": -3.5,
+      "typ": -25,
+      "max": null,
+      "unit": "nA",
+      "test_conditions": "VS = 5V, VCM = (V\u2013); TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "IB Input bias current \u20133.5 \u201325 nA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -50,
+      "unit": "nA",
+      "test_conditions": "VS = 5V, VCM = (V\u2013); TA = \u201340\u00b0C to +125\u00b0C",
+      "page": 7,
+      "evidence": "TA = \u201340\u00b0C to +125\u00b0C \u201350 nA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": -10,
+      "typ": 0.5,
+      "max": 10,
+      "unit": "nA",
+      "test_conditions": "VS = 5V, VCM = (V\u2013); TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "IOS Input offset current \u201310 \u00b10.5 10 nA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": -25,
+      "typ": null,
+      "max": 25,
+      "unit": "nA",
+      "test_conditions": "VS = 5V, VCM = (V\u2013); TA = \u201340\u00b0C to +125\u00b0C",
+      "page": 7,
+      "evidence": "TA = \u201340\u00b0C to +125\u00b0C \u201325 25 nA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VCM",
+      "name": "Common mode range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; VS = 3 to 36V; (V\u2013) to (V+) \u2013 1.5",
+      "page": 7,
+      "evidence": "VCM Common mode range (1) VS = 3 to 36V (V\u2013) (V+) \u2013 1.5 V",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VCM",
+      "name": "Common mode range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VS = 5V, VCM = (V\u2013); VS = 3 to 36V, TA = \u201340\u00b0C to +125\u00b0C; (V\u2013) to (V+) \u2013 2.0",
+      "page": 7,
+      "evidence": "VS = 3 to 36V, TA = \u201340\u00b0C to +125\u00b0C (V\u2013) (V+) \u2013 2.0 V",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "AVD",
+      "name": "Large signal differential voltage amplification",
+      "category": "ELECTRICAL",
+      "min": 50,
+      "typ": 200,
+      "max": null,
+      "unit": "V/mV",
+      "test_conditions": "VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; VS = 15V, VO = 1.4V to 11.4V; RL \u2265 15k to (V+)",
+      "page": 7,
+      "evidence": "AVD Large signal differential voltage amplification VS = 15V, VO = 1.4V to 11.4V; RL \u2265 15k to (V+) 50 200 V/mV",
+      "related_pins": [
+        "IN+",
+        "IN-",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low level output Voltage {swing from (V\u2013)}",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 110,
+      "max": 400,
+      "unit": "mV",
+      "test_conditions": "VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; ISINK \u2264 4mA, VID = -1V",
+      "page": 7,
+      "evidence": "VOL Low level output Voltage {swing from (V\u2013)} ISINK \u2264 4mA, VID = -1V 110 400 mV",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low level output Voltage {swing from (V\u2013)}",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 550,
+      "unit": "mV",
+      "test_conditions": "VS = 5V, VCM = (V\u2013); ISINK \u2264 4mA, VID = -1V; TA = \u201340\u00b0C to +125\u00b0C",
+      "page": 7,
+      "evidence": "ISINK \u2264 4mA, VID = -1V TA = \u201340\u00b0C to +125\u00b0C 550 mV",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IOH-LKG",
+      "name": "High-level output leakage current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": 20,
+      "unit": "nA",
+      "test_conditions": "VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; (V+) = VO = 5V; VID = 1V",
+      "page": 7,
+      "evidence": "IOH-LKG High-level output leakage current (V+) = VO = 5V; VID = 1V 0.1 20 nA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IOH-LKG",
+      "name": "High-level output leakage current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.3,
+      "max": 50,
+      "unit": "nA",
+      "test_conditions": "VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; (V+) = VO = 36V; VID = 1V",
+      "page": 7,
+      "evidence": "(V+) = VO = 36V; VID = 1V 0.3 50 nA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IOL",
+      "name": "Low level output current",
+      "category": "ELECTRICAL",
+      "min": 6,
+      "typ": 21,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; VOL = 1.5V; VID = -1V; VS = 5V",
+      "page": 7,
+      "evidence": "IOL Low level output current VOL = 1.5V; VID = -1V; VS = 5V 6 21 mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IQ",
+      "name": "Quiescent current (all comparators)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 400,
+      "max": 600,
+      "unit": "\u00b5A",
+      "test_conditions": "VS = 5V, VCM = (V\u2013); TA = 25\u00b0C; VS = 5V, no load",
+      "page": 7,
+      "evidence": "IQ Quiescent current (all comparators) VS = 5V, no load 400 600 \u00b5A",
+      "related_pins": [
+        "V+"
+      ]
+    },
+    {
+      "symbol": "IQ",
+      "name": "Quiescent current (all comparators)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 550,
+      "max": 800,
+      "unit": "\u00b5A",
+      "test_conditions": "VS = 5V, VCM = (V\u2013); VS = 36V, no load, TA = \u201340\u00b0C to +125\u00b0C",
+      "page": 7,
+      "evidence": "VS = 36V, no load, TA = \u201340\u00b0C to +125\u00b0C 550 800 \u00b5A",
+      "related_pins": [
+        "V+"
+      ]
+    },
+    {
+      "symbol": "tresponse",
+      "name": "Propagation delay time, high-to-low; TTL input signal",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 300,
+      "max": null,
+      "unit": "ns",
+      "test_conditions": "VS = 5V, VO_PULLUP = 5V, VCM = VS/2, CL = 15pF, RL = 5.1k Ohm, TA = 25\u00b0C; TTL input with Vref = 1.4V",
+      "page": 7,
+      "evidence": "tresponse Propagation delay time, high-to-low; TTL input signal TTL input with Vref = 1.4V 300 ns",
+      "related_pins": [
+        "IN+",
+        "IN-",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "tresponse",
+      "name": "Propagation delay time, high-to-low; Small scale input signal",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1000,
+      "max": null,
+      "unit": "ns",
+      "test_conditions": "VS = 5V, VO_PULLUP = 5V, VCM = VS/2, CL = 15pF, RL = 5.1k Ohm, TA = 25\u00b0C; Input overdrive = 5mV, Input step = 100mV",
+      "page": 7,
+      "evidence": "tresponse Propagation delay time, high-to-low; Small scale input signal Input overdrive = 5mV, Input step = 100mV 1000 ns",
+      "related_pins": [
+        "IN+",
+        "IN-",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 2,
+      "max": 5,
+      "unit": "mV",
+      "test_conditions": "VCC = 5V to 30V, VIC = VICR min, VO = 1.4V, TA = 25\u00b0C",
+      "page": 8,
+      "evidence": "VIO Input offset voltage VCC = 5V to 30V, VIC = VICR min, VO = 1.4V 25\u00b0C 2 5",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 9,
+      "unit": "mV",
+      "test_conditions": "VCC = 5V to 30V, VIC = VICR min, VO = 1.4V, Full range",
+      "page": 8,
+      "evidence": "Full range 9 9",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IIO",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 3,
+      "max": 25,
+      "unit": "nA",
+      "test_conditions": "VO = 1.4V, TA = 25\u00b0C",
+      "page": 8,
+      "evidence": "IIO Input offset current VO = 1.4V 25\u00b0C 3 25",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IIO",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 100,
+      "unit": "nA",
+      "test_conditions": "VO = 1.4V, Full range",
+      "page": 8,
+      "evidence": "Full range 100 250",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IIB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -25,
+      "max": -100,
+      "unit": "nA",
+      "test_conditions": "VO = 1.4V, TA = 25\u00b0C",
+      "page": 8,
+      "evidence": "IIB Input bias current VO = 1.4V 25\u00b0C \u201325 \u2013100",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IIB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -300,
+      "unit": "nA",
+      "test_conditions": "VO = 1.4V, Full range",
+      "page": 8,
+      "evidence": "Full range \u2013300 \u2013400",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VICR",
+      "name": "Common-mode input-voltage range",
+      "category": "ELECTRICAL",
+      "min": 0,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "TA = 25\u00b0C",
+      "page": 8,
+      "evidence": "VICR Common-mode input-voltage range(2) 25\u00b0C 0 to VCC \u2013 1.5",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VICR",
+      "name": "Common-mode input-voltage range",
+      "category": "ELECTRICAL",
+      "min": 0,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "Full range",
+      "page": 8,
+      "evidence": "Full range 0 to VCC \u2013 2",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "AVD",
+      "name": "Large-signal differential-voltage amplification",
+      "category": "ELECTRICAL",
+      "min": 50,
+      "typ": 200,
+      "max": null,
+      "unit": "V/mV",
+      "test_conditions": "VCC = 15V, VO = 1.4V to 11.4V, RL \u2265 15k\u03a9 to VCC, TA = 25\u00b0C",
+      "page": 8,
+      "evidence": "AVD Large-signal differential-voltage amplification VCC = 15V, VO = 1.4V to 11.4V, RL \u2265 15k\u03a9 to VCC 25\u00b0C 50 200",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IOH",
+      "name": "High-level output current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": 50,
+      "unit": "nA",
+      "test_conditions": "VOH = 5V, VID = 1V, TA = 25\u00b0C",
+      "page": 8,
+      "evidence": "IOH High-level output current VOH = 5V VID = 1V 25\u00b0C 0.1 0.1 50",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IOH",
+      "name": "High-level output current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 1,
+      "unit": "\u00b5A",
+      "test_conditions": "VOH = 30V, VID = 1V, Full range",
+      "page": 8,
+      "evidence": "VOH = 30V VID = 1V Full range 1 1",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 150,
+      "max": 400,
+      "unit": "mV",
+      "test_conditions": "IOL = 4mA, VID = \u20131V, TA = 25\u00b0C",
+      "page": 8,
+      "evidence": "VOL Low-level output voltage IOL = 4mA, VID = \u20131V 25\u00b0C 150 400",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 700,
+      "unit": "mV",
+      "test_conditions": "IOL = 4mA, VID = \u20131V, Full range",
+      "page": 8,
+      "evidence": "Full range 700 700",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IOL",
+      "name": "Low-level output current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 6,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "VOL = 1.5V, VID = \u20131V, TA = 25\u00b0C",
+      "page": 8,
+      "evidence": "IOL Low-level output current VOL = 1.5V, VID = \u20131V 25\u00b0C 6 6",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.8,
+      "max": 1,
+      "unit": "mA",
+      "test_conditions": "RL = \u221e, VCC = 5V, TA = 25\u00b0C",
+      "page": 8,
+      "evidence": "ICC Supply current RL = \u221e VCC = 5V 25\u00b0C 0.8 1",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 2.5,
+      "unit": "mA",
+      "test_conditions": "RL = \u221e, VCC = 30V, Full range",
+      "page": 8,
+      "evidence": "VCC = 30V Full range 2.5 0.55 2.5",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1,
+      "max": 2,
+      "unit": "mV",
+      "test_conditions": "VCC = 5V to 30V, VO = 1.4V, VIC = VICR(min), TA = 25\u00b0C",
+      "page": 9,
+      "evidence": "Input offset voltage VCC = 5V to 30V, VO = 1.4V 25\u00b0C 1 2 mV",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 4,
+      "unit": "mV",
+      "test_conditions": "VCC = 5V to 30V, VO = 1.4V, VIC = VICR(min), Full range",
+      "page": 9,
+      "evidence": "Input offset voltage Full range 4 mV",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IIO",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 5,
+      "max": 50,
+      "unit": "nA",
+      "test_conditions": "VO = 1.4V, TA = 25\u00b0C",
+      "page": 9,
+      "evidence": "Input offset current VO = 1.4V 25\u00b0C 5 50 nA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IIO",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 150,
+      "unit": "nA",
+      "test_conditions": "VO = 1.4V, Full range",
+      "page": 9,
+      "evidence": "Input offset current Full range 150 nA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IIB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -25,
+      "max": -250,
+      "unit": "nA",
+      "test_conditions": "VO = 1.4V, TA = 25\u00b0C",
+      "page": 9,
+      "evidence": "Input bias current VO = 1.4V 25\u00b0C \u201325 \u2013250 nA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IIB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -400,
+      "unit": "nA",
+      "test_conditions": "VO = 1.4V, Full range",
+      "page": 9,
+      "evidence": "Input bias current Full range \u2013400 nA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VICR",
+      "name": "Common-mode input-voltage range",
+      "category": "ELECTRICAL",
+      "min": 0,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "TA = 25\u00b0C, upper end VCC \u2013 1.5",
+      "page": 9,
+      "evidence": "Common-mode input-voltage range 25\u00b0C 0 to VCC \u2013 1.5 V",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VICR",
+      "name": "Common-mode input-voltage range",
+      "category": "ELECTRICAL",
+      "min": 0,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "Full range, upper end VCC \u2013 2",
+      "page": 9,
+      "evidence": "Common-mode input-voltage range Full range 0 to VCC \u2013 2 V",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 110,
+      "max": 400,
+      "unit": "mV",
+      "test_conditions": "IOL = 4mA, VID = \u20131V, TA = 25\u00b0C",
+      "page": 9,
+      "evidence": "Low-level output voltage IOL = 4mA, VID = \u20131V 25\u00b0C 110 400 mV",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.6,
+      "max": 1,
+      "unit": "mA",
+      "test_conditions": "RL = \u221e, VCC = 5V, TA = 25\u00b0C",
+      "page": 9,
+      "evidence": "Supply current RL = \u221e VCC = 5V 25\u00b0C 0.60 1 mA",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.72,
+      "max": 2.5,
+      "unit": "mA",
+      "test_conditions": "RL = \u221e, VCC = 30V, Full range",
+      "page": 9,
+      "evidence": "Supply current VCC = 30V Full range 0.72 2.5 mA",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 2,
+      "max": 7,
+      "unit": "mV",
+      "test_conditions": "VCC = 5V to MAX, VO = 1.4V, VIC = VICR(min), TA = 25\u00b0C",
+      "page": 10,
+      "evidence": "VIO Input offset voltage VCC = 5V to MAX, VO = 1.4V, 25\u00b0C 2 7",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 15,
+      "unit": "mV",
+      "test_conditions": "VCC = 5V to MAX, VO = 1.4V, VIC = VICR(min), Full range",
+      "page": 10,
+      "evidence": "VIO Input offset voltage Full range 15",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IIO",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 200,
+      "unit": "nA",
+      "test_conditions": "VO = 1.4V, Full range",
+      "page": 10,
+      "evidence": "IIO Input offset current Full range 200",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IIB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": -500,
+      "unit": "nA",
+      "test_conditions": "VO = 1.4V, Full range",
+      "page": 10,
+      "evidence": "IIB Input bias current Full range \u2013500",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VICR",
+      "name": "Common-mode input-voltage range",
+      "category": "ELECTRICAL",
+      "min": 0,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "TA = 25\u00b0C, upper limit VCC \u2013 1.5",
+      "page": 10,
+      "evidence": "VICR Common-mode input-voltage range 25\u00b0C 0 to VCC \u2013 1.5",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VICR",
+      "name": "Common-mode input-voltage range",
+      "category": "ELECTRICAL",
+      "min": 0,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "Full range, upper limit VCC \u2013 2",
+      "page": 10,
+      "evidence": "VICR Common-mode input-voltage range Full range 0 to VCC \u2013 2",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "AVD",
+      "name": "Large-signal differential-voltage amplification",
+      "category": "ELECTRICAL",
+      "min": 25,
+      "typ": 100,
+      "max": null,
+      "unit": "V/mV",
+      "test_conditions": "VCC = 15V, VO = 1.4V to 11.4V, RL \u2265 15k\u03a9 to VCC, TA = 25\u00b0C",
+      "page": 10,
+      "evidence": "AVD Large-signal differential-voltage amplification VCC = 15V, VO = 1.4V to 11.4V, 25\u00b0C 25 100",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IOH",
+      "name": "High-level output current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 1,
+      "unit": "\u00b5A",
+      "test_conditions": "VOH = VCC MAX, VID = 1V, Full range",
+      "page": 10,
+      "evidence": "IOH High-level output current VOH = VCC MAX, VID = 1V Full range 1",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 2.5,
+      "unit": "mA",
+      "test_conditions": "RL = \u221e, VCC = MAX, Full range",
+      "page": 10,
+      "evidence": "ICC Supply current VCC = MAX Full range 2.5",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "Response time",
+      "name": "Response time",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1.3,
+      "unit": "\u00b5s",
+      "test_conditions": "RL connected to 5V through 5.1k\u03a9, CL = 15pF, 100mV input step with 5mV overdrive, VCC = 5V, TA = 25\u00b0C",
+      "page": 10,
+      "evidence": "Response time RL connected to 5V through 5.1k\u03a9, CL = 15pF 100mV input step with 5mV overdrive 1.3",
+      "related_pins": [
+        "OUT"
+      ],
+      "max": null
+    },
+    {
+      "symbol": "Response time",
+      "name": "Response time",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.3,
+      "unit": "\u00b5s",
+      "test_conditions": "RL connected to 5V through 5.1k\u03a9, CL = 15pF, TTL-level input step, VCC = 5V, TA = 25\u00b0C",
+      "page": 10,
+      "evidence": "Response time TTL-level input step 0.3",
+      "related_pins": [
+        "OUT"
+      ],
+      "max": null
+    }
+  ],
+  "provenance": {
+    "pin_pages": [
+      1,
+      3
+    ],
+    "spec_pages": [
+      4,
+      5,
+      6,
+      7,
+      8,
+      9,
+      10
+    ],
+    "func_pages": [
+      17
+    ],
+    "failed_spec_pages": [],
+    "source_file": "lm393.pdf"
+  }
+}

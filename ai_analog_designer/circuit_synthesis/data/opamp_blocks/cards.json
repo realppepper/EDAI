@@ -1,0 +1,136 @@
+{
+  "description": "회로 블록 모음의 카드. AMSnet-KG 논문의 주석 두 가지를 따른다. annotations(전역 주석)는 블록을 고를 때 쓰는 '관계: 값' 쌍이고, pins(지역 주석)는 각 단자가 하는 일이라서 조립할 때 쓴다. 넷리스트 조각은 같은 이름의 .cir 파일에 있다. role 은 bias, stage1, stage2, compensation 중 하나. pins 의 값: supply_p(VDD), supply_n(VSS), in_plus, in_minus, out(출력 핀), bias_in:<이름>(바이어스 전압을 받음), bias_out:<이름>(바이어스 전압을 만듦), drive_out:<n|p>(다음 단의 NMOS/PMOS 게이트를 구동하는 출력), drive_in:<n|p>(구동받는 입력), comp_a(보상을 거는 2단 입력 노드), comp_b(출력). params 는 조각의 {이름} 자리에 들어가는 값의 기본값. comp_cc 는 이 2단을 쓸 때 보상 커패시터 하나의 값. source 는 구조의 출처. 블록을 추가하려면 .cir 조각을 만들고 여기에 카드를 넣는다. 새 관계나 값을 쓰면 relations 에도 뜻을 적는다.",
+  "relations": {
+    "stage1": {
+      "type": {"folded_cascode": "폴디드 캐스코드", "telescopic": "텔레스코픽 캐스코드 (입력쌍 위에 캐스코드를 바로 쌓음)", "five_transistor": "차동쌍 + 전류 미러 부하 (트랜지스터 5개)"},
+      "input_pair": {"pmos": "PMOS 차동쌍", "nmos": "NMOS 차동쌍"},
+      "input_range": {"includes_0v": "입력 공통모드 범위가 0 V(음의 레일)를 포함하고 VDD 근처는 쓰지 못한다",
+                      "includes_vdd": "입력 공통모드 범위가 VDD(양의 레일)를 포함하고 0 V 근처는 쓰지 못한다",
+                      "middle_only": "입력 공통모드 범위가 가운데 구간뿐이다. 0 V 근처도 VDD 근처도 쓰지 못한다"},
+      "load": {"cascode": "캐스코드 부하", "current_mirror": "전류 미러 부하"},
+      "gain": {"high": "이득이 높다", "medium": "이득이 보통이다"},
+      "power": {"medium": "전류 가지가 셋이라 전류를 더 쓴다", "low": "전류 가지가 하나라 전류를 적게 쓴다"},
+      "drives": {"both": "위·아래 출력을 따로 내어 다음 단의 NMOS 게이트와 PMOS 게이트를 모두 구동할 수 있다 (한 노드로 묶어 한쪽만 구동해도 된다)",
+                 "nmos_gate": "출력이 0 V 쪽에 놓여 다음 단의 NMOS 게이트만 구동할 수 있다",
+                 "pmos_gate": "출력이 VDD 쪽에 놓여 다음 단의 PMOS 게이트만 구동할 수 있다"}
+    },
+    "stage2": {
+      "type": {"class_a": "NMOS 공통소스 + PMOS 전류원 부하 (class-A)", "class_a_pmos": "PMOS 공통소스 + NMOS 전류원 부하 (class-A)",
+               "class_ab": "class-AB 출력단", "none": "2단 없음 (1단만 사용)"},
+      "needs": {"nmos_gate": "1단이 NMOS 게이트를 구동해 주어야 한다", "pmos_gate": "1단이 PMOS 게이트를 구동해 주어야 한다",
+                "both": "1단이 NMOS 게이트와 PMOS 게이트를 따로 구동해 주어야 한다"},
+      "source_current": {"limited": "내보내는 전류가 고정 전류원 값(약 250 uA)으로 제한된다", "high": "내보내는 전류가 크다"},
+      "sink_current": {"limited": "받아들이는 전류가 고정 전류원 값(약 250 uA)으로 제한된다", "high": "받아들이는 전류가 크다"},
+      "complexity": {"low": "소자가 적다", "high": "소자가 많다"}
+    },
+    "compensation": {
+      "type": {"miller_rz": "Miller 커패시터 + 영점 제거 저항", "miller_c": "Miller 커패시터만", "none": "보상 없음"},
+      "zero": {"cancelled": "저항으로 영점을 없애 위상여유에 유리하다", "right_half_plane": "오른쪽 반평면 영점이 남아 위상여유에 불리하다"}
+    }
+  },
+  "blocks": [
+    {
+      "name": "bias_beta_multiplier", "title": "기준 전류 회로", "role": "bias", "transistors": 6,
+      "annotations": {"type": "beta_multiplier"},
+      "pins": {"VDD": "supply_p", "VSS": "supply_n", "NB": "bias_out:nb", "PB": "bias_out:pb"},
+      "summary": "전원 전압과 거의 무관한 기준 전류(약 10 uA)를 만든다. 기동 회로 포함.",
+      "source": "Razavi, Design of Analog CMOS Integrated Circuits, 전원 무관 바이어스"
+    },
+    {
+      "name": "bias_cascode", "title": "캐스코드 게이트 바이어스", "role": "bias", "transistors": 4,
+      "annotations": {"type": "cascode_bias"},
+      "pins": {"VDD": "supply_p", "VSS": "supply_n", "NB": "bias_in:nb", "PB": "bias_in:pb", "VBN": "bias_out:vbn", "VBP": "bias_out:vbp"},
+      "summary": "캐스코드 소자의 게이트 전압 두 개를 만든다.",
+      "source": "Razavi, 캐스코드 전류원의 바이어스"
+    },
+    {
+      "name": "bias_telescopic", "title": "텔레스코픽 캐스코드 게이트 바이어스", "role": "bias", "transistors": 2,
+      "annotations": {"type": "telescopic_bias"},
+      "pins": {"VDD": "supply_p", "VSS": "supply_n", "PB": "bias_in:pb", "VBT": "bias_out:vbt"},
+      "summary": "텔레스코픽 1단의 PMOS 캐스코드 게이트 전압(약 1 V)을 만든다.",
+      "source": "Razavi, 텔레스코픽 캐스코드의 바이어스"
+    },
+    {
+      "name": "stage1_pmos_telescopic", "title": "PMOS 입력 텔레스코픽 캐스코드", "role": "stage1", "transistors": 9,
+      "annotations": {"type": "telescopic", "input_pair": "pmos", "input_range": "middle_only", "load": "cascode", "gain": "high", "power": "low", "drives": "nmos_gate"},
+      "pins": {"VDD": "supply_p", "VSS": "supply_n", "IN_PLUS": "in_plus", "IN_MINUS": "in_minus",
+               "PB": "bias_in:pb", "VBN": "bias_in:vbn", "VBT": "bias_in:vbt", "OUT": "drive_out:n"},
+      "summary": "입력쌍 위에 캐스코드를 바로 쌓아 전류 가지 하나로 높은 이득을 낸다. 전류를 적게 쓰지만 소자가 세로로 쌓여 입력 범위가 가운데 구간으로 좁아진다. 출력이 하나라 NMOS 게이트만 구동할 수 있다.",
+      "source": "Razavi, 텔레스코픽 캐스코드 OP-Amp"
+    },
+    {
+      "name": "stage1_pmos_folded_cascode", "title": "PMOS 입력 폴디드 캐스코드", "role": "stage1", "transistors": 11,
+      "annotations": {"type": "folded_cascode", "input_pair": "pmos", "input_range": "includes_0v", "load": "cascode", "gain": "high", "power": "medium", "drives": "both"},
+      "pins": {"VDD": "supply_p", "VSS": "supply_n", "IN_PLUS": "in_plus", "IN_MINUS": "in_minus",
+               "NB": "bias_in:nb", "PB": "bias_in:pb", "VBN": "bias_in:vbn", "VBP": "bias_in:vbp",
+               "OUT_LO": "drive_out:n", "OUT_HI": "drive_out:p"},
+      "tie_unused_drive": true,
+      "summary": "캐스코드로 출력 저항을 키워 한 단에서 높은 이득을 낸다. 위·아래 출력을 따로 내면 class-AB 출력단을 구동할 수 있다. 전류 가지가 셋이라 전류를 더 쓴다. 입력 범위는 0 V 를 포함한다.",
+      "source": "Razavi, 폴디드 캐스코드 OP-Amp"
+    },
+    {
+      "name": "stage1_nmos_folded_cascode", "title": "NMOS 입력 폴디드 캐스코드", "role": "stage1", "transistors": 11,
+      "annotations": {"type": "folded_cascode", "input_pair": "nmos", "input_range": "includes_vdd", "load": "cascode", "gain": "high", "power": "medium", "drives": "both"},
+      "pins": {"VDD": "supply_p", "VSS": "supply_n", "IN_PLUS": "in_plus", "IN_MINUS": "in_minus",
+               "NB": "bias_in:nb", "PB": "bias_in:pb", "VBN": "bias_in:vbn", "VBP": "bias_in:vbp",
+               "OUT_LO": "drive_out:n", "OUT_HI": "drive_out:p"},
+      "tie_unused_drive": true,
+      "summary": "PMOS 입력 폴디드 캐스코드를 위아래로 뒤집은 구조. 성질은 같고 입력 범위가 VDD 를 포함하는 대신 0 V 근처는 쓰지 못한다.",
+      "source": "Razavi, 폴디드 캐스코드 OP-Amp"
+    },
+    {
+      "name": "stage1_pmos_mirror_load", "title": "PMOS 차동쌍 + 전류 미러 부하", "role": "stage1", "transistors": 5,
+      "annotations": {"type": "five_transistor", "input_pair": "pmos", "input_range": "includes_0v", "load": "current_mirror", "gain": "medium", "power": "low", "drives": "nmos_gate"},
+      "pins": {"VDD": "supply_p", "VSS": "supply_n", "IN_PLUS": "in_plus", "IN_MINUS": "in_minus", "PB": "bias_in:pb", "OUT": "drive_out:n"},
+      "summary": "가장 단순한 1단. 캐스코드가 없어 이득은 보통이고 전류를 적게 쓴다. 출력이 하나라 NMOS 게이트만 구동할 수 있다. 입력 범위는 0 V 를 포함한다.",
+      "source": "Allen & Holberg, CMOS Analog Circuit Design, 2단 OP-Amp의 1단"
+    },
+    {
+      "name": "stage1_nmos_mirror_load", "title": "NMOS 차동쌍 + 전류 미러 부하", "role": "stage1", "transistors": 5,
+      "annotations": {"type": "five_transistor", "input_pair": "nmos", "input_range": "includes_vdd", "load": "current_mirror", "gain": "medium", "power": "low", "drives": "pmos_gate"},
+      "pins": {"VDD": "supply_p", "VSS": "supply_n", "IN_PLUS": "in_plus", "IN_MINUS": "in_minus", "NB": "bias_in:nb", "OUT": "drive_out:p"},
+      "summary": "PMOS 차동쌍 + 전류 미러 부하를 위아래로 뒤집은 구조. 출력이 VDD 쪽에 놓여 PMOS 게이트만 구동할 수 있다. 입력 범위는 VDD 를 포함하는 대신 0 V 근처는 쓰지 못한다.",
+      "source": "Allen & Holberg, CMOS Analog Circuit Design, 2단 OP-Amp의 1단"
+    },
+    {
+      "name": "stage2_class_a", "title": "NMOS 공통소스 2단 (class-A 출력)", "role": "stage2", "transistors": 2,
+      "annotations": {"type": "class_a", "needs": "nmos_gate", "source_current": "limited", "sink_current": "high", "complexity": "low"},
+      "pins": {"VDD": "supply_p", "VSS": "supply_n", "IN": "drive_in:n", "PB": "bias_in:pb", "OUT": "out"},
+      "comp_cc": "6p",
+      "summary": "NMOS 공통소스에 PMOS 전류원 부하. 단순하지만 위쪽이 고정 전류원(약 250 uA)이라 내보내는 전류가 그 값으로 제한된다.",
+      "source": "Allen & Holberg, 2단 OP-Amp의 2단"
+    },
+    {
+      "name": "stage2_class_a_pmos", "title": "PMOS 공통소스 2단 (class-A 출력)", "role": "stage2", "transistors": 2,
+      "annotations": {"type": "class_a_pmos", "needs": "pmos_gate", "source_current": "high", "sink_current": "limited", "complexity": "low"},
+      "pins": {"VDD": "supply_p", "VSS": "supply_n", "IN": "drive_in:p", "NB": "bias_in:nb", "OUT": "out"},
+      "comp_cc": "6p",
+      "summary": "PMOS 공통소스에 NMOS 전류원 부하. 단순하지만 아래쪽이 고정 전류원(약 250 uA)이라 받아들이는 전류가 그 값으로 제한된다.",
+      "source": "Allen & Holberg, 2단 OP-Amp의 2단"
+    },
+    {
+      "name": "stage2_class_ab", "title": "class-AB 출력단", "role": "stage2", "transistors": 10,
+      "annotations": {"type": "class_ab", "needs": "both", "source_current": "high", "sink_current": "high", "complexity": "high"},
+      "pins": {"VDD": "supply_p", "VSS": "supply_n", "GN": "drive_in:n", "GP": "drive_in:p", "NB": "bias_in:nb", "PB": "bias_in:pb", "OUT": "out"},
+      "comp_cc": "3p",
+      "summary": "위·아래 출력 소자를 모두 신호로 구동해, 평소 전류는 작게 두면서 내보내고 받아들이는 전류를 모두 크게 한다. 1단이 위·아래 출력을 따로 내야 쓸 수 있다.",
+      "source": "Hogervorst 외, IEEE JSSC 1994 (플로팅 class-AB 제어); Monticelli, IEEE JSSC 1986"
+    },
+    {
+      "name": "comp_miller_rz", "title": "Miller 보상 (저항 포함)", "role": "compensation", "transistors": 0,
+      "annotations": {"type": "miller_rz", "zero": "cancelled"},
+      "pins": {"A": "comp_a", "B": "comp_b"},
+      "params": {"cc": "3p"},
+      "summary": "2단의 입력과 출력 사이에 커패시터를 걸어 안정화하고, 직렬 저항으로 오른쪽 반평면 영점을 없앤다.",
+      "source": "Allen & Holberg, Miller 보상과 영점 제거 저항"
+    },
+    {
+      "name": "comp_miller_plain", "title": "Miller 보상 (커패시터만)", "role": "compensation", "transistors": 0,
+      "annotations": {"type": "miller_c", "zero": "right_half_plane"},
+      "pins": {"A": "comp_a", "B": "comp_b"},
+      "params": {"cc": "3p"},
+      "summary": "커패시터 하나로 안정화한다. 소자는 적지만 오른쪽 반평면 영점이 남는다.",
+      "source": "Allen & Holberg, Miller 보상"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+.options gmin=1e-12 cshunt=1e-15
+* LM317 PSRR Testbench
+.include "LM317_iter2.cir"
+
+* Power Supplies
+V_INPUT INPUT 0 PULSE(0 10V 0us 0.1us 0.1us 100ms 200ms) ; INPUT activated at 0.00 us, DC bias for AC analysis
+V_ADJUST ADJUST 0 PULSE(0 1.25V 10us 0.1us 0.1us 100ms 200ms) ; ADJUST activated at 10.00 us, typical reference voltage
+V_OUTPUT_BIAS OUTPUT_BIAS 0 PULSE(0 5V 11us 0.1us 0.1us 100ms 200ms) ; OUTPUT activated at 11.00 us, for initial bias if needed, but LM317 is a regulator
+
+* AC stimulus for PSRR
+VAC_INPUT INPUT_AC 0 AC 1V
+R_INPUT_AC INPUT INPUT_AC 1m ; Small resistor to inject AC into INPUT
+
+* Load resistor for the output
+RLOAD OUTPUT 0 1k
+
+* Capacitor for CADJ
+CADJ ADJUST 0 10u
+
+* DUT Instance
+XDUT ADJUST INPUT OUTPUT LM317
+
+* Simulation commands
+.ac dec 20 1 100Meg
+
+* Measurement for PSRR
+* PSRR = 20 * log10(delta_Vin / delta_Vout)
+* Here, delta_Vin is 1V (from VAC_INPUT)
+* So, PSRR = 20 * log10(1 / V(OUTPUT)) = -20 * log10(V(OUTPUT))
+.meas AC PSRR_dB PARAM -20*log10(V(OUTPUT)) AT 120Hz
+
+.end

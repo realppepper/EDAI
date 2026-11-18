@@ -1,0 +1,44 @@
+* ==============================================================================
+* LM393 Dual Precision Voltage Comparator Macromodel
+* Original Texas Instruments / National Semiconductor Model (Downloaded from web)
+*
+* Standard 5-Pin Comparator Connections:
+*   Node 1: Non-inverting input (IN+)
+*   Node 2: Inverting input (IN-)
+*   Node 3: Positive power supply (V+)
+*   Node 4: Negative power supply (V-)
+*   Node 5: Open collector output (OUT)
+* ==============================================================================
+.SUBCKT LM393 1 2 3 4 5
+  F1    9  3 V1 1
+  IEE   3  7 DC 100.0E-6
+  VI1  21  1 DC .75
+  VI2  22  2 DC .75
+  Q1    9 21  7 QIN
+  Q2    8 22  7 QIN
+  Q3    9  8  4 QMO
+  Q4    8  8  4 QMI
+.MODEL QIN PNP(IS=800.0E-18 BF=2.000E3)
+.MODEL QMI NPN(IS=800.0E-18 BF=1002)
+.MODEL QMO NPN(IS=800.0E-18 BF=1000 CJC=1E-15 TR=807.4E-9)
+  E1   10  4  9  4  1
+  V1   10 11 DC 0
+  Q5    5 11  4 QOC
+.MODEL QOC NPN(IS=800.0E-18 BF=20.29E3 CJC=1E-15 TF=942.6E-12 TR=543.8E-9)
+  DP    4  3 DX
+  RP 3  4 46.3E3
+.MODEL DX D(IS=800.0E-18)
+.ENDS LM393
+
+* ==============================================================================
+* LM393_DIP: Dual Comparator (8-Pin DIP/SOIC Package)
+* Pinout (DIP-8): 1OUT 1IN- 1IN+ V- 2IN+ 2IN- 2OUT V+
+* ==============================================================================
+.SUBCKT LM393_DIP 1OUT 1IN- 1IN+ V- 2IN+ 2IN- 2OUT V+
+X1 1IN+ 1IN- V+ V- 1OUT LM393
+X2 2IN+ 2IN- V+ V- 2OUT LM393
+.ENDS LM393_DIP
+
+.subckt DUT 1OUT 1IN- 1IN+ V- 2IN+ 2IN- 2OUT V+
+X1 1OUT 1IN- 1IN+ V- 2IN+ 2IN- 2OUT V+ LM393
+.ends DUT

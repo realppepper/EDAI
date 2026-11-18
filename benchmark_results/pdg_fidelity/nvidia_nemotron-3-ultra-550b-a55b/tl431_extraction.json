@@ -1,0 +1,1022 @@
+{
+  "ic_device": {
+    "name": "TL431",
+    "category": "Precision Programmable Shunt Regulator",
+    "description": "Three-terminal adjustable shunt regulator with specified thermal stability over applicable temperature ranges. Output voltage adjustable from Vref (approximately 2.5V) to 36V with two external resistors.",
+    "package": "SOIC (8-pin, D package)"
+  },
+  "pins": [
+    {
+      "name": "CATHODE",
+      "pin_number": "1",
+      "role": "OUTPUT",
+      "direction": "BIDIRECTIONAL",
+      "description": "Shunt Current/Voltage input",
+      "page": 4,
+      "evidence": "Shunt Current/Voltage input"
+    },
+    {
+      "name": "ANODE",
+      "pin_number": "2,3,6,7",
+      "role": "GROUND",
+      "direction": "GROUND",
+      "description": "Common pin, normally connected to ground",
+      "page": 4,
+      "evidence": "Common pin, normally connected to ground"
+    },
+    {
+      "name": "REF",
+      "pin_number": "8",
+      "role": "FEEDBACK",
+      "direction": "INPUT",
+      "description": "Threshold relative to common anode",
+      "page": 4,
+      "evidence": "Threshold relative to common anode"
+    },
+    {
+      "name": "NC",
+      "pin_number": "4,5",
+      "role": "NC",
+      "direction": "NC",
+      "description": "No internal connection",
+      "page": 4,
+      "evidence": "NC \u2212No internal connection"
+    }
+  ],
+  "port_dependencies": [
+    {
+      "source": "ANODE",
+      "target": "CATHODE",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "Cathode current (IKA) \u2265 1mA (Imin(max)) must be supplied into the cathode pin"
+    },
+    {
+      "source": "REF",
+      "target": "CATHODE",
+      "dependency_type": "FEEDBACK_LOOP",
+      "settling_delay_us": null,
+      "condition": "Reference pin cannot be left floating, needs IREF \u2265 4\u00b5A"
+    }
+  ],
+  "functional_blocks": [
+    {
+      "name": "Internal Reference & Amplifier",
+      "type": "Voltage Reference and Error Amplifier",
+      "description": "Contains an accurate voltage reference and opamp. Forces reference pin to 2.5V when operated with enough voltage headroom (\u2265 2.5V) and cathode current (IKA).",
+      "input_ports": [
+        "REF"
+      ],
+      "output_ports": [
+        "CATHODE"
+      ]
+    },
+    {
+      "name": "Darlington Output Stage",
+      "type": "Current Sink",
+      "description": "Darlington pair used to sink maximum current of 100mA.",
+      "input_ports": [
+        "CATHODE"
+      ],
+      "output_ports": [
+        "ANODE"
+      ]
+    }
+  ],
+  "electrical_parameters": [
+    {
+      "symbol": "VKA",
+      "name": "Cathode Voltage",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 37,
+      "unit": "V",
+      "test_conditions": "with respect to ANODE",
+      "page": 5,
+      "evidence": "VKA | Cathode Voltage | 37{MAX} | V",
+      "related_pins": [
+        "CATHODE",
+        "ANODE"
+      ]
+    },
+    {
+      "symbol": "IKA",
+      "name": "Continuous Cathode Current Range",
+      "category": "ABS_MAX",
+      "min": -100,
+      "typ": null,
+      "max": 150,
+      "unit": "mA",
+      "test_conditions": "",
+      "page": 5,
+      "evidence": "IKA | Continuos Cathode Current Range | -100{MIN} | 150{MAX} | mA",
+      "related_pins": [
+        "CATHODE"
+      ]
+    },
+    {
+      "symbol": "II(ref)",
+      "name": "Reference Input Current",
+      "category": "ABS_MAX",
+      "min": -0.05,
+      "typ": null,
+      "max": 10,
+      "unit": "mA",
+      "test_conditions": "",
+      "page": 5,
+      "evidence": "II(ref) | Reference Input Current | -0.05{MIN} | 10{MAX} | mA",
+      "related_pins": [
+        "REF"
+      ]
+    },
+    {
+      "symbol": "TJ",
+      "name": "Operating Junction Temperature Range",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": "",
+      "page": 5,
+      "evidence": "TJ | Operating Junction Temperature Range | 150{MAX} | \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "Tstg",
+      "name": "Storage Temperature Range",
+      "category": "ABS_MAX",
+      "min": -65,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": "",
+      "page": 5,
+      "evidence": "Tstg | Storage Temperature Range | -65{MIN} | 150{MAX} | \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge (HBM)",
+      "category": "ESD",
+      "min": null,
+      "typ": null,
+      "max": 2000,
+      "unit": "V",
+      "test_conditions": "Human body model (HBM), per ANSI/ESDA/JEDEC JS-001",
+      "page": 5,
+      "evidence": "Human body model (HBM), per ANSI/ESDA/JEDEC JS-001pins | \u00b12000{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge (CDM)",
+      "category": "ESD",
+      "min": null,
+      "typ": null,
+      "max": 1000,
+      "unit": "V",
+      "test_conditions": "Charged-device model (CDM), per JEDEC specification JESD22-C101",
+      "page": 5,
+      "evidence": "Charged-device model (CDM), per JEDEC specification JESD22-C101 | \u00b11000{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package P (8 PINS)",
+      "page": 5,
+      "evidence": "R\u03b8JA | 85 | 149 | 97 | 95 | 259 | 206 | 206 | 140{MIN} | 52{MAX} | \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package PW (6 PINS)",
+      "page": 5,
+      "evidence": "R\u03b8JA | 85 | 149 | 97 | 95 | 259 | 206 | 206 | 140{MIN} | 52{MAX} | \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package D (5 PINS)",
+      "page": 5,
+      "evidence": "R\u03b8JA | 85 | 149 | 97 | 95 | 259 | 206 | 206 | 140{MIN} | 52{MAX} | \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package PS (3 PINS)",
+      "page": 5,
+      "evidence": "R\u03b8JA | 85 | 149 | 97 | 95 | 259 | 206 | 206 | 140{MIN} | 52{MAX} | \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package DCK (3 PINS)",
+      "page": 5,
+      "evidence": "R\u03b8JA | 85 | 149 | 97 | 95 | 259 | 206 | 206 | 140{MIN} | 52{MAX} | \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package DBV (3 PINS)",
+      "page": 5,
+      "evidence": "R\u03b8JA | 85 | 149 | 97 | 95 | 259 | 206 | 206 | 140{MIN} | 52{MAX} | \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package DBZ (3 PINS)",
+      "page": 5,
+      "evidence": "R\u03b8JA | 85 | 149 | 97 | 95 | 259 | 206 | 206 | 140{MIN} | 52{MAX} | \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": 140,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package LP (3 PINS)",
+      "page": 5,
+      "evidence": "R\u03b8JA | 85 | 149 | 97 | 95 | 259 | 206 | 206 | 140{MIN} | 52{MAX} | \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": 52,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package PK (3 PINS)",
+      "page": 5,
+      "evidence": "R\u03b8JA | 85 | 149 | 97 | 95 | 259 | 206 | 206 | 140{MIN} | 52{MAX} | \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package P (8 PINS)",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) (top) thermal | 57 | 65 | 39 | 46 | 87 | 131 | 76 | 55{MIN} | 9{MAX} | \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package PW (6 PINS)",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) (top) thermal | 57 | 65 | 39 | 46 | 87 | 131 | 76 | 55{MIN} | 9{MAX} | \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package D (5 PINS)",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) (top) thermal | 57 | 65 | 39 | 46 | 87 | 131 | 76 | 55{MIN} | 9{MAX} | \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package PS (3 PINS)",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) (top) thermal | 57 | 65 | 39 | 46 | 87 | 131 | 76 | 55{MIN} | 9{MAX} | \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package DCK (3 PINS)",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) (top) thermal | 57 | 65 | 39 | 46 | 87 | 131 | 76 | 55{MIN} | 9{MAX} | \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package DBV (3 PINS)",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) (top) thermal | 57 | 65 | 39 | 46 | 87 | 131 | 76 | 55{MIN} | 9{MAX} | \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package DBZ (3 PINS)",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) (top) thermal | 57 | 65 | 39 | 46 | 87 | 131 | 76 | 55{MIN} | 9{MAX} | \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": 55,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package LP (3 PINS)",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) (top) thermal | 57 | 65 | 39 | 46 | 87 | 131 | 76 | 55{MIN} | 9{MAX} | \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": 9,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package PK (3 PINS)",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) (top) thermal | 57 | 65 | 39 | 46 | 87 | 131 | 76 | 55{MIN} | 9{MAX} | \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "VKA",
+      "name": "Cathode Voltage",
+      "category": "RECOMMENDED",
+      "min": null,
+      "typ": null,
+      "max": 36,
+      "unit": "V",
+      "test_conditions": "Vref \u2264 VKA \u2264 36V",
+      "page": 5,
+      "evidence": "VKA | Cathode Voltage | Vref | 36{MAX} | V",
+      "related_pins": [
+        "CATHODE",
+        "ANODE"
+      ]
+    },
+    {
+      "symbol": "IKA",
+      "name": "Continuous Cathode Current Range",
+      "category": "RECOMMENDED",
+      "min": 1,
+      "typ": null,
+      "max": 100,
+      "unit": "mA",
+      "test_conditions": "",
+      "page": 5,
+      "evidence": "IKA | Continuous Cathode Current Range | 1{MIN} | 100{MAX} | mA",
+      "related_pins": [
+        "CATHODE"
+      ]
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating Free-Air Temperature",
+      "category": "RECOMMENDED",
+      "min": 0,
+      "typ": null,
+      "max": 70,
+      "unit": "\u00b0C",
+      "test_conditions": "TL43xxC variant",
+      "page": 5,
+      "evidence": "TL43xxC | 0{MIN} | 70{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating Free-Air Temperature",
+      "category": "RECOMMENDED",
+      "min": -40,
+      "typ": null,
+      "max": 85,
+      "unit": "\u00b0C",
+      "test_conditions": "TL43xxI variant",
+      "page": 5,
+      "evidence": "TL43xxI | -40{MIN} | 85{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating Free-Air Temperature",
+      "category": "RECOMMENDED",
+      "min": -40,
+      "typ": null,
+      "max": 125,
+      "unit": "\u00b0C",
+      "test_conditions": "TL43xxQ variant",
+      "page": 5,
+      "evidence": "TL43xxQ | -40{MIN} | 125{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "Vref",
+      "name": "Reference Voltage",
+      "category": "ELECTRICAL",
+      "min": 2440,
+      "typ": 2495,
+      "max": 2550,
+      "unit": "mV",
+      "test_conditions": "VKA = Vref, IKA = 10mA, TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "Vref | Reference Voltage | See Figure 7-1 | VKA = Vref, IKA = 10mA | 2440 2495 2550 | mV",
+      "related_pins": [
+        "REF",
+        "CATHODE"
+      ]
+    },
+    {
+      "symbol": "VI(dev)",
+      "name": "Deviation of reference input voltage over full temperature range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 6,
+      "max": 16,
+      "unit": "mV",
+      "test_conditions": "VKA = Vref, IKA = 10mA, SOT23-3 and TL432, TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "Deviation of reference | SOT23-3 and TL432 | 6 16 | mV",
+      "related_pins": [
+        "REF",
+        "CATHODE"
+      ]
+    },
+    {
+      "symbol": "VI(dev)",
+      "name": "Deviation of reference input voltage over full temperature range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 4,
+      "max": 25,
+      "unit": "mV",
+      "test_conditions": "VKA = Vref, IKA = 10mA, All other devices, TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "All other devices | 4 25 | mV",
+      "related_pins": [
+        "REF",
+        "CATHODE"
+      ]
+    },
+    {
+      "symbol": "\u0394Vref/\u0394VKA",
+      "name": "Ratio of change in reference voltage to the change in cathode voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -1.4,
+      "max": -2.7,
+      "unit": "mV/V",
+      "test_conditions": "\u0394VKA = 10V - Vref, IKA = 10mA, TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "\u0394VKA = 10V- Vref | \u20131.4 \u20132.7 | mV/V",
+      "related_pins": [
+        "REF",
+        "CATHODE"
+      ]
+    },
+    {
+      "symbol": "\u0394Vref/\u0394VKA",
+      "name": "Ratio of change in reference voltage to the change in cathode voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -1,
+      "max": -2,
+      "unit": "mV/V",
+      "test_conditions": "\u0394VKA = 36V - 10V, IKA = 10mA, TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "\u0394VKA = 36V- 10V | \u20131 \u20132 | mV/V",
+      "related_pins": [
+        "REF",
+        "CATHODE"
+      ]
+    },
+    {
+      "symbol": "Iref",
+      "name": "Reference Input Current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 2,
+      "max": 4,
+      "unit": "\u00b5A",
+      "test_conditions": "IKA = 10mA, R1 = 10k\u03a9, R2 = \u221e, TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "Iref | Reference Input Current See Figure 7-2 | IKA = 10mA, R1 = 10k\u2126, R2 = \u221e | 2 4 | \u00b5A",
+      "related_pins": [
+        "REF"
+      ]
+    },
+    {
+      "symbol": "II(dev)",
+      "name": "Deviation of reference input current over full temperature range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.4,
+      "max": 1.2,
+      "unit": "\u00b5A",
+      "test_conditions": "IKA = 10mA, R1 = 10k\u03a9, R2 = \u221e, TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "II(dev) | Deviation of reference input current over full temperature range | 0.4 1.2 | \u00b5A",
+      "related_pins": [
+        "REF"
+      ]
+    },
+    {
+      "symbol": "Imin",
+      "name": "Minimum cathode current for regulation",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.4,
+      "max": 1,
+      "unit": "mA",
+      "test_conditions": "VKA = Vref, TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "Imin | Minimum cathode current for regulation | VKA = Vref | 0.4 1 | mA",
+      "related_pins": [
+        "CATHODE"
+      ]
+    },
+    {
+      "symbol": "Ioff",
+      "name": "Off-state cathode current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": 1,
+      "unit": "\u00b5A",
+      "test_conditions": "VKA = 36V, Vref = 0, TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "Ioff | Off-state cathode current See Figure 7-3 | VKA = 36V, Vref = 0 | 0.1 1 | \u00b5A",
+      "related_pins": [
+        "CATHODE",
+        "REF"
+      ]
+    },
+    {
+      "symbol": "|ZKA|",
+      "name": "Dynamic Impedance",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.2,
+      "max": 0.5,
+      "unit": "\u03a9",
+      "test_conditions": "VKA = Vref, f \u2264 1kHz, IKA = 1mA to 100mA, TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "|ZKA| | Dynamic Impedance | See Figure 7-1 | VKA = Vref, f \u2264 1kHz, IKA = 1mA to 100mA | 0.2 0.5 | \u2126",
+      "related_pins": [
+        "CATHODE",
+        "REF"
+      ]
+    },
+    {
+      "symbol": "VI(dev)",
+      "name": "Deviation of reference input voltage over full temperature range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 14,
+      "max": 34,
+      "unit": "mV",
+      "test_conditions": "VKA = Vref, IKA = 10mA, SOT23-3 and TL432, full temperature range",
+      "page": 7,
+      "evidence": "Deviation of reference input voltage over full temperature range SOT23-3 and TL432 14 34 mV",
+      "related_pins": [
+        "REF",
+        "CATHODE"
+      ]
+    },
+    {
+      "symbol": "VI(dev)",
+      "name": "Deviation of reference input voltage over full temperature range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 5,
+      "max": 50,
+      "unit": "mV",
+      "test_conditions": "VKA = Vref, IKA = 10mA, All other devices, full temperature range",
+      "page": 7,
+      "evidence": "All other devices 5 50 mV",
+      "related_pins": [
+        "REF",
+        "CATHODE"
+      ]
+    },
+    {
+      "symbol": "II(dev)",
+      "name": "Deviation of reference input current over full temperature range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.8,
+      "max": 2.5,
+      "unit": "\u00b5A",
+      "test_conditions": "IKA = 10mA, R1 = 10k\u03a9, R2 = \u221e, full temperature range",
+      "page": 7,
+      "evidence": "Deviation of reference input current over full temperature range 0.8 2.5 \u00b5A",
+      "related_pins": [
+        "REF"
+      ]
+    },
+    {
+      "symbol": "VI(dev)",
+      "name": "Deviation of reference input voltage over full temperature range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 14,
+      "max": 34,
+      "unit": "mV",
+      "test_conditions": "VKA = Vref, IKA = 10mA, TA = 25\u00b0C",
+      "page": 8,
+      "evidence": "VI(dev) | Deviation of reference input voltage over full | See Figure 7-1 | VKA = Vref, IKA = 10mA | 14{TYP} | 34{MAX} | mV",
+      "related_pins": [
+        "REF",
+        "CATHODE",
+        "ANODE"
+      ]
+    },
+    {
+      "symbol": "II(dev)",
+      "name": "Deviation of reference input current over full temperature range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.8,
+      "max": 2.5,
+      "unit": "\u00b5A",
+      "test_conditions": "IKA = 10mA, R1 = 10k\u03a9, R2 = \u221e, TA = 25\u00b0C",
+      "page": 8,
+      "evidence": "II(dev) | Deviation of reference input current over full | See Figure 7-2 | IKA = 10mA, R1 = 10k\u2126, R2 = \u221e | 0.8{TYP} 2.5{MAX} | \u00b5A",
+      "related_pins": [
+        "REF",
+        "CATHODE",
+        "ANODE"
+      ]
+    },
+    {
+      "symbol": "Vref",
+      "name": "Reference Voltage",
+      "category": "ELECTRICAL",
+      "min": 2470,
+      "typ": 2495,
+      "max": 2520,
+      "unit": "mV",
+      "test_conditions": "VKA = Vref, IKA = 10mA, TA = 25\u00b0C",
+      "page": 9,
+      "evidence": "Vref | Reference Voltage | See Figure 7-1 | VKA = Vref, IKA = 10mA | 2470 2495 2520 | mV",
+      "related_pins": [
+        "REF",
+        "CATHODE"
+      ]
+    },
+    {
+      "symbol": "II(dev)",
+      "name": "Deviation of reference input current over full temperature range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.8,
+      "max": 1.2,
+      "unit": "\u00b5A",
+      "test_conditions": "IKA = 10mA, R1 = 10k\u03a9, R2 = \u221e, full temperature range",
+      "page": 9,
+      "evidence": "Deviation of reference input current over full temperature range 0.8 1.2 \u00b5A",
+      "related_pins": [
+        "REF"
+      ]
+    },
+    {
+      "symbol": "Imin",
+      "name": "Minimum cathode current for regulation",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.4,
+      "max": 0.6,
+      "unit": "mA",
+      "test_conditions": "VKA = Vref, TA = 25\u00b0C",
+      "page": 9,
+      "evidence": "Imin | Minimum cathode current for regulation See Figure 7-1 | VKA = Vref | 0.4 0.6 | mA",
+      "related_pins": [
+        "CATHODE",
+        "ANODE"
+      ]
+    },
+    {
+      "symbol": "Ioff",
+      "name": "Off-state cathode current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": 0.5,
+      "unit": "\u00b5A",
+      "test_conditions": "VKA = 36V, Vref = 0, TA = 25\u00b0C",
+      "page": 9,
+      "evidence": "Ioff | Off-state cathode current See Figure 7-3 | VKA = 36V, Vref = 0 | 0.1 0.5 | \u00b5A",
+      "related_pins": [
+        "CATHODE",
+        "ANODE"
+      ]
+    },
+    {
+      "symbol": "Vref",
+      "name": "Reference Voltage",
+      "category": "ELECTRICAL",
+      "min": 2470,
+      "typ": 2495,
+      "max": 2520,
+      "unit": "mV",
+      "test_conditions": "VKA = Vref, IKA = 10mA, TA = 25\u00b0C, TL431AI, TL432AI",
+      "page": 10,
+      "evidence": "Vref | Reference Voltage | See Figure 7-1 | VKA = Vref, IKA = 10mA | 2470{MIN} 2495{TYP} 2520{MAX} | mV",
+      "related_pins": [
+        "REF",
+        "CATHODE"
+      ]
+    },
+    {
+      "symbol": "VI(dev)",
+      "name": "Deviation of reference input voltage over full temperature range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 14,
+      "max": 34,
+      "unit": "mV",
+      "test_conditions": "VKA = Vref, IKA = 10mA, full temperature range, SOT23-3 and TL432 devices",
+      "page": 10,
+      "evidence": "Deviation of reference | SOT23-3 and TL432 | 14{TYP} | 34{MAX} | mV",
+      "related_pins": [
+        "REF",
+        "CATHODE"
+      ]
+    },
+    {
+      "symbol": "VI(dev)",
+      "name": "Deviation of reference input voltage over full temperature range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 5,
+      "max": 50,
+      "unit": "mV",
+      "test_conditions": "VKA = Vref, IKA = 10mA, full temperature range, All other devices",
+      "page": 10,
+      "evidence": "All other devices | 5{TYP} | 50{MAX} | mV",
+      "related_pins": [
+        "REF",
+        "CATHODE"
+      ]
+    },
+    {
+      "symbol": "Imin",
+      "name": "Minimum cathode current for regulation",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.4,
+      "max": 0.7,
+      "unit": "mA",
+      "test_conditions": "VKA = Vref, TA = 25\u00b0C",
+      "page": 10,
+      "evidence": "Imin | See Figure 7-1 | VKA = Vref | 0.4{TYP} 0.7{MAX} | mA",
+      "related_pins": [
+        "CATHODE",
+        "ANODE"
+      ]
+    },
+    {
+      "symbol": "Iref",
+      "name": "Reference Input Current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 2,
+      "max": 4,
+      "unit": "\u00b5A",
+      "test_conditions": "IKA = 10mA, R1 = 10k\u2126, R2 = \u221e, TA = 25\u00b0C",
+      "page": 11,
+      "evidence": "Iref | Reference Input Current See Figure 7-2 | IKA = 10mA, R1 = 10k\u2126, R2 = \u221e | 2{TYP} | 4{MAX} | \u00b5A",
+      "related_pins": [
+        "REF"
+      ]
+    },
+    {
+      "symbol": "II(dev)",
+      "name": "Deviation of reference input current over full temperature range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.8,
+      "max": 2.5,
+      "unit": "\u00b5A",
+      "test_conditions": "IKA = 10mA, R1 = 10k\u2126, R2 = \u221e, TA = 25\u00b0C",
+      "page": 11,
+      "evidence": "II(dev) | Deviation of reference input current over full temperature range (1) | See Figure 7-2 | IKA = 10mA, R1 = 10k\u2126, R2 = \u221e | 0.8{TYP} 2.5{MAX} | \u00b5A",
+      "related_pins": [
+        "REF"
+      ]
+    },
+    {
+      "symbol": "Vref",
+      "name": "Reference Voltage",
+      "category": "ELECTRICAL",
+      "min": 2483,
+      "typ": 2495,
+      "max": 2507,
+      "unit": "mV",
+      "test_conditions": "VKA = Vref, IKA = 10mA, TA = 25\u00b0C",
+      "page": 12,
+      "evidence": "Vref | Reference Voltage | See Figure 7-1 | VKA = Vref, IKA = 10mA | 2483{MIN} 2495{TYP} 2507{MAX} | mV",
+      "related_pins": [
+        "REF",
+        "CATHODE",
+        "ANODE"
+      ]
+    },
+    {
+      "symbol": "VI(dev)",
+      "name": "Deviation of reference input voltage over full temperature range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 6,
+      "max": 16,
+      "unit": "mV",
+      "test_conditions": "VKA = Vref, IKA = 10mA, TA = full temperature range",
+      "page": 12,
+      "evidence": "VI(dev) | Deviation of reference input voltage over full | See Figure 7-1 | VKA = Vref, IKA = 10mA | 6{TYP} | 16{MAX} | mV",
+      "related_pins": [
+        "REF",
+        "CATHODE",
+        "ANODE"
+      ]
+    },
+    {
+      "symbol": "II(dev)",
+      "name": "Deviation of reference input current over full temperature range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.8,
+      "max": 1.2,
+      "unit": "\u00b5A",
+      "test_conditions": "IKA = 10mA, R1 = 10k\u03a9, R2 = \u221e, TA = full temperature range",
+      "page": 12,
+      "evidence": "II(dev) | Deviation of reference input current over full | See Figure 7-2 | IKA = 10mA, R1 = 10k\u2126, R2 = \u221e | 0.8{TYP} 1.2{MAX} | \u00b5A",
+      "related_pins": [
+        "REF"
+      ]
+    },
+    {
+      "symbol": "VI(dev)",
+      "name": "Deviation of reference input voltage over full temperature range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 14,
+      "max": 34,
+      "unit": "mV",
+      "test_conditions": "VKA = Vref, IKA = 10mA, TA = full temperature range",
+      "page": 13,
+      "evidence": "VI(dev) | Deviation of reference input voltage over full temperature range | See Figure 7-1 | VKA = Vref, IKA = 10mA | 14{TYP} 34{MAX} | mV",
+      "related_pins": [
+        "CATHODE",
+        "REF"
+      ]
+    },
+    {
+      "symbol": "II(dev)",
+      "name": "Deviation of reference input current over full temperature range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.8,
+      "max": 2.5,
+      "unit": "\u00b5A",
+      "test_conditions": "IKA = 10mA, R1 = 10k\u03a9, R2 = \u221e, TA = full temperature range",
+      "page": 13,
+      "evidence": "II(dev) | Deviation of reference input current over full temperature range | See Figure 7-2 | IKA = 10mA, R1 = 10k\u2126, R2 = \u221e | 0.8{TYP} 2.5{MAX} | \u00b5A",
+      "related_pins": [
+        "REF"
+      ]
+    },
+    {
+      "symbol": "VI(dev)",
+      "name": "Deviation of reference input voltage over full temperature range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 14,
+      "max": 34,
+      "unit": "mV",
+      "test_conditions": "VKA = Vref, IKA = 10mA, Full temperature range",
+      "page": 14,
+      "evidence": "VI(dev) | Deviation of reference input voltage over full | See Figure 7-1 | VKA = Vref, IKA = 10mA | 14{TYP} | 34{MAX} | mV",
+      "related_pins": [
+        "CATHODE",
+        "REF"
+      ]
+    },
+    {
+      "symbol": "II(dev)",
+      "name": "Deviation of reference input current over full temperature range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.8,
+      "max": 2.5,
+      "unit": "\u00b5A",
+      "test_conditions": "IKA = 10mA, R1 = 10k\u2126, R2 = \u221e, Full temperature range",
+      "page": 14,
+      "evidence": "II(dev) | Deviation of reference input current over full | See Figure 7-2 | IKA = 10mA, R1 = 10k\u2126, R2 = \u221e | 0.8{TYP} 2.5{MAX} | \u00b5A",
+      "related_pins": [
+        "REF"
+      ]
+    }
+  ],
+  "provenance": {
+    "pin_pages": [
+      1,
+      3,
+      4,
+      21
+    ],
+    "spec_pages": [
+      5,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14
+    ],
+    "func_pages": [
+      21,
+      22
+    ],
+    "failed_spec_pages": [],
+    "source_file": "tl431.pdf"
+  }
+}

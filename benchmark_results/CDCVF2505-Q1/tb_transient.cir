@@ -1,0 +1,70 @@
+.options gmin=1e-12 cshunt=1e-15
+* CDCVF2505_Q1 Testbench
+.include "CDCVF2505_Q1_iter2.cir"
+
+* Voltage Sources
+VGND GND 0 0
+V_VDD_3_3_V VDD_3_3_V 0 PWL(0us 0V 0.1us 3.3V)
+V_CLKIN CLKIN 0 PWL(0us 0V 2us 0V 2.01us 0V) PULSE(0V 3.3V 2.01us 0.1ns 0.1ns {0.5*T_CLK} {T_CLK})
+* Output loads
+C_1Y0 1Y0 0 25pF
+C_1Y1 1Y1 0 25pF
+C_1Y2 1Y2 0 25pF
+C_1Y3 1Y3 0 25pF
+C_CLKOUT CLKOUT 0 25pF
+
+* DUT Instance
+XDUT 1Y0 1Y1 1Y2 1Y3 CLKIN CLKOUT GND VDD_3_3_V CDCVF2505_Q1
+
+* Global Parameters for Frequencies and Duty Cycles
+.param T_CLK_66M = 1/66e6
+.param T_CLK_200M = 1/200e6
+.param T_CLK_24M = 1/24e6
+.param T_CLK_85M = 1/85e6
+.param T_CLK_86M = 1/86e6
+
+* Simulation Analysis
+.tran 0.5n 300n
+
+* MEASUREMENTS
+
+* Input clock duty cycle (24 MHz to 85 MHz)
+* Test at 66 MHz (within 24-85 MHz range)
+.param T_CLK = {T_CLK_66M}
+.meas tran clkin_rise1 when V(CLKIN)=1.65 rise=1
+.meas tran clkin_fall1 when V(CLKIN)=1.65 fall=1
+.meas tran clkin_rise2 when V(CLKIN)=1.65 rise=2
+.meas tran clkin_fall2 when V(CLKIN)=1.65 fall=2
+.meas tran clkin_period param (clkin_rise2 - clkin_rise1)
+.meas tran clkin_pw param (clkin_fall1 - clkin_rise1)
+.meas tran clkin_dc_24_85m param (clkin_pw / clkin_period) * 100
+
+* Input clock duty cycle (86 MHz to 200 MHz)
+* Test at 100 MHz (within 86-200 MHz range)
+.param T_CLK = 1/100e6
+.meas tran clkin_rise3 when V(CLKIN)=1.65 rise=3
+.meas tran clkin_fall3 when V(CLKIN)=1.65 fall=3
+.meas tran clkin_rise4 when V(CLKIN)=1.65 rise=4
+.meas tran clkin_fall4 when V(CLKIN)=1.65 fall=4
+.meas tran clkin_period_highf param (clkin_rise4 - clkin_rise3)
+.meas tran clkin_pw_highf param (clkin_fall3 - clkin_rise3)
+.meas tran clkin_dc_86_200m param (clkin_pw_highf / clkin_period_highf) * 100
+
+* tpd: CLKIN to Yn, f = 66 MHz to 200 MHz, CL = 25 pF, VDD = 3.3 V ± 0.3 V
+* Test at 66 MHz, VDD = 3.3V
+.param T_CLK = {T_CLK_66M}
+.meas tran clkin_tpd_ref when V(CLKIN)=1.65 rise=5
+.meas tran Y0_tpd_ref when V(1Y0)=1.65 rise=5
+.meas tran tpd_Y0 param (Y0_tpd_ref - clkin_tpd_ref)
+
+* tr: VO = 0.4 V to 2 V, CL = 25 pF, VDD = 3.3 V ± 0.3 V
+.meas tran tr_Y0_v1 when V(1Y0)=0.4 rise=5
+.meas tran tr_Y0_v2 when V(1Y0)=2.0 rise=5
+.meas tran tr_Y0 param (tr_Y0_v2 - tr_Y0_v1)
+
+* tf: VO = 2 V to 0.4 V, CL = 25 pF, VDD = 3.3 V ± 0.3 V
+.meas tran tf_Y0_v1 when V(1Y0)=2.0 fall=5
+.meas tran tf_Y0_v2 when V(1Y0)=0.4 fall=5
+.meas tran tf_Y0 param (tf_Y0_v2 - tf_Y0_v1)
+
+.end

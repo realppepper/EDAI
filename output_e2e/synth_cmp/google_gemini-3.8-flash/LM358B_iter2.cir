@@ -1,0 +1,100 @@
+* LM358B Dual Operational Amplifier SPICE Macromodel
+* High-Fidelity Behavioral & Equivalent Circuit Representation
+
+* Single Amplifier Subcircuit Definition
+
+* Top-Level LM358B Macromodel Subcircuit
+
+* --- Globally Hoisted Models for Multi-Subcircuit Visibility ---
+.model S_MODEL VSWITCH (RON=10 ROFF=1G VTH=0.5 VH=0.1)
+.model D_PROT D (IS=1e-15 N=1 RS=10)
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.5 PHI=0.8 LAMBDA=0.01)
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u GAMMA=0.4 PHI=0.7 LAMBDA=0.01)
+
+.subckt LM358B_AMP OUT IN_N IN_P VEE VCC
+* Input bias currents (PNP inputs sink current out of pins, ~10 nA typical)
+I_IBP IN_P VEE 10n
+I_IBN IN_N VEE 10n
+
+* Input Differential and Common-Mode Impedance
+R_DIFF IN_P IN_N 10MEG
+C_DIFF IN_P IN_N 1.5p
+R_CM1  IN_P VEE 4G
+R_CM2  IN_N VEE 4G
+C_CM1  IN_P VEE 2p
+C_CM2  IN_N VEE 2p
+
+* Common-Mode and Power-Supply Rejection Modeling
+* Internal reference mid-rail node
+R_REF1 VCC MID 100k
+R_REF2 MID VEE 100k
+C_REF  MID VEE 10p
+
+* Input Common-Mode Voltage Detection
+E_VCM VCM_NODE 0 VALUE = { 0.5*(V(IN_P) + V(IN_N)) }
+* Supply variation detection (PSRR: 100 dB -> 10uV/V)
+E_VPS VPS_NODE 0 VALUE = { (V(VCC) - V(VEE) - 5.0) * 3.16e-6 }
+* Common-mode variation detection (CMRR: 90 dB -> 3.16e-5 V/V)
+E_VCMR VCMR_NODE 0 VALUE = { (V(VCM_NODE) - V(MID)) * 1.0e-5 }
+
+* Input Offset and Error Summing
+E_DIFF IN_INT 0 VALUE = { V(IN_P) - V(IN_N) + 0.0003 + V(VPS_NODE) + V(VCMR_NODE) }
+
+* Slew-Rate Limited Transconductance Stage
+* Slew Rate = 0.5 V/us = 5e5 V/s. With C_comp = 20 pF, I_max = 10 uA.
+* gm = 2*pi * GBW * C_comp = 2*pi * 1.2MHz * 20pF = 1.508e-4 S.
+* Linear range of diff input = 10uA / 1.508e-4 = 66.3 mV.
+G_GM1 VEE N_GM VALUE = { 10u * tanh(V(IN_INT) / 0.0663) }
+R_GM1 N_GM VEE 10MEG
+C_GM1 N_GM VEE 20p
+
+* High Gain Stage
+* DC gain = AOL >= 140,000 (103 dB).
+* First stage gain: gm * R_GM1 = 1.508e-4 * 10MEG = 1508.
+* Second stage gain needed = 140000 / 1508 = 92.84.
+E_GAIN N_A2 VEE VALUE = { V(N_GM, VEE) * 9.284 }
+R_A2 N_A2 N_INT 1k
+C_A2 N_INT VEE 10p
+
+* LM358 Output Rail Saturation & Sinking Behavior
+* Positive limit: VCC - 1.35V
+* Negative limit: VEE + 5mV (down to low mV range when sourcing no current)
+E_OUT_IDEAL N_LIM VEE VALUE = { min(V(VCC) - V(VEE) - 1.35, +     max(0.005, V(N_INT, VEE))) }
+
+* Output Driver with Current Limiting and Output Resistance
+* Open-loop output resistance: 300 ohms. Short circuit limit ~ 40mA.
+* Source limit: 40 mA, Sink limit: 30 mA.
+B_OUT N_DRV VEE V = { V(N_LIM) }
+R_OUT_INT N_DRV N_SENSE 150
+R_OUT_EXT N_SENSE OUT 150
+
+* Output Current Clamping
+* When sourcing > 40mA or sinking > 30mA, clamp via feedback current
+B_CLAMP OUT VEE I = { (V(N_SENSE, OUT) > 6.0) ? (V(N_SENSE, OUT) - 6.0)*0.5 : + (V(N_SENSE, OUT) < -4.5) ? (V(N_SENSE, OUT) + 4.5)*0.5 : 0 }
+
+* Quiescent Supply Current per Channel (~300 uA)
+G_IQ VCC VEE VALUE = { 300u + 2.5u * (V(VCC) - V(VEE) - 5.0) }
+
+.ends LM358B_AMP
+
+.subckt LM358B OUT1 IN1 IN1_P V IN2_P IN2 OUT2 V_P
+* Pin 1: OUT1
+* Pin 2: IN1   (Negative input of amplifier 1)
+* Pin 3: IN1_P (Positive input of amplifier 1)
+* Pin 4: V     (Negative supply)
+* Pin 5: IN2_P (Positive input of amplifier 2)
+* Pin 6: IN2   (Negative input of amplifier 2)
+* Pin 7: OUT2
+* Pin 8: V_P   (Positive supply)
+
+* Channel 1 Instance
+X_AMP1 OUT1 IN1 IN1_P V V_P LM358B_AMP
+
+* Channel 2 Instance
+X_AMP2 OUT2 IN2 IN2_P V V_P LM358B_AMP
+
+* Cross-channel decoupling and isolation
+C_CROSS OUT1 OUT2 0.05p
+R_CROSS OUT1 OUT2 100G
+
+.ends LM358B

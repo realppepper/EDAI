@@ -1,0 +1,21 @@
+EDAI common-source amplifier - educational Level-1 model
+* This is a real SPICE circuit, with invented generic device parameters.
+* It is not a foundry PDK or a fabricated/measured circuit.
+.param RD=10000
+.param VG=1.1
+VDD vdd 0 5
+VIN in 0 SIN({VG} 0.005 1000)
+RDR vdd out {RD}
+RLOAD out 0 1Meg
+CLOAD out 0 10p
+M1 out in 0 0 NDEMO W=20u L=2u
+.model NDEMO NMOS (LEVEL=1 VTO=0.7 KP=100u LAMBDA=0.02)
+.tran 2u 8m 4m 2u
+.save V(in) V(out) I(VDD)
+.meas tran vin_pp PP V(in) FROM=4m TO=8m
+.meas tran vout_pp PP V(out) FROM=4m TO=8m
+.meas tran gain PARAM='vout_pp/vin_pp'
+.meas tran iavg AVG I(VDD) FROM=4m TO=8m
+.meas tran power_mw PARAM='-5*iavg*1000'
+.meas tran bias_v AVG V(out) FROM=4m TO=8m
+.end

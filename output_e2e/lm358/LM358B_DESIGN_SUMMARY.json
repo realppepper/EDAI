@@ -1,0 +1,62 @@
+{
+  "part_name": "LM358B",
+  "subckt_name": "LM358B",
+  "pass_rate_percent": 0.0,
+  "spec_count": 260,
+  "iterations": [
+    {
+      "iteration": 1,
+      "netlist_path": "C:\\Users\\Sera\\GensparkCode\\analogverifier\\output_e2e\\lm358\\LM358B_iter1.cir",
+      "pass_rate_percent": 0.0,
+      "coverage_pct": 0.0,
+      "passed_specs": 0,
+      "failed_specs": 0,
+      "unmeasured_specs": 152,
+      "passed_symbols": [],
+      "simulation_errors": [],
+      "shortfalls": [
+        "Param 'VS' violated:  (Measured: Unobserved)",
+        "Param 'VS' violated:  (Measured: Unobserved)",
+        "Param 'VS' violated:  (Measured: Unobserved)",
+        "Param 'VID' violated:  (Measured: Unobserved)",
+        "Param 'VID' violated:  (Measured: Unobserved)",
+        "Param 'VI' violated:  (Measured: Unobserved)"
+      ],
+      "improvements": [
+        "Initial first-principles topology and Level-1 parameter sizing synthesized from scratch."
+      ],
+      "architecture_summary": "The LM358B is a dual operational amplifier implemented in a classic bipolar process. The architecture consists of two identical amplifier channels sharing a common bias circuit. Each channel comprises:\n1.  **PNP Differential Input Stage (Q1-Q4):** Lateral PNP transistors allow common-mode input range to include the negative rail (V-). Q1/Q2 form the main differential pair. Q3/Q4 form a current mirror active load, converting differential current to a single-ended voltage at the high-impedance node (compensation node).\n2.  **NPN Voltage Gain Stage (Q5):** A common-emitter NPN transistor provides the bulk of the voltage gain. Its base is driven by the compensation node. A Miller compensation capacitor (Cc) between its base and collector sets the dominant pole for unity-gain stability (GBW ~ 1.2 MHz).\n3.  **Class AB Output Stage (Q6-Q9):** A complementary emitter-follower push-pull stage (Q6 NPN pull-up, Q7 PNP pull-down) provides low output impedance and rail-to-rail output swing capability (within ~1V of rails). Biasing is provided by a Vbe multiplier (Q8, R10, R11) to minimize crossover distortion and set quiescent current.\n4.  **Bias Circuit (Shared):** A bandgap-referenced current mirror (Q10-Q15, R1-R6) generates stable reference currents (Iref ~ 15uA) for the input stage tail current, gain stage current, and output stage bias, tracking supply voltage and temperature. Startup circuit ensures reliable power-on.\n3.  **Short-Circuit Protection:** Implicit in the output stage drive capability limits and Vbe multiplier thermal tracking.\n\nComponent values are analytically sized:\n- Tail Current (I1): 15uA -> Gm_diff = Ic/(2*Vt) ~ 300uS. GBW = Gm_diff/(2*pi*Cc) -> Cc = 300uS/(2*pi*1.2M) ~ 40pF. Selected Cc=30pF for phase margin > 56 deg with 2nd pole.\n- Gain Stage Current (I2): 50uA -> High voltage gain (Aol > 70 V/mV).\n- Output Bias: Vbe multiplier sets ~2*Vbe across Q6/Q7 bases for Class AB.\n- Resistors scaled for 300uA/channel quiescent current at 5V supply.",
+      "design_rationale": {
+        "summary": "The LM358B is a dual operational amplifier implemented in a classic bipolar process. The architecture consists of two identical amplifier channels sharing a common bias circuit. Each channel comprises:\n1.  **PNP Differential Input Stage (Q1-Q4):** Lateral PNP transistors allow common-mode input range to include the negative rail (V-). Q1/Q2 form the main differential pair. Q3/Q4 form a current mirror active load, converting differential current to a single-ended voltage at the high-impedance node (compensation node).\n2.  **NPN Voltage Gain Stage (Q5):** A common-emitter NPN transistor provides the bulk of the voltage gain. Its base is driven by the compensation node. A Miller compensation capacitor (Cc) between its base and collector sets the dominant pole for unity-gain stability (GBW ~ 1.2 MHz).\n3.  **Class AB Output Stage (Q6-Q9):** A complementary emitter-follower push-pull stage (Q6 NPN pull-up, Q7 PNP pull-down) provides low output impedance and rail-to-rail output swing capability (within ~1V of rails). Biasing is provided by a Vbe multiplier (Q8, R10, R11) to minimize crossover distortion and set quiescent current.\n4.  **Bias Circuit (Shared):** A bandgap-referenced current mirror (Q10-Q15, R1-R6) generates stable reference currents (Iref ~ 15uA) for the input stage tail current, gain stage current, and output stage bias, tracking supply voltage and temperature. Startup circuit ensures reliable power-on.\n3.  **Short-Circuit Protection:** Implicit in the output stage drive capability limits and Vbe multiplier thermal tracking.\n\nComponent values are analytically sized:\n- Tail Current (I1): 15uA -> Gm_diff = Ic/(2*Vt) ~ 300uS. GBW = Gm_diff/(2*pi*Cc) -> Cc = 300uS/(2*pi*1.2M) ~ 40pF. Selected Cc=30pF for phase margin > 56 deg with 2nd pole.\n- Gain Stage Current (I2): 50uA -> High voltage gain (Aol > 70 V/mV).\n- Output Bias: Vbe multiplier sets ~2*Vbe across Q6/Q7 bases for Class AB.\n- Resistors scaled for 300uA/channel quiescent current at 5V supply."
+      }
+    },
+    {
+      "iteration": 2,
+      "netlist_path": "C:\\Users\\Sera\\GensparkCode\\analogverifier\\output_e2e\\lm358\\LM358B_iter2.cir",
+      "pass_rate_percent": 0.0,
+      "coverage_pct": 0.0,
+      "passed_specs": 0,
+      "failed_specs": 0,
+      "unmeasured_specs": 152,
+      "passed_symbols": [],
+      "simulation_errors": [],
+      "shortfalls": [
+        "Param 'VS' violated:  (Measured: Unobserved)",
+        "Param 'VS' violated:  (Measured: Unobserved)",
+        "Param 'VS' violated:  (Measured: Unobserved)",
+        "Param 'VID' violated:  (Measured: Unobserved)",
+        "Param 'VID' violated:  (Measured: Unobserved)",
+        "Param 'VI' violated:  (Measured: Unobserved)"
+      ],
+      "improvements": [
+        "Topology refinement: The LM358B is a dual operational amplifier implemented in a classic bipolar process. The architecture consists of two identical amplifier ch..."
+      ],
+      "architecture_summary": "The LM358B is a dual operational amplifier implemented in a classic bipolar process. The architecture consists of two identical amplifier channels sharing a common bias circuit. Each channel features:\n\n1. **Input Stage**: A PNP differential pair (Q1, Q2) with emitter degeneration resistors (R1, R2) for improved matching and reduced offset voltage. The input stage operates down to the negative rail (V-) due to the PNP topology. A current mirror load (Q3, Q4) converts differential current to single-ended output.\n\n2. **Bias Circuit**: A bandgap-referenced current mirror generates a stable 10\u00b5A reference current (IREF) with low temperature coefficient. This current is mirrored to establish tail currents for input stages (10\u00b5A each), second stage bias (50\u00b5A), and output stage bias (100\u00b5A). Startup circuit ensures reliable power-up.\n\n3. **Second Stage (Voltage Gain)**: A common-emitter NPN (Q17) with active current source load (Q18) provides high voltage gain (~140 V/mV). Miller compensation capacitor (Cc = 30pF) with nulling resistor (Rc = 3.5k\u03a9) sets the dominant pole at ~15Hz and unity-gain bandwidth at 1.2MHz.\n\n4. **Output Stage**: Class AB push-pull with NPN pull-up (Q21) and PNP pull-down (Q22). VBE multiplier (Q19, R19, R20) sets quiescent current to ~50\u00b5A for low crossover distortion. Emitter resistors (R21, R22) provide thermal stability and short-circuit protection. Output voltage swing reaches within ~100mV of V- and ~1.35V of V+ at light loads.\n\n5. **Key Design Equations**:\n   - GBW = gm1 / (2\u03c0\u00b7Cc) \u2192 gm1 = 10\u00b5A / 26mV = 385\u00b5S \u2192 Cc = 385\u00b5S / (2\u03c0\u00b71.2MHz) = 51pF (adjusted to 30pF with nulling resistor for phase margin)\n   - SR = I_tail / Cc = 10\u00b5A / 30pF = 0.33 V/\u00b5s (enhanced to 0.5 V/\u00b5s via slew enhancement)\n   - AOL = gm1 \u00b7 (ro17 || ro18) \u00b7 gm21 \u00b7 RL \u2248 385\u00b5S \u00b7 500k\u03a9 \u00b7 0.038S \u00b7 10k\u03a9 = 73,000 V/V = 140 V/mV\n   - Phase margin = 90\u00b0 - atan(GBW/p2) \u2248 56\u00b0 with p2 \u2248 2.5MHz\n\n6. **Temperature Compensation**: PTAT bias currents, VBE multiplier with TC matching, and emitter degeneration resistors ensure stable operation from -40\u00b0C to +85\u00b0C.\n\n7. **ESD Protection**: Input clamp diodes to rails and series resistors (1k\u03a9) limit current during ESD events.\n\nAll component values are analytically derived to meet the LM358B specifications at VS=5V, TA=25\u00b0C.",
+      "design_rationale": {
+        "summary": "The LM358B is a dual operational amplifier implemented in a classic bipolar process. The architecture consists of two identical amplifier channels sharing a common bias circuit. Each channel features:\n\n1. **Input Stage**: A PNP differential pair (Q1, Q2) with emitter degeneration resistors (R1, R2) for improved matching and reduced offset voltage. The input stage operates down to the negative rail (V-) due to the PNP topology. A current mirror load (Q3, Q4) converts differential current to single-ended output.\n\n2. **Bias Circuit**: A bandgap-referenced current mirror generates a stable 10\u00b5A reference current (IREF) with low temperature coefficient. This current is mirrored to establish tail currents for input stages (10\u00b5A each), second stage bias (50\u00b5A), and output stage bias (100\u00b5A). Startup circuit ensures reliable power-up.\n\n3. **Second Stage (Voltage Gain)**: A common-emitter NPN (Q17) with active current source load (Q18) provides high voltage gain (~140 V/mV). Miller compensation capacitor (Cc = 30pF) with nulling resistor (Rc = 3.5k\u03a9) sets the dominant pole at ~15Hz and unity-gain bandwidth at 1.2MHz.\n\n4. **Output Stage**: Class AB push-pull with NPN pull-up (Q21) and PNP pull-down (Q22). VBE multiplier (Q19, R19, R20) sets quiescent current to ~50\u00b5A for low crossover distortion. Emitter resistors (R21, R22) provide thermal stability and short-circuit protection. Output voltage swing reaches within ~100mV of V- and ~1.35V of V+ at light loads.\n\n5. **Key Design Equations**:\n   - GBW = gm1 / (2\u03c0\u00b7Cc) \u2192 gm1 = 10\u00b5A / 26mV = 385\u00b5S \u2192 Cc = 385\u00b5S / (2\u03c0\u00b71.2MHz) = 51pF (adjusted to 30pF with nulling resistor for phase margin)\n   - SR = I_tail / Cc = 10\u00b5A / 30pF = 0.33 V/\u00b5s (enhanced to 0.5 V/\u00b5s via slew enhancement)\n   - AOL = gm1 \u00b7 (ro17 || ro18) \u00b7 gm21 \u00b7 RL \u2248 385\u00b5S \u00b7 500k\u03a9 \u00b7 0.038S \u00b7 10k\u03a9 = 73,000 V/V = 140 V/mV\n   - Phase margin = 90\u00b0 - atan(GBW/p2) \u2248 56\u00b0 with p2 \u2248 2.5MHz\n\n6. **Temperature Compensation**: PTAT bias currents, VBE multiplier with TC matching, and emitter degeneration resistors ensure stable operation from -40\u00b0C to +85\u00b0C.\n\n7. **ESD Protection**: Input clamp diodes to rails and series resistors (1k\u03a9) limit current during ESD events.\n\nAll component values are analytically derived to meet the LM358B specifications at VS=5V, TA=25\u00b0C."
+      }
+    }
+  ],
+  "final_netlist_path": "C:\\Users\\Sera\\GensparkCode\\analogverifier\\output_e2e\\lm358\\LM358B_BEST.cir",
+  "trace_inspector_url": "C:\\Users\\Sera\\GensparkCode\\analogverifier\\output_e2e\\lm358\\LM358B_TRACE_INSPECTOR.html"
+}

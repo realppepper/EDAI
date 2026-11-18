@@ -1,117 +1,90 @@
-# EDAI
+# EDAI × AnalogVerifier
 
-AI 기반 아날로그 회로 자동 설계 시스템
+**AI 기반 아날로그 회로 자동 설계 및 물리 검증 통합 플랫폼**
 
-목표 성능 스펙만 입력하면 AI가 넷리스트를 생성하고, 오픈소스 시뮬레이터로 자동 검증한 뒤 목표 미달 시 재설계를 반복하는 시스템입니다.
+상용 아날로그 IC 데이터시트(PDF)에서 **하드웨어 지식 그래프(HKG)**와 **포트 의존성 그래프(PDG)**를 추출하고, **FLAN-T5/블록 기반 토폴로지 탐색 + `gm/ID` 결정론적 사이징 + 베이스 회로 초안**으로 출발점을 확보한 뒤, **Hermes × Harness² 폐루프**와 **LTspice / ngspice 4단계 인과 게이트**로 순수 물리 트랜지스터 수준(BJT, MOSFET, JFET, Diode, R/C/L)의 회로를 검증·진화시킵니다.
 
-## 배경
+---
 
-디지털 회로는 HDL 기반 LLM 자동화가 상당히 진전되었지만, 아날로그 회로는 성능 지표 간 강한 비선형·상호결합 특성과 정형화되지 않은 회로도 의존성 때문에 자동화가 훨씬 어렵습니다. AI를 활용한 아날로그 회로 자동 설계는 학계·산업 양쪽에서 아직 보편적으로 자리 잡지 못한 영역입니다.
+## 1. 통합 아키텍처
 
-## 프로젝트 범위
+```mermaid
+flowchart LR
+    A["PDF 데이터시트 / 자연어"] --> B["Phase 1~2: HKG / PDG 추출 & 원문 검수"]
+    B --> C["Phase 3-A: 초기 회로 확보<br/>(FLAN-T5 + gm/ID 사이징 / 베이스 초안 / IEEE MCP)"]
+    C --> D["Phase 3-B: NetlistValidator + Hermes × Harness²"]
+    D --> E["Phase 4: LTspice 4단계 게이트 / ngspice 스윕"]
+    E -->|스펙 미달 시 피드백| D
+    E -->|100% 통과| F["검증된 넷리스트 · 회로도 SVG · ZIP 리포트"]
+```
 
-설계 루프(넷리스트 생성 → 시뮬레이션 → 정량 분석 → 재설계)까지 구현하며, 레이아웃/DRC·LVS 단계는 향후 과제로 제외합니다.
+- **백엔드 코어 (`analogverifier`)**: PDF→HKG/PDG 추출, `NetlistValidator` + `syntax_verifier_agent` 3차 문법 검증 루프, `HermesAgent` × `ToolDecisionRouter` (11종 툴), `Harness²` 대조 진화, LTspice 4단계 인과 게이트
+- **토폴로지 & 사이징 (`jiyun` 통합)**: `flan_t5_topology.py` (FLAN-T5 + OP-Amp 블록 라이브러리), `gm_id_sizer.py` (GF180 6V 특성표 기반 `gm/ID` 사이징), `schematic_svg.py` (`netlistsvg` / Python SVG 회로도)
+- **UI/UX & 스윕 (`seungcheol` 통합)**: Circuit Studio v03 기반 통합 웹 UI(`ai_analog_designer/web_studio/`), 원문 대조 검수(`base_circuit_generator.py`), 파라미터 스윕(`spice_sweep_engine.py`, `WHEN ... AT ...` P0 수정 포함)
+- **MCP 서버 (`ai_analog_designer/mcp_server.py`) & IEEE MCP**: IEEE Xplore/OpenAlex 학술 논문 검색 및 핵심 설계·검증 도구를 FastMCP(`mcp>=2.0`)로 노출
 
-## 시스템 구성
+---
 
-| 모듈 | 설명 |
-| --- | --- |
-| AI 넷리스트 생성 | 목표 스펙을 바탕으로 회로 구조와 소자 값을 담은 넷리스트 생성 |
-| 시뮬레이션 자동 실행 | 생성된 넷리스트를 오픈소스 시뮬레이터(Ngspice)로 자동 검증 |
-| 정량 지표 계산 | 신호처리 스크립트가 위상마진·오버슈트·정착시간을 계산해 목표 스펙과 비교 |
-| UI 대시보드 | 입력 스펙부터 시도 횟수, 파형, 달성 여부까지 시각화 |
+## 2. 실행 및 테스트
 
-## 설계 흐름
+### 가상환경 구성
+```powershell
+uv venv .venv --python 3.12
+uv pip install -r requirements.txt pytest
+```
 
-1. 목표 스펙 입력 (위상마진·오버슈트·정착시간 등)
-2. AI 넷리스트 생성
-3. 오픈소스 시뮬레이션 (Ngspice)
-4. 정량 지표 계산·비교
-5. 목표 미달 시 실패 원인을 근거로 AI 재설계 → 3단계로 반복
+### 통합 Web Studio 실행
+```powershell
+.\.venv\Scripts\python.exe run_studio.py
+```
+- 기본 통합 UI: `http://127.0.0.1:8080/` (seungcheol Circuit Studio UI/UX + PDG + 토폴로지/`gm/ID` + IEEE MCP + Hermes 자율 루프)
+- 기존 다크 UI: `http://127.0.0.1:8080/classic`
 
-## 차별점
+### 통합 MCP 서버 실행 (stdio)
+```powershell
+.\.venv\Scripts\python.exe -m ai_analog_designer.mcp_server
+```
 
-- 정량 계산(신호처리 스크립트)과 설계 판단(AI)의 역할 분리
-- 실패 원인 기반 자동 재설계
-- RAG로 회로 이론·설계 지식에 근거한 설계 제안
-- 상용 EDA 없이 오픈소스 스택(Ngspice, PySpice)만으로 구현
+### 통합 테스트 실행
+```powershell
+.\.venv\Scripts\python.exe -m pytest tests/test_edai_integration.py -v
+```
 
-## 평가 방법 및 목표 성능
+---
 
-Op-Amp, ADC 등 대표 회로에 목표 스펙을 여러 세트로 바꿔가며 파이프라인을 반복 실행하고, 목표 스펙 충족 성공률(Pass@1) **70~80% 이상**을 목표로 합니다.
+## 3. 환경 설정 (`.env`)
 
-## 수행 계획
+필수 API 키가 설정되어 있지 않으면 하드코딩된 기본값을 쓰지 않고 즉시 `RuntimeError`로 실행을 차단합니다. 프로젝트 루트(`.env`)에 사용할 프로바이더와 키를 설정하세요:
 
-| 주차 | 내용 |
-| --- | --- |
-| 1~3주 | 오픈소스 시뮬레이션 툴체인 구축, 대상 회로 종류 선정 |
-| 4~7주 | AI 넷리스트 생성 모델 개발 (프롬프트 설계, RAG 지식베이스 구축) |
-| 8~10주 | 시뮬레이션 자동화 및 결과 분석 스크립트 구현, 반복 재시도 로직 완성 |
-| 11~13주 | 여러 회로 종류로 확장 검증, UI 대시보드 완성, 정량 평가 |
-| 14주 | 결과 정리 및 보고서 작성 |
-| 15주 | 최종 발표 준비 |
+```ini
+# LLM 프로바이더 선택: wusrouter | nim | groq | openrouter
+LLM_PROVIDER=wusrouter
 
-## 팀 (EDAI)
+WUSROUTER_API_KEY=sk-ws-...
+NVIDIA_API_KEY=nvapi-...
+GROQ_API_KEY=gsk_...
+OPENROUTER_API_KEY=sk-or-...
+
+# 학술 레퍼런스 & IEEE MCP
+IEEE_API_KEY=...
+# IEEE_MCP_COMMAND=python
+# IEEE_MCP_ARGS=-m ai_analog_designer.mcp_server
+
+# Arize Phoenix 로컬 트레이싱 (선택)
+PHOENIX_ENABLED=1
+PHOENIX_COLLECTOR_ENDPOINT=http://localhost:6006/v1/traces
+PHOENIX_PROJECT_NAME=analogverifier
+```
+
+---
+
+## 4. 팀 (EDAI)
 
 | 이름 | 역할 |
 | --- | --- |
-| 김지윤 (조장) | 총괄, AI 넷리스트 생성 모델 설계 (프롬프트/RAG) |
-| 박준석 | 시뮬레이션 자동화 (Ngspice/PySpice 연동) |
-| 윤다훈 | 결과 분석·정량 지표 계산 (신호처리), 반복 로직 구현 |
-| 곽승철 | UI/대시보드 구현 |
+| 김지윤 (조장) | FLAN-T5 토폴로지 생성, `gm/ID` 자동 사이징, GF180/ngspice & 회로도 SVG |
+| 박준석 | `analogverifier` 코어 (HKG/PDG, Hermes × Harness², 4단계 LTspice 검증, 통합 아키텍처) |
+| 윤다훈 | OP-Amp 정량 검증 파이프라인 및 IEEE MCP 서버 프로토타입 |
+| 곽승철 | Circuit Studio v03 웹 UI/UX, 출처 대조 검수, SPICE 파라미터 스윕 엔진 |
 
 지도교수: 채주형 교수님
-
-## 협업 방법 (브랜치 워크플로우)
-
-main 브랜치는 항상 정상 동작하는 상태로 유지하고, 각자 작업은 별도 브랜치에서 진행한 뒤 Pull Request로 합칩니다.
-
-1. 저장소를 내 컴퓨터로 가져오기 (최초 1회)
-
-   ```bash
-   git clone https://github.com/realppepper/EDAI.git
-   cd EDAI
-   ```
-
-2. 작업을 시작하기 전, 최신 main 코드를 받아오기
-
-   ```bash
-   git checkout main
-   git pull origin main
-   ```
-
-3. 내 작업용 브랜치 만들기
-
-   ```bash
-   git checkout -b feature/브랜치이름
-   ```
-
-   예: `feature/netlist-gen`, `feature/simulation`, `feature/dashboard`, `feature/metric-analysis`
-
-4. 코드 수정 후 커밋
-
-   ```bash
-   git add .
-   git commit -m "작업 내용 설명"
-   ```
-
-5. 내 브랜치를 GitHub에 올리기
-
-   ```bash
-   git push origin feature/브랜치이름
-   ```
-
-6. GitHub 저장소 페이지에서 Pull Request 생성 → 팀원 리뷰 후 main에 merge
-
-7. merge가 끝나면 로컬 main도 최신 상태로 갱신
-
-   ```bash
-   git checkout main
-   git pull origin main
-   ```
-
-새 작업을 시작할 때마다 2~3번부터 다시 반복하면 됩니다. 한 브랜치에 너무 오래 머무르지 말고, 작은 단위로 자주 PR을 올리는 게 충돌을 줄이는 데 좋아요.
-
-## 참고 문헌
-
-- AnalogMaster: Large Language Model-based Automated Analog IC Design Framework from Image to Layout (2026)

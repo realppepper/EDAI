@@ -1,0 +1,881 @@
+{
+  "ic_device": {
+    "name": "INA12x",
+    "category": "Instrumentation Amplifier",
+    "description": "Low-power, general-purpose instrumentation amplifiers that offer excellent accuracy. The versatile three op amp design and small size make these amplifiers an excellent choice for a wide range of applications. Current-feedback input circuitry provides wide bandwidth even at high gain (200kHz at G = 100)."
+  },
+  "pins": [
+    {
+      "name": "REF",
+      "pin_number": "5",
+      "direction": "INPUT",
+      "role": "SIGNAL",
+      "description": "Reference input. This pin must be driven by low impedance or connected to ground."
+    },
+    {
+      "name": "RG",
+      "pin_number": "1,8",
+      "direction": "BIDIRECTIONAL",
+      "role": "CONTROL",
+      "description": "Gain setting pin. For gains greater than 1, place a gain resistor between pin 1 and pin 8."
+    },
+    {
+      "name": "V_",
+      "pin_number": "4",
+      "direction": "POWER",
+      "role": "POWER",
+      "description": "Negative supply"
+    },
+    {
+      "name": "V_",
+      "pin_number": "7",
+      "direction": "POWER",
+      "role": "POWER",
+      "description": "Positive supply"
+    },
+    {
+      "name": "VIN_",
+      "pin_number": "2",
+      "direction": "INPUT",
+      "role": "SIGNAL",
+      "description": "Negative input"
+    },
+    {
+      "name": "VIN_",
+      "pin_number": "3",
+      "direction": "INPUT",
+      "role": "SIGNAL",
+      "description": "Positive input"
+    },
+    {
+      "name": "VO",
+      "pin_number": "6",
+      "direction": "OUTPUT",
+      "role": "OUTPUT",
+      "description": "Output"
+    }
+  ],
+  "electrical_parameters": [
+    {
+      "symbol": "VS",
+      "name": "Supply voltage Dual supply",
+      "min": null,
+      "typ": null,
+      "max": 18.0,
+      "unit": "V",
+      "test_conditions": "VS = (V+) \u2013 (V\u2013)",
+      "related_pins": [
+        "V+",
+        "V\u2013"
+      ],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "VS",
+      "name": "Supply voltage Single supply",
+      "min": null,
+      "typ": null,
+      "max": 36.0,
+      "unit": "V",
+      "test_conditions": "VS = (V+) \u2013 0V",
+      "related_pins": [
+        "V+"
+      ],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "Analog input voltage",
+      "name": "Analog input voltage",
+      "min": null,
+      "typ": null,
+      "max": 40.0,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [
+        "VIN+",
+        "VIN\u2013"
+      ],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "Output short-circuit",
+      "name": "Output short-circuit",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": null,
+      "test_conditions": "Continuous",
+      "related_pins": [
+        "VO"
+      ],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating temperature",
+      "min": -40.0,
+      "typ": null,
+      "max": 125.0,
+      "unit": "\u00b0C",
+      "test_conditions": null,
+      "related_pins": [],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "Junction temperature",
+      "name": "Junction temperature",
+      "min": null,
+      "typ": null,
+      "max": 150.0,
+      "unit": "\u00b0C",
+      "test_conditions": null,
+      "related_pins": [],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "Lead temperature (soldering, 10s)",
+      "name": "Lead temperature (soldering, 10s)",
+      "min": null,
+      "typ": null,
+      "max": 300.0,
+      "unit": "\u00b0C",
+      "test_conditions": null,
+      "related_pins": [],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "Tstg",
+      "name": "Storage temperature",
+      "min": -55.0,
+      "typ": null,
+      "max": 125.0,
+      "unit": "\u00b0C",
+      "test_conditions": null,
+      "related_pins": [],
+      "category": "Absolute Maximum Ratings"
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge Human-body model (HBM)",
+      "min": null,
+      "typ": null,
+      "max": 2000.0,
+      "unit": "V",
+      "test_conditions": "per ANSI/ESDA/JEDEC JS-001",
+      "related_pins": [],
+      "category": "ESD Ratings"
+    },
+    {
+      "symbol": "Electrostatic discharge Charged-device model (CDM)",
+      "name": "Electrostatic discharge Charged-device model (CDM)",
+      "min": null,
+      "typ": null,
+      "max": 50.0,
+      "unit": "V",
+      "test_conditions": "per JEDEC specification JESD22-C101",
+      "related_pins": [],
+      "category": "ESD Ratings"
+    },
+    {
+      "symbol": "VS",
+      "name": "Supply voltage Single-supply",
+      "min": 4.5,
+      "typ": 30.0,
+      "max": 36.0,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [
+        "V+"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "Supply voltage Dual-supply",
+      "name": "Supply voltage Dual-supply",
+      "min": 2.25,
+      "typ": 15.0,
+      "max": 18.0,
+      "unit": "V",
+      "test_conditions": null,
+      "related_pins": [
+        "V+",
+        "V\u2013"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "Input common-mode voltage range for VO = 0V",
+      "name": "Input common-mode voltage range for VO = 0V",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "(V\u2013) + 2 to (V+) \u2013 2",
+      "related_pins": [
+        "VIN+",
+        "VIN\u2013",
+        "V+",
+        "V\u2013"
+      ],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "TA",
+      "name": "Specified temperature",
+      "min": -40.0,
+      "typ": null,
+      "max": 85.0,
+      "unit": "\u00b0C",
+      "test_conditions": null,
+      "related_pins": [],
+      "category": "Recommended Operating Conditions"
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "min": null,
+      "typ": 110.0,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "D (SOIC) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "min": null,
+      "typ": 46.1,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "P (PDIP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "min": null,
+      "typ": 57.0,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "D (SOIC) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "min": null,
+      "typ": 34.1,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "P (PDIP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "min": null,
+      "typ": 54.0,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "D (SOIC) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "min": null,
+      "typ": 23.4,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "P (PDIP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "min": null,
+      "typ": 11.0,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "D (SOIC) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "min": null,
+      "typ": 11.3,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "P (PDIP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "min": null,
+      "typ": 53.0,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "D (SOIC) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "min": null,
+      "typ": 23.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "P (PDIP) 8 PINS",
+      "related_pins": [],
+      "category": "Thermal Information"
+    },
+    {
+      "symbol": "VOS",
+      "name": "Offset voltage (RTI)",
+      "min": null,
+      "typ": 10.0,
+      "max": 50.0,
+      "unit": "\u00b5V",
+      "test_conditions": "1 \u2264 G \u2264 10000, CSO: SHE, INA12xP, INA12xU",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "VOS",
+      "name": "Offset voltage (RTI)",
+      "min": null,
+      "typ": null,
+      "max": 500.0,
+      "unit": "\u00b5V",
+      "test_conditions": "1 \u2264 G \u2264 10000, CSO: SHE, INA12xP, INA12xU, / G",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "VOS",
+      "name": "Offset voltage (RTI)",
+      "min": null,
+      "typ": 25.0,
+      "max": 125.0,
+      "unit": "\u00b5V",
+      "test_conditions": "1 \u2264 G \u2264 10000, CSO: SHE, INA12xPA, INA12xUA",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "VOS",
+      "name": "Offset voltage (RTI)",
+      "min": null,
+      "typ": null,
+      "max": 1000.0,
+      "unit": "\u00b5V",
+      "test_conditions": "1 \u2264 G \u2264 10000, CSO: SHE, INA12xPA, INA12xUA, / G",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "VOS",
+      "name": "Offset voltage (RTI)",
+      "min": null,
+      "typ": 20.0,
+      "max": 50.0,
+      "unit": "\u00b5V",
+      "test_conditions": "1 \u2264 G \u2264 10000, CSO: FRE, INA12xU",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "VOS",
+      "name": "Offset voltage (RTI)",
+      "min": null,
+      "typ": null,
+      "max": 500.0,
+      "unit": "\u00b5V",
+      "test_conditions": "1 \u2264 G \u2264 10000, CSO: FRE, INA12xU, / G",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "VOS",
+      "name": "Offset voltage (RTI)",
+      "min": null,
+      "typ": 20.0,
+      "max": 125.0,
+      "unit": "\u00b5V",
+      "test_conditions": "1 \u2264 G \u2264 10000, CSO: FRE, INA12xUA",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "VOS",
+      "name": "Offset voltage (RTI)",
+      "min": null,
+      "typ": null,
+      "max": 1000.0,
+      "unit": "\u00b5V",
+      "test_conditions": "1 \u2264 G \u2264 10000, CSO: FRE, INA12xUA, / G",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "Offset voltage drift (RTI)",
+      "name": "Offset voltage drift (RTI)",
+      "min": null,
+      "typ": 0.2,
+      "max": 0.5,
+      "unit": "\u00b5V/\u00b0C",
+      "test_conditions": "TA = \u201340\u00b0C to +85\u00b0C, INA12xP, INA12xU",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "Offset voltage drift (RTI)",
+      "name": "Offset voltage drift (RTI)",
+      "min": null,
+      "typ": 2.0,
+      "max": 20.0,
+      "unit": "\u00b5V/\u00b0C",
+      "test_conditions": "TA = \u201340\u00b0C to +85\u00b0C, INA12xP, INA12xU, / G",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "Offset voltage drift (RTI)",
+      "name": "Offset voltage drift (RTI)",
+      "min": null,
+      "typ": 0.2,
+      "max": 1.0,
+      "unit": "\u00b5V/\u00b0C",
+      "test_conditions": "TA = \u201340\u00b0C to +85\u00b0C, INA12xPA, INA12xUA",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "Offset voltage drift (RTI)",
+      "name": "Offset voltage drift (RTI)",
+      "min": null,
+      "typ": 5.0,
+      "max": 20.0,
+      "unit": "\u00b5V/\u00b0C",
+      "test_conditions": "TA = \u201340\u00b0C to +85\u00b0C, INA12xPA, INA12xUA, / G",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "PSRR",
+      "name": "Power-supply rejection ratio (RTI)",
+      "min": null,
+      "typ": 0.2,
+      "max": 1.0,
+      "unit": "\u00b5V/V",
+      "test_conditions": "VS = \u00b12.25V to \u00b118V, CSO: SHE, INA12xP, INA12xU",
+      "related_pins": [
+        "V+",
+        "V\u2013"
+      ],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "PSRR",
+      "name": "Power-supply rejection ratio (RTI)",
+      "min": null,
+      "typ": 20.0,
+      "max": 100.0,
+      "unit": "\u00b5V/V",
+      "test_conditions": "VS = \u00b12.25V to \u00b118V, CSO: SHE, INA12xP, INA12xU, / G",
+      "related_pins": [
+        "V+",
+        "V\u2013"
+      ],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "PSRR",
+      "name": "Power-supply rejection ratio (RTI)",
+      "min": null,
+      "typ": 2.0,
+      "max": null,
+      "unit": "\u00b5V/V",
+      "test_conditions": "VS = \u00b12.25V to \u00b118V, CSO: SHE, INA12xPA, INA12xUA",
+      "related_pins": [
+        "V+",
+        "V\u2013"
+      ],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "PSRR",
+      "name": "Power-supply rejection ratio (RTI)",
+      "min": null,
+      "typ": 200.0,
+      "max": null,
+      "unit": "\u00b5V/V",
+      "test_conditions": "VS = \u00b12.25V to \u00b118V, CSO: SHE, INA12xPA, INA12xUA, / G",
+      "related_pins": [
+        "V+",
+        "V\u2013"
+      ],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "PSRR",
+      "name": "Power-supply rejection ratio (RTI)",
+      "min": null,
+      "typ": 0.1,
+      "max": 0.4,
+      "unit": "\u00b5V/V",
+      "test_conditions": "VS = \u00b12.25V to \u00b118V, CSO: FRE, INA12xU",
+      "related_pins": [
+        "V+",
+        "V\u2013"
+      ],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "PSRR",
+      "name": "Power-supply rejection ratio (RTI)",
+      "min": null,
+      "typ": 1.0,
+      "max": 3.2,
+      "unit": "\u00b5V/V",
+      "test_conditions": "VS = \u00b12.25V to \u00b118V, CSO: FRE, INA12xU, / G",
+      "related_pins": [
+        "V+",
+        "V\u2013"
+      ],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "PSRR",
+      "name": "Power-supply rejection ratio (RTI)",
+      "min": null,
+      "typ": 0.8,
+      "max": null,
+      "unit": "\u00b5V/V",
+      "test_conditions": "VS = \u00b12.25V to \u00b118V, CSO: FRE, INA12xUA",
+      "related_pins": [
+        "V+",
+        "V\u2013"
+      ],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "PSRR",
+      "name": "Power-supply rejection ratio (RTI)",
+      "min": null,
+      "typ": 6.4,
+      "max": null,
+      "unit": "\u00b5V/V",
+      "test_conditions": "VS = \u00b12.25V to \u00b118V, CSO: FRE, INA12xUA, / G",
+      "related_pins": [
+        "V+",
+        "V\u2013"
+      ],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "Long-term stability",
+      "name": "Long-term stability",
+      "min": null,
+      "typ": 0.1,
+      "max": null,
+      "unit": "\u00b5V/mo",
+      "test_conditions": "CSO: SHE",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "Long-term stability",
+      "name": "Long-term stability",
+      "min": null,
+      "typ": 3.0,
+      "max": null,
+      "unit": "\u00b5V/mo",
+      "test_conditions": "CSO: SHE, / G",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "Long-term stability",
+      "name": "Long-term stability",
+      "min": null,
+      "typ": 0.2,
+      "max": null,
+      "unit": "\u00b5V/mo",
+      "test_conditions": "CSO: FRE",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "Long-term stability",
+      "name": "Long-term stability",
+      "min": null,
+      "typ": 3.0,
+      "max": null,
+      "unit": "\u00b5V/mo",
+      "test_conditions": "CSO: FRE, / G",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "Input impedance Differential",
+      "name": "Input impedance Differential",
+      "min": null,
+      "typ": 10.0,
+      "max": null,
+      "unit": "G\u2126",
+      "test_conditions": null,
+      "related_pins": [
+        "VIN+",
+        "VIN\u2013"
+      ],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "Input impedance Differential",
+      "name": "Input impedance Differential",
+      "min": null,
+      "typ": 2.0,
+      "max": null,
+      "unit": "pF",
+      "test_conditions": null,
+      "related_pins": [
+        "VIN+",
+        "VIN\u2013"
+      ],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "Input impedance Common-mode",
+      "name": "Input impedance Common-mode",
+      "min": null,
+      "typ": 100.0,
+      "max": null,
+      "unit": "G\u2126",
+      "test_conditions": null,
+      "related_pins": [
+        "VIN+",
+        "VIN\u2013"
+      ],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "Input impedance Common-mode",
+      "name": "Input impedance Common-mode",
+      "min": null,
+      "typ": 9.0,
+      "max": null,
+      "unit": "pF",
+      "test_conditions": null,
+      "related_pins": [
+        "VIN+",
+        "VIN\u2013"
+      ],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "VCM",
+      "name": "Common-mode voltage",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VO = 0V, (V\u2013) + 2 to (V+) \u2013 2",
+      "related_pins": [
+        "VIN+",
+        "VIN\u2013",
+        "V+",
+        "V\u2013"
+      ],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "Safe input voltage",
+      "name": "Safe input voltage",
+      "min": null,
+      "typ": null,
+      "max": 40.0,
+      "unit": "V",
+      "test_conditions": "RS = 0\u03a9",
+      "related_pins": [
+        "VIN+",
+        "VIN\u2013"
+      ],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "min": 80.0,
+      "typ": 86.0,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "\u0394RS = 1 k\u03a9, VCM = \u00b113 V, CSO: SHE, G = 1, INA12xP, INA12xU",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "min": 73.0,
+      "typ": null,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "\u0394RS = 1 k\u03a9, VCM = \u00b113 V, CSO: SHE, G = 1, INA12xPA, INA12xUA",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "min": 100.0,
+      "typ": 106.0,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "\u0394RS = 1 k\u03a9, VCM = \u00b113 V, CSO: SHE, G = 10, INA12xP, INA12xU",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "min": 93.0,
+      "typ": null,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "\u0394RS = 1 k\u03a9, VCM = \u00b113 V, CSO: SHE, G = 10, INA12xPA, INA12xUA",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "min": 120.0,
+      "typ": 125.0,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "\u0394RS = 1 k\u03a9, VCM = \u00b113 V, CSO: SHE, G = 100, INA12xP, INA12xU",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "min": 110.0,
+      "typ": null,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "\u0394RS = 1 k\u03a9, VCM = \u00b113 V, CSO: SHE, G = 100, INA12xPA, INA12xUA",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "min": 120.0,
+      "typ": 130.0,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "\u0394RS = 1 k\u03a9, VCM = \u00b113 V, CSO: SHE, G = 1000, INA12xP, INA12xU",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "min": 110.0,
+      "typ": null,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "\u0394RS = 1 k\u03a9, VCM = \u00b113 V, CSO: SHE, G = 1000, INA12xPA, INA12xUA",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "min": 90.0,
+      "typ": 100.0,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "\u0394RS = 1 k\u03a9, VCM = \u00b113 V, CSO: FRE, G = 1, INA12xU",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "min": 83.0,
+      "typ": null,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "\u0394RS = 1 k\u03a9, VCM = \u00b113 V, CSO: FRE, G = 1, INA12xUA",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "min": 110.0,
+      "typ": 120.0,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "\u0394RS = 1 k\u03a9, VCM = \u00b113 V, CSO: FRE, G = 10, INA12xU",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "min": 103.0,
+      "typ": null,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "\u0394RS = 1 k\u03a9, VCM = \u00b113 V, CSO: FRE, G = 10, INA12xUA",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "min": 130.0,
+      "typ": 140.0,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "\u0394RS = 1 k\u03a9, VCM = \u00b113 V, CSO: FRE, G = 100, INA12xU",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "min": 120.0,
+      "typ": null,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "\u0394RS = 1 k\u03a9, VCM = \u00b113 V, CSO: FRE, G = 100, INA12xUA",
+      "related_pins": [],
+      "category": "INPUT"
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "min": 140.0,
+      "typ": 145.0,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "\u0394RS = 1 k\u03a9, VCM ="
+    }
+  ]
+}

@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autonomous Analog Circuit Design & Verification Visualizer</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --background: #090d16;
+      --card: #0f172a;
+      --card-hover: #1e293b;
+      --border: #334155;
+      --foreground: #f8fafc;
+      --muted-foreground: #94a3b8;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.25);
+      --accent: #818cf8;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    .glow-card {
+      box-shadow: 0 0 20px -5px rgba(56, 189, 248, 0.15);
+    }
+    .node-pin {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .node-pin:hover {
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 8px var(--primary));
+    }
+    .tab-btn.active {
+      background-color: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border-bottom: 2px solid #38bdf8;
+    }
+    .code-box {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+  </style>
+</head>
+<body class="min-h-screen custom-scrollbar p-3 md:p-6 antialiased">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- Top Navigation & IC Selector Header -->
+    <header class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-lg flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-sky-500/10 border border-sky-500/30 rounded-xl text-sky-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+              Autonomous Analog Circuit Verifier
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Neuro-Symbolic Engine</span>
+            </h1>
+            <p class="text-xs md:text-sm text-[var(--muted-foreground)] mt-0.5">
+              Deep Visual Inspection of First-Principles AI Circuit Synthesis, PDG Scheduling & Formal Verification
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- IC Selector Pills / Dropdown -->
+      <div class="flex items-center gap-2 w-full lg:w-auto">
+        <label for="icSelect" class="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider shrink-0">Selected IC:</label>
+        <select id="icSelect" onchange="switchIC(this.value)" class="w-full lg:w-72 bg-slate-900 border border-[var(--border)] text-sky-300 font-semibold text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-sky-400">
+        </select>
+      </div>
+    </header>
+
+    <!-- Sub-Process Master Flowchart (Breadcrumb Pipeline) -->
+    <section class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-lg">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xs uppercase tracking-wider font-bold text-sky-400 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Execution Sub-Process Architecture (6 Core Phases)
+        </h2>
+        <span id="pipelineStatusBadge" class="text-xs font-medium px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300 border border-sky-500/30">Active</span>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+        <!-- Phase 1 -->
+        <div onclick="selectTab('tab-hkg')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 1</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">PDF to HKG</div>
+          <div class="text-[11px] text-slate-400 mt-1">Layout, tables & knowledge graph</div>
+        </div>
+
+        <!-- Phase 2 -->
+        <div onclick="selectTab('tab-pdg')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 2</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">PDG & Schedule</div>
+          <div class="text-[11px] text-slate-400 mt-1">Causal DAG & delay &sigma;(p)</div>
+        </div>
+
+        <!-- Phase 3 -->
+        <div onclick="selectTab('tab-synthesis')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 3</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">AI Netlist Synthesis</div>
+          <div class="text-[11px] text-slate-400 mt-1">Transistor sizing & topology</div>
+        </div>
+
+        <!-- Phase 4 -->
+        <div onclick="selectTab('tab-testbenches')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 4</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">Testbench Deck</div>
+          <div class="text-[11px] text-slate-400 mt-1">.op / .tran / .ac auto decks</div>
+        </div>
+
+        <!-- Phase 5 -->
+        <div onclick="selectTab('tab-verification')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 5</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">LTspice & SymPy</div>
+          <div class="text-[11px] text-slate-400 mt-1">Batch sim & formal interval</div>
+        </div>
+
+        <!-- Phase 6 -->
+        <div onclick="selectTab('tab-healing')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 6</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">Self-Healing Loop</div>
+          <div class="text-[11px] text-slate-400 mt-1">Shortfall &rarr; Re-synthesis</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Metrics Cards for Current Selected IC -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">TARGET IC / CATEGORY</div>
+        <div id="statIcName" class="text-lg md:text-xl font-bold text-white mt-1 truncate">--</div>
+        <div id="statCategory" class="text-xs text-sky-400 truncate mt-0.5">--</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">EXTRACTED SPECS</div>
+        <div id="statSpecCount" class="text-lg md:text-xl font-bold text-white mt-1">--</div>
+        <div id="statPinCount" class="text-xs text-indigo-400 mt-0.5">-- Pins Identified</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">CLOSED-LOOP ITERATIONS</div>
+        <div id="statLoopCount" class="text-lg md:text-xl font-bold text-white mt-1">--</div>
+        <div id="statLoopStatus" class="text-xs text-amber-400 mt-0.5">2 Iterations Executed</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">FINAL VERIFICATION PASS</div>
+        <div id="statPassRate" class="text-lg md:text-xl font-bold text-emerald-400 mt-1">--%</div>
+        <div id="statPassRateSub" class="text-xs text-slate-400 mt-0.5">LTspice Neuro-Symbolic</div>
+      </div>
+    </section>
+
+    <!-- Interactive Navigation Tabs -->
+    <div class="border-b border-slate-700 flex overflow-x-auto gap-2 text-sm font-medium">
+      <button onclick="selectTab('tab-overview')" id="btn-tab-overview" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all active">
+        1. Sub-Process Flowchart
+      </button>
+      <button onclick="selectTab('tab-pdg')" id="btn-tab-pdg" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        2. Port Dependency Graph & Timing
+      </button>
+      <button onclick="selectTab('tab-synthesis')" id="btn-tab-synthesis" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        3. AI Netlist & Transistor Sizing
+      </button>
+      <button onclick="selectTab('tab-testbenches')" id="btn-tab-testbenches" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        4. Testbench Decks
+      </button>
+      <button onclick="selectTab('tab-verification')" id="btn-tab-verification" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        5. SymPy Oracle & Measurements
+      </button>
+      <button onclick="selectTab('tab-healing')" id="btn-tab-healing" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        6. Closed-Loop Diagnostics
+      </button>
+      <button onclick="selectTab('tab-hkg')" id="btn-tab-hkg" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        7. Knowledge Graph (HKG)
+      </button>
+    </div>
+
+    <!-- TAB 1: SUB-PROCESS FLOWCHART & SYSTEM ARCHITECTURE -->
+    <div id="tab-overview" class="tab-content space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+          Detailed Internal Sub-Processes Execution Flow
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-6">
+          Every analog IC undergoes an automated, six-phase end-to-end synthesis and verification cycle without template hardcoding.
+        </p>
+
+        <!-- SVG Flowchart -->
+        <div class="overflow-x-auto py-2">
+          <svg class="w-full min-w-[850px] h-64 text-slate-200" viewBox="0 0 950 260">
+            <defs>
+              <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0284c7"/>
+                <stop offset="100%" stop-color="#0369a1"/>
+              </linearGradient>
+              <linearGradient id="grad-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6366f1"/>
+                <stop offset="100%" stop-color="#4f46e5"/>
+              </linearGradient>
+              <linearGradient id="grad-emerald" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#059669"/>
+                <stop offset="100%" stop-color="#047857"/>
+              </linearGradient>
+              <linearGradient id="grad-amber" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#d97706"/>
+                <stop offset="100%" stop-color="#b45309"/>
+              </linearGradient>
+              <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+              </marker>
+              <marker id="arrow-feedback" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b"/>
+              </marker>
+            </defs>
+
+            <!-- Box 1: PDF to HKG -->
+            <rect x="20" y="40" width="130" height="90" rx="12" fill="url(#grad-blue)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="85" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">1. PDF Parsing</text>
+            <text x="85" y="90" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Layout & Tables</text>
+            <text x="85" y="105" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; HKG Graph</text>
+
+            <line x1="150" y1="85" x2="180" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 2: PDG Scheduling -->
+            <rect x="180" y="40" width="130" height="90" rx="12" fill="url(#grad-blue)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="245" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">2. PDG Engine</text>
+            <text x="245" y="90" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Pin Dependency</text>
+            <text x="245" y="105" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Delay Schedule &sigma;(p)</text>
+
+            <line x1="310" y1="85" x2="340" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 3: LLM Circuit Synthesis -->
+            <rect x="340" y="40" width="140" height="90" rx="12" fill="url(#grad-purple)" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="410" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">3. AI Synthesis</text>
+            <text x="410" y="90" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; First-Principles</text>
+            <text x="410" y="105" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; Transistor Sizing</text>
+
+            <line x1="480" y1="85" x2="510" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 4: Testbench Deck Synthesis -->
+            <rect x="510" y="40" width="130" height="90" rx="12" fill="url(#grad-purple)" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="575" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">4. Testbench Decks</text>
+            <text x="575" y="90" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; .op / .tran / .ac</text>
+            <text x="575" y="105" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; Auto .meas Bindings</text>
+
+            <line x1="640" y1="85" x2="670" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 5: LTspice & SymPy -->
+            <rect x="670" y="40" width="130" height="90" rx="12" fill="url(#grad-emerald)" stroke="#34d399" stroke-width="1.5"/>
+            <text x="735" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">5. Verification</text>
+            <text x="735" y="90" text-anchor="middle" font-size="10" fill="#d1fae5">&bull; Headless LTspice</text>
+            <text x="735" y="105" text-anchor="middle" font-size="10" fill="#d1fae5">&bull; SymPy Oracles</text>
+
+            <line x1="800" y1="85" x2="830" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 6: Decision / Self-Healing -->
+            <polygon points="885,55 935,85 885,115 835,85" fill="url(#grad-amber)" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="885" y="82" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">All</text>
+            <text x="885" y="95" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">Pass?</text>
+
+            <!-- Feedback Loop Arrow back to Phase 3 -->
+            <path d="M 885 115 L 885 180 L 410 180 L 410 135" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrow-feedback)"/>
+            <text x="645" y="195" text-anchor="middle" font-size="10" font-weight="bold" fill="#fbbf24">Self-Healing Iteration Feedback (Shortfalls &amp; Diagnosis)</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PORT DEPENDENCY GRAPH (PDG) & INTERACTIVE TIMING -->
+    <div id="tab-pdg" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              Interactive Port Dependency Graph (PDG) &amp; Startup Timeline
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+              Topological activation sequence derived from physical pin roles (Power &rarr; Bias &rarr; Signal &rarr; Output)
+            </p>
+          </div>
+
+          <!-- Playback Controls -->
+          <div class="flex items-center gap-3 bg-slate-900 border border-slate-700 px-4 py-2 rounded-xl">
+            <button onclick="toggleTimelinePlay()" id="btnPlayPause" class="text-sky-400 hover:text-sky-300 font-bold text-xs flex items-center gap-1.5">
+              <svg id="playIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg>
+              <span>Play Sequence</span>
+            </button>
+            <input type="range" id="timeSlider" min="0" max="10" step="0.5" value="0" oninput="updateTimelineTime(parseFloat(this.value))" class="w-36 accent-sky-400 cursor-pointer">
+            <span id="timeDisplay" class="text-xs font-mono font-bold text-sky-300 min-w-[55px] text-right">0.0 &mu;s</span>
+          </div>
+        </div>
+
+        <!-- Dynamic PDG SVG Container -->
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 overflow-x-auto min-h-[320px] flex items-center justify-center">
+          <svg id="pdgSvg" class="w-full max-w-4xl h-72 text-slate-200" viewBox="0 0 800 280">
+            <!-- Rendered dynamically by renderPDG() -->
+          </svg>
+        </div>
+
+        <!-- Schedule Table -->
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="text-slate-400 bg-slate-900/60 uppercase text-[11px] border-b border-slate-800">
+              <tr>
+                <th class="px-3 py-2">Pin Name</th>
+                <th class="px-3 py-2">Physical Role</th>
+                <th class="px-3 py-2">Direction</th>
+                <th class="px-3 py-2">Settling Delay &sigma;(p)</th>
+                <th class="px-3 py-2">Status at Current Time</th>
+              </tr>
+            </thead>
+            <tbody id="pdgTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: AI NETLIST SYNTHESIS & ARCHITECTURE -->
+    <div id="tab-synthesis" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+          First-Principles Transistor Netlist Synthesis &amp; Sizing Rationale
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          LLM-generated SPICE netlist without hardcoded circuit templates. Compare Loop 1 (initial synthesis) vs Loop 2 (autonomous refinement).
+        </p>
+
+        <!-- Loop Selector for Netlist -->
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-xs text-slate-400 font-semibold uppercase">View Netlist:</span>
+          <button onclick="switchNetlistIteration(1)" id="btnNetlistIter1" class="px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold">Iteration 1</button>
+          <button onclick="switchNetlistIteration(2)" id="btnNetlistIter2" class="px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold">Iteration 2</button>
+        </div>
+
+        <!-- Architecture Rationale Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 mb-4">
+          <h4 class="text-xs uppercase font-bold text-sky-400 mb-1">Architecture Rationale &amp; Block Topology</h4>
+          <p id="architectureSummaryText" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line"></p>
+        </div>
+
+        <!-- Netlist Code Box -->
+        <div class="relative bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span id="netlistFilename" class="font-mono text-sky-300">circuit.cir</span>
+            <span>SPICE Dialect: LTspice</span>
+          </div>
+          <pre id="netlistCodePre" class="p-4 text-xs font-mono text-slate-300 overflow-x-auto max-h-96 custom-scrollbar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: TESTBENCH DECKS -->
+    <div id="tab-testbenches" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+          Synthesized Multi-Domain Testbenches
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          Automated SPICE testbenches for DC Operating Point (.op), Dynamic Transient (.tran), and AC Frequency Sweeps (.ac) aligned with PDG schedule.
+        </p>
+
+        <div class="flex items-center gap-2 mb-4" id="tbDeckButtons">
+          <!-- Dynamically filled with testbench buttons -->
+        </div>
+
+        <div class="relative bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span id="currentTbName" class="font-mono text-purple-300">tb_dc_op.cir</span>
+            <span>Analysis Mode: Automated .meas</span>
+          </div>
+          <pre id="tbCodePre" class="p-4 text-xs font-mono text-slate-300 overflow-x-auto max-h-96 custom-scrollbar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: SYMPY ORACLE VERIFICATION & MEASUREMENTS -->
+    <div id="tab-verification" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              Neuro-Symbolic Specification Matrix &amp; Oracle Interval Audit
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+              Datasheet specifications formally bounded by SymPy interval algebra &amp; evaluated against LTspice measurements.
+            </p>
+          </div>
+
+          <!-- Filter Search -->
+          <div class="flex items-center gap-2 w-full md:w-auto">
+            <input type="text" id="specSearchInput" oninput="filterSpecs(this.value)" placeholder="Search parameter (e.g. VCC, Gain)..." class="text-xs bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-slate-200 focus:outline-none focus:border-sky-400 w-full md:w-56">
+          </div>
+        </div>
+
+        <!-- Spec Table -->
+        <div class="overflow-x-auto max-h-[460px] custom-scrollbar border border-slate-800 rounded-xl">
+          <table class="w-full text-xs text-left">
+            <thead class="sticky top-0 text-slate-300 bg-slate-900 uppercase text-[11px] border-b border-slate-800 shadow">
+              <tr>
+                <th class="px-3 py-2.5">Parameter Symbol</th>
+                <th class="px-3 py-2.5">Min Limit</th>
+                <th class="px-3 py-2.5">Typ Target</th>
+                <th class="px-3 py-2.5">Max Limit</th>
+                <th class="px-3 py-2.5">Unit</th>
+                <th class="px-3 py-2.5">Measured in Sim</th>
+                <th class="px-3 py-2.5">SymPy Status</th>
+              </tr>
+            </thead>
+            <tbody id="specTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: CLOSED-LOOP DIAGNOSTICS & REFINEMENT -->
+    <div id="tab-healing" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+          Closed-Loop Refinement History &amp; Shortfall Analysis
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-6">
+          Step-by-step diagnostic breakdown showing what fell short in each loop iteration and what improvements were applied.
+        </p>
+
+        <div id="diagnosticsContainer" class="space-y-6">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 7: HARDWARE KNOWLEDGE GRAPH (HKG) -->
+    <div id="tab-hkg" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+          Hardware Knowledge Graph (HKG) Topology
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          Hierarchical document entity graph extracted from PDF text, layout blocks, and electrical tables.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h4 class="text-xs font-bold uppercase text-sky-400 mb-2">Device Metadata</h4>
+            <div id="hkgDeviceMetadata" class="text-xs text-slate-300 space-y-1.5"></div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h4 class="text-xs font-bold uppercase text-indigo-400 mb-2">Pin Definitions &amp; Roles</h4>
+            <div id="hkgPinList" class="text-xs text-slate-300 max-h-48 overflow-y-auto custom-scrollbar space-y-1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Embedded Benchmark Data -->
+  <script>
+    const BENCHMARK_DATA = [{"id": "LM393", "folder_name": "LM393", "summary": {"part_name": "LM393B, LM2903B, LM193, LM293, LM393 and LM2903 Dual Comparators", "subckt_name": "LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS", "pass_rate_percent": 0.0, "spec_count": 42, "iterations": [{"iteration": 1, "netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS_iter1.cir", "pass_rate_percent": 0.0, "passed_specs": 0, "failed_specs": 0, "unmeasured_specs": 41, "passed_symbols": [], "simulation_errors": ["C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\tb_dc_op.cir(107): syntax error", "  --> .meas VIO_pos_rise when FIND V(1OUT)=2.5 rise=1 ; Find where output crosses mid-supply (assuming open-drain with pull-up)", "  --> ^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\tb_dc_op.cir(108): syntax error", "  --> .meas VIO_neg_fall when FIND V(1OUT)=2.5 fall=1", "  --> ^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\tb_dc_op.cir(124): syntax error", "  --> .meas IB_1IN_NEG_AVG AVG FIND I(V1IN_NEG_IB)", "  --> ^^^^^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\tb_dc_op.cir(125): syntax error", "  --> .meas IB_1IN_POS_AVG AVG FIND I(V1IN_POS_IB)", "  --> ^^^^^^^^^^^^^^^"], "shortfalls": ["Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\tb_dc_op.cir(107): syntax error", "Compiler/Simulation Error:   --> .meas VIO_pos_rise when FIND V(1OUT)=2.5 rise=1 ; Find where output crosses mid-supply (assuming open-drain with pull-up)", "Compiler/Simulation Error:   --> ^^^^^^^^^^^", "Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\tb_dc_op.cir(108): syntax error", "Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VID' violated: Parameter 'VID' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VID' violated: Parameter 'VID' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)"], "improvements": ["Initial first-principles topology and Level-1 parameter sizing synthesized from scratch."], "architecture_summary": "The LM393B/LM2903B dual comparator is designed using a classic two-stage architecture for each comparator: a differential input stage followed by a gain stage and an open-collector output stage. This architecture is chosen for its simplicity, robustness, and ability to operate from a single supply, providing a ground-referenced output.\n\n**Input Stage (Differential Pair):**\nEach comparator's input stage consists of a PNP differential pair (Q1/Q2 for comparator 1, Q11/Q12 for comparator 2) with active current mirror loading (Q3/Q4 for comparator 1, Q13/Q14 for comparator 2). PNP transistors are used for the input pair to allow the common-mode input voltage to extend down to ground, a key requirement for single-supply operation. The current mirror provides differential-to-single-ended conversion and high gain.\n- **Sizing:** The PNP transistors are sized to provide the specified input bias current (IB) and input offset current (IOS). A larger W/L ratio for the input transistors generally reduces offset voltage but increases input capacitance and current. A compromise is made to meet the typical IB of -25nA and IOS of 0.5nA. The current source (Ibias1/Ibias2) feeding the differential pair is set to provide the necessary quiescent current for the input stage, contributing to the overall quiescent current (IQ).\n\n**Gain Stage:**\nThe output of the input stage drives a high-gain common-emitter stage (Q5 for comparator 1, Q15 for comparator 2). This stage provides significant voltage gain and level shifting.\n- **Sizing:** The NPN transistor (Q5/Q15) is sized to provide sufficient gain to meet the AVD (Large-Signal Differential Voltage Amplification) specification of 50 V/mV (50,000 V/V). The collector resistor (R1/R11) is chosen to set the operating point and gain.\n\n**Output Stage (Open Collector):**\nThe gain stage drives an NPN open-collector output transistor (Q6 for comparator 1, Q16 for comparator 2). This transistor pulls the output low when the input conditions dictate. The open-collector configuration allows for wired-OR functionality and flexible output voltage levels, limited only by the external pull-up resistor and supply voltage.\n- **Sizing:** Q6/Q16 is sized to sink the specified output current (IOL) of 6mA (min) at a low output voltage (VOL) of 1.5V. A larger transistor is required to handle the maximum sink current of 25mA for B-versions. The base resistor (R2/R12) limits the base current.\n\n**Bias Network:**\nA central bias network generates stable current references for both comparators. This typically involves a current mirror or a bandgap reference (though a full bandgap is overkill for this level of detail and complexity in a SPICE model). For simplicity and to meet the IQ specification, a current source (Ibias_total) is used to set the overall quiescent current, which is then mirrored to the individual stages.\n- **Quiescent Current (IQ):** The total quiescent current is distributed among the input stages and gain stages. The target IQ of 400\u00b5A (typ) at VS=5V is achieved by carefully setting the current sources and current mirror ratios. The increase in IQ at higher supply voltages (800\u00b5A max at 36V) is accounted for by the voltage dependence of some current sources or by modeling leakage.\n\n**ESD Protection:**\nThe datasheet mentions improved 2kV ESD performance and input ruggedness through dedicated ESD clamps. These are modeled using diodes (D1-D4 for comparator 1, D11-D14 for comparator 2) from the input pins to VCC and GND. These diodes clamp the input voltage to prevent damage from overvoltage events.\n\n**Thermal Pad:**\nThe Thermal_Pad is directly connected to GND, as specified. This is a physical connection for heat dissipation and is modeled as a direct short to GND.\n\n**Component Sizing Methodology:**\n\n1.  **VCC/VS Range:** The maximum supply voltage of 38V (B-versions) dictates the breakdown voltage requirements for all transistors. Standard BJT models are assumed to have sufficient breakdown voltage.\n2.  **Input Offset Voltage (VIO):** This is primarily determined by the matching of the input differential pair (Q1/Q2, Q11/Q12) and their load (Q3/Q4, Q13/Q14). In a SPICE model, VIO is often introduced by slight mismatches in W/L ratios or by adding a small voltage source in series with one input. For this model, we'll rely on the inherent mismatch of the chosen transistor models or introduce a small offset current source if needed to hit the typical value.\n3.  **Input Bias Current (IB):** Set by the base current of the PNP input transistors (Q1, Q2, Q11, Q12). This is controlled by the current flowing through the differential pair and the beta of the PNP transistors.\n4.  **Input Offset Current (IOS):** Determined by the mismatch in base currents of the input differential pair.\n5.  **Common-Mode Input Voltage Range (VCM):** The PNP input stage allows the input to go down to GND. The upper limit is typically VCC - 1.5V to VCC - 2V, depending on the saturation voltage of the current mirror and the Vbe of the input transistors.\n6.  **Large-Signal Differential Voltage Amplification (AVD):** Achieved by the combined gain of the input differential stage and the common-emitter gain stage. Resistors R1/R11 and the transconductance of Q5/Q15 are key.\n7.  **Output Sink Current (IOL) and Output Low Voltage (VOL):** The output NPN transistor (Q6/Q16) is sized to sink the required current while maintaining VOL below the specified maximum. Beta of Q6/Q16 and the base drive current from Q5/Q15 are critical.\n8.  **Output Leakage Current (IOH-LKG):** This is the reverse leakage current of the output transistor when it's off. This is typically very small and inherent to the transistor model.\n9.  **Quiescent Current (IQ):** The total current drawn from VCC when no load is present. This is set by the bias current sources and the operating points of all active components.\n\n**Simplifications and Assumptions:**\n-   Ideal BJT models are used, assuming sufficient breakdown voltages for the specified VCC range.\n-   Temperature effects are not explicitly modeled with `.temp` statements within the subcircuit, but the BJT models inherently have some temperature dependence.\n-   Propagation delay is not explicitly modeled with complex timing elements but will emerge from the RC time constants of the circuit.\n-   The \"B\" version improvements (lower offset, higher VCC, etc.) are primarily achieved through tighter process control and potentially slightly different transistor sizings or improved ESD structures. For a generic SPICE model, these are represented by meeting the \"B\" version specifications where applicable (e.g., higher VCC, lower IB/IOS/VIO).\n-   The two comparators are assumed to be identical in design, sharing a common bias network where appropriate.\n\nThis architecture provides a robust and widely used foundation for voltage comparators, capable of meeting the specified electrical characteristics.", "design_rationale": {"summary": "The LM393B/LM2903B dual comparator is designed using a classic two-stage architecture for each comparator: a differential input stage followed by a gain stage and an open-collector output stage. This architecture is chosen for its simplicity, robustness, and ability to operate from a single supply, providing a ground-referenced output.\n\n**Input Stage (Differential Pair):**\nEach comparator's input stage consists of a PNP differential pair (Q1/Q2 for comparator 1, Q11/Q12 for comparator 2) with active current mirror loading (Q3/Q4 for comparator 1, Q13/Q14 for comparator 2). PNP transistors are used for the input pair to allow the common-mode input voltage to extend down to ground, a key requirement for single-supply operation. The current mirror provides differential-to-single-ended conversion and high gain.\n- **Sizing:** The PNP transistors are sized to provide the specified input bias current (IB) and input offset current (IOS). A larger W/L ratio for the input transistors generally reduces offset voltage but increases input capacitance and current. A compromise is made to meet the typical IB of -25nA and IOS of 0.5nA. The current source (Ibias1/Ibias2) feeding the differential pair is set to provide the necessary quiescent current for the input stage, contributing to the overall quiescent current (IQ).\n\n**Gain Stage:**\nThe output of the input stage drives a high-gain common-emitter stage (Q5 for comparator 1, Q15 for comparator 2). This stage provides significant voltage gain and level shifting.\n- **Sizing:** The NPN transistor (Q5/Q15) is sized to provide sufficient gain to meet the AVD (Large-Signal Differential Voltage Amplification) specification of 50 V/mV (50,000 V/V). The collector resistor (R1/R11) is chosen to set the operating point and gain.\n\n**Output Stage (Open Collector):**\nThe gain stage drives an NPN open-collector output transistor (Q6 for comparator 1, Q16 for comparator 2). This transistor pulls the output low when the input conditions dictate. The open-collector configuration allows for wired-OR functionality and flexible output voltage levels, limited only by the external pull-up resistor and supply voltage.\n- **Sizing:** Q6/Q16 is sized to sink the specified output current (IOL) of 6mA (min) at a low output voltage (VOL) of 1.5V. A larger transistor is required to handle the maximum sink current of 25mA for B-versions. The base resistor (R2/R12) limits the base current.\n\n**Bias Network:**\nA central bias network generates stable current references for both comparators. This typically involves a current mirror or a bandgap reference (though a full bandgap is overkill for this level of detail and complexity in a SPICE model). For simplicity and to meet the IQ specification, a current source (Ibias_total) is used to set the overall quiescent current, which is then mirrored to the individual stages.\n- **Quiescent Current (IQ):** The total quiescent current is distributed among the input stages and gain stages. The target IQ of 400\u00b5A (typ) at VS=5V is achieved by carefully setting the current sources and current mirror ratios. The increase in IQ at higher supply voltages (800\u00b5A max at 36V) is accounted for by the voltage dependence of some current sources or by modeling leakage.\n\n**ESD Protection:**\nThe datasheet mentions improved 2kV ESD performance and input ruggedness through dedicated ESD clamps. These are modeled using diodes (D1-D4 for comparator 1, D11-D14 for comparator 2) from the input pins to VCC and GND. These diodes clamp the input voltage to prevent damage from overvoltage events.\n\n**Thermal Pad:**\nThe Thermal_Pad is directly connected to GND, as specified. This is a physical connection for heat dissipation and is modeled as a direct short to GND.\n\n**Component Sizing Methodology:**\n\n1.  **VCC/VS Range:** The maximum supply voltage of 38V (B-versions) dictates the breakdown voltage requirements for all transistors. Standard BJT models are assumed to have sufficient breakdown voltage.\n2.  **Input Offset Voltage (VIO):** This is primarily determined by the matching of the input differential pair (Q1/Q2, Q11/Q12) and their load (Q3/Q4, Q13/Q14). In a SPICE model, VIO is often introduced by slight mismatches in W/L ratios or by adding a small voltage source in series with one input. For this model, we'll rely on the inherent mismatch of the chosen transistor models or introduce a small offset current source if needed to hit the typical value.\n3.  **Input Bias Current (IB):** Set by the base current of the PNP input transistors (Q1, Q2, Q11, Q12). This is controlled by the current flowing through the differential pair and the beta of the PNP transistors.\n4.  **Input Offset Current (IOS):** Determined by the mismatch in base currents of the input differential pair.\n5.  **Common-Mode Input Voltage Range (VCM):** The PNP input stage allows the input to go down to GND. The upper limit is typically VCC - 1.5V to VCC - 2V, depending on the saturation voltage of the current mirror and the Vbe of the input transistors.\n6.  **Large-Signal Differential Voltage Amplification (AVD):** Achieved by the combined gain of the input differential stage and the common-emitter gain stage. Resistors R1/R11 and the transconductance of Q5/Q15 are key.\n7.  **Output Sink Current (IOL) and Output Low Voltage (VOL):** The output NPN transistor (Q6/Q16) is sized to sink the required current while maintaining VOL below the specified maximum. Beta of Q6/Q16 and the base drive current from Q5/Q15 are critical.\n8.  **Output Leakage Current (IOH-LKG):** This is the reverse leakage current of the output transistor when it's off. This is typically very small and inherent to the transistor model.\n9.  **Quiescent Current (IQ):** The total current drawn from VCC when no load is present. This is set by the bias current sources and the operating points of all active components.\n\n**Simplifications and Assumptions:**\n-   Ideal BJT models are used, assuming sufficient breakdown voltages for the specified VCC range.\n-   Temperature effects are not explicitly modeled with `.temp` statements within the subcircuit, but the BJT models inherently have some temperature dependence.\n-   Propagation delay is not explicitly modeled with complex timing elements but will emerge from the RC time constants of the circuit.\n-   The \"B\" version improvements (lower offset, higher VCC, etc.) are primarily achieved through tighter process control and potentially slightly different transistor sizings or improved ESD structures. For a generic SPICE model, these are represented by meeting the \"B\" version specifications where applicable (e.g., higher VCC, lower IB/IOS/VIO).\n-   The two comparators are assumed to be identical in design, sharing a common bias network where appropriate.\n\nThis architecture provides a robust and widely used foundation for voltage comparators, capable of meeting the specified electrical characteristics."}}, {"iteration": 2, "netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS_iter2.cir", "pass_rate_percent": 0.0, "passed_specs": 0, "failed_specs": 0, "unmeasured_specs": 41, "passed_symbols": [], "simulation_errors": ["C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\tb_dc_op.cir(24): This sub-circuit cannot be instantiated because it contains these syntax errors:", "  --> C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS_iter2.cir(120): Expected a sequence <directive or device instantiation end of line> here.", "  --> )", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS_iter2.cir(120): Expected a sequence <directive or device instantiation end of line> here.", "  --> )", "  --> ^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS_iter2.cir(127): Expected a sequence <directive or device instantiation end of line> here.", "  --> )", "  --> ^"], "shortfalls": ["Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\tb_dc_op.cir(24): This sub-circuit cannot be instantiated because it contains these syntax errors:", "Compiler/Simulation Error:   --> C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS_iter2.cir(120): Expected a sequence <directive or device instantiation end of line> here.", "Compiler/Simulation Error:   --> )", "Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS_iter2.cir(120): Expected a sequence <directive or device instantiation end of line> here.", "Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VID' violated: Parameter 'VID' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VID' violated: Parameter 'VID' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)"], "improvements": ["Topology refinement: The LM393B/LM2903B dual comparator is designed with a classic two-stage architecture: a differential input stage followed by an output stage..."], "architecture_summary": "The LM393B/LM2903B dual comparator is designed with a classic two-stage architecture: a differential input stage followed by an output stage. The primary goal is to achieve high gain, low offset, wide common-mode input range, and an open-collector output, all while operating from a single supply. The \"B\" versions specifically target improved performance metrics such as lower offset, higher supply voltage, and lower supply current.\n\n**1. Input Stage (Differential Pair with Current Mirror Load):**\n*   **Topology:** A PNP differential pair (Q1, Q2 for comparator 1; Q11, Q12 for comparator 2) is chosen for the input stage. PNP inputs allow the common-mode input voltage to extend down to the negative supply rail (GND), which is a key requirement for single-supply operation.\n*   **Bias:** A current source (Q3, R1 for comparator 1; Q13, R11 for comparator 2) biases the differential pair, setting the quiescent current and thus influencing transconductance and power consumption. The current is set to achieve the specified quiescent current (IQ) and input bias current (IB).\n*   **Load:** An active load consisting of a current mirror (Q4, Q5 for comparator 1; Q14, Q15 for comparator 2) converts the differential current into a single-ended voltage. This provides high gain and allows for efficient signal transfer to the next stage.\n*   **Offset Voltage (VIO):** To meet the low offset voltage specification, careful matching of the differential pair transistors (Q1, Q2) and the current mirror transistors (Q4, Q5) is crucial. This is primarily achieved through device sizing (identical W/L for matched pairs) and implicitly through the `.model` parameters.\n*   **Input Bias Current (IB):** The input bias current is primarily determined by the base currents of the PNP input transistors. By selecting high-beta PNP transistors, the input bias current can be minimized. The current source biasing the differential pair also plays a role.\n*   **Input Common-Mode Range (VCM):** The PNP input stage naturally supports input voltages down to GND. The upper limit is determined by the saturation of the input transistors and the current mirror load.\n\n**2. Second Stage (Gain Stage):**\n*   **Topology:** A common-emitter amplifier (Q6 for comparator 1; Q16 for comparator 2) with an active load (Q7 for comparator 1; Q17 for comparator 2) provides additional voltage gain. This stage amplifies the signal from the input stage to drive the output.\n*   **Bias:** The current through this stage is set by a current mirror (Q7, Q8 for comparator 1; Q17, Q18 for comparator 2) to ensure proper operation and contribute to the overall quiescent current.\n*   **Frequency Compensation:** While not explicitly specified for dynamic parameters like propagation delay, a small capacitor (C1 for comparator 1; C11 for comparator 2) might be added between the collector and base of the gain stage transistor (Miller compensation) to ensure stability and prevent oscillations, especially given the high gain. For a comparator, often minimal compensation is used to maximize speed, but some is usually necessary.\n\n**3. Output Stage (Open-Collector):**\n*   **Topology:** An NPN transistor (Q9 for comparator 1; Q19 for comparator 2) with its collector connected to the output pin and its emitter to GND forms the open-collector output. This allows the output to sink current but requires an external pull-up resistor to achieve a high output state.\n*   **Drive:** The gain stage drives the base of the output transistor. A current source (Q8 for comparator 1; Q18 for comparator 2) provides the necessary base current to turn on the output transistor and sink the specified output current (IOL).\n*   **Output Low Voltage (VOL):** The VOL is determined by the saturation voltage of the output NPN transistor (Q9/Q19) when sinking the specified current. Larger transistors (higher W/L or emitter area) will have lower VCE(sat) and thus lower VOL.\n*   **Output Leakage Current (IOH-LKG):** When the output is high (transistor Q9/Q19 is off), the leakage current is primarily due to the reverse leakage of the collector-base junction of Q9/Q19. This is modeled by the diode parameters in the NPN model.\n\n**4. Bias Network:**\n*   A central bias network (Q10, R2, R3) generates stable reference currents for all current mirrors in both comparators. This ensures consistent operation across supply voltage and temperature variations.\n*   The bias current is set to achieve the overall quiescent current (IQ) for the device.\n\n**5. ESD Protection:**\n*   Diodes (D1, D2, D3, D4, D5, D6, D7, D8) are added at the input and output pins to provide ESD protection. These clamp the input/output voltages to VCC and GND, preventing damage from electrostatic discharge. The \"B\" versions specifically mention improved ESD, which implies robust diode structures.\n\n**Component Sizing and Parameter Derivations:**\n\n*   **VCC, VID, VI, VO:** These are operational limits and are primarily handled by the choice of transistor breakdown voltages in the `.model` statements and the overall circuit design's ability to withstand these voltages without breakdown or latch-up. The input and output ESD diodes also contribute to these limits.\n*   **IQ (Quiescent Current):** The total quiescent current is the sum of the currents in the bias network, the two input stages, and the two gain stages. The bias network (R2, R3, Q10) is designed to set the primary reference current, which is then mirrored to other stages. For example, if IQ is 400uA for two comparators, each comparator might consume ~200uA. The input stage current (e.g., through R1) would be a fraction of this.\n    *   Let's target ~200uA per comparator. If the input differential pair is biased with 10uA, and the second stage with 50uA, and the bias network with 100uA, this would be roughly 160uA per comparator.\n*   **VIO (Input Offset Voltage):** This is a critical parameter. In a differential pair, VIO is ideally zero but arises from mismatches in VBE, beta, and collector currents. For a PNP differential pair, VIO can be approximated by `kT/q * ln(IC1/IC2) + (VBE1 - VBE2)`. To achieve mV-level offset, the transistors must be well-matched (identical W/L, layout considerations). In SPICE, this is often modeled by slight variations in `IS` or `BF` parameters, or by adding a small voltage source in series with one input. For this model, we'll rely on the inherent matching of identical devices and potentially add a small offset voltage source if needed to meet the typical value.\n*   **IB (Input Bias Current):** This is the base current of the input PNP transistors. `IB = IC / Beta`. To get nA-level IB, high-beta PNP transistors are required. We'll use a `BF` (forward beta) in the NPN/PNP models that supports this.\n*   **IOS (Input Offset Current):** This is the difference in base currents of the input differential pair. `IOS = IB1 - IB2`. Again, good matching of the input transistors is key.\n*   **AVD (Open-Loop Voltage Gain):** The gain is the product of the gains of the input and second stages.\n    *   Input stage gain: `gm_diff_pair * R_load`. `gm_diff_pair = IC / (kT/q)`. `R_load` is the output impedance of the current mirror load.\n    *   Second stage gain: `gm_gain_stage * R_output_gain_stage`.\n    *   To achieve 50V/mV (50,000 V/V), significant gain is needed. This implies high output impedance loads and sufficient transconductance.\n*   **VOL (Output Low Voltage):** This is `VCE(sat)` of the output NPN transistor. For `ISINK = 4mA`, `VOL < 400mV`. This requires a sufficiently large NPN output transistor (Q9/Q19) with low `VCE(sat)` at 4mA.\n*   **IOL (Output Sink Current):** For `VOL = 1.5V`, `IOL > 6mA`. This is related to the `VCE(sat)` characteristic. The output transistor must be able to sink 6mA while maintaining 1.5V across it. This is less stringent than the 4mA/400mV spec.\n*   **IOH-LKG (Output High Leakage Current):** This is the reverse leakage current of the collector-base junction of the output NPN when it's off. This is typically very small (nA range) and is modeled by the `IS` parameter of the NPN transistor.\n\n**Implementation Details for SPICE:**\n\n*   **Models:** Standard NPN and PNP models will be defined with parameters (`BF`, `IS`, `VAF`, `IKF`, `CJC`, `CJE`, `TF`, `TR`, `RB`, `RC`, `RE`, `VEO`, `ISR`, `NR`, `NC`, `ISC`, `NE`, `FC`) chosen to approximate typical silicon bipolar transistor characteristics and meet the specified performance. `IS` will be adjusted for leakage, `BF` for current gain, and `VAF` for output impedance (gain).\n*   **Resistors:** Used for biasing and current setting.\n*   **Capacitors:** Small capacitors for frequency compensation (C1, C11) and potentially parasitic capacitance.\n*   **ESD Diodes:** Modeled as standard diodes with appropriate `IS` and `BV` parameters.\n*   **Thermal Pad:** Connected directly to GND as specified.\n\n**Addressing Previous Feedback:**\n\n*   **LTSPICE Compilation Errors:** The syntax errors related to `.meas` commands (`FIND V(1OUT)=2.5 rise=1` and `AVG FIND I(V1IN_NEG_IB)`) indicate incorrect usage of `FIND` and `AVG` within `.meas` statements. These are typically used with `WHEN` or `AT` clauses for specific points, or `AVG` is used over a range. The corrected approach will involve proper syntax for these measurements in the testbench, not in the subcircuit itself. The subcircuit will be purely the device model.\n*   **Failed Specifications Audit:** All parameters were \"NOT observed in simulation measurements.\" This means the testbench was not correctly set up to measure these parameters. The subcircuit itself cannot directly address this; it's a testbench issue. However, the design of the subcircuit will target these specifications. The architecture described above is designed to inherently meet these. For example, `VCC` and `VID` limits are handled by the breakdown voltages of the transistors and ESD structures. `VIO`, `IB`, `IOS`, `AVD`, `VOL`, `IOL`, `IQ`, `IOH-LKG` are all direct consequences of the transistor sizing and biasing.\n\nThis architecture provides a robust foundation for a dual comparator, allowing for the fine-tuning of component values and transistor parameters to meet the detailed specifications of the LM393B/LM2903B family.", "design_rationale": {"summary": "The LM393B/LM2903B dual comparator is designed with a classic two-stage architecture: a differential input stage followed by an output stage. The primary goal is to achieve high gain, low offset, wide common-mode input range, and an open-collector output, all while operating from a single supply. The \"B\" versions specifically target improved performance metrics such as lower offset, higher supply voltage, and lower supply current.\n\n**1. Input Stage (Differential Pair with Current Mirror Load):**\n*   **Topology:** A PNP differential pair (Q1, Q2 for comparator 1; Q11, Q12 for comparator 2) is chosen for the input stage. PNP inputs allow the common-mode input voltage to extend down to the negative supply rail (GND), which is a key requirement for single-supply operation.\n*   **Bias:** A current source (Q3, R1 for comparator 1; Q13, R11 for comparator 2) biases the differential pair, setting the quiescent current and thus influencing transconductance and power consumption. The current is set to achieve the specified quiescent current (IQ) and input bias current (IB).\n*   **Load:** An active load consisting of a current mirror (Q4, Q5 for comparator 1; Q14, Q15 for comparator 2) converts the differential current into a single-ended voltage. This provides high gain and allows for efficient signal transfer to the next stage.\n*   **Offset Voltage (VIO):** To meet the low offset voltage specification, careful matching of the differential pair transistors (Q1, Q2) and the current mirror transistors (Q4, Q5) is crucial. This is primarily achieved through device sizing (identical W/L for matched pairs) and implicitly through the `.model` parameters.\n*   **Input Bias Current (IB):** The input bias current is primarily determined by the base currents of the PNP input transistors. By selecting high-beta PNP transistors, the input bias current can be minimized. The current source biasing the differential pair also plays a role.\n*   **Input Common-Mode Range (VCM):** The PNP input stage naturally supports input voltages down to GND. The upper limit is determined by the saturation of the input transistors and the current mirror load.\n\n**2. Second Stage (Gain Stage):**\n*   **Topology:** A common-emitter amplifier (Q6 for comparator 1; Q16 for comparator 2) with an active load (Q7 for comparator 1; Q17 for comparator 2) provides additional voltage gain. This stage amplifies the signal from the input stage to drive the output.\n*   **Bias:** The current through this stage is set by a current mirror (Q7, Q8 for comparator 1; Q17, Q18 for comparator 2) to ensure proper operation and contribute to the overall quiescent current.\n*   **Frequency Compensation:** While not explicitly specified for dynamic parameters like propagation delay, a small capacitor (C1 for comparator 1; C11 for comparator 2) might be added between the collector and base of the gain stage transistor (Miller compensation) to ensure stability and prevent oscillations, especially given the high gain. For a comparator, often minimal compensation is used to maximize speed, but some is usually necessary.\n\n**3. Output Stage (Open-Collector):**\n*   **Topology:** An NPN transistor (Q9 for comparator 1; Q19 for comparator 2) with its collector connected to the output pin and its emitter to GND forms the open-collector output. This allows the output to sink current but requires an external pull-up resistor to achieve a high output state.\n*   **Drive:** The gain stage drives the base of the output transistor. A current source (Q8 for comparator 1; Q18 for comparator 2) provides the necessary base current to turn on the output transistor and sink the specified output current (IOL).\n*   **Output Low Voltage (VOL):** The VOL is determined by the saturation voltage of the output NPN transistor (Q9/Q19) when sinking the specified current. Larger transistors (higher W/L or emitter area) will have lower VCE(sat) and thus lower VOL.\n*   **Output Leakage Current (IOH-LKG):** When the output is high (transistor Q9/Q19 is off), the leakage current is primarily due to the reverse leakage of the collector-base junction of Q9/Q19. This is modeled by the diode parameters in the NPN model.\n\n**4. Bias Network:**\n*   A central bias network (Q10, R2, R3) generates stable reference currents for all current mirrors in both comparators. This ensures consistent operation across supply voltage and temperature variations.\n*   The bias current is set to achieve the overall quiescent current (IQ) for the device.\n\n**5. ESD Protection:**\n*   Diodes (D1, D2, D3, D4, D5, D6, D7, D8) are added at the input and output pins to provide ESD protection. These clamp the input/output voltages to VCC and GND, preventing damage from electrostatic discharge. The \"B\" versions specifically mention improved ESD, which implies robust diode structures.\n\n**Component Sizing and Parameter Derivations:**\n\n*   **VCC, VID, VI, VO:** These are operational limits and are primarily handled by the choice of transistor breakdown voltages in the `.model` statements and the overall circuit design's ability to withstand these voltages without breakdown or latch-up. The input and output ESD diodes also contribute to these limits.\n*   **IQ (Quiescent Current):** The total quiescent current is the sum of the currents in the bias network, the two input stages, and the two gain stages. The bias network (R2, R3, Q10) is designed to set the primary reference current, which is then mirrored to other stages. For example, if IQ is 400uA for two comparators, each comparator might consume ~200uA. The input stage current (e.g., through R1) would be a fraction of this.\n    *   Let's target ~200uA per comparator. If the input differential pair is biased with 10uA, and the second stage with 50uA, and the bias network with 100uA, this would be roughly 160uA per comparator.\n*   **VIO (Input Offset Voltage):** This is a critical parameter. In a differential pair, VIO is ideally zero but arises from mismatches in VBE, beta, and collector currents. For a PNP differential pair, VIO can be approximated by `kT/q * ln(IC1/IC2) + (VBE1 - VBE2)`. To achieve mV-level offset, the transistors must be well-matched (identical W/L, layout considerations). In SPICE, this is often modeled by slight variations in `IS` or `BF` parameters, or by adding a small voltage source in series with one input. For this model, we'll rely on the inherent matching of identical devices and potentially add a small offset voltage source if needed to meet the typical value.\n*   **IB (Input Bias Current):** This is the base current of the input PNP transistors. `IB = IC / Beta`. To get nA-level IB, high-beta PNP transistors are required. We'll use a `BF` (forward beta) in the NPN/PNP models that supports this.\n*   **IOS (Input Offset Current):** This is the difference in base currents of the input differential pair. `IOS = IB1 - IB2`. Again, good matching of the input transistors is key.\n*   **AVD (Open-Loop Voltage Gain):** The gain is the product of the gains of the input and second stages.\n    *   Input stage gain: `gm_diff_pair * R_load`. `gm_diff_pair = IC / (kT/q)`. `R_load` is the output impedance of the current mirror load.\n    *   Second stage gain: `gm_gain_stage * R_output_gain_stage`.\n    *   To achieve 50V/mV (50,000 V/V), significant gain is needed. This implies high output impedance loads and sufficient transconductance.\n*   **VOL (Output Low Voltage):** This is `VCE(sat)` of the output NPN transistor. For `ISINK = 4mA`, `VOL < 400mV`. This requires a sufficiently large NPN output transistor (Q9/Q19) with low `VCE(sat)` at 4mA.\n*   **IOL (Output Sink Current):** For `VOL = 1.5V`, `IOL > 6mA`. This is related to the `VCE(sat)` characteristic. The output transistor must be able to sink 6mA while maintaining 1.5V across it. This is less stringent than the 4mA/400mV spec.\n*   **IOH-LKG (Output High Leakage Current):** This is the reverse leakage current of the collector-base junction of the output NPN when it's off. This is typically very small (nA range) and is modeled by the `IS` parameter of the NPN transistor.\n\n**Implementation Details for SPICE:**\n\n*   **Models:** Standard NPN and PNP models will be defined with parameters (`BF`, `IS`, `VAF`, `IKF`, `CJC`, `CJE`, `TF`, `TR`, `RB`, `RC`, `RE`, `VEO`, `ISR`, `NR`, `NC`, `ISC`, `NE`, `FC`) chosen to approximate typical silicon bipolar transistor characteristics and meet the specified performance. `IS` will be adjusted for leakage, `BF` for current gain, and `VAF` for output impedance (gain).\n*   **Resistors:** Used for biasing and current setting.\n*   **Capacitors:** Small capacitors for frequency compensation (C1, C11) and potentially parasitic capacitance.\n*   **ESD Diodes:** Modeled as standard diodes with appropriate `IS` and `BV` parameters.\n*   **Thermal Pad:** Connected directly to GND as specified.\n\n**Addressing Previous Feedback:**\n\n*   **LTSPICE Compilation Errors:** The syntax errors related to `.meas` commands (`FIND V(1OUT)=2.5 rise=1` and `AVG FIND I(V1IN_NEG_IB)`) indicate incorrect usage of `FIND` and `AVG` within `.meas` statements. These are typically used with `WHEN` or `AT` clauses for specific points, or `AVG` is used over a range. The corrected approach will involve proper syntax for these measurements in the testbench, not in the subcircuit itself. The subcircuit will be purely the device model.\n*   **Failed Specifications Audit:** All parameters were \"NOT observed in simulation measurements.\" This means the testbench was not correctly set up to measure these parameters. The subcircuit itself cannot directly address this; it's a testbench issue. However, the design of the subcircuit will target these specifications. The architecture described above is designed to inherently meet these. For example, `VCC` and `VID` limits are handled by the breakdown voltages of the transistors and ESD structures. `VIO`, `IB`, `IOS`, `AVD`, `VOL`, `IOL`, `IQ`, `IOH-LKG` are all direct consequences of the transistor sizing and biasing.\n\nThis architecture provides a robust foundation for a dual comparator, allowing for the fine-tuning of component values and transistor parameters to meet the detailed specifications of the LM393B/LM2903B family."}}], "final_netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS_iter2.cir"}, "knowledge_graph": {"ic_device": {"name": "LM393B, LM2903B, LM193, LM293, LM393 and LM2903 Dual Comparators", "category": "Dual Comparators", "description": "The LM393B and LM2903B devices are the next generation versions of the industry-standard LM393 and LM2903 comparator family. These next generation B-version comparators feature lower offset voltage, higher supply voltage capability, lower supply current, lower input bias current, lower propagation delay, and improved 2 kV ESD performance and input ruggedness through dedicated ESD clamps. The LM393B and LM2903B can drop-in replace the LM293, LM393 and LM2903, for both \"A\" and \"V\" grades. All devices consist of two independent voltage comparators that are designed to operate from a single power supply over a wide range of voltages. Quiescent current is independent of the supply voltage."}, "pins": [{"name": "1OUT", "pin_number": "1", "direction": "OUTPUT", "role": "OUTPUT", "description": "Output pin of comparator 1", "voltage_range": {}}, {"name": "1IN_", "pin_number": "2", "direction": "INPUT", "role": "SIGNAL", "description": "Negative input pin of comparator 1", "voltage_range": {}}, {"name": "1IN_", "pin_number": "3", "direction": "INPUT", "role": "SIGNAL", "description": "Positive input pin of comparator 1", "voltage_range": {}}, {"name": "GND", "pin_number": "4", "direction": "GROUND", "role": "GROUND", "description": "Ground", "voltage_range": {}}, {"name": "2IN_", "pin_number": "5", "direction": "INPUT", "role": "SIGNAL", "description": "Positive input pin of comparator 2", "voltage_range": {}}, {"name": "2IN_", "pin_number": "6", "direction": "INPUT", "role": "SIGNAL", "description": "Negative input pin of comparator 2", "voltage_range": {}}, {"name": "2OUT", "pin_number": "7", "direction": "OUTPUT", "role": "OUTPUT", "description": "Output pin of comparator 2", "voltage_range": {}}, {"name": "VCC", "pin_number": "8", "direction": "POWER", "role": "POWER", "description": "Positive Supply", "voltage_range": {}}, {"name": "Thermal_Pad", "pin_number": "PAD", "direction": "GROUND", "role": "GROUND", "description": "Connect directly to GND pin", "voltage_range": {}}], "electrical_parameters": [{"symbol": "VCC", "name": "Supply voltage", "min": -0.3, "typ": null, "max": 36, "unit": "V", "test_conditions": "Non-B Versions", "related_pins": ["VCC"], "category": "Absolute Maximum Ratings"}, {"symbol": "VCC", "name": "Supply voltage", "min": null, "typ": null, "max": 38, "unit": "V", "test_conditions": "B Versions Only", "related_pins": ["VCC"], "category": "Absolute Maximum Ratings"}, {"symbol": "VID", "name": "Differential input voltage", "min": -36, "typ": null, "max": 36, "unit": "V", "test_conditions": "Non-B Versions", "related_pins": ["1IN+", "1IN-", "2IN+", "2IN-"], "category": "Absolute Maximum Ratings"}, {"symbol": "VID", "name": "Differential input voltage", "min": -38, "typ": null, "max": 38, "unit": "V", "test_conditions": "B Versions Only", "related_pins": ["1IN+", "1IN-", "2IN+", "2IN-"], "category": "Absolute Maximum Ratings"}, {"symbol": "VI", "name": "Input voltage (either input)", "min": -0.3, "typ": null, "max": 36, "unit": "V", "test_conditions": "Non-B Versions", "related_pins": ["1IN+", "1IN-", "2IN+", "2IN-"], "category": "Absolute Maximum Ratings"}, {"symbol": "VI", "name": "Input voltage (either input)", "min": null, "typ": null, "max": 38, "unit": "V", "test_conditions": "B Versions Only", "related_pins": ["1IN+", "1IN-", "2IN+", "2IN-"], "category": "Absolute Maximum Ratings"}, {"symbol": "IIK", "name": "Input current", "min": -50, "typ": null, "max": null, "unit": "mA", "test_conditions": null, "related_pins": ["1IN+", "1IN-", "2IN+", "2IN-"], "category": "Absolute Maximum Ratings"}, {"symbol": "VO", "name": "Output voltage", "min": -0.3, "typ": null, "max": 36, "unit": "V", "test_conditions": "Non-B Versions", "related_pins": ["1OUT", "2OUT"], "category": "Absolute Maximum Ratings"}, {"symbol": "VO", "name": "Output voltage", "min": null, "typ": null, "max": 38, "unit": "V", "test_conditions": "B Versions Only", "related_pins": ["1OUT", "2OUT"], "category": "Absolute Maximum Ratings"}, {"symbol": "IO", "name": "Output current", "min": null, "typ": null, "max": 20, "unit": "mA", "test_conditions": "Non-B Versions", "related_pins": ["1OUT", "2OUT"], "category": "Absolute Maximum Ratings"}, {"symbol": "IO", "name": "Output current", "min": null, "typ": null, "max": 25, "unit": "mA", "test_conditions": "B Versions Only", "related_pins": ["1OUT", "2OUT"], "category": "Absolute Maximum Ratings"}, {"symbol": "ISC", "name": "Duration of output short circuit to ground", "min": null, "typ": null, "max": null, "unit": "Unlimited", "test_conditions": null, "related_pins": ["1OUT", "2OUT", "GND"], "category": "Absolute Maximum Ratings"}, {"symbol": "TJ", "name": "Operating virtual-junction temperature", "min": null, "typ": null, "max": 150, "unit": "\u00b0C", "test_conditions": null, "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "Tstg", "name": "Storage temperature", "min": -65, "typ": null, "max": 150, "unit": "\u00b0C", "test_conditions": null, "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "VS", "name": "Supply voltage", "min": 2, "typ": null, "max": 30, "unit": "V", "test_conditions": "non-V devices", "related_pins": ["VCC"], "category": "Recommended Operating Conditions"}, {"symbol": "VS", "name": "Supply voltage", "min": 2, "typ": null, "max": 32, "unit": "V", "test_conditions": "V devices", "related_pins": ["VCC"], "category": "Recommended Operating Conditions"}, {"symbol": "VS", "name": "Supply voltage", "min": 2, "typ": null, "max": 36, "unit": "V", "test_conditions": "\"B\" version devices", "related_pins": ["VCC"], "category": "Recommended Operating Conditions"}, {"symbol": "VIVR", "name": "Input voltage range", "min": 0, "typ": null, "max": null, "unit": "V", "test_conditions": "non-B devices", "related_pins": ["1IN+", "1IN-", "2IN+", "2IN-"], "category": "Recommended Operating Conditions"}, {"symbol": "VIVR", "name": "Input voltage range", "min": -0.1, "typ": null, "max": null, "unit": "V", "test_conditions": "\"B\" version devices", "related_pins": ["1IN+", "1IN-", "2IN+", "2IN-"], "category": "Recommended Operating Conditions"}, {"symbol": "TA", "name": "Ambient temperature", "min": -55, "typ": null, "max": 125, "unit": "\u00b0C", "test_conditions": "LM193", "related_pins": [], "category": "Recommended Operating Conditions"}, {"symbol": "TA", "name": "Ambient temperature", "min": -40, "typ": null, "max": 125, "unit": "\u00b0C", "test_conditions": "LM2903, LM2903V, LM2903AV, LM2903B", "related_pins": [], "category": "Recommended Operating Conditions"}, {"symbol": "TA", "name": "Ambient temperature", "min": -40, "typ": null, "max": 85, "unit": "\u00b0C", "test_conditions": "LM393B", "related_pins": [], "category": "Recommended Operating Conditions"}, {"symbol": "TA", "name": "Ambient temperature", "min": -25, "typ": null, "max": 85, "unit": "\u00b0C", "test_conditions": "LM293, LM293A", "related_pins": [], "category": "Recommended Operating Conditions"}, {"symbol": "TA", "name": "Ambient temperature", "min": 0, "typ": null, "max": 70, "unit": "\u00b0C", "test_conditions": "LM393, LM393A", "related_pins": [], "category": "Recommended Operating Conditions"}, {"symbol": "VIO", "name": "Input offset voltage", "min": -2.5, "typ": 0.37, "max": 2.5, "unit": "mV", "test_conditions": "VS = 5 to 36V", "related_pins": ["1IN+", "1IN-", "2IN+", "2IN-"], "category": "Electrical Characteristics LM393B"}, {"symbol": "VIO", "name": "Input offset voltage", "min": -4, "typ": null, "max": 4, "unit": "mV", "test_conditions": "VS = 5 to 36V, TA = \u201340\u00b0C to +85\u00b0C", "related_pins": ["1IN+", "1IN-", "2IN+", "2IN-"], "category": "Electrical Characteristics LM393B"}, {"symbol": "VIO", "name": "Input offset voltage, DGK package only", "min": -3.5, "typ": 0.37, "max": 3.5, "unit": "mV", "test_conditions": "VS = 5 to 36V", "related_pins": ["1IN+", "1IN-", "2IN+", "2IN-"], "category": "Electrical Characteristics LM393B"}, {"symbol": "VIO", "name": "Input offset voltage, DGK package only", "min": -5, "typ": null, "max": 5, "unit": "mV", "test_conditions": "VS = 5 to 36V, TA = \u201340\u00b0C to +85\u00b0C", "related_pins": ["1IN+", "1IN-", "2IN+", "2IN-"], "category": "Electrical Characteristics LM393B"}, {"symbol": "IB", "name": "Input bias current", "min": -3.5, "typ": null, "max": -25, "unit": "nA", "test_conditions": null, "related_pins": ["1IN+", "1IN-", "2IN+", "2IN-"], "category": "Electrical Characteristics LM393B"}, {"symbol": "IB", "name": "Input bias current", "min": null, "typ": null, "max": -50, "unit": "nA", "test_conditions": "TA = \u201340\u00b0C to +85\u00b0C", "related_pins": ["1IN+", "1IN-", "2IN+", "2IN-"], "category": "Electrical Characteristics LM393B"}, {"symbol": "IOS", "name": "Input offset current", "min": -10, "typ": 0.5, "max": 10, "unit": "nA", "test_conditions": null, "related_pins": ["1IN+", "1IN-", "2IN+", "2IN-"], "category": "Electrical Characteristics LM393B"}, {"symbol": "IOS", "name": "Input offset current", "min": -25, "typ": null, "max": 25, "unit": "nA", "test_conditions": "TA = \u201340\u00b0C to +85\u00b0C", "related_pins": ["1IN+", "1IN-", "2IN+", "2IN-"], "category": "Electrical Characteristics LM393B"}, {"symbol": "VCM", "name": "Common mode range", "min": null, "typ": null, "max": null, "unit": "V", "test_conditions": "VS = 3 to 36V", "related_pins": ["1IN+", "1IN-", "2IN+", "2IN-"], "category": "Electrical Characteristics LM393B"}, {"symbol": "VCM", "name": "Common mode range", "min": null, "typ": null, "max": null, "unit": "V", "test_conditions": "VS = 3 to 36V, TA = \u201340\u00b0C to +85\u00b0C", "related_pins": ["1IN+", "1IN-", "2IN+", "2IN-"], "category": "Electrical Characteristics LM393B"}, {"symbol": "AVD", "name": "Large signal differential voltage amplification", "min": 50, "typ": 200, "max": null, "unit": "V/mV", "test_conditions": "VS = 15V, VO = 1.4V to 11.4V; RL \u2265 15k to (V+)", "related_pins": ["1IN+", "1IN-", "2IN+", "2IN-", "1OUT", "2OUT"], "category": "Electrical Characteristics LM393B"}, {"symbol": "VOL", "name": "Low level output Voltage {swing from (V-)}", "min": null, "typ": 110, "max": 400, "unit": "mV", "test_conditions": "ISINK \u2264 4mA, VID = -1V", "related_pins": ["1OUT", "2OUT"], "category": "Electrical Characteristics LM393B"}, {"symbol": "VOL", "name": "Low level output Voltage {swing from (V-)}", "min": null, "typ": null, "max": 550, "unit": "mV", "test_conditions": "ISINK \u2264 4mA, VID = -1V, TA = \u201340\u00b0C to +85\u00b0C", "related_pins": ["1OUT", "2OUT"], "category": "Electrical Characteristics LM393B"}, {"symbol": "IOH-LKG", "name": "High-level output leakage current", "min": null, "typ": 0.1, "max": 20, "unit": "nA", "test_conditions": "(V+) = VO = 5V; VID = 1V", "related_pins": ["1OUT", "2OUT"], "category": "Electrical Characteristics LM393B"}, {"symbol": "IOH-LKG", "name": "High-level output leakage current", "min": null, "typ": 0.3, "max": 50, "unit": "nA", "test_conditions": "(V+) = VO = 36V; VID = 1V", "related_pins": ["1OUT", "2OUT"], "category": "Electrical Characteristics LM393B"}, {"symbol": "IOL", "name": "Low level output current", "min": 6, "typ": 21, "max": null, "unit": "mA", "test_conditions": "VOL = 1.5V; VID = -1V; VS = 5V", "related_pins": ["1OUT", "2OUT"], "category": "Electrical Characteristics LM393B"}, {"symbol": "IQ", "name": "Quiescent current (all comparators)", "min": null, "typ": 400, "max": 600, "unit": "\u00b5A", "test_conditions": "VS = 5V, no load", "related_pins": ["VCC"], "category": "Electrical Characteristics LM393B"}, {"symbol": "IQ", "name": "Quiescent current (all comparators)", "min": null, "typ": 550, "max": 800, "unit": "\u00b5A", "test_conditions": "VS = 36V, no load, TA = \u201340\u00b0C to +85\u00b0C", "related_pins": ["VCC"], "category": "Electrical Characteristics LM393B"}], "functional_blocks": ["Comparator 1", "Comparator 2", "ESD clamps"]}, "report_md": "# Autonomous AI Analog Circuit Synthesis & Verification Report\n**Target IC:** `LM393B, LM2903B, LM193, LM293, LM393 and LM2903 Dual Comparators` | **Subcircuit:** `LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS`\n**Overall Datasheet Specification Pass Rate:** `0.0%`\n\n## 1. Executive Summary\n- **IC Category:** The LM393B and LM2903B devices are the next generation versions of the industry-standard LM393 and LM2903 comparator family. These next generation B-version comparators feature lower offset voltage, higher supply voltage capability, lower supply current, lower input bias current, lower propagation delay, and improved 2 kV ESD performance and input ruggedness through dedicated ESD clamps. The LM393B and LM2903B can drop-in replace the LM293, LM393 and LM2903, for both \"A\" and \"V\" grades. All devices consist of two independent voltage comparators that are designed to operate from a single power supply over a wide range of voltages. Quiescent current is independent of the supply voltage.\n- **Total Datasheet Specifications Extracted:** 42\n- **Design Iterations Required:** 2\n- **Synthesized Netlist Location:** `C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS_iter2.cir`\n\n## 2. Port Dependency Graph (PDG) Scheduling\nTopological activation sequence derived from physical pin roles:\n| Pin Name | Physical Role | Direction | Activation Time (us) |\n| :--- | :--- | :--- | :--- |\n| `1OUT` | `OUTPUT` | `OUTPUT` | 3.00 us |\n| `1IN_` | `SIGNAL` | `INPUT` | 2.00 us |\n| `1IN_` | `SIGNAL` | `INPUT` | 2.00 us |\n| `GND` | `GROUND` | `GROUND` | 0.00 us |\n| `2IN_` | `SIGNAL` | `INPUT` | 2.00 us |\n| `2IN_` | `SIGNAL` | `INPUT` | 2.00 us |\n| `2OUT` | `OUTPUT` | `OUTPUT` | 3.00 us |\n| `VCC` | `POWER` | `POWER` | 0.00 us |\n| `Thermal_Pad` | `GROUND` | `GROUND` | 0.00 us |\n\n### 2.1 Port Dependency Graph Topology\n```mermaid\ngraph TD\n    1OUT[\"1OUT (OUTPUT)<br/>3.0us\"]\n    1IN_[\"1IN_ (SIGNAL)<br/>2.0us\"]\n    1IN_[\"1IN_ (SIGNAL)<br/>2.0us\"]\n    GND[\"GND (GROUND)<br/>0.0us\"]\n    2IN_[\"2IN_ (SIGNAL)<br/>2.0us\"]\n    2IN_[\"2IN_ (SIGNAL)<br/>2.0us\"]\n    2OUT[\"2OUT (OUTPUT)<br/>3.0us\"]\n    VCC[\"VCC (POWER)<br/>0.0us\"]\n    Thermal_Pad[\"Thermal_Pad (GROUND)<br/>0.0us\"]\n    1IN_ -->|0.0us| 1OUT\n    1IN_ -->|0.0us| 2OUT\n    GND -->|0.0us| 1OUT\n    GND -->|0.0us| 1IN_\n    GND -->|0.0us| 2IN_\n    GND -->|0.0us| 2OUT\n    2IN_ -->|0.0us| 1OUT\n    2IN_ -->|0.0us| 2OUT\n    Thermal_Pad -->|0.0us| 1OUT\n    Thermal_Pad -->|0.0us| 1IN_\n    Thermal_Pad -->|0.0us| 2IN_\n    Thermal_Pad -->|0.0us| 2OUT\n```\n\n## 3. Specification Verification & SymPy Oracle Audit\nDetailed verification results evaluated against SymPy interval constraints:\n| Parameter | Min Target | Typ Target | Max Target | Measured Value | Unit | Status |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| `VCC` | -0.3 | - | 36 | **N/A** | V | \u274c FAIL |\n| `VCC` | - | - | 38 | **N/A** | V | \u274c FAIL |\n| `VID` | -36 | - | 36 | **N/A** | V | \u274c FAIL |\n| `VID` | -38 | - | 38 | **N/A** | V | \u274c FAIL |\n| `VI` | -0.3 | - | 36 | **N/A** | V | \u274c FAIL |\n| `VI` | - | - | 38 | **N/A** | V | \u274c FAIL |\n| `IIK` | -0.05 | - | - | **N/A** | mA | \u274c FAIL |\n| `VO` | -0.3 | - | 36 | **N/A** | V | \u274c FAIL |\n| `VO` | - | - | 38 | **N/A** | V | \u274c FAIL |\n| `IO` | - | - | 0.02 | **N/A** | mA | \u274c FAIL |\n| `IO` | - | - | 0.025 | **N/A** | mA | \u274c FAIL |\n| `ISC` | - | - | - | **N/A** | Unlimited | \u274c FAIL |\n| `TJ` | - | - | 150 | **N/A** | \u00b0C | \u274c FAIL |\n| `VS` | 2 | - | 30 | **N/A** | V | \u274c FAIL |\n| `VS` | 2 | - | 32 | **N/A** | V | \u274c FAIL |\n| `VS` | 2 | - | 36 | **N/A** | V | \u274c FAIL |\n| `VIVR` | 0 | - | - | **N/A** | V | \u274c FAIL |\n| `VIVR` | -0.1 | - | - | **N/A** | V | \u274c FAIL |\n| `TA` | -55 | - | 125 | **N/A** | \u00b0C | \u274c FAIL |\n| `TA` | -40 | - | 125 | **N/A** | \u00b0C | \u274c FAIL |\n| `TA` | -40 | - | 85 | **N/A** | \u00b0C | \u274c FAIL |\n| `TA` | -25 | - | 85 | **N/A** | \u00b0C | \u274c FAIL |\n| `TA` | 0 | - | 70 | **N/A** | \u00b0C | \u274c FAIL |\n| `VIO` | -0.0025 | 0.00037 | 0.0025 | **N/A** | mV | \u274c FAIL |\n| `VIO` | -0.004 | - | 0.004 | **N/A** | mV | \u274c FAIL |\n| `VIO` | -0.0035 | 0.00037 | 0.0035 | **N/A** | mV | \u274c FAIL |\n| `VIO` | -0.005 | - | 0.005 | **N/A** | mV | \u274c FAIL |\n| `IB` | -3.5e-09 | - | -2.5e-08 | **N/A** | nA | \u274c FAIL |\n| `IB` | - | - | -5e-08 | **N/A** | nA | \u274c FAIL |\n| `IOS` | -1e-08 | 5e-10 | 1e-08 | **N/A** | nA | \u274c FAIL |\n| `IOS` | -2.5e-08 | - | 2.5e-08 | **N/A** | nA | \u274c FAIL |\n| `VCM` | - | - | - | **N/A** | V | \u274c FAIL |\n| `VCM` | - | - | - | **N/A** | V | \u274c FAIL |\n| `AVD` | 0.05 | 0.2 | - | **N/A** | V/mV | \u274c FAIL |\n| `VOL` | - | 0.11 | 0.4 | **N/A** | mV | \u274c FAIL |\n| `VOL` | - | - | 0.55 | **N/A** | mV | \u274c FAIL |\n| `IOH-LKG` | - | 1e-10 | 2e-08 | **N/A** | nA | \u274c FAIL |\n| `IOH-LKG` | - | 3e-10 | 5e-08 | **N/A** | nA | \u274c FAIL |\n| `IOL` | 0.006 | 0.021 | - | **N/A** | mA | \u274c FAIL |\n| `IQ` | - | 0.0004 | 0.0006 | **N/A** | \u00b5A | \u274c FAIL |\n| `IQ` | - | 0.00055 | 0.0008 | **N/A** | \u00b5A | \u274c FAIL |\n\n## 4. Closed-Loop Iteration History & Root Cause Analysis\n| Iteration | Pass Rate | Passed Specs | Failed Specs | Architecture Notes |\n| :--- | :--- | :--- | :--- | :--- |\n| Iteration 1 | 0.0% | 0 | 0 | The LM393B/LM2903B dual comparator is designed using a classic two-stage archite... |\n| Iteration 2 | 0.0% | 0 | 0 | The LM393B/LM2903B dual comparator is designed with a classic two-stage architec... |\n\n### 4.1 Loop 1 Detailed Audit\n- **Pass Rate**: `0.0%` (0/0 specs passed)\n\n**Shortfall Audit (\ubbf8\ub2ec \uc6d0\uc778 \ubd84\uc11d):**\n- Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\tb_dc_op.cir(107): syntax error\n- Compiler/Simulation Error:   --> .meas VIO_pos_rise when FIND V(1OUT)=2.5 rise=1 ; Find where output crosses mid-supply (assuming open-drain with pull-up)\n- Compiler/Simulation Error:   --> ^^^^^^^^^^^\n- Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\tb_dc_op.cir(108): syntax error\n- Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VID' violated: Parameter 'VID' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VID' violated: Parameter 'VID' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)\n\n**Improvement Actions (\uac1c\uc120 \ubc0f \uc218\uc815 \uc0ac\ud56d):**\n- Initial first-principles topology and Level-1 parameter sizing synthesized from scratch.\n\n### 4.2 Loop 2 Detailed Audit\n- **Pass Rate**: `0.0%` (0/0 specs passed)\n\n**Shortfall Audit (\ubbf8\ub2ec \uc6d0\uc778 \ubd84\uc11d):**\n- Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\tb_dc_op.cir(24): This sub-circuit cannot be instantiated because it contains these syntax errors:\n- Compiler/Simulation Error:   --> C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS_iter2.cir(120): Expected a sequence <directive or device instantiation end of line> here.\n- Compiler/Simulation Error:   --> )\n- Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS_iter2.cir(120): Expected a sequence <directive or device instantiation end of line> here.\n- Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VCC' violated: Parameter 'VCC' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VID' violated: Parameter 'VID' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VID' violated: Parameter 'VID' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)\n\n**Improvement Actions (\uac1c\uc120 \ubc0f \uc218\uc815 \uc0ac\ud56d):**\n- Topology refinement: The LM393B/LM2903B dual comparator is designed with a classic two-stage architecture: a differential input stage followed by an output stage...\n\n## 5. Synthesized SPICE Netlist Architecture\nNetlist file: `C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS_iter2.cir`\n```spice\n\n.subckt LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS 1OUT 1IN_NEG 1IN_POS GND 2IN_POS 2IN_NEG 2OUT VCC Thermal_Pad\n\n; Connect Thermal_Pad to GND as specified\nR_Thermal_Pad_GND Thermal_Pad GND 1m\n\n; --- Global Bias Network (Shared by both comparators) ---\n; This network generates a stable reference current for the current mirrors.\n; Designed for low quiescent current (IQ) and wide supply range.\n; Q10, R2, R3 form a VBE multiplier or a simple current source reference.\n; Let's aim for a total IQ of ~400uA for both comparators at 5V.\n; Each comparator will consume roughly 200uA.\n; A reference current of ~50uA might be appropriate.\n\nQ10 VCC bias_ref GND NPN_MODEL ; Reference transistor\nR2 VCC bias_ref 100k          ; Sets current for Q10\nR3 bias_ref GND 10k           ; Helps stabilize bias point\n\n; --- Comparator 1 ---\n\n; Input Stage: PNP Differential Pair with Current Mirror Load\n; PNP inputs allow common-mode input down to GND.\n; Q1, Q2: Input differential pair\n; Q3: Current source for differential pair tail\n; Q4, Q5: Current mirror load for differential pair\n; R1: Emitter resistor for Q3 to set tail current\n\nQ1 1IN_NEG 1IN_NEG_base 1IN_POS PNP_MODEL ; Input PNP, collector to 1IN_NEG_base for current mirror\nQ2 1IN_POS 1IN_POS_base 1IN_POS PNP_MODEL ; Input PNP, collector to 1IN_POS_base for current mirror\n\n; Current mirror for differential pair load (Q4, Q5)\n; Q4: Diode-connected, sets current for Q5\n; Q5: Mirrors current from Q4 to the output of the differential stage\nQ4 1IN_NEG_base 1IN_NEG_base VCC PNP_MODEL ; Diode-connected PNP\nQ5 1IN_POS_base 1IN_NEG_base VCC PNP_MODEL ; Current mirror load\n\n; Tail current source for differential pair (Q3, R1)\n; Q3: NPN current source\n; R1: Emitter resistor to set current\nQ3 1IN_POS GND bias_ref NPN_MODEL ; Tail current source for diff pair\nR1 GND 1IN_POS 10k             ; Emitter resistor for Q3\n\n; Second Stage: Common Emitter Amplifier\n; Q6: NPN common emitter amplifier\n; Q7: Active load for Q6 (current mirror)\n; C1: Miller compensation capacitor for stability\n\nQ6 1OUT_driver 1IN_POS_base GND NPN_MODEL ; Common emitter amplifier\nQ7 VCC 1OUT_driver 1OUT_driver PNP_MODEL ; Active load for Q6 (diode-connected)\nC1 1OUT_driver 1IN_POS_base 10p         ; Miller compensation\n\n; Output Stage: Open Collector NPN\n; Q8: Driver for output NPN\n; Q9: Open collector output transistor\n\nQ8 1OUT_driver_base 1OUT_driver GND NPN_MODEL ; Driver for output NPN\nQ9 1OUT 1OUT_driver_base GND NPN_MODEL ; Open collector output transistor\n\n; --- Comparator 2 ---\n; Identical structure to Comparator 1\n\n; Input Stage: PNP Differential Pair with Current Mirror Load\nQ11 2IN_NEG 2IN_NEG_base 2IN_POS PNP_MODEL\nQ12 2IN_POS 2IN_POS_base 2IN_POS PNP_MODEL\n\nQ14 2IN_NEG_base 2IN_NEG_base VCC PNP_MODEL\nQ15 2IN_POS_base 2IN_NEG_base VCC PNP_MODEL\n\nQ13 2IN_POS GND bias_ref NPN_MODEL\nR11 GND 2IN_POS 10k\n\n; Second Stage: Common Emitter Amplifier\nQ16 2OUT_driver 2IN_POS_base GND NPN_MODEL\nQ17 VCC 2OUT_driver 2OUT_driver PNP_MODEL\nC11 2OUT_driver 2IN_POS_base 10p\n\n; Output Stage: Open Collector NPN\nQ18 2OUT_driver_base 2OUT_driver GND NPN_MODEL\nQ19 2OUT 2OUT_driver_base GND NPN_MODEL\n\n; --- ESD Protection Diodes ---\n; Diodes to VCC and GND on all input and output pins\n; These are simplified models for ESD clamps.\n; Real ESD structures are more complex but these serve the purpose for functional simulation.\n\n; Comparator 1 Inputs\nD1 VCC 1IN_NEG D_ESD\nD2 1IN_NEG GND D_ESD\nD3 VCC 1IN_POS D_ESD\nD4 1IN_POS GND D_ESD\n\n; Comparator 1 Output\nD5 VCC 1OUT D_ESD\nD6 1OUT GND D_ESD\n\n; Comparator 2 Inputs\nD7 VCC 2IN_NEG D_ESD\nD8 2IN_NEG GND D_ESD\nD9 VCC 2IN_POS D_ESD\nD10 2IN_POS GND D_ESD\n\n; Comparator 2 Output\nD11 VCC 2OUT D_ESD\nD12 2OUT GND D_ESD\n\n; --- Transistor Models ---\n; Parameters are chosen to represent typical bipolar transistors\n; and to meet the specified performance characteristics.\n; BF (Beta Forward) for high gain and low input bias current.\n; IS (Saturation Current) for leakage and VBE.\n; VAF (Forward Early Voltage) for high output impedance (gain).\n; IKF (Forward Beta Roll-off) for high current operation.\n; VCC up to 38V implies high breakdown voltages (BVCBO, BVCEO).\n\n.model NPN_MODEL NPN ( Is=1e-14 Bf=200 Vaf=100 Ikf=0.1 Ise=1e-13 Ne=1.5\n+ Br=5 Var=10 Ikr=0.01 Isc=1e-13 Nc=2\n+ Rb=10 Rc=1 Re=0.5\n+ Cje=5p Cjc=5p Tf=0.3n Tr=10n\n+ Vceo=40 Vcbo=50 Veo=7\n)\n\n.model PNP_MODEL PNP ( Is=1e-14 Bf=150 Vaf=80 Ikf=0.05 Ise=1e-13 Ne=1.5\n+ Br=3 Var=8 Ikr=0.005 Isc=1e-13 Nc=2\n+ Rb=15 Rc=2 Re=1\n+ Cje=8p Cjc=8p Tf=0.5n Tr=15n\n+ Vceo=40 Vcbo=50 Veo=7\n)\n\n.model D_ESD D (Is=1e-15 Rs=1 Cjo=10p Bv=40 Ibv=1u)\n\n.ends LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS\n```", "netlists": {"iter1": "\n.subckt LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS 1OUT 1IN_NEG 1IN_POS GND 2IN_POS 2IN_NEG 2OUT VCC Thermal_Pad\n\n; --- Global Parameters (for B-version, as requested by product name) ---\n.param VCC_MAX = 38V\n.param VIO_TYP = 0.37m\n.param IB_TYP = -25n\n.param IOS_TYP = 0.5n\n.param AVD_TYP = 200k ; V/V (50 V/mV)\n.param VOL_TYP = 110m\n.param IOL_MIN = 6m\n.param IQ_TYP_5V = 400u\n.param IQ_TYP_36V = 550u\n.param IOH_LKG_TYP_5V = 0.1n\n.param IOH_LKG_TYP_36V = 0.3n\n\n; --- Transistor Models ---\n.model NPN NPN(Is=1e-14 Vaf=100 Beta=200 Ise=1e-14 Ne=1.3 Cjc=2p Cje=3p Tr=10n Tf=300p Rb=10 Rc=1 Re=1 Vceo=40)\n.model PNP PNP(Is=1e-14 Vaf=80 Beta=100 Ise=1e-14 Ne=1.3 Cjc=3p Cje=4p Tr=20n Tf=500p Rb=15 Rc=2 Re=1 Vceo=40)\n.model D D(Is=1e-14 Rs=1 N=1.0 Cjo=2p Tt=10n)\n\n; --- Thermal Pad Connection ---\nR_thermal_gnd Thermal_Pad GND 1m ; Direct connection to GND\n\n; --- Common Bias Network ---\n; This network generates the reference currents for both comparators.\n; It's designed to provide a stable current that contributes to the overall IQ.\n; A simple current source and mirror for simplicity.\nI_bias_ref VCC bias_ref_node DC '{IQ_TYP_5V/2}' ; Roughly half of IQ per comparator\nQ_bias_ref bias_ref_node bias_ref_node GND NPN_BIAS NPN\n.model NPN_BIAS NPN(Is=1e-14 Vaf=100 Beta=100) ; Lower beta for bias stability\n\n; Current mirror for input stage tail current\nQ_tail_ref bias_ref_node bias_ref_node GND NPN_BIAS NPN\nQ_tail1 tail_node1 bias_ref_node GND NPN_BIAS NPN\nQ_tail2 tail_node2 bias_ref_node GND NPN_BIAS NPN\nR_tail1 tail_node1 GND 1k ; Sets current for comparator 1 input stage\nR_tail2 tail_node2 GND 1k ; Sets current for comparator 2 input stage\n\n; --- Comparator 1 ---\n; Input Stage: PNP Differential Pair with Current Mirror Load\nQ1_1IN_POS collector_q1 1IN_POS emitter_q1 PNP\nQ2_1IN_NEG collector_q2 1IN_NEG emitter_q1 PNP\nR_emitter_q1 emitter_q1 tail_node1 1k ; Tail resistor for current setting\n; Current mirror load\nQ3_load_diode VCC collector_q1 collector_q1 PNP\nQ4_load_mirror VCC collector_q1 output_diff_stage1 PNP\n\n; Gain Stage\nQ5_gain output_diff_stage1 base_q5 GND NPN\nR1_collector_q5 VCC output_q5 10k ; Collector resistor for gain\nC_comp1 output_q5 base_q5 10p ; Frequency compensation (Miller)\n\n; Output Stage: Open Collector\nQ6_output 1OUT output_q5 GND NPN\nR2_base_q6 output_q5 base_q6 1k ; Base resistor for output transistor\n\n; ESD Protection Diodes for Comparator 1\nD1_1IN_POS_VCC 1IN_POS VCC D\nD2_1IN_POS_GND GND 1IN_POS D\nD3_1IN_NEG_VCC 1IN_NEG VCC D\nD4_1IN_NEG_GND GND 1IN_NEG D\n\n; Input Offset Voltage (VIO) modeling for Comparator 1\n; A small voltage source in series with one input to model VIO\nV_vio1 1IN_POS_offset 1IN_POS DC '{VIO_TYP}'\n; Connect 1IN_POS_offset to the actual input transistor base\n; (Adjusted Q1_1IN_POS to use 1IN_POS_offset)\nQ1_1IN_POS_2 collector_q1 1IN_POS_offset emitter_q1 PNP\n\n; --- Comparator 2 ---\n; Input Stage: PNP Differential Pair with Current Mirror Load\nQ11_2IN_POS collector_q11 2IN_POS_offset emitter_q11 PNP\nQ12_2IN_NEG collector_q12 2IN_NEG emitter_q11 PNP\nR_emitter_q11 emitter_q11 tail_node2 1k ; Tail resistor for current setting\n; Current mirror load\nQ13_load_diode VCC collector_q11 collector_q11 PNP\nQ14_load_mirror VCC collector_q11 output_diff_stage2 PNP\n\n; Gain Stage\nQ15_gain output_diff_stage2 base_q15 GND NPN\nR11_collector_q15 VCC output_q15 10k ; Collector resistor for gain\nC_comp2 output_q15 base_q15 10p ; Frequency compensation (Miller)\n\n; Output Stage: Open Collector\nQ16_output 2OUT output_q15 GND NPN\nR12_base_q16 output_q15 base_q16 1k ; Base resistor for output transistor\n\n; ESD Protection Diodes for Comparator 2\nD11_2IN_POS_VCC 2IN_POS VCC D\nD12_2IN_POS_GND GND 2IN_POS D\nD13_2IN_NEG_VCC 2IN_NEG VCC D\nD14_2IN_NEG_GND GND 2IN_NEG D\n\n; Input Offset Voltage (VIO) modeling for Comparator 2\nV_vio2 2IN_POS_offset 2IN_POS DC '{VIO_TYP}'\n\n; --- Behavioral Models for Quiescent Current (IQ) and Output Leakage (IOH-LKG) ---\n; These B-sources help fine-tune the IQ and IOH-LKG to match specifications,\n; especially their dependence on VCC.\n; The transistor models already contribute to IQ and IOH-LKG, these are for adjustment.\n\n; IQ adjustment (simplified, as transistor models already draw current)\n; This B-source models the additional current draw that might not be captured by simple BJT models,\n; or to account for VCC dependence.\nB_IQ_adjust VCC GND I = { (V(VCC) > 2) ? (IQ_TYP_5V + (IQ_TYP_36V - IQ_TYP_5V) * (V(VCC) - 5) / (36 - 5)) : 0 }\n\n; IOH-LKG adjustment for comparator 1 (when output is high-Z)\n; This current source models the leakage when the output transistor is off.\n; It's active when the output is supposed to be high (i.e., 1IN_NEG > 1IN_POS)\n; and the output transistor Q6 is off.\nB_IOH_LKG1 VCC 1OUT I = { (V(1IN_NEG) > V(1IN_POS)) ? (IOH_LKG_TYP_5V + (IOH_LKG_TYP_36V - IOH_LKG_TYP_5V) * (V(VCC) - 5) / (36 - 5)) : 0 }\n\n; IOH-LKG adjustment for comparator 2\nB_IOH_LKG2 VCC 2OUT I = { (V(2IN_NEG) > V(2IN_POS)) ? (IOH_LKG_TYP_5V + (IOH_LKG_TYP_36V - IOH_LKG_TYP_5V) * (V(VCC) - 5) / (36 - 5)) : 0 }\n\n.ends LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS", "iter2": "\n.subckt LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS 1OUT 1IN_NEG 1IN_POS GND 2IN_POS 2IN_NEG 2OUT VCC Thermal_Pad\n\n; Connect Thermal_Pad to GND as specified\nR_Thermal_Pad_GND Thermal_Pad GND 1m\n\n; --- Global Bias Network (Shared by both comparators) ---\n; This network generates a stable reference current for the current mirrors.\n; Designed for low quiescent current (IQ) and wide supply range.\n; Q10, R2, R3 form a VBE multiplier or a simple current source reference.\n; Let's aim for a total IQ of ~400uA for both comparators at 5V.\n; Each comparator will consume roughly 200uA.\n; A reference current of ~50uA might be appropriate.\n\nQ10 VCC bias_ref GND NPN_MODEL ; Reference transistor\nR2 VCC bias_ref 100k          ; Sets current for Q10\nR3 bias_ref GND 10k           ; Helps stabilize bias point\n\n; --- Comparator 1 ---\n\n; Input Stage: PNP Differential Pair with Current Mirror Load\n; PNP inputs allow common-mode input down to GND.\n; Q1, Q2: Input differential pair\n; Q3: Current source for differential pair tail\n; Q4, Q5: Current mirror load for differential pair\n; R1: Emitter resistor for Q3 to set tail current\n\nQ1 1IN_NEG 1IN_NEG_base 1IN_POS PNP_MODEL ; Input PNP, collector to 1IN_NEG_base for current mirror\nQ2 1IN_POS 1IN_POS_base 1IN_POS PNP_MODEL ; Input PNP, collector to 1IN_POS_base for current mirror\n\n; Current mirror for differential pair load (Q4, Q5)\n; Q4: Diode-connected, sets current for Q5\n; Q5: Mirrors current from Q4 to the output of the differential stage\nQ4 1IN_NEG_base 1IN_NEG_base VCC PNP_MODEL ; Diode-connected PNP\nQ5 1IN_POS_base 1IN_NEG_base VCC PNP_MODEL ; Current mirror load\n\n; Tail current source for differential pair (Q3, R1)\n; Q3: NPN current source\n; R1: Emitter resistor to set current\nQ3 1IN_POS GND bias_ref NPN_MODEL ; Tail current source for diff pair\nR1 GND 1IN_POS 10k             ; Emitter resistor for Q3\n\n; Second Stage: Common Emitter Amplifier\n; Q6: NPN common emitter amplifier\n; Q7: Active load for Q6 (current mirror)\n; C1: Miller compensation capacitor for stability\n\nQ6 1OUT_driver 1IN_POS_base GND NPN_MODEL ; Common emitter amplifier\nQ7 VCC 1OUT_driver 1OUT_driver PNP_MODEL ; Active load for Q6 (diode-connected)\nC1 1OUT_driver 1IN_POS_base 10p         ; Miller compensation\n\n; Output Stage: Open Collector NPN\n; Q8: Driver for output NPN\n; Q9: Open collector output transistor\n\nQ8 1OUT_driver_base 1OUT_driver GND NPN_MODEL ; Driver for output NPN\nQ9 1OUT 1OUT_driver_base GND NPN_MODEL ; Open collector output transistor\n\n; --- Comparator 2 ---\n; Identical structure to Comparator 1\n\n; Input Stage: PNP Differential Pair with Current Mirror Load\nQ11 2IN_NEG 2IN_NEG_base 2IN_POS PNP_MODEL\nQ12 2IN_POS 2IN_POS_base 2IN_POS PNP_MODEL\n\nQ14 2IN_NEG_base 2IN_NEG_base VCC PNP_MODEL\nQ15 2IN_POS_base 2IN_NEG_base VCC PNP_MODEL\n\nQ13 2IN_POS GND bias_ref NPN_MODEL\nR11 GND 2IN_POS 10k\n\n; Second Stage: Common Emitter Amplifier\nQ16 2OUT_driver 2IN_POS_base GND NPN_MODEL\nQ17 VCC 2OUT_driver 2OUT_driver PNP_MODEL\nC11 2OUT_driver 2IN_POS_base 10p\n\n; Output Stage: Open Collector NPN\nQ18 2OUT_driver_base 2OUT_driver GND NPN_MODEL\nQ19 2OUT 2OUT_driver_base GND NPN_MODEL\n\n; --- ESD Protection Diodes ---\n; Diodes to VCC and GND on all input and output pins\n; These are simplified models for ESD clamps.\n; Real ESD structures are more complex but these serve the purpose for functional simulation.\n\n; Comparator 1 Inputs\nD1 VCC 1IN_NEG D_ESD\nD2 1IN_NEG GND D_ESD\nD3 VCC 1IN_POS D_ESD\nD4 1IN_POS GND D_ESD\n\n; Comparator 1 Output\nD5 VCC 1OUT D_ESD\nD6 1OUT GND D_ESD\n\n; Comparator 2 Inputs\nD7 VCC 2IN_NEG D_ESD\nD8 2IN_NEG GND D_ESD\nD9 VCC 2IN_POS D_ESD\nD10 2IN_POS GND D_ESD\n\n; Comparator 2 Output\nD11 VCC 2OUT D_ESD\nD12 2OUT GND D_ESD\n\n; --- Transistor Models ---\n; Parameters are chosen to represent typical bipolar transistors\n; and to meet the specified performance characteristics.\n; BF (Beta Forward) for high gain and low input bias current.\n; IS (Saturation Current) for leakage and VBE.\n; VAF (Forward Early Voltage) for high output impedance (gain).\n; IKF (Forward Beta Roll-off) for high current operation.\n; VCC up to 38V implies high breakdown voltages (BVCBO, BVCEO).\n\n.model NPN_MODEL NPN ( Is=1e-14 Bf=200 Vaf=100 Ikf=0.1 Ise=1e-13 Ne=1.5\n+ Br=5 Var=10 Ikr=0.01 Isc=1e-13 Nc=2\n+ Rb=10 Rc=1 Re=0.5\n+ Cje=5p Cjc=5p Tf=0.3n Tr=10n\n+ Vceo=40 Vcbo=50 Veo=7\n)\n\n.model PNP_MODEL PNP ( Is=1e-14 Bf=150 Vaf=80 Ikf=0.05 Ise=1e-13 Ne=1.5\n+ Br=3 Var=8 Ikr=0.005 Isc=1e-13 Nc=2\n+ Rb=15 Rc=2 Re=1\n+ Cje=8p Cjc=8p Tf=0.5n Tr=15n\n+ Vceo=40 Vcbo=50 Veo=7\n)\n\n.model D_ESD D (Is=1e-15 Rs=1 Cjo=10p Bv=40 Ibv=1u)\n\n.ends LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS"}, "testbenches": {"tb_dc_op.cir": ".options gmin=1e-12 cshunt=1e-15\n* LTspice Testbench for LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS\n\n.include \"LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS_iter2.cir\"\n\n* Voltage Sources for Power and Inputs\nVGND GND 0 0\nVVCC VCC 0 DC 5V ; Typical VCC for initial measurements\nVTHERMAL Thermal_Pad 0 DC 27C ; Typical ambient temperature\n\n* Input sources for Comparator 1\nV1IN_POS 1IN_POS 0 DC 0V PULSE(0V 2.5V 2u 1n 1n 10u 20u)\nV1IN_NEG 0 1IN_NEG DC 0V PULSE(0V 2.5V 2u 1n 1n 10u 20u)\n\n* Input sources for Comparator 2 (can be used for differential measurements or left floating/tied)\nV2IN_POS 2IN_POS 0 DC 0V PULSE(0V 2.5V 2u 1n 1n 10u 20u)\nV2IN_NEG 0 2IN_NEG DC 0V PULSE(0V 2.5V 2u 1n 1n 10u 20u)\n\n* Output Loads (Open-collector outputs, require pull-up resistors)\nR1OUT VCC 1OUT 10k\nR2OUT VCC 2OUT 10k\n\n* DUT Instance\nXDUT 1OUT 1IN_NEG 1IN_POS GND 2IN_POS 2IN_NEG 2OUT VCC Thermal_Pad LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS\n\n* Simulation Commands\n.tran 0 100u 0 0.1u startup\n.op\n\n* Measurement Directives (Placeholder for specific conditions, will be expanded for each spec)\n\n* VCC (Max/Min operating voltage - requires multiple simulations or parameter sweep)\n* For a single run, we can check the applied VCC.\n.meas tran VCC_Applied AVG V(VCC) from=5u to=100u\n\n* VID (Differential Input Voltage)\n* This requires varying 1IN_POS and 1IN_NEG. For a single run, we can measure the instantaneous difference.\n.meas tran VID_1 AVG V(1IN_POS, 1IN_NEG) from=5u to=100u\n.meas tran VID_2 AVG V(2IN_POS, 2IN_NEG) from=5u to=100u\n\n* VI (Input Voltage Range)\n.meas tran VI_1_MAX MAX V(1IN_POS) from=5u to=100u\n.meas tran VI_1_MIN MIN V(1IN_POS) from=5u to=100u\n.meas tran VI_2_MAX MAX V(2IN_POS) from=5u to=100u\n.meas tran VI_2_MIN MIN V(2IN_POS) from=5u to=100u\n\n* IIK (Input Clamp Current - requires negative input voltage and current measurement)\n* This would require a separate test setup with a negative voltage source on the input and current measurement.\n* For this general testbench, we'll assume inputs are within range.\n\n* VO (Output Voltage Range)\n.meas tran VO_1_MAX MAX V(1OUT) from=5u to=100u\n.meas tran VO_1_MIN MIN V(1OUT) from=5u to=100u\n.meas tran VO_2_MAX MAX V(2OUT) from=5u to=100u\n.meas tran VO_2_MIN MIN V(2OUT) from=5u to=100u\n\n* IO (Output Current - requires specific load conditions)\n* This would require varying the pull-up resistor and measuring current.\n.meas tran IO_1_AVG AVG I(R1OUT) from=5u to=100u\n.meas tran IO_2_AVG AVG I(R2OUT) from=5u to=100u\n\n* ISC (Short-Circuit Current - requires shorting output to ground)\n* This would require a separate test setup.\n\n* TJ (Junction Temperature - typically an internal model parameter or set by Thermal_Pad)\n.meas tran TJ_AVG AVG V(Thermal_Pad) from=5u to=100u\n\n* VS (Supply Voltage - same as VCC)\n.meas tran VS_AVG AVG V(VCC) from=5u to=100u\n\n* VIVR (Input Voltage Range - same as VI)\n.meas tran VIVR_1_MAX MAX V(1IN_POS) from=5u to=100u\n.meas tran VIVR_1_MIN MIN V(1IN_POS) from=5u to=100u\n\n* TA (Ambient Temperature - set by Thermal_Pad)\n.meas tran TA_AVG AVG V(Thermal_Pad) from=5u to=100u\n\n* VIO (Input Offset Voltage - requires specific input conditions to find the trip point)\n* This requires a sweep of one input while the other is fixed, and finding the point where output switches.\n* For a single .tran, we can't directly measure VIO.\n\n* IB (Input Bias Current - requires specific input conditions and current measurement)\n* This requires a separate test setup with high impedance inputs.\n.meas tran IB_1IN_POS AVG I(V1IN_POS) from=5u to=100u\n.meas tran IB_1IN_NEG AVG I(V1IN_NEG) from=5u to=100u\n\n* IOS (Input Offset Current - difference between input bias currents)\n.meas tran IOS_1 PARAM ABS(IB_1IN_POS - IB_1IN_NEG)\n\n* VCM (Common Mode Input Voltage Range)\n* This requires sweeping common mode voltage.\n\n* AVD (Open-Loop Voltage Gain - requires specific input conditions and output swing)\n* This requires a small differential input and measuring the output swing.\n\n* VOL (Output Low Voltage - requires output sinking current)\n* This requires setting 1IN_NEG > 1IN_POS and sinking current from 1OUT.\n* For this setup, we can measure VOL when the output is low.\n.meas tran VOL_1 MIN V(1OUT) from=5u to=100u\n.meas tran VOL_2 MIN V(2OUT) from=5u to=100u\n\n* IOH-LKG (Output High Leakage Current - requires output pulled high and input conditions)\n* This requires setting 1IN_POS > 1IN_NEG and measuring current through the pull-up.\n.meas tran IOH_LKG_1 AVG I(R1OUT) from=5u to=100u\n.meas tran IOH_LKG_2 AVG I(R2OUT) from=5u to=100u\n\n* IOL (Output Sink Current - requires output sinking current to a specific voltage)\n* This requires setting 1IN_NEG > 1IN_POS and adjusting the load to achieve VOL=1.5V.\n\n* IQ (Quiescent Current - total supply current)\n.meas tran IQ_AVG AVG -I(VVCC) from=5u to=100u\n\n.end\n"}, "simulation_logs": {"tb_dc_op.log": "LTspice 24.1.10 for Windows\nCircuit: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\tb_dc_op.cir\nStart Time: Wed Oct 14 00:28:07 2026\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\tb_dc_op.cir(24): This sub-circuit cannot be instantiated because it contains these syntax errors:\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS_iter2.cir(120): Expected a sequence <directive or device instantiation end of line> here.\n)\n^\n\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\LM393\\LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS_iter2.cir(127): Expected a sequence <directive or device instantiation end of line> here.\n)\n^\n\nXDUT 1OUT 1IN_NEG 1IN_POS GND 2IN_POS 2IN_NEG 2OUT VCC Thermal_Pad LM393B__LM2903B__LM193__LM293__LM393_AND_LM2903_DUAL_COMPARATORS\n                                                                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n"}}];
+
+    let currentICIndex = 0;
+    let currentNetlistIter = 1;
+    let timelineTimer = null;
+    let isPlaying = false;
+    let currentTime = 0.0;
+
+    function init() {
+      const select = document.getElementById('icSelect');
+      select.innerHTML = '';
+      BENCHMARK_DATA.forEach((ic, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        const name = ic.summary.part_name || ic.id;
+        const cat = (ic.knowledge_graph.ic_device && ic.knowledge_graph.ic_device.category) || '';
+        opt.textContent = `${name} (${cat || ic.id})`;
+        select.appendChild(opt);
+      });
+
+      if (BENCHMARK_DATA.length > 0) {
+        switchIC(0);
+      }
+    }
+
+    function switchIC(index) {
+      currentICIndex = parseInt(index);
+      const ic = BENCHMARK_DATA[currentICIndex];
+      if (!ic) return;
+
+      const name = ic.summary.part_name || ic.id;
+      const cat = (ic.knowledge_graph.ic_device && ic.knowledge_graph.ic_device.category) || 'Analog IC';
+      const specCount = ic.summary.spec_count || (ic.knowledge_graph.electrical_parameters && ic.knowledge_graph.electrical_parameters.length) || 0;
+      const pins = (ic.knowledge_graph.pins || []);
+      const iters = ic.summary.iterations || [];
+      const passRate = ic.summary.pass_rate_percent || 0.0;
+
+      // Update Key Metrics
+      document.getElementById('statIcName').textContent = name;
+      document.getElementById('statCategory').textContent = cat;
+      document.getElementById('statSpecCount').textContent = specCount;
+      document.getElementById('statPinCount').textContent = `${pins.length} Pins Extracted`;
+      document.getElementById('statLoopCount').textContent = `${iters.length} Loops`;
+      document.getElementById('statPassRate').textContent = `${passRate.toFixed(1)}%`;
+      document.getElementById('statPassRateSub').textContent = passRate > 0 ? 'Verified Closed-Loop' : 'Simulated (Iter 2 Completed)';
+
+      // Render Sub-Sections
+      renderPDG(pins);
+      renderNetlist();
+      renderTestbenches();
+      renderSpecs();
+      renderDiagnostics(iters);
+      renderHKG(ic);
+    }
+
+    function selectTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+      const target = document.getElementById(tabId);
+      if (target) target.classList.remove('hidden');
+
+      const btn = document.getElementById('btn-' + tabId);
+      if (btn) btn.classList.add('active');
+    }
+
+    // -------------------------------------------------------------
+    // PDG & TIMELINE RENDERER
+    // -------------------------------------------------------------
+    function renderPDG(pins) {
+      const svg = document.getElementById('pdgSvg');
+      svg.innerHTML = '';
+      const tbody = document.getElementById('pdgTableBody');
+      tbody.innerHTML = '';
+
+      if (!pins || pins.length === 0) {
+        svg.innerHTML = '<text x="400" y="140" text-anchor="middle" fill="#64748b" font-size="14">No pin data available in knowledge graph</text>';
+        return;
+      }
+
+      // Group pins by role into columns
+      const roleCols = {
+        'POWER': { x: 100, color: '#38bdf8', label: 'Power Pins (0us)' },
+        'GROUND': { x: 100, color: '#94a3b8', label: 'Ground' },
+        'BIAS': { x: 300, color: '#fbbf24', label: 'Bias / Reg' },
+        'CONTROL': { x: 480, color: '#a855f7', label: 'Control' },
+        'SIGNAL': { x: 480, color: '#60a5fa', label: 'Signal Inputs' },
+        'OUTPUT': { x: 680, color: '#34d399', label: 'Output Nodes' }
+      };
+
+      const pinNodes = [];
+      const colCounts = {};
+
+      pins.forEach((p, idx) => {
+        const role = (p.role || 'SIGNAL').toUpperCase();
+        const baseCol = roleCols[role] || roleCols['SIGNAL'];
+        const colIdx = colCounts[baseCol.x] || 0;
+        colCounts[baseCol.x] = colIdx + 1;
+
+        let delay = 2.0;
+        if (role === 'POWER' || role === 'GROUND') delay = 0.0;
+        else if (role === 'BIAS') delay = 2.0;
+        else if (role === 'CONTROL' || role === 'SIGNAL') delay = 4.0;
+        else if (role === 'OUTPUT') delay = 7.0;
+
+        pinNodes.push({
+          name: p.name,
+          role: role,
+          direction: p.direction || 'BIDIRECTIONAL',
+          delay: delay,
+          x: baseCol.x,
+          y: 50 + colIdx * 45,
+          color: baseCol.color
+        });
+      });
+
+      // Draw Edges (Power -> Bias -> Signal -> Output)
+      pinNodes.forEach(p1 => {
+        pinNodes.forEach(p2 => {
+          if (p1.delay < p2.delay && (p2.delay - p1.delay <= 3.5)) {
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const d = `M ${p1.x + 40} ${p1.y} C ${p1.x + 90} ${p1.y}, ${p2.x - 90} ${p2.y}, ${p2.x - 40} ${p2.y}`;
+            path.setAttribute('d', d);
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', '#334155');
+            path.setAttribute('stroke-width', '1.2');
+            path.setAttribute('stroke-dasharray', '3,3');
+            svg.appendChild(path);
+          }
+        });
+      });
+
+      // Draw Nodes
+      pinNodes.forEach(node => {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'node-pin cursor-pointer');
+        g.setAttribute('id', `pin-node-${node.name}`);
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', node.x - 45);
+        rect.setAttribute('y', node.y - 18);
+        rect.setAttribute('width', 90);
+        rect.setAttribute('height', 36);
+        rect.setAttribute('rx', 8);
+        rect.setAttribute('fill', '#0f172a');
+        rect.setAttribute('stroke', node.color);
+        rect.setAttribute('stroke-width', '1.5');
+        rect.setAttribute('id', `pin-rect-${node.name}`);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', node.x);
+        text.setAttribute('y', node.y - 2);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', '11');
+        text.setAttribute('font-weight', 'bold');
+        text.setAttribute('fill', '#f8fafc');
+        text.textContent = node.name;
+
+        const subText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        subText.setAttribute('x', node.x);
+        subText.setAttribute('y', node.y + 11);
+        subText.setAttribute('text-anchor', 'middle');
+        subText.setAttribute('font-size', '9');
+        subText.setAttribute('fill', node.color);
+        subText.textContent = `${node.delay} μs`;
+
+        g.appendChild(rect);
+        g.appendChild(text);
+        g.appendChild(subText);
+        svg.appendChild(g);
+
+        // Add to Table
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40';
+        tr.innerHTML = `
+          <td class="px-3 py-2 font-mono font-bold text-sky-300">${node.name}</td>
+          <td class="px-3 py-2">${node.role}</td>
+          <td class="px-3 py-2 text-slate-400">${node.direction}</td>
+          <td class="px-3 py-2 font-mono">${node.delay.toFixed(1)} μs</td>
+          <td class="px-3 py-2" id="status-${node.name}"><span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">Waiting</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updateTimelineTime(currentTime);
+    }
+
+    function updateTimelineTime(val) {
+      currentTime = val;
+      document.getElementById('timeSlider').value = val;
+      document.getElementById('timeDisplay').textContent = `${val.toFixed(1)} μs`;
+
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const pins = (ic && ic.knowledge_graph.pins) || [];
+      pins.forEach(p => {
+        const role = (p.role || 'SIGNAL').toUpperCase();
+        let delay = 2.0;
+        if (role === 'POWER' || role === 'GROUND') delay = 0.0;
+        else if (role === 'BIAS') delay = 2.0;
+        else if (role === 'CONTROL' || role === 'SIGNAL') delay = 4.0;
+        else if (role === 'OUTPUT') delay = 7.0;
+
+        const rect = document.getElementById(`pin-rect-${p.name}`);
+        const statusEl = document.getElementById(`status-${p.name}`);
+        if (rect && statusEl) {
+          if (currentTime >= delay) {
+            rect.setAttribute('fill', '#1e293b');
+            rect.setAttribute('stroke-width', '2.5');
+            statusEl.innerHTML = '<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Active & Settled</span>';
+          } else {
+            rect.setAttribute('fill', '#0f172a');
+            rect.setAttribute('stroke-width', '1.0');
+            statusEl.innerHTML = '<span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-500">Prerequisite</span>';
+          }
+        }
+      });
+    }
+
+    function toggleTimelinePlay() {
+      const btn = document.getElementById('btnPlayPause');
+      if (isPlaying) {
+        clearInterval(timelineTimer);
+        isPlaying = false;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg><span>Play Sequence</span>';
+      } else {
+        isPlaying = true;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"/></svg><span>Pause</span>';
+        if (currentTime >= 10.0) currentTime = 0.0;
+        timelineTimer = setInterval(() => {
+          currentTime += 0.5;
+          if (currentTime > 10.0) {
+            currentTime = 10.0;
+            toggleTimelinePlay();
+          }
+          updateTimelineTime(currentTime);
+        }, 250);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // NETLIST & SIZING RENDERER
+    // -------------------------------------------------------------
+    function renderNetlist() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const iters = (ic && ic.summary.iterations) || [];
+      const curIterData = iters[currentNetlistIter - 1] || iters[0] || {};
+      const archText = curIterData.architecture_summary || 'First-principles netlist synthesized directly from datasheet specifications.';
+      document.getElementById('architectureSummaryText').textContent = archText;
+
+      const netlistContent = ic.netlists[`iter${currentNetlistIter}`] || ic.netlists['iter1'] || '* No netlist found for this iteration.';
+      document.getElementById('netlistCodePre').textContent = netlistContent;
+      document.getElementById('netlistFilename').textContent = `${ic.summary.subckt_name || ic.id}_iter${currentNetlistIter}.cir`;
+    }
+
+    function switchNetlistIteration(iter) {
+      currentNetlistIter = iter;
+      document.getElementById('btnNetlistIter1').className = iter === 1
+        ? 'px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold'
+        : 'px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold';
+      document.getElementById('btnNetlistIter2').className = iter === 2
+        ? 'px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold'
+        : 'px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold';
+      renderNetlist();
+    }
+
+    // -------------------------------------------------------------
+    // TESTBENCH RENDERER
+    // -------------------------------------------------------------
+    function renderTestbenches() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const container = document.getElementById('tbDeckButtons');
+      container.innerHTML = '';
+
+      const tbs = Object.keys(ic.testbenches || {});
+      if (tbs.length === 0) {
+        container.innerHTML = '<span class="text-xs text-slate-400">No testbenches available.</span>';
+        document.getElementById('tbCodePre').textContent = '* No testbench deck found.';
+        return;
+      }
+
+      tbs.forEach((tbName, idx) => {
+        const btn = document.createElement('button');
+        btn.className = idx === 0
+          ? 'px-3 py-1.5 text-xs rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono font-semibold'
+          : 'px-3 py-1.5 text-xs rounded-xl bg-slate-800 text-slate-400 border border-slate-700 font-mono font-semibold hover:text-white';
+        btn.textContent = tbName;
+        btn.onclick = () => {
+          document.querySelectorAll('#tbDeckButtons button').forEach(b => {
+            b.className = 'px-3 py-1.5 text-xs rounded-xl bg-slate-800 text-slate-400 border border-slate-700 font-mono font-semibold hover:text-white';
+          });
+          btn.className = 'px-3 py-1.5 text-xs rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono font-semibold';
+          document.getElementById('currentTbName').textContent = tbName;
+          document.getElementById('tbCodePre').textContent = ic.testbenches[tbName];
+        };
+        container.appendChild(btn);
+      });
+
+      document.getElementById('currentTbName').textContent = tbs[0];
+      document.getElementById('tbCodePre').textContent = ic.testbenches[tbs[0]];
+    }
+
+    // -------------------------------------------------------------
+    // SYMPY ORACLE SPEC MATRIX RENDERER
+    // -------------------------------------------------------------
+    function renderSpecs() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const tbody = document.getElementById('specTableBody');
+      tbody.innerHTML = '';
+
+      const specs = (ic.knowledge_graph && ic.knowledge_graph.electrical_parameters) || [];
+      if (specs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-slate-500">No electrical parameters found</td></tr>';
+        return;
+      }
+
+      specs.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition-colors';
+
+        const minVal = s.min !== null && s.min !== undefined ? s.min : '-';
+        const typVal = s.typ !== null && s.typ !== undefined ? s.typ : '-';
+        const maxVal = s.max !== null && s.max !== undefined ? s.max : '-';
+        const unit = s.unit || '';
+
+        tr.innerHTML = `
+          <td class="px-3 py-2 font-mono font-bold text-sky-300">${s.symbol || s.name}</td>
+          <td class="px-3 py-2 font-mono">${minVal}</td>
+          <td class="px-3 py-2 font-mono text-slate-400">${typVal}</td>
+          <td class="px-3 py-2 font-mono">${maxVal}</td>
+          <td class="px-3 py-2 text-indigo-300 font-mono">${unit}</td>
+          <td class="px-3 py-2 font-mono text-slate-400">Unobserved</td>
+          <td class="px-3 py-2">
+            <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 border border-slate-700">Simulated</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterSpecs(query) {
+      const q = query.toLowerCase();
+      document.querySelectorAll('#specTableBody tr').forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+    }
+
+    // -------------------------------------------------------------
+    // DIAGNOSTICS & CLOSED-LOOP RENDERER
+    // -------------------------------------------------------------
+    function renderDiagnostics(iters) {
+      const container = document.getElementById('diagnosticsContainer');
+      container.innerHTML = '';
+
+      if (!iters || iters.length === 0) {
+        container.innerHTML = '<div class="text-xs text-slate-400">No iteration diagnostics recorded.</div>';
+        return;
+      }
+
+      iters.forEach(it => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-900 border border-slate-800 rounded-xl p-5 shadow space-y-4';
+
+        const passPct = (it.pass_rate_percent || 0.0).toFixed(1);
+        const shortfalls = it.shortfalls || [];
+        const improvements = it.improvements || [];
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <h4 class="font-bold text-sm text-white">Closed-Loop Iteration ${it.iteration}</h4>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-slate-400">Pass Rate:</span>
+              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">${passPct}%</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <!-- Shortfall Audit -->
+            <div class="bg-slate-950 border border-rose-500/20 rounded-xl p-3.5 space-y-2">
+              <div class="font-bold text-rose-400 flex items-center gap-1.5 uppercase text-[11px]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                Shortfall Audit (미달 원인 분석)
+              </div>
+              <ul class="space-y-1 text-slate-300 max-h-40 overflow-y-auto custom-scrollbar">
+                ${shortfalls.length ? shortfalls.map(sf => `<li class="font-mono text-[11px] leading-tight text-slate-400">&bull; ${sf}</li>`).join('') : '<li class="text-slate-500">None detected.</li>'}
+              </ul>
+            </div>
+
+            <!-- Improvements Applied -->
+            <div class="bg-slate-950 border border-emerald-500/20 rounded-xl p-3.5 space-y-2">
+              <div class="font-bold text-emerald-400 flex items-center gap-1.5 uppercase text-[11px]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Improvement Actions (개선 및 수정 내역)
+              </div>
+              <ul class="space-y-1 text-slate-300 max-h-40 overflow-y-auto custom-scrollbar">
+                ${improvements.length ? improvements.map(imp => `<li class="text-[11px] leading-tight text-slate-300">&bull; ${imp}</li>`).join('') : '<li class="text-slate-500">No improvements logged.</li>'}
+              </ul>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // -------------------------------------------------------------
+    // HKG METADATA RENDERER
+    // -------------------------------------------------------------
+    function renderHKG(ic) {
+      const dev = (ic.knowledge_graph && ic.knowledge_graph.ic_device) || {};
+      const pins = (ic.knowledge_graph && ic.knowledge_graph.pins) || [];
+
+      const metaEl = document.getElementById('hkgDeviceMetadata');
+      metaEl.innerHTML = `
+        <div><span class="text-slate-500 font-semibold">Device Name:</span> <span class="font-bold text-white">${dev.name || ic.id}</span></div>
+        <div><span class="text-slate-500 font-semibold">Category:</span> <span class="text-sky-300">${dev.category || 'Analog IC'}</span></div>
+        <div class="text-[11px] text-slate-400 leading-relaxed mt-2">${dev.description || 'No datasheet description available.'}</div>
+      `;
+
+      const pinEl = document.getElementById('hkgPinList');
+      pinEl.innerHTML = pins.map(p => `
+        <div class="flex items-center justify-between py-1 border-b border-slate-800/40">
+          <span class="font-mono text-sky-400 font-bold">${p.name}</span>
+          <span class="text-[10px] text-slate-400 uppercase">${p.role || 'SIGNAL'} | ${p.direction || 'BIDIR'}</span>
+        </div>
+      `).join('') || '<div class="text-slate-500">No pin list available.</div>';
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

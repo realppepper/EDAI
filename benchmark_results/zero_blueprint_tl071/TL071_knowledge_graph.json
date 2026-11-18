@@ -1,0 +1,613 @@
+{
+  "ic_device": {
+    "name": "TL071",
+    "category": "Operational Amplifier",
+    "description": "Low-noise, FET-input operational amplifier",
+    "package": "SOIC 8 (D)"
+  },
+  "pins": [
+    {
+      "name": "IN",
+      "pin_number": "2",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Inverting input",
+      "page": 3,
+      "evidence": "Input Inverting input",
+      "raw_name": "IN\u2013"
+    },
+    {
+      "name": "IN_P",
+      "pin_number": "3",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Noninverting input",
+      "page": 3,
+      "evidence": "Input Noninverting input",
+      "raw_name": "IN+"
+    },
+    {
+      "name": "OUT",
+      "pin_number": "6",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "description": "Output",
+      "page": 3,
+      "evidence": "Output",
+      "raw_name": "OUT"
+    },
+    {
+      "name": "VCC",
+      "pin_number": "4",
+      "role": "POWER",
+      "direction": "POWER",
+      "description": "Power supply",
+      "page": 3,
+      "evidence": "Power supply",
+      "raw_name": "VCC\u2013"
+    },
+    {
+      "name": "VCC_P",
+      "pin_number": "7",
+      "role": "POWER",
+      "direction": "POWER",
+      "description": "Power supply",
+      "page": 3,
+      "evidence": "Power supply",
+      "raw_name": "VCC+"
+    },
+    {
+      "name": "NC",
+      "pin_number": "1,5,8",
+      "role": "NC",
+      "direction": "NC",
+      "description": "Do not connect",
+      "page": 3,
+      "evidence": "Do not connect",
+      "raw_name": "NC"
+    }
+  ],
+  "port_dependencies": [
+    {
+      "source": "VCC",
+      "target": "OUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "supply active"
+    },
+    {
+      "source": "VCC_P",
+      "target": "OUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "supply active"
+    },
+    {
+      "source": "IN",
+      "target": "OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "input change"
+    },
+    {
+      "source": "IN_P",
+      "target": "OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "input change"
+    }
+  ],
+  "functional_blocks": [
+    {
+      "name": "Operational Amplifier",
+      "type": "Analog",
+      "description": "Amplifies differential input voltage",
+      "input_ports": [
+        "IN+",
+        "IN-"
+      ],
+      "output_ports": [
+        "OUT"
+      ]
+    }
+  ],
+  "electrical_parameters": [
+    {
+      "symbol": "VS",
+      "name": "Supply voltage, VS = (V+) \u2013 (V\u2013)",
+      "category": "ABS_MAX",
+      "min": -0.3,
+      "typ": null,
+      "max": 36,
+      "unit": "V",
+      "test_conditions": "All NS and PS packages; All TL07xM devices",
+      "page": 10,
+      "evidence": "Supply voltage, VS = (V+) \u2013 (V\u2013) All NS and PS packages; All TL07xM devices \u20130.3 36 V",
+      "related_pins": [
+        "V+",
+        "V-"
+      ]
+    },
+    {
+      "symbol": "VS",
+      "name": "Supply voltage, VS = (V+) \u2013 (V\u2013)",
+      "category": "ABS_MAX",
+      "min": 0,
+      "typ": null,
+      "max": 42,
+      "unit": "V",
+      "test_conditions": "All other devices",
+      "page": 10,
+      "evidence": "Supply voltage, VS = (V+) \u2013 (V\u2013) All other devices 0 42 V",
+      "related_pins": [
+        "V+",
+        "V-"
+      ]
+    },
+    {
+      "symbol": "VICM",
+      "name": "Common-mode voltage",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "All NS and PS packages; All TL07xM devices",
+      "page": 10,
+      "evidence": "Common-mode voltage All NS and PS packages; All TL07xM devices (VCC\u2013) \u2013 0.3 (VCC\u2013) + 36 V",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VICM",
+      "name": "Common-mode voltage",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "All other devices",
+      "page": 10,
+      "evidence": "Common-mode voltage All other devices (VCC\u2013) \u2013 0.5 (VCC+) + 0.5 V",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VID",
+      "name": "Differential voltage",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "All NS and PS packages; All TL07xM devices",
+      "page": 10,
+      "evidence": "Differential voltage All NS and PS packages; All TL07xM devices (VCC\u2013) \u2013 0.3 (VCC\u2013) + 36 V",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "VID",
+      "name": "Differential voltage",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "All other devices",
+      "page": 10,
+      "evidence": "Differential voltage All other devices VS + 0.2 V",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IIN",
+      "name": "Current",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 50,
+      "unit": "mA",
+      "test_conditions": "All NS and PS packages; All TL07xM devices",
+      "page": 10,
+      "evidence": "Current All NS and PS packages; All TL07xM devices 50 mA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IIN",
+      "name": "Current",
+      "category": "ABS_MAX",
+      "min": -10,
+      "typ": null,
+      "max": 10,
+      "unit": "mA",
+      "test_conditions": "All other devices",
+      "page": 10,
+      "evidence": "Current All other devices \u201310 10 mA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "ISC",
+      "name": "Output short-circuit",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": null,
+      "test_conditions": "Continuous",
+      "page": 10,
+      "evidence": "Output short-circuit Continuous",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating ambient temperature, TA",
+      "category": "ABS_MAX",
+      "min": -55,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": null,
+      "page": 10,
+      "evidence": "Operating ambient temperature, TA \u201355 150 \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "TJ",
+      "name": "Junction temperature, TJ",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": null,
+      "page": 10,
+      "evidence": "Junction temperature, TJ 150 \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "TC",
+      "name": "Case temperature for 60 seconds - FK package",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 260,
+      "unit": "\u00b0C",
+      "test_conditions": "FK package",
+      "page": 10,
+      "evidence": "Case temperature for 60 seconds - FK package 260 \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "TL",
+      "name": "Lead temperature 1.8 mm (1/16 inch) from case for 10 seconds",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 300,
+      "unit": "\u00b0C",
+      "test_conditions": "1.8 mm (1/16 inch) from case for 10 seconds",
+      "page": 10,
+      "evidence": "Lead temperature 1.8 mm (1/16 inch) from case for 10 seconds 300 \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "Tstg",
+      "name": "Storage temperature, Tstg",
+      "category": "ABS_MAX",
+      "min": -65,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": null,
+      "page": 10,
+      "evidence": "Storage temperature, Tstg \u201365 150 \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge",
+      "category": "ESD",
+      "min": -2000,
+      "typ": null,
+      "max": 2000,
+      "unit": "V",
+      "test_conditions": "Human-body model (HBM), per ANSI/ESDA/JEDEC JS-001",
+      "page": 10,
+      "evidence": "Electrostatic discharge Human-body model (HBM), per ANSI/ESDA/JEDEC JS-001 \u00b12000 V",
+      "related_pins": []
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge",
+      "category": "ESD",
+      "min": -1000,
+      "typ": null,
+      "max": 1000,
+      "unit": "V",
+      "test_conditions": "Charged-device model (CDM), per JEDEC specification JESD22-C101",
+      "page": 10,
+      "evidence": "Electrostatic discharge Charged-device model (CDM), per JEDEC specification JESD22-C101 \u00b11000 V",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 114.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "TL074xx, D (SOIC)",
+      "page": 12,
+      "evidence": "R\u03b8JA Junction-to-ambient thermal resistance 114.2",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 153.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "TL074xx, DYY (SOT-23)",
+      "page": 12,
+      "evidence": "R\u03b8JA Junction-to-ambient thermal resistance 153.2",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 80,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "TL074xx, N (TSSOP)",
+      "page": 12,
+      "evidence": "R\u03b8JA Junction-to-ambient thermal resistance 80",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 76,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "TL074xx, NS (TSSOP)",
+      "page": 12,
+      "evidence": "R\u03b8JA Junction-to-ambient thermal resistance 76",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 128.8,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "TL074xx, W (TSSOP)",
+      "page": 12,
+      "evidence": "R\u03b8JA Junction-to-ambient thermal resistance 128.8",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 70.3,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "TL074xx, D (SOIC)",
+      "page": 12,
+      "evidence": "R\u03b8JC(top) Junction-to-case (top) thermal resistance 70.3",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 88.7,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "TL074xx, DYY (SOT-23)",
+      "page": 12,
+      "evidence": "R\u03b8JC(top) Junction-to-case (top) thermal resistance 88.7",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 5.61,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "TL074xx, FK (TSSOP)",
+      "page": 12,
+      "evidence": "R\u03b8JC(top) Junction-to-case (top) thermal resistance 5.61",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 14.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "TL074xx, J (TSSOP)",
+      "page": 12,
+      "evidence": "R\u03b8JC(top) Junction-to-case (top) thermal resistance 14.5",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 14.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "TL074xx, PW (TSSOP)",
+      "page": 12,
+      "evidence": "R\u03b8JC(top) Junction-to-case (top) thermal resistance 14.5",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 56.1,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "TL074xx, W (TSSOP)",
+      "page": 12,
+      "evidence": "R\u03b8JC(top) Junction-to-case (top) thermal resistance 56.1",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 70.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "TL074xx, D (SOIC)",
+      "page": 12,
+      "evidence": "R\u03b8JB Junction-to-board thermal resistance 70.2",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 65.4,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "TL074xx, DYY (SOT-23)",
+      "page": 12,
+      "evidence": "R\u03b8JB Junction-to-board thermal resistance 65.4",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 127.6,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "TL074xx, W (TSSOP)",
+      "page": 12,
+      "evidence": "R\u03b8JB Junction-to-board thermal resistance 127.6",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 28.8,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "TL074xx, D (SOIC)",
+      "page": 12,
+      "evidence": "\u03c8JT Junction-to-top characterization parameter 28.8",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 9.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "TL074xx, DYY (SOT-23)",
+      "page": 12,
+      "evidence": "\u03c8JT Junction-to-top characterization parameter 9.5",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 29,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "TL074xx, W (TSSOP)",
+      "page": 12,
+      "evidence": "\u03c8JT Junction-to-top characterization parameter 29",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 69.8,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "TL074xx, D (SOIC)",
+      "page": 12,
+      "evidence": "\u03c8JB Junction-to-board characterization parameter 69.8",
+      "related_pins": []
+    }
+  ],
+  "provenance": {
+    "pin_pages": [
+      1,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "spec_pages": [
+      10,
+      11,
+      12
+    ],
+    "func_pages": [
+      1,
+      2
+    ],
+    "failed_spec_pages": [
+      {
+        "page": 11,
+        "error": "Failed to parse JSON from LLM response:\nWe need to parse the provided text. The text includes two tables: 5.3 Recommended Operating Conditions and 5.4 Thermal Information for Single Channel, and 5.5 Thermal Information for Dual Channel. We need to extract every row of the specification tables. For e",
+        "attempts": 2
+      }
+    ],
+    "source_file": "tl071.pdf"
+  }
+}

@@ -1,0 +1,175 @@
+{
+  "part_name": "LM358B",
+  "subckt_name": "LM358B",
+  "pass_rate_percent": 33.3,
+  "spec_count": 260,
+  "iterations": [
+    {
+      "iteration": 1,
+      "netlist_path": "C:\\Users\\Sera\\GensparkCode\\analogverifier\\output_e2e\\synth_cmp\\google_gemini-3.8-flash\\LM358B_iter1.cir",
+      "pass_rate_percent": 33.3,
+      "coverage_pct": 59.2,
+      "passed_specs": 30,
+      "failed_specs": 60,
+      "unmeasured_specs": 14,
+      "passed_symbols": [
+        "IB",
+        "IB",
+        "VO",
+        "IO",
+        "IO",
+        "IO",
+        "ISC",
+        "IQ",
+        "IQ",
+        "IB",
+        "IB",
+        "VO",
+        "VO",
+        "VO",
+        "IO",
+        "IO",
+        "IO",
+        "IQ",
+        "IQ",
+        "IO",
+        "IQ",
+        "IQ",
+        "IO",
+        "IO",
+        "IO",
+        "IQ",
+        "IB",
+        "IB",
+        "IO",
+        "ISC"
+      ],
+      "simulation_errors": [
+        "IB: LTspice timeout after 120s",
+        "IB: LTspice timeout after 120s",
+        "IB: LTspice timeout after 120s",
+        "IB: LTspice timeout after 120s",
+        "IOS: LTspice timeout after 120s",
+        "IOS: LTspice timeout after 120s",
+        "IOS: LTspice timeout after 120s",
+        "IOS: LTspice timeout after 120s",
+        "VO: LTspice timeout after 120s",
+        "VO: LTspice timeout after 120s",
+        "VO: LTspice timeout after 120s",
+        "VO: LTspice timeout after 120s",
+        "IO: LTspice timeout after 120s",
+        "IO: LTspice timeout after 120s",
+        "IO: LTspice timeout after 120s",
+        "IO: LTspice timeout after 120s",
+        "IB: LTspice timeout after 120s",
+        "IB: LTspice timeout after 120s",
+        "IOS: LTspice timeout after 120s",
+        "IOS: LTspice timeout after 120s",
+        "IOS: LTspice timeout after 120s",
+        "VO: LTspice timeout after 120s",
+        "VO: LTspice timeout after 120s",
+        "VO: LTspice timeout after 120s",
+        "VO: LTspice timeout after 120s",
+        "VO: LTspice timeout after 120s",
+        "VO: LTspice timeout after 120s",
+        "IO: LTspice timeout after 120s",
+        "IO: LTspice timeout after 120s",
+        "ISC: LTspice timeout after 120s",
+        "IQ: LTspice timeout after 120s",
+        "IB: LTspice timeout after 120s",
+        "IB: LTspice timeout after 120s",
+        "IOS: LTspice timeout after 120s",
+        "IOS: LTspice timeout after 120s",
+        "VO: LTspice timeout after 120s",
+        "VO: LTspice timeout after 120s",
+        "VO: LTspice timeout after 120s",
+        "VO: LTspice timeout after 120s",
+        "IO: LTspice timeout after 120s",
+        "IO: LTspice timeout after 120s",
+        "IO: LTspice timeout after 120s",
+        "IO: LTspice timeout after 120s"
+      ],
+      "shortfalls": [
+        "Compiler/Simulation Error: IB: LTspice timeout after 120s",
+        "Compiler/Simulation Error: IB: LTspice timeout after 120s",
+        "Compiler/Simulation Error: IB: LTspice timeout after 120s",
+        "Compiler/Simulation Error: IB: LTspice timeout after 120s",
+        "Param 'VS' violated:  (Measured: Unobserved)",
+        "Param 'VS' violated:  (Measured: Unobserved)",
+        "Param 'VS' violated:  (Measured: Unobserved)",
+        "Param 'VID' violated:  (Measured: Unobserved)",
+        "Param 'VID' violated:  (Measured: Unobserved)",
+        "Param 'VI' violated:  (Measured: Unobserved)"
+      ],
+      "improvements": [
+        "Initial first-principles topology and Level-1 parameter sizing synthesized from scratch."
+      ],
+      "architecture_summary": "The LM358B is an industry-standard dual operational amplifier featuring a wide supply range (3V to 36V), low quiescent current (~300 \u00b5A per channel at 5V), unity-gain bandwidth of 1.2 MHz, slew rate of ~0.5 V/\u00b5s, and an input common-mode range that includes the negative rail (V-).\n\nCircuit Topology & Sizing Methodology:\n1. Two Identical Op-Amp Cores:\n   - Implemented as a reusable subcircuit `LM358B_CHANNEL` instantiated twice for Amplifier 1 and Amplifier 2.\n   - Channel 1 interface: OUT1, IN1 (inverting), IN1_P (non-inverting), V (negative supply), V_P (positive supply).\n   - Channel 2 interface: OUT2, IN2 (inverting), IN2_P (non-inverting), V (negative supply), V_P (positive supply).\n\n2. Input Stage:\n   - PNP Darlington-type differential input emulation using PNP transistors (or equivalent high-impedance input structure with PNP characteristics) allows input common-mode voltage to swing down to V- (ground).\n   - Input bias currents are modeled at typ. -10 nA (flowing out of the input pins, characteristic of PNP input pairs).\n   - Input offset voltage trimmed to typ. 0.3 mV.\n   - Input differential and common-mode impedance modeled (ZID ~ 10 M\u03a9, ZIC ~ 4 G\u03a9).\n\n3. Gain & Compensation Stages:\n   - Open-loop gain (AOL) set to ~103 dB (140 V/mV) with dominant pole compensation providing GBW = 1.2 MHz and Phase Margin = ~56\u00b0 into a 20 pF / 10 k\u03a9 load.\n   - Slew-rate limiting is engineered to 0.5 V/\u00b5s via the differential transconductance and compensation capacitance ratio (I_tail / C_comp).\n\n4. Output Stage:\n   - Class-AB stage with classic LM358/LM358B output swing characteristics:\n     * Positive swing limited to (V+) - 1.4V at 1 mA, ~ (V+) - 1.35V at 50 \u00b5A.\n     * Negative swing down to ~5 mV with pull-down resistor to V-, or ~100 mV with 50 \u00b5A sinking current, and ~750 mV at 1 mA sink.\n     * Output short-circuit current limited to +40 mA source / -30 mA sink.\n     * Small-signal open-loop output resistance RO ~ 300 \u03a9 at 1 MHz.\n\n5. Power Supply & Quiescent Current:\n   - Total quiescent current per channel ~ 300 \u00b5A at 5V, tracking up to ~400 \u00b5A at 36V, correctly meeting the datasheet specifications.\n   - PSRR and CMRR behavioral modeling included to guarantee >80 dB rejection.",
+      "design_rationale": {
+        "summary": "The LM358B is an industry-standard dual operational amplifier featuring a wide supply range (3V to 36V), low quiescent current (~300 \u00b5A per channel at 5V), unity-gain bandwidth of 1.2 MHz, slew rate of ~0.5 V/\u00b5s, and an input common-mode range that includes the negative rail (V-).\n\nCircuit Topology & Sizing Methodology:\n1. Two Identical Op-Amp Cores:\n   - Implemented as a reusable subcircuit `LM358B_CHANNEL` instantiated twice for Amplifier 1 and Amplifier 2.\n   - Channel 1 interface: OUT1, IN1 (inverting), IN1_P (non-inverting), V (negative supply), V_P (positive supply).\n   - Channel 2 interface: OUT2, IN2 (inverting), IN2_P (non-inverting), V (negative supply), V_P (positive supply).\n\n2. Input Stage:\n   - PNP Darlington-type differential input emulation using PNP transistors (or equivalent high-impedance input structure with PNP characteristics) allows input common-mode voltage to swing down to V- (ground).\n   - Input bias currents are modeled at typ. -10 nA (flowing out of the input pins, characteristic of PNP input pairs).\n   - Input offset voltage trimmed to typ. 0.3 mV.\n   - Input differential and common-mode impedance modeled (ZID ~ 10 M\u03a9, ZIC ~ 4 G\u03a9).\n\n3. Gain & Compensation Stages:\n   - Open-loop gain (AOL) set to ~103 dB (140 V/mV) with dominant pole compensation providing GBW = 1.2 MHz and Phase Margin = ~56\u00b0 into a 20 pF / 10 k\u03a9 load.\n   - Slew-rate limiting is engineered to 0.5 V/\u00b5s via the differential transconductance and compensation capacitance ratio (I_tail / C_comp).\n\n4. Output Stage:\n   - Class-AB stage with classic LM358/LM358B output swing characteristics:\n     * Positive swing limited to (V+) - 1.4V at 1 mA, ~ (V+) - 1.35V at 50 \u00b5A.\n     * Negative swing down to ~5 mV with pull-down resistor to V-, or ~100 mV with 50 \u00b5A sinking current, and ~750 mV at 1 mA sink.\n     * Output short-circuit current limited to +40 mA source / -30 mA sink.\n     * Small-signal open-loop output resistance RO ~ 300 \u03a9 at 1 MHz.\n\n5. Power Supply & Quiescent Current:\n   - Total quiescent current per channel ~ 300 \u00b5A at 5V, tracking up to ~400 \u00b5A at 36V, correctly meeting the datasheet specifications.\n   - PSRR and CMRR behavioral modeling included to guarantee >80 dB rejection."
+      }
+    },
+    {
+      "iteration": 2,
+      "netlist_path": "C:\\Users\\Sera\\GensparkCode\\analogverifier\\output_e2e\\synth_cmp\\google_gemini-3.8-flash\\LM358B_iter2.cir",
+      "pass_rate_percent": 0.0,
+      "coverage_pct": 0.0,
+      "passed_specs": 0,
+      "failed_specs": 0,
+      "unmeasured_specs": 0,
+      "passed_symbols": [],
+      "simulation_errors": [
+        "compile check timed out after 60 s (operating point does not converge)"
+      ],
+      "shortfalls": [
+        "Compiler/Simulation Error: compile check timed out after 60 s (operating point does not converge)",
+        "Param 'VS' violated:  (Measured: Unobserved)",
+        "Param 'VS' violated:  (Measured: Unobserved)",
+        "Param 'VS' violated:  (Measured: Unobserved)",
+        "Param 'VID' violated:  (Measured: Unobserved)",
+        "Param 'VID' violated:  (Measured: Unobserved)",
+        "Param 'VI' violated:  (Measured: Unobserved)"
+      ],
+      "improvements": [
+        "Topology refinement: The LM358B is an industry-standard dual operational amplifier characterized by wide supply operation (3V to 36V), true single-supply ground-..."
+      ],
+      "architecture_summary": "The LM358B is an industry-standard dual operational amplifier characterized by wide supply operation (3V to 36V), true single-supply ground-sensing input capability (VCM extends to V-), low supply current (~300 \u00b5A per channel), 1.2 MHz gain-bandwidth product, and 0.5 V/\u00b5s slew rate.\n\nArchitecture of each op-amp channel:\n1. Pin Ordering Check:\n   - LM358B: OUT1, IN1, IN1_P, V, IN2_P, IN2, OUT2, V_P.\n   - Note: IN1 is negative, IN1_P is positive; IN2_P is positive, IN2 is negative.\n2. Input Stage:\n   - PNP Darlington/differential pair equivalent behavior: Input common mode includes negative rail (V-) down to V- - 0.3V and up to (V+ - 1.5V).\n   - Input bias current IB is typically -10 nA to -35 nA (flows OUT of the inputs).\n   - High differential input impedance (10 M\u03a9) and common-mode impedance (>4 G\u03a9).\n   - Vos trimming to <0.3 mV.\n   - CMRR and PSRR rejection network modeled cleanly with high DC rejection (>100 dB).\n3. Intermediate Gain / Dominant Pole Stage:\n   - Open-loop gain AOL >= 100 dB (typ 140 V/mV = ~103 dB).\n   - High-gain transconductance stage with dominant pole capacitor and resistor to yield GBW = 1.2 MHz.\n   - Slew rate limiting at 0.5 V/\u00b5s via gm/C compensation current limiting (I_tail = 10 \u00b5A, C_comp = 20 pF).\n4. Output Stage:\n   - Class-AB stage with NPN pull-up and NPN/pull-down sink transistor structure typical of LM358.\n   - Output voltage swing:\n     * Positive swing limit: reaches V+ - 1.35V to 1.4V at light loads.\n     * Negative swing limit: reaches within ~5mV to 20mV of V- for light pull-down, and ~100mV at 50\u00b5A sink.\n   - Current limiting: source current limit ~30-40 mA, sink current limit ~20-40 mA.\n   - Output resistance RO ~ 300 \u03a9 open-loop.\n5. Quiescent Current:\n   - Total quiescent current ~600 \u00b5A (300 \u00b5A per amplifier channel) from 5V to 36V.",
+      "design_rationale": {
+        "summary": "The LM358B is an industry-standard dual operational amplifier characterized by wide supply operation (3V to 36V), true single-supply ground-sensing input capability (VCM extends to V-), low supply current (~300 \u00b5A per channel), 1.2 MHz gain-bandwidth product, and 0.5 V/\u00b5s slew rate.\n\nArchitecture of each op-amp channel:\n1. Pin Ordering Check:\n   - LM358B: OUT1, IN1, IN1_P, V, IN2_P, IN2, OUT2, V_P.\n   - Note: IN1 is negative, IN1_P is positive; IN2_P is positive, IN2 is negative.\n2. Input Stage:\n   - PNP Darlington/differential pair equivalent behavior: Input common mode includes negative rail (V-) down to V- - 0.3V and up to (V+ - 1.5V).\n   - Input bias current IB is typically -10 nA to -35 nA (flows OUT of the inputs).\n   - High differential input impedance (10 M\u03a9) and common-mode impedance (>4 G\u03a9).\n   - Vos trimming to <0.3 mV.\n   - CMRR and PSRR rejection network modeled cleanly with high DC rejection (>100 dB).\n3. Intermediate Gain / Dominant Pole Stage:\n   - Open-loop gain AOL >= 100 dB (typ 140 V/mV = ~103 dB).\n   - High-gain transconductance stage with dominant pole capacitor and resistor to yield GBW = 1.2 MHz.\n   - Slew rate limiting at 0.5 V/\u00b5s via gm/C compensation current limiting (I_tail = 10 \u00b5A, C_comp = 20 pF).\n4. Output Stage:\n   - Class-AB stage with NPN pull-up and NPN/pull-down sink transistor structure typical of LM358.\n   - Output voltage swing:\n     * Positive swing limit: reaches V+ - 1.35V to 1.4V at light loads.\n     * Negative swing limit: reaches within ~5mV to 20mV of V- for light pull-down, and ~100mV at 50\u00b5A sink.\n   - Current limiting: source current limit ~30-40 mA, sink current limit ~20-40 mA.\n   - Output resistance RO ~ 300 \u03a9 open-loop.\n5. Quiescent Current:\n   - Total quiescent current ~600 \u00b5A (300 \u00b5A per amplifier channel) from 5V to 36V."
+      }
+    },
+    {
+      "iteration": 3,
+      "netlist_path": "C:\\Users\\Sera\\GensparkCode\\analogverifier\\output_e2e\\synth_cmp\\google_gemini-3.8-flash\\LM358B_iter3.cir",
+      "pass_rate_percent": 0.0,
+      "coverage_pct": 0.0,
+      "passed_specs": 0,
+      "failed_specs": 0,
+      "unmeasured_specs": 0,
+      "passed_symbols": [],
+      "simulation_errors": [
+        "Unknown parameter | B_VOUT_DRV VDRV 0 VALUE = { limit(V(VMID) + V(INT2_FILT), V(VEE) + 0.005, V(VCC) - 1.4) }",
+        "Unknown parameter | B_IOUT OUT_INT 0 VALUE = { V(VDRV) }"
+      ],
+      "shortfalls": [
+        "Compiler/Simulation Error: Unknown parameter | B_VOUT_DRV VDRV 0 VALUE = { limit(V(VMID) + V(INT2_FILT), V(VEE) + 0.005, V(VCC) - 1.4) }",
+        "Compiler/Simulation Error: Unknown parameter | B_IOUT OUT_INT 0 VALUE = { V(VDRV) }",
+        "Param 'VS' violated:  (Measured: Unobserved)",
+        "Param 'VS' violated:  (Measured: Unobserved)",
+        "Param 'VS' violated:  (Measured: Unobserved)",
+        "Param 'VID' violated:  (Measured: Unobserved)",
+        "Param 'VID' violated:  (Measured: Unobserved)",
+        "Param 'VI' violated:  (Measured: Unobserved)"
+      ],
+      "improvements": [
+        "Topology refinement: The LM358B is an industry-standard dual operational amplifier optimized for single-supply operation (3V to 36V) with ground-sensing PNP diff..."
+      ],
+      "architecture_summary": "The LM358B is an industry-standard dual operational amplifier optimized for single-supply operation (3V to 36V) with ground-sensing PNP differential inputs, low quiescent current (~300 \u00b5A/channel), 1.2 MHz unity-gain bandwidth, and 0.5 V/\u00b5s slew rate.\n\nTo guarantee robust DC convergence in LTspice and eliminate the timeout errors observed in previous simulation attempts, this netlist uses a macro-modeling approach combining:\n1. Input Differential Stage:\n   - PNP differential input pair with low base current (-10 nA typical) and offset voltage trimming.\n   - Ground-sensing input common-mode range down to V- (and even -0.3V) up to V+ - 1.5V.\n   - Matched emitter degeneration and current mirror load to guarantee high CMRR (> 80 dB) and PSRR (> 100 dB).\n2. Gain and Compensation Stage:\n   - High-gain intermediate stage providing > 100 dB AOL.\n   - Slew-rate limiting and dominant pole Miller compensation network sized for 1.2 MHz GBW (gm / (2*pi*Cc) = 1.2 MHz) and 0.5 V/\u00b5s slew rate (Islew / Cc = 0.5 V/\u00b5s, with Cc = 20 pF, Islew = 10 \u00b5A).\n   - High phase margin (56 degrees) under 20 pF load.\n3. Class-AB Output Stage:\n   - Output voltage rail limiting modeling the classic LM358/LM358B output swing:\n     * Near V-: sinks down to ~5 mV with low current, ~100 mV with 50 \u00b5A sink, ~0.75 V with 1 mA sink.\n     * Near V+: swings to V+ - 1.4 V typical at 1 mA.\n   - Output short-circuit current limit (+40 mA source, -30 mA sink).\n   - Output impedance of ~300 ohms open-loop at high frequency.\n4. Bias and Quiescent Current:\n   - Precision supply current source drawing ~300 \u00b5A quiescent current per channel (600 \u00b5A total across 5V to 36V).\n\nThe dual op-amp LM358B comprises two identical channel subcircuits `LM358B_SINGLE` connected to the standard pinout:\n- Channel 1: IN1_P (non-inverting), IN1 (inverting), OUT1\n- Channel 2: IN2_P (non-inverting), IN2 (inverting), OUT2\n- Shared supplies: V_P (V+), V (V-)",
+      "design_rationale": {
+        "summary": "The LM358B is an industry-standard dual operational amplifier optimized for single-supply operation (3V to 36V) with ground-sensing PNP differential inputs, low quiescent current (~300 \u00b5A/channel), 1.2 MHz unity-gain bandwidth, and 0.5 V/\u00b5s slew rate.\n\nTo guarantee robust DC convergence in LTspice and eliminate the timeout errors observed in previous simulation attempts, this netlist uses a macro-modeling approach combining:\n1. Input Differential Stage:\n   - PNP differential input pair with low base current (-10 nA typical) and offset voltage trimming.\n   - Ground-sensing input common-mode range down to V- (and even -0.3V) up to V+ - 1.5V.\n   - Matched emitter degeneration and current mirror load to guarantee high CMRR (> 80 dB) and PSRR (> 100 dB).\n2. Gain and Compensation Stage:\n   - High-gain intermediate stage providing > 100 dB AOL.\n   - Slew-rate limiting and dominant pole Miller compensation network sized for 1.2 MHz GBW (gm / (2*pi*Cc) = 1.2 MHz) and 0.5 V/\u00b5s slew rate (Islew / Cc = 0.5 V/\u00b5s, with Cc = 20 pF, Islew = 10 \u00b5A).\n   - High phase margin (56 degrees) under 20 pF load.\n3. Class-AB Output Stage:\n   - Output voltage rail limiting modeling the classic LM358/LM358B output swing:\n     * Near V-: sinks down to ~5 mV with low current, ~100 mV with 50 \u00b5A sink, ~0.75 V with 1 mA sink.\n     * Near V+: swings to V+ - 1.4 V typical at 1 mA.\n   - Output short-circuit current limit (+40 mA source, -30 mA sink).\n   - Output impedance of ~300 ohms open-loop at high frequency.\n4. Bias and Quiescent Current:\n   - Precision supply current source drawing ~300 \u00b5A quiescent current per channel (600 \u00b5A total across 5V to 36V).\n\nThe dual op-amp LM358B comprises two identical channel subcircuits `LM358B_SINGLE` connected to the standard pinout:\n- Channel 1: IN1_P (non-inverting), IN1 (inverting), OUT1\n- Channel 2: IN2_P (non-inverting), IN2 (inverting), OUT2\n- Shared supplies: V_P (V+), V (V-)"
+      }
+    }
+  ],
+  "final_netlist_path": "C:\\Users\\Sera\\GensparkCode\\analogverifier\\output_e2e\\synth_cmp\\google_gemini-3.8-flash\\LM358B_BEST.cir",
+  "trace_inspector_url": "C:\\Users\\Sera\\GensparkCode\\analogverifier\\output_e2e\\synth_cmp\\google_gemini-3.8-flash\\LM358B_TRACE_INSPECTOR.html"
+}

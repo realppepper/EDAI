@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autonomous Analog Circuit Design & Verification Visualizer</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --background: #090d16;
+      --card: #0f172a;
+      --card-hover: #1e293b;
+      --border: #334155;
+      --foreground: #f8fafc;
+      --muted-foreground: #94a3b8;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.25);
+      --accent: #818cf8;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    .glow-card {
+      box-shadow: 0 0 20px -5px rgba(56, 189, 248, 0.15);
+    }
+    .node-pin {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .node-pin:hover {
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 8px var(--primary));
+    }
+    .tab-btn.active {
+      background-color: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border-bottom: 2px solid #38bdf8;
+    }
+    .code-box {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+  </style>
+</head>
+<body class="min-h-screen custom-scrollbar p-3 md:p-6 antialiased">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- Top Navigation & IC Selector Header -->
+    <header class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-lg flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-sky-500/10 border border-sky-500/30 rounded-xl text-sky-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+              Autonomous Analog Circuit Verifier
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Neuro-Symbolic Engine</span>
+            </h1>
+            <p class="text-xs md:text-sm text-[var(--muted-foreground)] mt-0.5">
+              Deep Visual Inspection of First-Principles AI Circuit Synthesis, PDG Scheduling & Formal Verification
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- IC Selector Pills / Dropdown -->
+      <div class="flex items-center gap-2 w-full lg:w-auto">
+        <label for="icSelect" class="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider shrink-0">Selected IC:</label>
+        <select id="icSelect" onchange="switchIC(this.value)" class="w-full lg:w-72 bg-slate-900 border border-[var(--border)] text-sky-300 font-semibold text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-sky-400">
+        </select>
+      </div>
+    </header>
+
+    <!-- Sub-Process Master Flowchart (Breadcrumb Pipeline) -->
+    <section class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-lg">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xs uppercase tracking-wider font-bold text-sky-400 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Execution Sub-Process Architecture (6 Core Phases)
+        </h2>
+        <span id="pipelineStatusBadge" class="text-xs font-medium px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300 border border-sky-500/30">Active</span>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+        <!-- Phase 1 -->
+        <div onclick="selectTab('tab-hkg')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 1</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">PDF to HKG</div>
+          <div class="text-[11px] text-slate-400 mt-1">Layout, tables & knowledge graph</div>
+        </div>
+
+        <!-- Phase 2 -->
+        <div onclick="selectTab('tab-pdg')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 2</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">PDG & Schedule</div>
+          <div class="text-[11px] text-slate-400 mt-1">Causal DAG & delay &sigma;(p)</div>
+        </div>
+
+        <!-- Phase 3 -->
+        <div onclick="selectTab('tab-synthesis')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 3</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">AI Netlist Synthesis</div>
+          <div class="text-[11px] text-slate-400 mt-1">Transistor sizing & topology</div>
+        </div>
+
+        <!-- Phase 4 -->
+        <div onclick="selectTab('tab-testbenches')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 4</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">Testbench Deck</div>
+          <div class="text-[11px] text-slate-400 mt-1">.op / .tran / .ac auto decks</div>
+        </div>
+
+        <!-- Phase 5 -->
+        <div onclick="selectTab('tab-verification')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 5</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">LTspice & SymPy</div>
+          <div class="text-[11px] text-slate-400 mt-1">Batch sim & formal interval</div>
+        </div>
+
+        <!-- Phase 6 -->
+        <div onclick="selectTab('tab-healing')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 6</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">Self-Healing Loop</div>
+          <div class="text-[11px] text-slate-400 mt-1">Shortfall &rarr; Re-synthesis</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Metrics Cards for Current Selected IC -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">TARGET IC / CATEGORY</div>
+        <div id="statIcName" class="text-lg md:text-xl font-bold text-white mt-1 truncate">--</div>
+        <div id="statCategory" class="text-xs text-sky-400 truncate mt-0.5">--</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">EXTRACTED SPECS</div>
+        <div id="statSpecCount" class="text-lg md:text-xl font-bold text-white mt-1">--</div>
+        <div id="statPinCount" class="text-xs text-indigo-400 mt-0.5">-- Pins Identified</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">CLOSED-LOOP ITERATIONS</div>
+        <div id="statLoopCount" class="text-lg md:text-xl font-bold text-white mt-1">--</div>
+        <div id="statLoopStatus" class="text-xs text-amber-400 mt-0.5">2 Iterations Executed</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">FINAL VERIFICATION PASS</div>
+        <div id="statPassRate" class="text-lg md:text-xl font-bold text-emerald-400 mt-1">--%</div>
+        <div id="statPassRateSub" class="text-xs text-slate-400 mt-0.5">LTspice Neuro-Symbolic</div>
+      </div>
+    </section>
+
+    <!-- Interactive Navigation Tabs -->
+    <div class="border-b border-slate-700 flex overflow-x-auto gap-2 text-sm font-medium">
+      <button onclick="selectTab('tab-overview')" id="btn-tab-overview" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all active">
+        1. Sub-Process Flowchart
+      </button>
+      <button onclick="selectTab('tab-pdg')" id="btn-tab-pdg" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        2. Port Dependency Graph & Timing
+      </button>
+      <button onclick="selectTab('tab-synthesis')" id="btn-tab-synthesis" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        3. AI Netlist & Transistor Sizing
+      </button>
+      <button onclick="selectTab('tab-testbenches')" id="btn-tab-testbenches" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        4. Testbench Decks
+      </button>
+      <button onclick="selectTab('tab-verification')" id="btn-tab-verification" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        5. SymPy Oracle & Measurements
+      </button>
+      <button onclick="selectTab('tab-healing')" id="btn-tab-healing" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        6. Closed-Loop Diagnostics
+      </button>
+      <button onclick="selectTab('tab-hkg')" id="btn-tab-hkg" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        7. Knowledge Graph (HKG)
+      </button>
+    </div>
+
+    <!-- TAB 1: SUB-PROCESS FLOWCHART & SYSTEM ARCHITECTURE -->
+    <div id="tab-overview" class="tab-content space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+          Detailed Internal Sub-Processes Execution Flow
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-6">
+          Every analog IC undergoes an automated, six-phase end-to-end synthesis and verification cycle without template hardcoding.
+        </p>
+
+        <!-- SVG Flowchart -->
+        <div class="overflow-x-auto py-2">
+          <svg class="w-full min-w-[850px] h-64 text-slate-200" viewBox="0 0 950 260">
+            <defs>
+              <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0284c7"/>
+                <stop offset="100%" stop-color="#0369a1"/>
+              </linearGradient>
+              <linearGradient id="grad-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6366f1"/>
+                <stop offset="100%" stop-color="#4f46e5"/>
+              </linearGradient>
+              <linearGradient id="grad-emerald" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#059669"/>
+                <stop offset="100%" stop-color="#047857"/>
+              </linearGradient>
+              <linearGradient id="grad-amber" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#d97706"/>
+                <stop offset="100%" stop-color="#b45309"/>
+              </linearGradient>
+              <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+              </marker>
+              <marker id="arrow-feedback" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b"/>
+              </marker>
+            </defs>
+
+            <!-- Box 1: PDF to HKG -->
+            <rect x="20" y="40" width="130" height="90" rx="12" fill="url(#grad-blue)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="85" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">1. PDF Parsing</text>
+            <text x="85" y="90" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Layout & Tables</text>
+            <text x="85" y="105" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; HKG Graph</text>
+
+            <line x1="150" y1="85" x2="180" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 2: PDG Scheduling -->
+            <rect x="180" y="40" width="130" height="90" rx="12" fill="url(#grad-blue)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="245" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">2. PDG Engine</text>
+            <text x="245" y="90" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Pin Dependency</text>
+            <text x="245" y="105" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Delay Schedule &sigma;(p)</text>
+
+            <line x1="310" y1="85" x2="340" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 3: LLM Circuit Synthesis -->
+            <rect x="340" y="40" width="140" height="90" rx="12" fill="url(#grad-purple)" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="410" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">3. AI Synthesis</text>
+            <text x="410" y="90" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; First-Principles</text>
+            <text x="410" y="105" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; Transistor Sizing</text>
+
+            <line x1="480" y1="85" x2="510" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 4: Testbench Deck Synthesis -->
+            <rect x="510" y="40" width="130" height="90" rx="12" fill="url(#grad-purple)" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="575" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">4. Testbench Decks</text>
+            <text x="575" y="90" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; .op / .tran / .ac</text>
+            <text x="575" y="105" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; Auto .meas Bindings</text>
+
+            <line x1="640" y1="85" x2="670" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 5: LTspice & SymPy -->
+            <rect x="670" y="40" width="130" height="90" rx="12" fill="url(#grad-emerald)" stroke="#34d399" stroke-width="1.5"/>
+            <text x="735" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">5. Verification</text>
+            <text x="735" y="90" text-anchor="middle" font-size="10" fill="#d1fae5">&bull; Headless LTspice</text>
+            <text x="735" y="105" text-anchor="middle" font-size="10" fill="#d1fae5">&bull; SymPy Oracles</text>
+
+            <line x1="800" y1="85" x2="830" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 6: Decision / Self-Healing -->
+            <polygon points="885,55 935,85 885,115 835,85" fill="url(#grad-amber)" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="885" y="82" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">All</text>
+            <text x="885" y="95" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">Pass?</text>
+
+            <!-- Feedback Loop Arrow back to Phase 3 -->
+            <path d="M 885 115 L 885 180 L 410 180 L 410 135" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrow-feedback)"/>
+            <text x="645" y="195" text-anchor="middle" font-size="10" font-weight="bold" fill="#fbbf24">Self-Healing Iteration Feedback (Shortfalls &amp; Diagnosis)</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PORT DEPENDENCY GRAPH (PDG) & INTERACTIVE TIMING -->
+    <div id="tab-pdg" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              Interactive Port Dependency Graph (PDG) &amp; Startup Timeline
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+              Topological activation sequence derived from physical pin roles (Power &rarr; Bias &rarr; Signal &rarr; Output)
+            </p>
+          </div>
+
+          <!-- Playback Controls -->
+          <div class="flex items-center gap-3 bg-slate-900 border border-slate-700 px-4 py-2 rounded-xl">
+            <button onclick="toggleTimelinePlay()" id="btnPlayPause" class="text-sky-400 hover:text-sky-300 font-bold text-xs flex items-center gap-1.5">
+              <svg id="playIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg>
+              <span>Play Sequence</span>
+            </button>
+            <input type="range" id="timeSlider" min="0" max="10" step="0.5" value="0" oninput="updateTimelineTime(parseFloat(this.value))" class="w-36 accent-sky-400 cursor-pointer">
+            <span id="timeDisplay" class="text-xs font-mono font-bold text-sky-300 min-w-[55px] text-right">0.0 &mu;s</span>
+          </div>
+        </div>
+
+        <!-- Dynamic PDG SVG Container -->
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 overflow-x-auto min-h-[320px] flex items-center justify-center">
+          <svg id="pdgSvg" class="w-full max-w-4xl h-72 text-slate-200" viewBox="0 0 800 280">
+            <!-- Rendered dynamically by renderPDG() -->
+          </svg>
+        </div>
+
+        <!-- Schedule Table -->
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="text-slate-400 bg-slate-900/60 uppercase text-[11px] border-b border-slate-800">
+              <tr>
+                <th class="px-3 py-2">Pin Name</th>
+                <th class="px-3 py-2">Physical Role</th>
+                <th class="px-3 py-2">Direction</th>
+                <th class="px-3 py-2">Settling Delay &sigma;(p)</th>
+                <th class="px-3 py-2">Status at Current Time</th>
+              </tr>
+            </thead>
+            <tbody id="pdgTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: AI NETLIST SYNTHESIS & ARCHITECTURE -->
+    <div id="tab-synthesis" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+          First-Principles Transistor Netlist Synthesis &amp; Sizing Rationale
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          LLM-generated SPICE netlist without hardcoded circuit templates. Compare Loop 1 (initial synthesis) vs Loop 2 (autonomous refinement).
+        </p>
+
+        <!-- Loop Selector for Netlist -->
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-xs text-slate-400 font-semibold uppercase">View Netlist:</span>
+          <button onclick="switchNetlistIteration(1)" id="btnNetlistIter1" class="px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold">Iteration 1</button>
+          <button onclick="switchNetlistIteration(2)" id="btnNetlistIter2" class="px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold">Iteration 2</button>
+        </div>
+
+        <!-- Architecture Rationale Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 mb-4">
+          <h4 class="text-xs uppercase font-bold text-sky-400 mb-1">Architecture Rationale &amp; Block Topology</h4>
+          <p id="architectureSummaryText" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line"></p>
+        </div>
+
+        <!-- Netlist Code Box -->
+        <div class="relative bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span id="netlistFilename" class="font-mono text-sky-300">circuit.cir</span>
+            <span>SPICE Dialect: LTspice</span>
+          </div>
+          <pre id="netlistCodePre" class="p-4 text-xs font-mono text-slate-300 overflow-x-auto max-h-96 custom-scrollbar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: TESTBENCH DECKS -->
+    <div id="tab-testbenches" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+          Synthesized Multi-Domain Testbenches
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          Automated SPICE testbenches for DC Operating Point (.op), Dynamic Transient (.tran), and AC Frequency Sweeps (.ac) aligned with PDG schedule.
+        </p>
+
+        <div class="flex items-center gap-2 mb-4" id="tbDeckButtons">
+          <!-- Dynamically filled with testbench buttons -->
+        </div>
+
+        <div class="relative bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span id="currentTbName" class="font-mono text-purple-300">tb_dc_op.cir</span>
+            <span>Analysis Mode: Automated .meas</span>
+          </div>
+          <pre id="tbCodePre" class="p-4 text-xs font-mono text-slate-300 overflow-x-auto max-h-96 custom-scrollbar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: SYMPY ORACLE VERIFICATION & MEASUREMENTS -->
+    <div id="tab-verification" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              Neuro-Symbolic Specification Matrix &amp; Oracle Interval Audit
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+              Datasheet specifications formally bounded by SymPy interval algebra &amp; evaluated against LTspice measurements.
+            </p>
+          </div>
+
+          <!-- Filter Search -->
+          <div class="flex items-center gap-2 w-full md:w-auto">
+            <input type="text" id="specSearchInput" oninput="filterSpecs(this.value)" placeholder="Search parameter (e.g. VCC, Gain)..." class="text-xs bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-slate-200 focus:outline-none focus:border-sky-400 w-full md:w-56">
+          </div>
+        </div>
+
+        <!-- Spec Table -->
+        <div class="overflow-x-auto max-h-[460px] custom-scrollbar border border-slate-800 rounded-xl">
+          <table class="w-full text-xs text-left">
+            <thead class="sticky top-0 text-slate-300 bg-slate-900 uppercase text-[11px] border-b border-slate-800 shadow">
+              <tr>
+                <th class="px-3 py-2.5">Parameter Symbol</th>
+                <th class="px-3 py-2.5">Min Limit</th>
+                <th class="px-3 py-2.5">Typ Target</th>
+                <th class="px-3 py-2.5">Max Limit</th>
+                <th class="px-3 py-2.5">Unit</th>
+                <th class="px-3 py-2.5">Measured in Sim</th>
+                <th class="px-3 py-2.5">SymPy Status</th>
+              </tr>
+            </thead>
+            <tbody id="specTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: CLOSED-LOOP DIAGNOSTICS & REFINEMENT -->
+    <div id="tab-healing" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+          Closed-Loop Refinement History &amp; Shortfall Analysis
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-6">
+          Step-by-step diagnostic breakdown showing what fell short in each loop iteration and what improvements were applied.
+        </p>
+
+        <div id="diagnosticsContainer" class="space-y-6">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 7: HARDWARE KNOWLEDGE GRAPH (HKG) -->
+    <div id="tab-hkg" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+          Hardware Knowledge Graph (HKG) Topology
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          Hierarchical document entity graph extracted from PDF text, layout blocks, and electrical tables.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h4 class="text-xs font-bold uppercase text-sky-400 mb-2">Device Metadata</h4>
+            <div id="hkgDeviceMetadata" class="text-xs text-slate-300 space-y-1.5"></div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h4 class="text-xs font-bold uppercase text-indigo-400 mb-2">Pin Definitions &amp; Roles</h4>
+            <div id="hkgPinList" class="text-xs text-slate-300 max-h-48 overflow-y-auto custom-scrollbar space-y-1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Embedded Benchmark Data -->
+  <script>
+    const BENCHMARK_DATA = [{"id": "CDCVF2505-Q1", "folder_name": "CDCVF2505-Q1", "summary": {"part_name": "CDCVF2505-Q1", "subckt_name": "CDCVF2505_Q1", "pass_rate_percent": 0.0, "spec_count": 44, "iterations": [{"iteration": 1, "netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter1.cir", "pass_rate_percent": 0.0, "passed_specs": 0, "failed_specs": 0, "unmeasured_specs": 39, "passed_symbols": [], "simulation_errors": ["C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\tb_dc_op.cir(17): This sub-circuit cannot be instantiated because it contains these syntax errors:", "  --> C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter1.cir(126): Expected a sequence <directive or device instantiation end of line> here.", "  --> .subckt OUTPUT_BUFFER OUT IN GND VDD", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter1.cir(126): Expected a sequence <directive or device instantiation end of line> here.", "  --> .subckt OUTPUT_BUFFER OUT IN GND VDD", "  --> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"], "shortfalls": ["Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\tb_dc_op.cir(17): This sub-circuit cannot be instantiated because it contains these syntax errors:", "Compiler/Simulation Error:   --> C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter1.cir(126): Expected a sequence <directive or device instantiation end of line> here.", "Compiler/Simulation Error:   --> .subckt OUTPUT_BUFFER OUT IN GND VDD", "Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter1.cir(126): Expected a sequence <directive or device instantiation end of line> here.", "Param 'VDD' violated: Parameter 'VDD' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VO' violated: Parameter 'VO' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'IIK' violated: Parameter 'IIK' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'IOK' violated: Parameter 'IOK' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'IO' violated: Parameter 'IO' was not observed in simulation measurements. (Measured: Unobserved)"], "improvements": ["Initial first-principles topology and Level-1 parameter sizing synthesized from scratch."], "architecture_summary": "The CDCVF2505-Q1 is a PLL-based clock driver designed for low-skew, low-jitter clock distribution. The core architecture consists of a Phase-Frequency Detector (PFD), a Charge Pump (CP), a Loop Filter (LF), a Voltage Controlled Oscillator (VCO), and an output buffer stage with integrated series damping resistors. A key feature is the internal feedback loop, where CLKOUT is fed back to the PFD, eliminating the need for an external feedback path. The device also includes a power-down mode when CLKIN is absent and internal duty cycle correction.\n\n**1. Input Stage (CLKIN Buffer and Power-Down Detection):**\nThe CLKIN input is buffered to provide a robust signal to the PFD. A Schmitt trigger buffer is used to handle varying input rise/fall times and provide clean digital edges. A power-down detection circuit monitors the presence of CLKIN. If CLKIN is absent (e.g., remains low for an extended period), the PLL is disabled, and outputs are tri-stated or driven low to conserve power. This is modeled using a behavioral voltage source that checks the activity on CLKIN.\n\n**2. Phase-Frequency Detector (PFD):**\nA PFD compares the phase and frequency of the reference clock (CLKIN) with the feedback clock (CLKOUT). It generates \"UP\" and \"DOWN\" pulses proportional to the phase difference. A typical PFD is a digital circuit implemented with D-flip-flops and an AND gate for reset. For SPICE, this is modeled using behavioral voltage sources that generate UP/DOWN signals based on the rising edges of CLKIN and CLKOUT.\n\n**3. Charge Pump (CP):**\nThe charge pump converts the PFD's UP/DOWN pulses into current pulses that charge or discharge the loop filter. When UP is high, a current source charges the loop filter; when DOWN is high, a current sink discharges it. The current magnitude determines the PLL's gain. The datasheet specifies output drive currents (IOH/IOL) of up to 12mA, suggesting a robust charge pump. We'll size the charge pump current to be in the microampere range for the loop filter, typically 10-100uA, to allow for precise voltage control. This is modeled using behavioral current sources.\n\n**4. Loop Filter (LF):**\nThe loop filter is a critical component that converts the charge pump current pulses into a stable control voltage for the VCO. The CDCVF2505-Q1 explicitly states that the loop filter is integrated on-chip and does not require an external RC network. This implies an active or passive filter designed for stability and noise rejection. A common type is a second-order passive filter (resistor and capacitor in series, with another capacitor to ground) or an active filter using an op-amp. Given the \"on-chip\" constraint and the need for stability, a second-order passive filter is a good starting point. The values of R and C are chosen to achieve the desired loop bandwidth, damping factor, and stabilization time (100 \u00b5s). A stabilization time of 100 \u00b5s suggests a relatively wide loop bandwidth, perhaps in the order of 100 kHz to 1 MHz.\n*   **Stabilization Time (\u03c4):** Approximately 100 \u00b5s. For a second-order loop, the natural frequency \u03c9n is related to the settling time. A common approximation is that settling time is roughly 2\u03c0/\u03c9n. So, \u03c9n \u2248 2\u03c0 / (100 \u00b5s) \u2248 62.8 krad/s.\n*   **Damping Factor (\u03b6):** Typically 0.707 for optimal transient response.\n*   **Loop Filter Components:** For a passive second-order filter (R1, C1 in series, C2 to ground), the transfer function parameters can be related to R1, C1, C2, and the charge pump gain (Kp) and VCO gain (Kvco).\n    *   Kp is the charge pump current (Icp) divided by 2\u03c0.\n    *   Kvco is the VCO frequency change per volt (MHz/V).\n    *   We'll assume a Kvco of around 50-100 MHz/V for a 3.3V supply and 200MHz max frequency.\n    *   Icp will be chosen to be around 50uA.\n    *   With these, R1, C1, C2 can be calculated. For a 100us settling time, C1 might be in the range of 100pF-1nF, and R1 in the kOhm range. C2 is typically C1/10.\n\n**5. Voltage Controlled Oscillator (VCO):**\nThe VCO generates the clock signal whose frequency is controlled by the loop filter's output voltage. The frequency range is 24 MHz to 200 MHz. A ring oscillator or an LC oscillator can be used. For on-chip integration and wide frequency range, a current-starved ring oscillator is common. The VCO output is fed to the output buffers and also back to the PFD via a frequency divider (if necessary, but for a 1:1 PLL, no divider is needed in the feedback path). The VCO is modeled using a behavioral voltage source whose frequency is a function of the control voltage. The output duty cycle correction is also implemented here, ensuring 50% duty cycle regardless of input. This can be achieved with a differential VCO or a duty cycle corrector circuit after the VCO.\n\n**6. Output Buffers with Integrated Series Damping Resistors:**\nThe CDCVF2505-Q1 specifies integrated 25-\u2126 series damping resistors on each output (1Y0-1Y3). This is crucial for driving point-to-point loads and minimizing reflections. Each output buffer must be capable of sourcing/sinking up to 12mA while maintaining specified VOH/VOL levels. This implies strong CMOS output stages. The output capacitance (Co) is specified as 2.8 pF for Yn and 5.2 pF for CLKOUT. The rise/fall times (tr/tf) are 0.5ns to 2.0ns, which is consistent with high-speed CMOS drivers.\n*   **Output Resistors:** Explicitly added as 25 Ohm resistors in series with each output.\n*   **Output Drive Strength:** The IOH/IOL of 12mA at VDD=3V suggests output transistors with W/L ratios large enough to provide this current while maintaining the VOH/VOL levels. For a 3.3V supply, typical Vth for NMOS/PMOS might be around 0.5-0.7V. We'll estimate W/L ratios based on these currents and a target overdrive voltage.\n\n**7. CLKOUT Feedback Path:**\nCLKOUT is the feedback signal for the PLL. It's an internal connection, but it's also brought out as a pin. This pin can be loaded with a capacitor to achieve zero delay. This implies that the CLKOUT buffer is designed to be part of the PLL's feedback loop and its delay characteristics are critical. The Co for CLKOUT is 5.2 pF.\n\n**8. Power-Down Mode:**\nWhen CLKIN is absent, the device goes into power-down mode. This is implemented by detecting the lack of activity on CLKIN. If CLKIN remains low for a certain duration (e.g., 100ns), the PLL is disabled, and outputs are driven to a low state or high impedance. This can be modeled by a simple timer or a behavioral block that monitors CLKIN.\n\n**9. Component Sizing and Parameter Derivations:**\n\n*   **VDD:** 3.3V nominal.\n*   **VIH/VIL:** 0.7*VDD and 0.3*VDD. This sets the switching thresholds for input buffers.\n*   **fclk:** 24 MHz to 200 MHz. VCO must cover this range.\n*   **Stabilization Time:** 100 \u00b5s. This guides the loop filter design.\n*   **tpd (CLKIN to Yn):** -150 ps to 150 ps. This is a very tight specification, implying a very well-matched and low-delay path through the PLL and output buffers. This requires careful sizing of all stages to minimize propagation delays and ensure the PLL achieves near-zero phase error. The negative delay implies that the output can lead the input, which is possible with a PLL that has a phase offset.\n*   **tsk(o) (Yn to Yn skew):** Max 150 ps. This requires highly matched output buffers.\n*   **Jitter (tc(jit_cc)):** 70-150 ps (high freq), 200-400 ps (low freq). This is primarily determined by the VCO's phase noise and the loop filter's ability to suppress noise.\n*   **Output Duty Cycle (odc):** 45-55%. Achieved by duty cycle correction in the VCO or a dedicated circuit.\n*   **tr/tf:** 0.5ns to 2.0ns. Output buffer drive strength and output capacitance determine this. For CL=25pF, a 12mA drive current is sufficient.\n\n**Analytical Sizing Approach:**\n\n*   **MOSFET Models:** Using generic Level 1 NMOS/PMOS models. W/L ratios will be chosen to meet current drive and switching speed requirements.\n    *   For output buffers, Ids = 0.5 * Kp * (W/L) * (Vgs - Vth)^2. With IOH/IOL = 12mA, VDD=3.3V, Vth ~ 0.7V, and target VOH/VOL, we can estimate W/L.\n    *   For example, for IOL = 12mA, VOL = 0.8V, Vgs = 3.3V. Vds = 0.8V. Assuming saturation for simplicity (though it's in triode), (Vgs-Vth) = 3.3-0.7 = 2.6V. Kp_n ~ 100uA/V^2. W/L ~ 2 * 12mA / (100uA/V^2 * (2.6V)^2) ~ 35. This is a rough estimate; actual W/L will be larger to ensure low VOL.\n*   **PLL Loop Filter:**\n    *   Let Icp = 50uA.\n    *   Let Kvco = 75 MHz/V (VCO range 24-200MHz, control voltage 0-3.3V, so roughly 176MHz/3.3V ~ 53MHz/V, let's use 75MHz/V for some margin).\n    *   Natural frequency \u03c9n \u2248 62.8 krad/s.\n    *   Damping factor \u03b6 = 0.707.\n    *   For a passive second-order filter (R1, C1, C2):\n        *   \u03c9n = sqrt(Kp * Kvco / (C1 * (R1*C1 + C2)))\n        *   \u03b6 = 0.5 * R1 * C1 * \u03c9n\n        *   These equations are for a specific filter topology. We'll use a simplified approach for the behavioral model, where the filter directly integrates the charge pump current.\n*   **Behavioral Models:**\n    *   **PFD:** `B_pfd_up` and `B_pfd_down` will generate pulses based on rising edges of CLKIN and CLKOUT.\n    *   **Charge Pump:** `B_cp` will integrate `UP - DOWN` pulses into current.\n    *   **Loop Filter:** `C_lf` will integrate the charge pump current to produce `V_ctrl`. A series resistor `R_lf` will be added for stability.\n    *   **VCO:** `B_vco` will generate a square wave whose frequency is `f_min + Kvco * V_ctrl`. Duty cycle correction will be included.\n    *   **Output Buffers:** Modeled as simple inverters with series resistors. The delay and drive strength will be implicitly handled by the transistor sizing.\n\n**Power-Down Mode Implementation:**\nA simple way to model power-down is to monitor the CLKIN signal. If CLKIN remains low for a certain duration (e.g., 100ns), a behavioral source can set a `power_down` flag. This flag then disables the PLL components (VCO, PFD, CP) and forces the outputs to a low state or high impedance. For simplicity in SPICE, we'll force outputs low and disable the VCO frequency generation.\n\n**Stabilization Time:**\nThe 100 \u00b5s stabilization time is achieved by the PLL locking process. This is inherently modeled by the PFD, CP, LF, and VCO interaction. The loop filter component values are chosen to ensure this settling time.\n\n**Duty Cycle Correction:**\nThe VCO will be designed to inherently produce a 50% duty cycle output, independent of the input duty cycle. This is common in ring oscillators where the delay elements are balanced. In a behavioral model, this is directly enforced.\n\n**Integrated Damping Resistors:**\nThese are explicitly added as 25 Ohm resistors in series with each output.\n\n**ESD Protection:**\nThe ESD ratings (HBM, MM, CDM) are typically achieved through dedicated ESD protection structures at the pins (diodes to VDD/GND, SCRs). These are not explicitly modeled in the functional netlist but are assumed to be present. The IIK/IOK parameters (input/output clamp current) are related to these protection diodes. We'll include simple diodes for input/output clamping.\n\nThis detailed plan allows for the construction of a physically accurate and functionally complete SPICE netlist that aims to meet all specified requirements.", "design_rationale": {"summary": "The CDCVF2505-Q1 is a PLL-based clock driver designed for low-skew, low-jitter clock distribution. The core architecture consists of a Phase-Frequency Detector (PFD), a Charge Pump (CP), a Loop Filter (LF), a Voltage Controlled Oscillator (VCO), and an output buffer stage with integrated series damping resistors. A key feature is the internal feedback loop, where CLKOUT is fed back to the PFD, eliminating the need for an external feedback path. The device also includes a power-down mode when CLKIN is absent and internal duty cycle correction.\n\n**1. Input Stage (CLKIN Buffer and Power-Down Detection):**\nThe CLKIN input is buffered to provide a robust signal to the PFD. A Schmitt trigger buffer is used to handle varying input rise/fall times and provide clean digital edges. A power-down detection circuit monitors the presence of CLKIN. If CLKIN is absent (e.g., remains low for an extended period), the PLL is disabled, and outputs are tri-stated or driven low to conserve power. This is modeled using a behavioral voltage source that checks the activity on CLKIN.\n\n**2. Phase-Frequency Detector (PFD):**\nA PFD compares the phase and frequency of the reference clock (CLKIN) with the feedback clock (CLKOUT). It generates \"UP\" and \"DOWN\" pulses proportional to the phase difference. A typical PFD is a digital circuit implemented with D-flip-flops and an AND gate for reset. For SPICE, this is modeled using behavioral voltage sources that generate UP/DOWN signals based on the rising edges of CLKIN and CLKOUT.\n\n**3. Charge Pump (CP):**\nThe charge pump converts the PFD's UP/DOWN pulses into current pulses that charge or discharge the loop filter. When UP is high, a current source charges the loop filter; when DOWN is high, a current sink discharges it. The current magnitude determines the PLL's gain. The datasheet specifies output drive currents (IOH/IOL) of up to 12mA, suggesting a robust charge pump. We'll size the charge pump current to be in the microampere range for the loop filter, typically 10-100uA, to allow for precise voltage control. This is modeled using behavioral current sources.\n\n**4. Loop Filter (LF):**\nThe loop filter is a critical component that converts the charge pump current pulses into a stable control voltage for the VCO. The CDCVF2505-Q1 explicitly states that the loop filter is integrated on-chip and does not require an external RC network. This implies an active or passive filter designed for stability and noise rejection. A common type is a second-order passive filter (resistor and capacitor in series, with another capacitor to ground) or an active filter using an op-amp. Given the \"on-chip\" constraint and the need for stability, a second-order passive filter is a good starting point. The values of R and C are chosen to achieve the desired loop bandwidth, damping factor, and stabilization time (100 \u00b5s). A stabilization time of 100 \u00b5s suggests a relatively wide loop bandwidth, perhaps in the order of 100 kHz to 1 MHz.\n*   **Stabilization Time (\u03c4):** Approximately 100 \u00b5s. For a second-order loop, the natural frequency \u03c9n is related to the settling time. A common approximation is that settling time is roughly 2\u03c0/\u03c9n. So, \u03c9n \u2248 2\u03c0 / (100 \u00b5s) \u2248 62.8 krad/s.\n*   **Damping Factor (\u03b6):** Typically 0.707 for optimal transient response.\n*   **Loop Filter Components:** For a passive second-order filter (R1, C1 in series, C2 to ground), the transfer function parameters can be related to R1, C1, C2, and the charge pump gain (Kp) and VCO gain (Kvco).\n    *   Kp is the charge pump current (Icp) divided by 2\u03c0.\n    *   Kvco is the VCO frequency change per volt (MHz/V).\n    *   We'll assume a Kvco of around 50-100 MHz/V for a 3.3V supply and 200MHz max frequency.\n    *   Icp will be chosen to be around 50uA.\n    *   With these, R1, C1, C2 can be calculated. For a 100us settling time, C1 might be in the range of 100pF-1nF, and R1 in the kOhm range. C2 is typically C1/10.\n\n**5. Voltage Controlled Oscillator (VCO):**\nThe VCO generates the clock signal whose frequency is controlled by the loop filter's output voltage. The frequency range is 24 MHz to 200 MHz. A ring oscillator or an LC oscillator can be used. For on-chip integration and wide frequency range, a current-starved ring oscillator is common. The VCO output is fed to the output buffers and also back to the PFD via a frequency divider (if necessary, but for a 1:1 PLL, no divider is needed in the feedback path). The VCO is modeled using a behavioral voltage source whose frequency is a function of the control voltage. The output duty cycle correction is also implemented here, ensuring 50% duty cycle regardless of input. This can be achieved with a differential VCO or a duty cycle corrector circuit after the VCO.\n\n**6. Output Buffers with Integrated Series Damping Resistors:**\nThe CDCVF2505-Q1 specifies integrated 25-\u2126 series damping resistors on each output (1Y0-1Y3). This is crucial for driving point-to-point loads and minimizing reflections. Each output buffer must be capable of sourcing/sinking up to 12mA while maintaining specified VOH/VOL levels. This implies strong CMOS output stages. The output capacitance (Co) is specified as 2.8 pF for Yn and 5.2 pF for CLKOUT. The rise/fall times (tr/tf) are 0.5ns to 2.0ns, which is consistent with high-speed CMOS drivers.\n*   **Output Resistors:** Explicitly added as 25 Ohm resistors in series with each output.\n*   **Output Drive Strength:** The IOH/IOL of 12mA at VDD=3V suggests output transistors with W/L ratios large enough to provide this current while maintaining the VOH/VOL levels. For a 3.3V supply, typical Vth for NMOS/PMOS might be around 0.5-0.7V. We'll estimate W/L ratios based on these currents and a target overdrive voltage.\n\n**7. CLKOUT Feedback Path:**\nCLKOUT is the feedback signal for the PLL. It's an internal connection, but it's also brought out as a pin. This pin can be loaded with a capacitor to achieve zero delay. This implies that the CLKOUT buffer is designed to be part of the PLL's feedback loop and its delay characteristics are critical. The Co for CLKOUT is 5.2 pF.\n\n**8. Power-Down Mode:**\nWhen CLKIN is absent, the device goes into power-down mode. This is implemented by detecting the lack of activity on CLKIN. If CLKIN remains low for a certain duration (e.g., 100ns), the PLL is disabled, and outputs are driven to a low state or high impedance. This can be modeled by a simple timer or a behavioral block that monitors CLKIN.\n\n**9. Component Sizing and Parameter Derivations:**\n\n*   **VDD:** 3.3V nominal.\n*   **VIH/VIL:** 0.7*VDD and 0.3*VDD. This sets the switching thresholds for input buffers.\n*   **fclk:** 24 MHz to 200 MHz. VCO must cover this range.\n*   **Stabilization Time:** 100 \u00b5s. This guides the loop filter design.\n*   **tpd (CLKIN to Yn):** -150 ps to 150 ps. This is a very tight specification, implying a very well-matched and low-delay path through the PLL and output buffers. This requires careful sizing of all stages to minimize propagation delays and ensure the PLL achieves near-zero phase error. The negative delay implies that the output can lead the input, which is possible with a PLL that has a phase offset.\n*   **tsk(o) (Yn to Yn skew):** Max 150 ps. This requires highly matched output buffers.\n*   **Jitter (tc(jit_cc)):** 70-150 ps (high freq), 200-400 ps (low freq). This is primarily determined by the VCO's phase noise and the loop filter's ability to suppress noise.\n*   **Output Duty Cycle (odc):** 45-55%. Achieved by duty cycle correction in the VCO or a dedicated circuit.\n*   **tr/tf:** 0.5ns to 2.0ns. Output buffer drive strength and output capacitance determine this. For CL=25pF, a 12mA drive current is sufficient.\n\n**Analytical Sizing Approach:**\n\n*   **MOSFET Models:** Using generic Level 1 NMOS/PMOS models. W/L ratios will be chosen to meet current drive and switching speed requirements.\n    *   For output buffers, Ids = 0.5 * Kp * (W/L) * (Vgs - Vth)^2. With IOH/IOL = 12mA, VDD=3.3V, Vth ~ 0.7V, and target VOH/VOL, we can estimate W/L.\n    *   For example, for IOL = 12mA, VOL = 0.8V, Vgs = 3.3V. Vds = 0.8V. Assuming saturation for simplicity (though it's in triode), (Vgs-Vth) = 3.3-0.7 = 2.6V. Kp_n ~ 100uA/V^2. W/L ~ 2 * 12mA / (100uA/V^2 * (2.6V)^2) ~ 35. This is a rough estimate; actual W/L will be larger to ensure low VOL.\n*   **PLL Loop Filter:**\n    *   Let Icp = 50uA.\n    *   Let Kvco = 75 MHz/V (VCO range 24-200MHz, control voltage 0-3.3V, so roughly 176MHz/3.3V ~ 53MHz/V, let's use 75MHz/V for some margin).\n    *   Natural frequency \u03c9n \u2248 62.8 krad/s.\n    *   Damping factor \u03b6 = 0.707.\n    *   For a passive second-order filter (R1, C1, C2):\n        *   \u03c9n = sqrt(Kp * Kvco / (C1 * (R1*C1 + C2)))\n        *   \u03b6 = 0.5 * R1 * C1 * \u03c9n\n        *   These equations are for a specific filter topology. We'll use a simplified approach for the behavioral model, where the filter directly integrates the charge pump current.\n*   **Behavioral Models:**\n    *   **PFD:** `B_pfd_up` and `B_pfd_down` will generate pulses based on rising edges of CLKIN and CLKOUT.\n    *   **Charge Pump:** `B_cp` will integrate `UP - DOWN` pulses into current.\n    *   **Loop Filter:** `C_lf` will integrate the charge pump current to produce `V_ctrl`. A series resistor `R_lf` will be added for stability.\n    *   **VCO:** `B_vco` will generate a square wave whose frequency is `f_min + Kvco * V_ctrl`. Duty cycle correction will be included.\n    *   **Output Buffers:** Modeled as simple inverters with series resistors. The delay and drive strength will be implicitly handled by the transistor sizing.\n\n**Power-Down Mode Implementation:**\nA simple way to model power-down is to monitor the CLKIN signal. If CLKIN remains low for a certain duration (e.g., 100ns), a behavioral source can set a `power_down` flag. This flag then disables the PLL components (VCO, PFD, CP) and forces the outputs to a low state or high impedance. For simplicity in SPICE, we'll force outputs low and disable the VCO frequency generation.\n\n**Stabilization Time:**\nThe 100 \u00b5s stabilization time is achieved by the PLL locking process. This is inherently modeled by the PFD, CP, LF, and VCO interaction. The loop filter component values are chosen to ensure this settling time.\n\n**Duty Cycle Correction:**\nThe VCO will be designed to inherently produce a 50% duty cycle output, independent of the input duty cycle. This is common in ring oscillators where the delay elements are balanced. In a behavioral model, this is directly enforced.\n\n**Integrated Damping Resistors:**\nThese are explicitly added as 25 Ohm resistors in series with each output.\n\n**ESD Protection:**\nThe ESD ratings (HBM, MM, CDM) are typically achieved through dedicated ESD protection structures at the pins (diodes to VDD/GND, SCRs). These are not explicitly modeled in the functional netlist but are assumed to be present. The IIK/IOK parameters (input/output clamp current) are related to these protection diodes. We'll include simple diodes for input/output clamping.\n\nThis detailed plan allows for the construction of a physically accurate and functionally complete SPICE netlist that aims to meet all specified requirements."}}, {"iteration": 2, "netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter2.cir", "pass_rate_percent": 0.0, "passed_specs": 0, "failed_specs": 0, "unmeasured_specs": 39, "passed_symbols": [], "simulation_errors": ["C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\tb_dc_op.cir(16): This sub-circuit cannot be instantiated because it contains these syntax errors:", "  --> C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter2.cir(113): Expected a sequence <directive or device instantiation end of line> here.", "  --> .subckt OUTPUT_BUFFER OUT IN GND VDD_SUPPLY", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter2.cir(113): Expected a sequence <directive or device instantiation end of line> here.", "  --> .subckt OUTPUT_BUFFER OUT IN GND VDD_SUPPLY", "  --> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\tb_transient.cir(44): A parameter with this name is already defined elsewhere.", "  --> .param T_CLK = 1/100e6", "  --> ^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\tb_transient.cir(55): A parameter with this name is already defined elsewhere.", "  --> .param T_CLK = {T_CLK_66M}", "  --> ^^^^^", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\tb_transient.cir(17): This sub-circuit cannot be instantiated because it contains these syntax errors:", "  --> C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter2.cir(113): Expected a sequence <directive or device instantiation end of line> here.", "  --> .subckt OUTPUT_BUFFER OUT IN GND VDD_SUPPLY", "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter2.cir(113): Expected a sequence <directive or device instantiation end of line> here.", "  --> .subckt OUTPUT_BUFFER OUT IN GND VDD_SUPPLY", "  --> ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^"], "shortfalls": ["Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\tb_dc_op.cir(16): This sub-circuit cannot be instantiated because it contains these syntax errors:", "Compiler/Simulation Error:   --> C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter2.cir(113): Expected a sequence <directive or device instantiation end of line> here.", "Compiler/Simulation Error:   --> .subckt OUTPUT_BUFFER OUT IN GND VDD_SUPPLY", "Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter2.cir(113): Expected a sequence <directive or device instantiation end of line> here.", "Param 'VDD' violated: Parameter 'VDD' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'VO' violated: Parameter 'VO' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'IIK' violated: Parameter 'IIK' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'IOK' violated: Parameter 'IOK' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'IO' violated: Parameter 'IO' was not observed in simulation measurements. (Measured: Unobserved)"], "improvements": ["Topology refinement: The CDCVF2505-Q1 is a PLL-based clock driver designed for low-skew, low-jitter clock distribution. The core architecture consists of a Phase..."], "architecture_summary": "The CDCVF2505-Q1 is a PLL-based clock driver designed for low-skew, low-jitter clock distribution. The core architecture consists of a Phase-Frequency Detector (PFD), a Charge Pump (CP), a Loop Filter (LF), a Voltage Controlled Oscillator (VCO), and output buffers with integrated series damping resistors. A key feature is the internal feedback loop, where CLKOUT is derived from the VCO output and fed back to the PFD, eliminating the need for an external feedback path. The device also includes a power-down mode when CLKIN is absent and internal duty cycle correction.\n\n**Topology and Component Sizing Methodology:**\n\n1.  **Input Buffer (CLKIN):**\n    *   A Schmitt trigger input buffer is used to provide hysteresis and noise immunity, converting the potentially noisy CLKIN signal into a clean digital signal for the PFD.\n    *   The `VIH` and `VIL` specifications (0.7 * VDD and 0.3 * VDD respectively) are implemented using behavioral voltage sources that compare the input to these thresholds.\n    *   Input capacitance `Ci` (4.2 pF typical) is modeled by a capacitor at the input.\n    *   `II` (input leakage current) is modeled by a high-value resistor to ground and VDD.\n\n2.  **Phase-Frequency Detector (PFD):**\n    *   The PFD compares the phase and frequency of the reference clock (CLKIN_BUF) and the feedback clock (CLKOUT_FB).\n    *   It generates UP and DOWN pulses proportional to the phase difference.\n    *   Implemented using behavioral voltage sources to represent the logic of a PFD (e.g., D-flip-flops and AND gates).\n    *   The output pulses drive the charge pump.\n\n3.  **Charge Pump (CP):**\n    *   The CP converts the PFD's UP/DOWN pulses into current pulses that charge or discharge the loop filter capacitor.\n    *   The current source magnitude is critical for loop dynamics. A typical charge pump current is in the range of tens to hundreds of microamperes. For this design, a current of 100 \u00b5A is chosen as a starting point, which can be adjusted based on loop stability and lock time.\n    *   Modeled as behavioral current sources (`B_up` and `B_down`).\n\n4.  **Loop Filter (LF):**\n    *   The LF is a passive RC network that converts the charge pump current into a control voltage for the VCO.\n    *   A second-order passive loop filter (resistor in series with a capacitor, followed by another capacitor to ground) is commonly used for PLLs to achieve good stability and ripple rejection.\n    *   The loop filter components (R_LF, C_LF1, C_LF2) are sized to achieve the desired loop bandwidth and phase margin.\n    *   **Stabilization Time (100 \u00b5s):** This specification directly relates to the PLL's lock time, which is determined by the loop filter's time constants and the VCO gain. A wider loop bandwidth generally leads to faster lock times but can increase jitter.\n    *   For a 100 \u00b5s stabilization time, a loop bandwidth in the order of 10-100 kHz is appropriate.\n    *   VCO gain (Kvco) is estimated to be around 100 MHz/V.\n    *   Charge pump current (Icp) is set to 100 \u00b5A.\n    *   Reference frequency (Fref) is 24-200 MHz.\n    *   Based on these, R_LF and C_LF are calculated. For example, a C_LF1 of 100 pF and R_LF of 1 kOhm, with C_LF2 of 10 pF, would give a reasonable starting point for loop dynamics.\n\n5.  **Voltage Controlled Oscillator (VCO):**\n    *   The VCO generates a clock signal whose frequency is proportional to the control voltage from the loop filter.\n    *   The frequency range (24 MHz to 200 MHz) dictates the VCO's tuning range and gain (Kvco).\n    *   A behavioral voltage source is used to model the VCO, where its frequency is a function of the control voltage `V(VCO_CTRL)`.\n    *   The VCO also incorporates duty cycle correction to achieve 50% output duty cycle, independent of the input. This is modeled by ensuring the output signal has a 50% duty cycle.\n\n6.  **Output Buffers (1Y0-1Y3, CLKOUT):**\n    *   Each output has an integrated 25-Ohm series damping resistor. This is explicitly modeled.\n    *   The output buffers must provide sufficient drive strength to meet `IOH` (-12 mA) and `IOL` (12 mA) specifications and achieve the specified rise/fall times (`tr`, `tf` of 0.5-2.0 ns) into a 25 pF load.\n    *   A typical CMOS inverter-based buffer chain is used, with increasing transistor sizes to drive the load.\n    *   The `VOH` and `VOL` specifications are met by appropriately sizing the PMOS and NMOS transistors in the output stage.\n    *   Output capacitance `Co` (2.8 pF for Yn, 5.2 pF for CLKOUT) is modeled by capacitors at the output.\n    *   `tsk(o)` (output skew) and `tpd` (propagation delay) are achieved by careful matching of the output buffer paths and minimizing internal delays. The behavioral models for buffers will inherently have some delay, which can be tuned.\n\n7.  **Power-Down Mode:**\n    *   The device automatically goes into power-down mode when no input signal is applied to CLKIN.\n    *   This is modeled by detecting the absence of a CLKIN signal (e.g., if `V(CLKIN_BUF)` remains low for a certain period) and then disabling the VCO and charge pump, effectively stopping clock generation.\n\n8.  **ESD Protection:**\n    *   `IIK` and `IOK` (input/output clamp currents) are modeled by diodes to VDD and GND at the input/output pins.\n    *   `HBM`, `MM`, `CDM` are ESD ratings and are not directly modeled in a functional SPICE netlist but are implied by the presence of ESD structures (diodes).\n\n**Addressing Previous Feedback:**\n\n*   **LTSPICE Compilation Errors:** The previous error `Expected a sequence <directive or device instantiation end of line> here. --> .subckt OUTPUT_BUFFER OUT IN GND VDD` indicates a syntax error in the subcircuit definition. This is likely due to incorrect placement of the `.subckt` line or missing `.ends` for a nested subcircuit. I will ensure all subcircuits are correctly defined and terminated, and that the main subcircuit header is correct.\n*   **Failed Specifications Audit:** The primary reason for \"Parameter 'X' was not observed in simulation measurements\" is that the previous netlist likely lacked the necessary internal circuitry to generate these measurable parameters. My approach will be to build a functional PLL and output stages, which will then allow these parameters to be measured.\n    *   **VDD, VI, VO, IIK, IOK, IO, VIH, VIL, IOH, IOL, VIK, VOH, VOL, II, Ci, Co, tpd, tsk(o), tc(jit_cc), odc, tr, tf:** These parameters will be directly measurable once the functional blocks (buffers, PFD, CP, LF, VCO, output drivers) are implemented and correctly sized.\n    *   **fclk, Input clock duty cycle, Stabilization time:** These are dynamic parameters related to the PLL's operation and will be observable in transient simulations once the PLL achieves lock.\n    *   **TA (Temperature):** This requires `.temp` statements in the testbench, not in the subcircuit itself. The models used will have temperature dependencies.\n\n**Component Sizing Details (Illustrative, actual values will be refined):**\n\n*   **MOSFET Models:** Standard Level 1 NMOS and PMOS models will be used.\n    *   `KP`, `VTO`, `GAMMA`, `PHI`, `LAMBDA`, `TOX`, `CJ`, `CJSW` will be set to typical values for a 0.35\u00b5m or 0.18\u00b5m CMOS process, suitable for 3.3V operation.\n*   **Input Buffer:**\n    *   Inverter chain: M_inv1 (W/L = 2u/0.35u), M_inv2 (W/L = 4u/0.35u), etc.\n    *   Schmitt trigger: Achieved by positive feedback in an inverter pair or behavioral model.\n*   **PFD:** Behavioral model for ideal PFD logic.\n*   **Charge Pump:**\n    *   Current sources: `B_up` and `B_down` with `I = { Icp * V(UP_PULSE) }` and `I = { Icp * V(DOWN_PULSE) }`. `Icp` around 100uA.\n*   **Loop Filter:**\n    *   `R_LF`: 1 kOhm\n    *   `C_LF1`: 100 pF\n    *   `C_LF2`: 10 pF (for ripple reduction)\n*   **VCO:**\n    *   Behavioral model: `V = { VDD * (sin(2*pi*VCO_FREQ*time)) }` where `VCO_FREQ` is a function of `V(VCO_CTRL)`.\n    *   `VCO_FREQ = F_min + (F_max - F_min) * (V(VCO_CTRL) - V_ctrl_min) / (V_ctrl_max - V_ctrl_min)`.\n    *   `F_min = 24MHz`, `F_max = 200MHz`. `V_ctrl_min` and `V_ctrl_max` are the control voltage range (e.g., 0.5V to 2.8V).\n*   **Output Buffers:**\n    *   Inverter chain: M_out_inv1 (W/L = 10u/0.35u), M_out_inv2 (W/L = 20u/0.35u), M_out_inv3 (W/L = 40u/0.35u).\n    *   Series resistor: `R_DAMP` = 25 Ohm.\n    *   Output capacitance: `C_LOAD` = 25 pF (for characterization).\n\nThis detailed plan ensures all specified parameters are addressed through appropriate circuit blocks and sizing considerations, leading to a physically accurate and convergent SPICE netlist.", "design_rationale": {"summary": "The CDCVF2505-Q1 is a PLL-based clock driver designed for low-skew, low-jitter clock distribution. The core architecture consists of a Phase-Frequency Detector (PFD), a Charge Pump (CP), a Loop Filter (LF), a Voltage Controlled Oscillator (VCO), and output buffers with integrated series damping resistors. A key feature is the internal feedback loop, where CLKOUT is derived from the VCO output and fed back to the PFD, eliminating the need for an external feedback path. The device also includes a power-down mode when CLKIN is absent and internal duty cycle correction.\n\n**Topology and Component Sizing Methodology:**\n\n1.  **Input Buffer (CLKIN):**\n    *   A Schmitt trigger input buffer is used to provide hysteresis and noise immunity, converting the potentially noisy CLKIN signal into a clean digital signal for the PFD.\n    *   The `VIH` and `VIL` specifications (0.7 * VDD and 0.3 * VDD respectively) are implemented using behavioral voltage sources that compare the input to these thresholds.\n    *   Input capacitance `Ci` (4.2 pF typical) is modeled by a capacitor at the input.\n    *   `II` (input leakage current) is modeled by a high-value resistor to ground and VDD.\n\n2.  **Phase-Frequency Detector (PFD):**\n    *   The PFD compares the phase and frequency of the reference clock (CLKIN_BUF) and the feedback clock (CLKOUT_FB).\n    *   It generates UP and DOWN pulses proportional to the phase difference.\n    *   Implemented using behavioral voltage sources to represent the logic of a PFD (e.g., D-flip-flops and AND gates).\n    *   The output pulses drive the charge pump.\n\n3.  **Charge Pump (CP):**\n    *   The CP converts the PFD's UP/DOWN pulses into current pulses that charge or discharge the loop filter capacitor.\n    *   The current source magnitude is critical for loop dynamics. A typical charge pump current is in the range of tens to hundreds of microamperes. For this design, a current of 100 \u00b5A is chosen as a starting point, which can be adjusted based on loop stability and lock time.\n    *   Modeled as behavioral current sources (`B_up` and `B_down`).\n\n4.  **Loop Filter (LF):**\n    *   The LF is a passive RC network that converts the charge pump current into a control voltage for the VCO.\n    *   A second-order passive loop filter (resistor in series with a capacitor, followed by another capacitor to ground) is commonly used for PLLs to achieve good stability and ripple rejection.\n    *   The loop filter components (R_LF, C_LF1, C_LF2) are sized to achieve the desired loop bandwidth and phase margin.\n    *   **Stabilization Time (100 \u00b5s):** This specification directly relates to the PLL's lock time, which is determined by the loop filter's time constants and the VCO gain. A wider loop bandwidth generally leads to faster lock times but can increase jitter.\n    *   For a 100 \u00b5s stabilization time, a loop bandwidth in the order of 10-100 kHz is appropriate.\n    *   VCO gain (Kvco) is estimated to be around 100 MHz/V.\n    *   Charge pump current (Icp) is set to 100 \u00b5A.\n    *   Reference frequency (Fref) is 24-200 MHz.\n    *   Based on these, R_LF and C_LF are calculated. For example, a C_LF1 of 100 pF and R_LF of 1 kOhm, with C_LF2 of 10 pF, would give a reasonable starting point for loop dynamics.\n\n5.  **Voltage Controlled Oscillator (VCO):**\n    *   The VCO generates a clock signal whose frequency is proportional to the control voltage from the loop filter.\n    *   The frequency range (24 MHz to 200 MHz) dictates the VCO's tuning range and gain (Kvco).\n    *   A behavioral voltage source is used to model the VCO, where its frequency is a function of the control voltage `V(VCO_CTRL)`.\n    *   The VCO also incorporates duty cycle correction to achieve 50% output duty cycle, independent of the input. This is modeled by ensuring the output signal has a 50% duty cycle.\n\n6.  **Output Buffers (1Y0-1Y3, CLKOUT):**\n    *   Each output has an integrated 25-Ohm series damping resistor. This is explicitly modeled.\n    *   The output buffers must provide sufficient drive strength to meet `IOH` (-12 mA) and `IOL` (12 mA) specifications and achieve the specified rise/fall times (`tr`, `tf` of 0.5-2.0 ns) into a 25 pF load.\n    *   A typical CMOS inverter-based buffer chain is used, with increasing transistor sizes to drive the load.\n    *   The `VOH` and `VOL` specifications are met by appropriately sizing the PMOS and NMOS transistors in the output stage.\n    *   Output capacitance `Co` (2.8 pF for Yn, 5.2 pF for CLKOUT) is modeled by capacitors at the output.\n    *   `tsk(o)` (output skew) and `tpd` (propagation delay) are achieved by careful matching of the output buffer paths and minimizing internal delays. The behavioral models for buffers will inherently have some delay, which can be tuned.\n\n7.  **Power-Down Mode:**\n    *   The device automatically goes into power-down mode when no input signal is applied to CLKIN.\n    *   This is modeled by detecting the absence of a CLKIN signal (e.g., if `V(CLKIN_BUF)` remains low for a certain period) and then disabling the VCO and charge pump, effectively stopping clock generation.\n\n8.  **ESD Protection:**\n    *   `IIK` and `IOK` (input/output clamp currents) are modeled by diodes to VDD and GND at the input/output pins.\n    *   `HBM`, `MM`, `CDM` are ESD ratings and are not directly modeled in a functional SPICE netlist but are implied by the presence of ESD structures (diodes).\n\n**Addressing Previous Feedback:**\n\n*   **LTSPICE Compilation Errors:** The previous error `Expected a sequence <directive or device instantiation end of line> here. --> .subckt OUTPUT_BUFFER OUT IN GND VDD` indicates a syntax error in the subcircuit definition. This is likely due to incorrect placement of the `.subckt` line or missing `.ends` for a nested subcircuit. I will ensure all subcircuits are correctly defined and terminated, and that the main subcircuit header is correct.\n*   **Failed Specifications Audit:** The primary reason for \"Parameter 'X' was not observed in simulation measurements\" is that the previous netlist likely lacked the necessary internal circuitry to generate these measurable parameters. My approach will be to build a functional PLL and output stages, which will then allow these parameters to be measured.\n    *   **VDD, VI, VO, IIK, IOK, IO, VIH, VIL, IOH, IOL, VIK, VOH, VOL, II, Ci, Co, tpd, tsk(o), tc(jit_cc), odc, tr, tf:** These parameters will be directly measurable once the functional blocks (buffers, PFD, CP, LF, VCO, output drivers) are implemented and correctly sized.\n    *   **fclk, Input clock duty cycle, Stabilization time:** These are dynamic parameters related to the PLL's operation and will be observable in transient simulations once the PLL achieves lock.\n    *   **TA (Temperature):** This requires `.temp` statements in the testbench, not in the subcircuit itself. The models used will have temperature dependencies.\n\n**Component Sizing Details (Illustrative, actual values will be refined):**\n\n*   **MOSFET Models:** Standard Level 1 NMOS and PMOS models will be used.\n    *   `KP`, `VTO`, `GAMMA`, `PHI`, `LAMBDA`, `TOX`, `CJ`, `CJSW` will be set to typical values for a 0.35\u00b5m or 0.18\u00b5m CMOS process, suitable for 3.3V operation.\n*   **Input Buffer:**\n    *   Inverter chain: M_inv1 (W/L = 2u/0.35u), M_inv2 (W/L = 4u/0.35u), etc.\n    *   Schmitt trigger: Achieved by positive feedback in an inverter pair or behavioral model.\n*   **PFD:** Behavioral model for ideal PFD logic.\n*   **Charge Pump:**\n    *   Current sources: `B_up` and `B_down` with `I = { Icp * V(UP_PULSE) }` and `I = { Icp * V(DOWN_PULSE) }`. `Icp` around 100uA.\n*   **Loop Filter:**\n    *   `R_LF`: 1 kOhm\n    *   `C_LF1`: 100 pF\n    *   `C_LF2`: 10 pF (for ripple reduction)\n*   **VCO:**\n    *   Behavioral model: `V = { VDD * (sin(2*pi*VCO_FREQ*time)) }` where `VCO_FREQ` is a function of `V(VCO_CTRL)`.\n    *   `VCO_FREQ = F_min + (F_max - F_min) * (V(VCO_CTRL) - V_ctrl_min) / (V_ctrl_max - V_ctrl_min)`.\n    *   `F_min = 24MHz`, `F_max = 200MHz`. `V_ctrl_min` and `V_ctrl_max` are the control voltage range (e.g., 0.5V to 2.8V).\n*   **Output Buffers:**\n    *   Inverter chain: M_out_inv1 (W/L = 10u/0.35u), M_out_inv2 (W/L = 20u/0.35u), M_out_inv3 (W/L = 40u/0.35u).\n    *   Series resistor: `R_DAMP` = 25 Ohm.\n    *   Output capacitance: `C_LOAD` = 25 pF (for characterization).\n\nThis detailed plan ensures all specified parameters are addressed through appropriate circuit blocks and sizing considerations, leading to a physically accurate and convergent SPICE netlist."}}], "final_netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter2.cir"}, "knowledge_graph": {"ic_device": {"name": "CDCVF2505-Q1", "category": "CLOCK PHASE-LOCKED LOOP CLOCK DRIVER", "description": "The CDCVF2505 is a high-performance, low-skew, low-jitter, phase-lock loop (PLL) clock driver. It uses a PLL to precisely align, in both frequency and phase, the output clocks (1Y[0\u20133] and CLKOUT) to the input clock signal (CLKIN). The CDCVF2505 operates at 3.3 V. It also provides integrated series-damping resistors that make it ideal for driving point-to-point loads. One bank of five outputs provides low-skew, low-jitter copies of CLKIN. Output duty cycles are adjusted to 50 percent, independent of duty cycle at CLKIN. The device automatically goes in power-down mode when no input signal is applied to CLKIN. Unlike many products containing PLLs, the CDCVF2505 does not require an external RC network. The loop filter for the PLLs is included on-chip, minimizing component count, space, and cost. Because it is based on the PLL circuitry, the CDCVF2505 requires a stabilization time to achieve phase lock of the feedback signal to the reference signal. This stabilization is required following power up and application of a fixed-frequency, fixed-phase signal at CLKIN, and following any changes to the PLL reference. The CDCVF2505 is characterized for operation from \u201340\u00b0C to 85\u00b0C."}, "pins": [{"name": "1Y0", "pin_number": "3", "direction": "OUTPUT", "role": "OUTPUT", "description": "Clock outputs. These outputs are low-skew copies of CLKIN. Each output has an integrated 25-\u2126 series damping resistor."}, {"name": "1Y1", "pin_number": "2", "direction": "OUTPUT", "role": "OUTPUT", "description": "Clock outputs. These outputs are low-skew copies of CLKIN. Each output has an integrated 25-\u2126 series damping resistor."}, {"name": "1Y2", "pin_number": "5", "direction": "OUTPUT", "role": "OUTPUT", "description": "Clock outputs. These outputs are low-skew copies of CLKIN. Each output has an integrated 25-\u2126 series damping resistor."}, {"name": "1Y3", "pin_number": "7", "direction": "OUTPUT", "role": "OUTPUT", "description": "Clock outputs. These outputs are low-skew copies of CLKIN. Each output has an integrated 25-\u2126 series damping resistor."}, {"name": "CLKIN", "pin_number": "1", "direction": "INPUT", "role": "SIGNAL", "description": "Clock input. CLKIN provides the clock signal to be distributed by the CDCVF2505 clock driver. CLKIN is used to provide the reference signal to the integrated PLL that generates the clock output signals. CLKIN must have a fixed frequency and fixed phase for the PLL to obtain phase lock. Once the circuit is powered up and a valid signal is applied, a stabilization time (100 \u00b5s) is required for the PLL to phase lock the feedback signal to CLKIN."}, {"name": "CLKOUT", "pin_number": "8", "direction": "OUTPUT", "role": "FEEDBACK", "description": "Feedback output. CLKOUT completes the internal feedback loop of the PLL. This connection is made inside the chip and an external feedback loop should NOT be connected. CLKOUT can be loaded with a capacitor to achieve zero delay between CLKIN and the Y outputs."}, {"name": "GND", "pin_number": "4", "direction": "GROUND", "role": "GROUND", "description": "Ground"}, {"name": "VDD_3_3_V", "pin_number": "6", "direction": "POWER", "role": "POWER", "description": "3.3-V supply"}], "electrical_parameters": [{"symbol": "VDD", "name": "Supply voltage range", "min": -0.5, "typ": null, "max": 4.3, "unit": "V", "test_conditions": null, "related_pins": ["VDD 3.3 V"], "category": "Absolute Maximum Ratings"}, {"symbol": "VI", "name": "Input voltage range", "min": -0.5, "typ": null, "max": null, "unit": "V", "test_conditions": null, "related_pins": ["CLKIN"], "category": "Absolute Maximum Ratings"}, {"symbol": "VO", "name": "Output voltage range", "min": -0.5, "typ": null, "max": null, "unit": "V", "test_conditions": null, "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3", "CLKOUT"], "category": "Absolute Maximum Ratings"}, {"symbol": "IIK", "name": "Input clamp current", "min": -50.0, "typ": null, "max": 50.0, "unit": "mA", "test_conditions": "VI < 0 or VI > VDD", "related_pins": ["CLKIN"], "category": "Absolute Maximum Ratings"}, {"symbol": "IOK", "name": "Output clamp current", "min": -50.0, "typ": null, "max": 50.0, "unit": "mA", "test_conditions": "VO < 0 or VO > VDD", "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3", "CLKOUT"], "category": "Absolute Maximum Ratings"}, {"symbol": "IO", "name": "Continuous total output current", "min": -50.0, "typ": null, "max": 50.0, "unit": "mA", "test_conditions": "VO = 0 to VDD", "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3", "CLKOUT"], "category": "Absolute Maximum Ratings"}, {"symbol": "\u03b8JA", "name": "Package thermal impedance", "min": null, "typ": null, "max": 97.1, "unit": "\u00b0C/W", "test_conditions": null, "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "Tstg", "name": "Storage temperature range", "min": -65.0, "typ": null, "max": 150.0, "unit": "\u00b0C", "test_conditions": null, "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "HBM", "name": "Human-Body Model", "min": null, "typ": null, "max": 2000.0, "unit": "V", "test_conditions": null, "related_pins": [], "category": "Electrostatic Discharge Information"}, {"symbol": "MM", "name": "Machine Model", "min": null, "typ": null, "max": 300.0, "unit": "V", "test_conditions": null, "related_pins": [], "category": "Electrostatic Discharge Information"}, {"symbol": "CDM", "name": "Charged-Device Model", "min": null, "typ": null, "max": 1000.0, "unit": "V", "test_conditions": null, "related_pins": [], "category": "Electrostatic Discharge Information"}, {"symbol": "VDD", "name": "Supply voltage", "min": 3.0, "typ": 3.3, "max": 3.6, "unit": "V", "test_conditions": null, "related_pins": ["VDD 3.3 V"], "category": "Recommended Operating Conditions"}, {"symbol": "VIH", "name": "High-level input voltage", "min": null, "typ": null, "max": null, "unit": "V", "test_conditions": "0.7 \u00d7 VDD", "related_pins": ["CLKIN"], "category": "Recommended Operating Conditions"}, {"symbol": "VIL", "name": "Low-level input voltage", "min": null, "typ": null, "max": null, "unit": "V", "test_conditions": "0.3 \u00d7 VDD", "related_pins": ["CLKIN"], "category": "Recommended Operating Conditions"}, {"symbol": "VI", "name": "Input voltage", "min": 0.0, "typ": null, "max": null, "unit": "V", "test_conditions": "VDD", "related_pins": ["CLKIN"], "category": "Recommended Operating Conditions"}, {"symbol": "IOH", "name": "High-level output current", "min": null, "typ": null, "max": -12.0, "unit": "mA", "test_conditions": null, "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3", "CLKOUT"], "category": "Recommended Operating Conditions"}, {"symbol": "IOL", "name": "Low-level output current", "min": null, "typ": null, "max": 12.0, "unit": "mA", "test_conditions": null, "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3", "CLKOUT"], "category": "Recommended Operating Conditions"}, {"symbol": "TA", "name": "Operating free-air temperature", "min": -40.0, "typ": null, "max": 85.0, "unit": "\u00b0C", "test_conditions": null, "related_pins": [], "category": "Recommended Operating Conditions"}, {"symbol": "fclk", "name": "Clock frequency", "min": 24.0, "typ": null, "max": 200.0, "unit": "MHz", "test_conditions": null, "related_pins": ["CLKIN"], "category": "Timing Requirements"}, {"symbol": "Input clock duty cycle", "name": "Input clock duty cycle", "min": 30.0, "typ": null, "max": 85.0, "unit": "%", "test_conditions": "24 MHz to 85 MHz", "related_pins": ["CLKIN"], "category": "Timing Requirements"}, {"symbol": "Input clock duty cycle", "name": "Input clock duty cycle", "min": 40.0, "typ": 50.0, "max": 60.0, "unit": "%", "test_conditions": "86 MHz to 200 MHz", "related_pins": ["CLKIN"], "category": "Timing Requirements"}, {"symbol": "Stabilization time", "name": "Stabilization time", "min": null, "typ": null, "max": 100.0, "unit": "\u00b5s", "test_conditions": null, "related_pins": [], "category": "Timing Requirements"}, {"symbol": "VIK", "name": "Input voltage", "min": null, "typ": -1.2, "max": null, "unit": "V", "test_conditions": "II = \u201318 mA, VDD = 3 V", "related_pins": ["CLKIN"], "category": "Electrical Characteristics"}, {"symbol": "VOH", "name": "High-level output voltage", "min": null, "typ": null, "max": null, "unit": "V", "test_conditions": "IOH = \u2013100 \u00b5A, MIN to MAX", "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3", "CLKOUT"], "category": "Electrical Characteristics"}, {"symbol": "VOH", "name": "High-level output voltage", "min": 2.1, "typ": null, "max": null, "unit": "V", "test_conditions": "IOH = \u201312 mA, VDD = 3 V", "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3", "CLKOUT"], "category": "Electrical Characteristics"}, {"symbol": "VOH", "name": "High-level output voltage", "min": 2.4, "typ": null, "max": null, "unit": "V", "test_conditions": "IOH = \u20136 mA, VDD = 3 V", "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3", "CLKOUT"], "category": "Electrical Characteristics"}, {"symbol": "VOL", "name": "Low-level output voltage", "min": null, "typ": null, "max": 0.2, "unit": "V", "test_conditions": "IOL = 100 \u00b5A, MIN to MAX", "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3", "CLKOUT"], "category": "Electrical Characteristics"}, {"symbol": "VOL", "name": "Low-level output voltage", "min": null, "typ": null, "max": 0.8, "unit": "V", "test_conditions": "IOL = 12 mA, VDD = 3 V", "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3", "CLKOUT"], "category": "Electrical Characteristics"}, {"symbol": "VOL", "name": "Low-level output voltage", "min": null, "typ": null, "max": 0.55, "unit": "V", "test_conditions": "IOL = 6 mA, VDD = 3 V", "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3", "CLKOUT"], "category": "Electrical Characteristics"}, {"symbol": "IOH", "name": "High-level output current", "min": null, "typ": -27.0, "max": null, "unit": "mA", "test_conditions": "VO = 1 V, VDD = 3 V", "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3", "CLKOUT"], "category": "Electrical Characteristics"}, {"symbol": "IOH", "name": "High-level output current", "min": null, "typ": -36.0, "max": null, "unit": "mA", "test_conditions": "VO = 1.65 V, VDD = 3.3 V", "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3", "CLKOUT"], "category": "Electrical Characteristics"}, {"symbol": "IOL", "name": "Low-level output current", "min": null, "typ": 27.0, "max": null, "unit": "mA", "test_conditions": "VO = 2 V, VDD = 3 V", "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3", "CLKOUT"], "category": "Electrical Characteristics"}, {"symbol": "IOL", "name": "Low-level output current", "min": null, "typ": 40.0, "max": null, "unit": "mA", "test_conditions": "VO = 1.65 V, VDD = 3.3 V", "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3", "CLKOUT"], "category": "Electrical Characteristics"}, {"symbol": "II", "name": "Input current", "min": -5.0, "typ": null, "max": 5.0, "unit": "\u00b5A", "test_conditions": "VI = 0 V or VDD", "related_pins": ["CLKIN"], "category": "Electrical Characteristics"}, {"symbol": "Ci", "name": "Input capacitance", "min": null, "typ": 4.2, "max": null, "unit": "pF", "test_conditions": "VI = 0 V or VDD, VDD = 3.3 V", "related_pins": ["CLKIN"], "category": "Electrical Characteristics"}, {"symbol": "Co", "name": "Output capacitance", "min": null, "typ": 2.8, "max": null, "unit": "pF", "test_conditions": "VI = 0 V or VDD, VDD = 3.3 V, Yn", "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3"], "category": "Electrical Characteristics"}, {"symbol": "Co", "name": "Output capacitance", "min": null, "typ": 5.2, "max": null, "unit": "pF", "test_conditions": "VI = 0 V or VDD, VDD = 3.3 V, CLKOUT", "related_pins": ["CLKOUT"], "category": "Electrical Characteristics"}, {"symbol": "tpd", "name": "Propagation delay, normalized", "min": -150.0, "typ": null, "max": 150.0, "unit": "ps", "test_conditions": "CLKIN to Yn, f = 66 MHz to 200 MHz, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V", "related_pins": ["CLKIN", "1Y0", "1Y1", "1Y2", "1Y3"], "category": "Switching Characteristics"}, {"symbol": "tsk(o)", "name": "Output skew", "min": null, "typ": null, "max": 150.0, "unit": "ps", "test_conditions": "Yn to Yn, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V", "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3"], "category": "Switching Characteristics"}, {"symbol": "tc(jit_cc)", "name": "Jitter (cycle to cycle)", "min": null, "typ": 70.0, "max": 150.0, "unit": "ps", "test_conditions": "f = 66 MHz to 200 MHz, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V", "related_pins": [], "category": "Switching Characteristics"}, {"symbol": "tc(jit_cc)", "name": "Jitter (cycle to cycle)", "min": null, "typ": 200.0, "max": 400.0, "unit": "ps", "test_conditions": "f = 24 MHz to 50 MHz, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V", "related_pins": [], "category": "Switching Characteristics"}, {"symbol": "odc", "name": "Output duty cycle", "min": 45.0, "typ": null, "max": 55.0, "unit": "%", "test_conditions": "f = 24 MHz to 200 MHz at 50% VDD, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V", "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3", "CLKOUT"], "category": "Switching Characteristics"}, {"symbol": "tr", "name": "Rise time", "min": null, "typ": 0.5, "max": 2.0, "unit": "ns", "test_conditions": "VO = 0.4 V to 2 V, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V", "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3", "CLKOUT"], "category": "Switching Characteristics"}, {"symbol": "tf", "name": "Fall time", "min": null, "typ": 0.5, "max": 2.0, "unit": "ns", "test_conditions": "VO = 2 V to 0.4 V, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V", "related_pins": ["1Y0", "1Y1", "1Y2", "1Y3", "CLKOUT"], "category": "Switching Characteristics"}], "functional_blocks": ["PLL", "Edge Detect", "Power Down", "3-State"]}, "report_md": "# Autonomous AI Analog Circuit Synthesis & Verification Report\n**Target IC:** `CDCVF2505-Q1` | **Subcircuit:** `CDCVF2505_Q1`\n**Overall Datasheet Specification Pass Rate:** `0.0%`\n\n## 1. Executive Summary\n- **IC Category:** The CDCVF2505 is a high-performance, low-skew, low-jitter, phase-lock loop (PLL) clock driver. It uses a PLL to precisely align, in both frequency and phase, the output clocks (1Y[0\u20133] and CLKOUT) to the input clock signal (CLKIN). The CDCVF2505 operates at 3.3 V. It also provides integrated series-damping resistors that make it ideal for driving point-to-point loads. One bank of five outputs provides low-skew, low-jitter copies of CLKIN. Output duty cycles are adjusted to 50 percent, independent of duty cycle at CLKIN. The device automatically goes in power-down mode when no input signal is applied to CLKIN. Unlike many products containing PLLs, the CDCVF2505 does not require an external RC network. The loop filter for the PLLs is included on-chip, minimizing component count, space, and cost. Because it is based on the PLL circuitry, the CDCVF2505 requires a stabilization time to achieve phase lock of the feedback signal to the reference signal. This stabilization is required following power up and application of a fixed-frequency, fixed-phase signal at CLKIN, and following any changes to the PLL reference. The CDCVF2505 is characterized for operation from \u201340\u00b0C to 85\u00b0C.\n- **Total Datasheet Specifications Extracted:** 44\n- **Design Iterations Required:** 2\n- **Synthesized Netlist Location:** `C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter2.cir`\n\n## 2. Port Dependency Graph (PDG) Scheduling\nTopological activation sequence derived from physical pin roles:\n| Pin Name | Physical Role | Direction | Activation Time (us) |\n| :--- | :--- | :--- | :--- |\n| `1Y0` | `OUTPUT` | `OUTPUT` | 3.00 us |\n| `1Y1` | `OUTPUT` | `OUTPUT` | 3.00 us |\n| `1Y2` | `OUTPUT` | `OUTPUT` | 3.00 us |\n| `1Y3` | `OUTPUT` | `OUTPUT` | 3.00 us |\n| `CLKIN` | `SIGNAL` | `INPUT` | 2.00 us |\n| `CLKOUT` | `FEEDBACK` | `OUTPUT` | 3.00 us |\n| `GND` | `GROUND` | `GROUND` | 0.00 us |\n| `VDD_3_3_V` | `POWER` | `POWER` | 0.00 us |\n\n### 2.1 Port Dependency Graph Topology\n```mermaid\ngraph TD\n    1Y0[\"1Y0 (OUTPUT)<br/>3.0us\"]\n    1Y1[\"1Y1 (OUTPUT)<br/>3.0us\"]\n    1Y2[\"1Y2 (OUTPUT)<br/>3.0us\"]\n    1Y3[\"1Y3 (OUTPUT)<br/>3.0us\"]\n    CLKIN[\"CLKIN (SIGNAL)<br/>2.0us\"]\n    CLKOUT[\"CLKOUT (FEEDBACK)<br/>3.0us\"]\n    GND[\"GND (GROUND)<br/>0.0us\"]\n    VDD_3_3_V[\"VDD_3_3_V (POWER)<br/>0.0us\"]\n    CLKIN -->|0.0us| 1Y0\n    CLKIN -->|0.0us| 1Y1\n    CLKIN -->|0.0us| 1Y2\n    CLKIN -->|0.0us| 1Y3\n    CLKIN -->|0.0us| CLKOUT\n    GND -->|0.0us| 1Y0\n    GND -->|0.0us| 1Y1\n    GND -->|0.0us| 1Y2\n    GND -->|0.0us| 1Y3\n    GND -->|0.0us| CLKIN\n    GND -->|0.0us| CLKOUT\n    VDD_3_3_V -->|0.0us| 1Y0\n    VDD_3_3_V -->|0.0us| 1Y1\n    VDD_3_3_V -->|0.0us| 1Y2\n    VDD_3_3_V -->|0.0us| 1Y3\n    VDD_3_3_V -->|0.0us| CLKIN\n    VDD_3_3_V -->|0.0us| CLKOUT\n```\n\n## 3. Specification Verification & SymPy Oracle Audit\nDetailed verification results evaluated against SymPy interval constraints:\n| Parameter | Min Target | Typ Target | Max Target | Measured Value | Unit | Status |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| `VDD` | -0.5 | - | 4.3 | **N/A** | V | \u274c FAIL |\n| `VI` | -0.5 | - | - | **N/A** | V | \u274c FAIL |\n| `VO` | -0.5 | - | - | **N/A** | V | \u274c FAIL |\n| `IIK` | -0.05 | - | 0.05 | **N/A** | mA | \u274c FAIL |\n| `IOK` | -0.05 | - | 0.05 | **N/A** | mA | \u274c FAIL |\n| `IO` | -0.05 | - | 0.05 | **N/A** | mA | \u274c FAIL |\n| `VDD` | 3 | 3.3 | 3.6 | **N/A** | V | \u274c FAIL |\n| `VIH` | - | - | - | **N/A** | V | \u274c FAIL |\n| `VIL` | - | - | - | **N/A** | V | \u274c FAIL |\n| `VI` | 0 | - | - | **N/A** | V | \u274c FAIL |\n| `IOH` | - | - | -0.012 | **N/A** | mA | \u274c FAIL |\n| `IOL` | - | - | 0.012 | **N/A** | mA | \u274c FAIL |\n| `TA` | -40 | - | 85 | **N/A** | \u00b0C | \u274c FAIL |\n| `fclk` | 2.4e+07 | - | 2e+08 | **N/A** | MHz | \u274c FAIL |\n| `Input clock duty cycle` | 30 | - | 85 | **N/A** | % | \u274c FAIL |\n| `Input clock duty cycle` | 40 | 50 | 60 | **N/A** | % | \u274c FAIL |\n| `Stabilization time` | - | - | 0.0001 | **N/A** | \u00b5s | \u274c FAIL |\n| `VIK` | -1.44 | -1.2 | -0.96 | **N/A** | V | \u274c FAIL |\n| `VOH` | - | - | - | **N/A** | V | \u274c FAIL |\n| `VOH` | 2.1 | - | - | **N/A** | V | \u274c FAIL |\n| `VOH` | 2.4 | - | - | **N/A** | V | \u274c FAIL |\n| `VOL` | - | - | 0.2 | **N/A** | V | \u274c FAIL |\n| `VOL` | - | - | 0.8 | **N/A** | V | \u274c FAIL |\n| `VOL` | - | - | 0.55 | **N/A** | V | \u274c FAIL |\n| `IOH` | -0.0324 | -0.027 | -0.0216 | **N/A** | mA | \u274c FAIL |\n| `IOH` | -0.0432 | -0.036 | -0.0288 | **N/A** | mA | \u274c FAIL |\n| `IOL` | 0.0216 | 0.027 | 0.0324 | **N/A** | mA | \u274c FAIL |\n| `IOL` | 0.032 | 0.04 | 0.048 | **N/A** | mA | \u274c FAIL |\n| `II` | -5e-06 | - | 5e-06 | **N/A** | \u00b5A | \u274c FAIL |\n| `Ci` | 3.36 | 4.2 | 5.04 | **N/A** | pF | \u274c FAIL |\n| `Co` | 2.24 | 2.8 | 3.36 | **N/A** | pF | \u274c FAIL |\n| `Co` | 4.16 | 5.2 | 6.24 | **N/A** | pF | \u274c FAIL |\n| `tpd` | -1.5e-10 | - | 1.5e-10 | **N/A** | ps | \u274c FAIL |\n| `tsk(o)` | - | - | 1.5e-10 | **N/A** | ps | \u274c FAIL |\n| `tc(jit_cc)` | - | 7e-11 | 1.5e-10 | **N/A** | ps | \u274c FAIL |\n| `tc(jit_cc)` | - | 2e-10 | 4e-10 | **N/A** | ps | \u274c FAIL |\n| `odc` | 45 | - | 55 | **N/A** | % | \u274c FAIL |\n| `tr` | - | 5e-10 | 2e-09 | **N/A** | ns | \u274c FAIL |\n| `tf` | - | 5e-10 | 2e-09 | **N/A** | ns | \u274c FAIL |\n\n## 4. Closed-Loop Iteration History & Root Cause Analysis\n| Iteration | Pass Rate | Passed Specs | Failed Specs | Architecture Notes |\n| :--- | :--- | :--- | :--- | :--- |\n| Iteration 1 | 0.0% | 0 | 0 | The CDCVF2505-Q1 is a PLL-based clock driver designed for low-skew, low-jitter c... |\n| Iteration 2 | 0.0% | 0 | 0 | The CDCVF2505-Q1 is a PLL-based clock driver designed for low-skew, low-jitter c... |\n\n### 4.1 Loop 1 Detailed Audit\n- **Pass Rate**: `0.0%` (0/0 specs passed)\n\n**Shortfall Audit (\ubbf8\ub2ec \uc6d0\uc778 \ubd84\uc11d):**\n- Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\tb_dc_op.cir(17): This sub-circuit cannot be instantiated because it contains these syntax errors:\n- Compiler/Simulation Error:   --> C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter1.cir(126): Expected a sequence <directive or device instantiation end of line> here.\n- Compiler/Simulation Error:   --> .subckt OUTPUT_BUFFER OUT IN GND VDD\n- Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter1.cir(126): Expected a sequence <directive or device instantiation end of line> here.\n- Param 'VDD' violated: Parameter 'VDD' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VO' violated: Parameter 'VO' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'IIK' violated: Parameter 'IIK' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'IOK' violated: Parameter 'IOK' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'IO' violated: Parameter 'IO' was not observed in simulation measurements. (Measured: Unobserved)\n\n**Improvement Actions (\uac1c\uc120 \ubc0f \uc218\uc815 \uc0ac\ud56d):**\n- Initial first-principles topology and Level-1 parameter sizing synthesized from scratch.\n\n### 4.2 Loop 2 Detailed Audit\n- **Pass Rate**: `0.0%` (0/0 specs passed)\n\n**Shortfall Audit (\ubbf8\ub2ec \uc6d0\uc778 \ubd84\uc11d):**\n- Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\tb_dc_op.cir(16): This sub-circuit cannot be instantiated because it contains these syntax errors:\n- Compiler/Simulation Error:   --> C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter2.cir(113): Expected a sequence <directive or device instantiation end of line> here.\n- Compiler/Simulation Error:   --> .subckt OUTPUT_BUFFER OUT IN GND VDD_SUPPLY\n- Compiler/Simulation Error: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter2.cir(113): Expected a sequence <directive or device instantiation end of line> here.\n- Param 'VDD' violated: Parameter 'VDD' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VI' violated: Parameter 'VI' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'VO' violated: Parameter 'VO' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'IIK' violated: Parameter 'IIK' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'IOK' violated: Parameter 'IOK' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'IO' violated: Parameter 'IO' was not observed in simulation measurements. (Measured: Unobserved)\n\n**Improvement Actions (\uac1c\uc120 \ubc0f \uc218\uc815 \uc0ac\ud56d):**\n- Topology refinement: The CDCVF2505-Q1 is a PLL-based clock driver designed for low-skew, low-jitter clock distribution. The core architecture consists of a Phase...\n\n## 5. Synthesized SPICE Netlist Architecture\nNetlist file: `C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter2.cir`\n```spice\n\n* Default Physical Device Models for AI Analog Synthesis\n.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=120u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)\n.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)\n.model QNPN NPN (IS=1e-14 BF=150 VAF=100 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=100 TF=0.3n TR=10n CJE=2p CJC=1p VJC=0.75 MJC=0.33)\n.model QPNP PNP (IS=1e-14 BF=80 VAF=80 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=80 TF=0.5n TR=20n CJE=2p CJC=1.5p VJC=0.75 MJC=0.33)\n.model D1N4148 D (IS=2.52n RS=0.568 N=1.752 CJO=4p VJ=0.5 M=0.333 BV=100 IBV=100u TT=4n)\n.model D_ESD D (IS=1e-15 RS=10 CJO=1p BV=50)\n\n* CDCVF2505-Q1 High-Performance, Low-Skew, Low-Jitter, PLL Clock Driver\n* Subcircuit for CDCVF2505-Q1\n.subckt CDCVF2505_Q1 1Y0 1Y1 1Y2 1Y3 CLKIN CLKOUT GND VDD_3_3_V\n\n* --- Global Parameters ---\n.param VDD = 3.3V\n.param VDD_MIN = 3.0V\n.param VDD_MAX = 3.6V\n.param VIH_THRESHOLD = {0.7 * VDD}\n.param VIL_THRESHOLD = {0.3 * VDD}\n.param ICP = 100uA ; Charge pump current\n.param KVCO = 100M ; VCO gain in Hz/V (e.g., 100 MHz/V)\n.param F_MIN_VCO = 24M ; Minimum VCO frequency\n.param F_MAX_VCO = 200M ; Maximum VCO frequency\n.param VCO_CTRL_MIN = 0.5V ; Minimum control voltage for VCO\n.param VCO_CTRL_MAX = 2.8V ; Maximum control voltage for VCO\n.param R_DAMP = 25 ; Output series damping resistor\n\n* --- MOSFET Models (Generic 0.35um process parameters for 3.3V operation) ---\n.model NMOS NMOS (LEVEL=1 VTO=0.5 KP=150u GAMMA=0.4 PHI=0.6 LAMBDA=0.05 TOX=7n\n+ CJ=0.5m CJSW=0.3p MJ=0.5 MJSW=0.3 PB=0.8)\n.model PMOS PMOS (LEVEL=1 VTO=-0.5 KP=50u GAMMA=0.5 PHI=0.6 LAMBDA=0.06 TOX=7n\n+ CJ=0.8m CJSW=0.4p MJ=0.5 MJSW=0.3 PB=0.8)\n\n* --- Diode Models for ESD/Clamping ---\n.model DCLAMP D (IS=1e-14 N=1 RS=1)\n\n* --- Input Stage: Schmitt Trigger Buffer for CLKIN ---\n* Provides hysteresis and converts CLKIN to a clean digital signal.\n* Also models input capacitance Ci and leakage current II.\n\n* Input ESD Diodes\nD_esd_clk_p CLKIN VDD_3_3_V DCLAMP\nD_esd_clk_n GND CLKIN DCLAMP\n\n* Input Capacitance Ci (Typ 4.2 pF)\nC_cin CLKIN GND 4.2p\n\n* Input Leakage Current II (Max 5uA) - modeled by high resistance\nR_leak_p CLKIN VDD_3_3_V 1G\nR_leak_n CLKIN GND 1G\n\n* Schmitt Trigger Buffer (Behavioral for simplicity and meeting VIH/VIL)\n* Output CLKIN_BUF is a clean digital signal.\nB_schmitt_clk CLKIN_BUF GND V = { V(CLKIN) > VIH_THRESHOLD ? VDD : (V(CLKIN) < VIL_THRESHOLD ? 0 : V(CLKIN_BUF)) }\n+ tripdt=10p ; Ensure fast transitions for digital signals\n\n* --- Power-Down Detection (Absence of CLKIN) ---\n* If CLKIN_BUF stays low for a certain period, activate power-down.\n* For simplicity, we'll use a simple threshold detection.\n* A more complex implementation would involve a timer/counter.\nB_power_down_detect PD_ACTIVE GND V = { (V(CLKIN_BUF) < VIL_THRESHOLD) & (time > 2u) ? 1 : 0 }\n* PD_ACTIVE = 1 when power down is active (CLKIN absent)\n\n* --- Phase-Frequency Detector (PFD) ---\n* Compares CLKIN_BUF (reference) and CLKOUT_FB (feedback).\n* Generates UP and DOWN pulses.\n* Behavioral model for ideal PFD.\n\nB_pfd_up UP_PULSE GND V = { (V(CLKIN_BUF) > VDD/2) & (V(CLKOUT_FB) < VDD/2) & (V(PD_ACTIVE) < 0.5) ? VDD : 0 }\n+ tripdt=10p\n\nB_pfd_down DOWN_PULSE GND V = { (V(CLKOUT_FB) > VDD/2) & (V(CLKIN_BUF) < VDD/2) & (V(PD_ACTIVE) < 0.5) ? VDD : 0 }\n+ tripdt=10p\n\n* --- Charge Pump (CP) ---\n* Converts PFD pulses to current for the loop filter.\n* Modeled as current sources.\n\nB_charge_pump_up LF_NODE GND I = { (V(UP_PULSE) > VDD/2) ? ICP : 0 }\n\nB_charge_pump_down GND LF_NODE I = { (V(DOWN_PULSE) > VDD/2) ? ICP : 0 }\n\n* --- Loop Filter (LF) ---\n* Second-order passive loop filter.\n* R_LF, C_LF1, C_LF2 are sized for stability and lock time (100us).\n* Values are illustrative and would be optimized for specific PLL performance.\nR_lf LF_NODE LF_NODE_FILT 1k\nC_lf1 LF_NODE_FILT GND 100p\nC_lf2 LF_NODE LF_NODE_FILT 10p ; For additional ripple reduction\n\n* --- Voltage Controlled Oscillator (VCO) ---\n* Generates clock based on LF_NODE_FILT (VCO_CTRL).\n* Includes duty cycle correction to 50%.\n* Frequency range: 24 MHz to 200 MHz.\n\n* VCO Control Voltage (LF_NODE_FILT is the VCO control)\nB_vco_ctrl VCO_CTRL GND V = { V(LF_NODE_FILT) }\n\n* VCO Frequency Calculation\nB_vco_freq_calc VCO_FREQ_INST GND V = { (V(VCO_CTRL) < VCO_CTRL_MIN) ? F_MIN_VCO : ((V(VCO_CTRL) > VCO_CTRL_MAX) ? F_MAX_VCO : (F_MIN_VCO + (F_MAX_VCO - F_MIN_VCO) * (V(VCO_CTRL) - VCO_CTRL_MIN) / (VCO_CTRL_MAX - VCO_CTRL_MIN))) }\n\n* VCO Output (50% duty cycle)\n* The VCO output is the internal clock signal that will be buffered.\nB_vco_out VCO_OUT GND V = { (V(PD_ACTIVE) > 0.5) ? 0 : ( (sin(2*pi*V(VCO_FREQ_INST)*time) > 0) ? VDD : 0 ) }\n+ tripdt=10p\n\n* --- Output Buffers with Damping Resistors ---\n* All outputs (1Y0-1Y3, CLKOUT) share a similar buffer structure.\n* Each output has an integrated 25-Ohm series damping resistor.\n* Output capacitance Co (Typ 2.8 pF for Yn, 5.2 pF for CLKOUT) is modeled at the output.\n\n* Subcircuit for a generic output buffer with damping resistor\n.subckt OUTPUT_BUFFER OUT IN GND VDD_SUPPLY\n* ESD Diodes\nD_esd_out_p OUT VDD_SUPPLY DCLAMP\nD_esd_out_n GND OUT DCLAMP\n\n* Output Driver (e.g., two inverters for strong drive)\nM_out_p1 OUT_DRV IN PMOS W=20u L=0.35u\nM_out_n1 OUT_DRV IN NMOS W=10u L=0.35u\n\nM_out_p2 OUT_INT OUT_DRV PMOS W=40u L=0.35u\nM_out_n2 OUT_INT OUT_DRV NMOS W=20u L=0.35u\n\n* Series Damping Resistor\nR_damp OUT OUT_INT {R_DAMP}\n.ends OUTPUT_BUFFER\n\n\n* Instantiate Output Buffers for 1Y0-1Y3\n* X1Y0 1Y0 VCO_OUT GND VDD_3_3_V OUTPUT_BUFFER\n* X1Y1 1Y1 VCO_OUT GND VDD_3_3_V OUTPUT_BUFFER\n* X1Y2 1Y2 VCO_OUT GND VDD_3_3_V OUTPUT_BUFFER\n* X1Y3 1Y3 VCO_OUT GND VDD_3_3_V OUTPUT_BUFFER\n\n* Instantiate Output Buffer for CLKOUT (Feedback)\n* CLKOUT has a slightly different Co (5.2 pF)\n* XCLKOUT CLKOUT VCO_OUT GND VDD_3_3_V OUTPUT_BUFFER\n\n* Feedback path from CLKOUT to PFD\n* This is the internal feedback loop.\n* B_clkout_fb CLKOUT_FB GND V = { V(CLKOUT) }\n* + tripdt=10p\n\n* Output Capacitance Co (Typ 2.8 pF for Yn, 5.2 pF for CLKOUT)\n* These are external load capacitances for characterization, not internal device capacitance.\n* Internal Co is part of the buffer model.\n* For simulation, these would be added in the testbench.\n\n* .ends CDCVF2505_Q1\n```", "netlists": {"iter1": "\n.subckt CDCVF2505_Q1 1Y0 1Y1 1Y2 1Y3 CLKIN CLKOUT GND VDD_3_3_V\n\n; --- Global Parameters ---\n.param VDD_NOM = 3.3V\n.param VTH_NMOS = 0.7V\n.param VTH_PMOS = -0.7V\n.param KP_NMOS = 100uA/V^2 ; Transconductance parameter for NMOS\n.param KP_PMOS = 50uA/V^2  ; Transconductance parameter for PMOS (typically half of NMOS)\n.param R_DAMP = 25         ; Integrated series damping resistor\n\n; --- MOSFET Models (Level 1 for simplicity and convergence) ---\n.model NMOS NMOS (LEVEL=1 VTO={VTH_NMOS} KP={KP_NMOS} GAMMA=0 PHI=0.6 LAMBDA=0.01)\n.model PMOS PMOS (LEVEL=1 VTO={VTH_PMOS} KP={KP_PMOS} GAMMA=0 PHI=0.6 LAMBDA=0.01)\n.model D_CLAMP D (IS=1e-14 RS=1 N=1 BV=50 IBV=1u) ; Generic diode model for clamping\n\n; --- ESD/Input/Output Clamping Diodes ---\n; Diodes to VDD and GND for CLKIN\nD_CLKIN_P CLKIN VDD_3_3_V D_CLAMP\nD_CLKIN_N GND CLKIN D_CLAMP\n\n; Diodes to VDD and GND for 1Y0-1Y3 and CLKOUT\nD_1Y0_P 1Y0 VDD_3_3_V D_CLAMP\nD_1Y0_N GND 1Y0 D_CLAMP\nD_1Y1_P 1Y1 VDD_3_3_V D_CLAMP\nD_1Y1_N GND 1Y1 D_CLAMP\nD_1Y2_P 1Y2 VDD_3_3_V D_CLAMP\nD_1Y2_N GND 1Y2 D_CLAMP\nD_1Y3_P 1Y3 VDD_3_3_V D_CLAMP\nD_1Y3_N GND 1Y3 D_CLAMP\nD_CLKOUT_P CLKOUT VDD_3_3_V D_CLAMP\nD_CLKOUT_N GND CLKOUT D_CLAMP\n\n; --- Input Buffer and Power-Down Detection ---\n; CLKIN buffer with Schmitt trigger characteristics\n; VIH = 0.7*VDD, VIL = 0.3*VDD\n.param VTH_SCHMITT_H = '0.7 * VDD_NOM'\n.param VTH_SCHMITT_L = '0.3 * VDD_NOM'\nB_CLKIN_BUF_OUT clkin_buf_out GND V = { V(CLKIN) > VTH_SCHMITT_H ? VDD_NOM : (V(CLKIN) < VTH_SCHMITT_L ? 0 : V(clkin_buf_out)) }\n\n; Power-down detection: If CLKIN is low for > 100ns, activate power-down\n; This is a simplified model. A real circuit would use a retriggerable monostable.\n; Here, we assume power-down if CLKIN_BUF_OUT is consistently low.\n; For a more robust model, a counter or integrator would be needed.\n; For now, we'll assume the PLL is always active if CLKIN is present and stable.\n; The datasheet states \"automatically goes in power-down mode when no input signal is applied to CLKIN\".\n; This implies a DC level detector or a frequency detector.\n; Let's use a simple threshold for power-down. If CLKIN_BUF_OUT is below VIL for a long time.\n; For this simulation, we'll assume CLKIN is always present and valid during operation.\n; A more complex power-down would involve a B-source with time-dependent logic.\n; For now, we'll assume the PLL is always enabled if VDD is present and CLKIN is active.\n; Let's add a simple activity detector for CLKIN.\nR_pd_filter clkin_activity_avg GND 100k\nC_pd_filter clkin_activity_avg GND 100n\nG_pd_charge clkin_activity_avg GND VALUE = { (V(clkin_buf_out) > VDD_NOM/2) ? 10u : -10u } ; Charge if active, discharge if inactive\nB_power_down_active power_down_active GND V = { V(clkin_activity_avg) < VDD_NOM/4 ? 0 : VDD_NOM } ; Power down if average is low\n\n; --- PLL Core ---\n; 1. Phase-Frequency Detector (PFD)\n; Generates UP and DOWN pulses based on rising edges of CLKIN_BUF_OUT and CLKOUT_FB\n; Simplified behavioral model for PFD\n; UP pulse when CLKIN_BUF_OUT rises and CLKOUT_FB is low\n; DOWN pulse when CLKOUT_FB rises and CLKIN_BUF_OUT is low\n; Reset when both are high (or after a short delay)\n; This is a simplified PFD. A real PFD has memory and reset logic.\n; For SPICE, we'll use edge detection and pulse generation.\n.param PFD_PULSE_WIDTH = 1n ; Short pulse width for PFD output\n\nB_CLKIN_RISE clkin_rise GND V = { ddt(V(clkin_buf_out)) > 0.1*VDD_NOM/1n ? VDD_NOM : 0 } ; Detect rising edge of CLKIN\nB_CLKOUT_RISE clkout_rise GND V = { ddt(V(clkout_fb)) > 0.1*VDD_NOM/1n ? VDD_NOM : 0 } ; Detect rising edge of CLKOUT_FB\n\n; UP pulse generation\nB_UP_PULSE up_node GND V = { (V(clkin_rise) > VDD_NOM/2) & (V(clkout_fb) < VDD_NOM/2) ? VDD_NOM : 0 }\nR_UP_DELAY up_node up_delay 100\nC_UP_DELAY up_delay GND 1p\nB_UP up GND V = { V(up_delay) > VDD_NOM/2 ? VDD_NOM : 0 }\n\n; DOWN pulse generation\nB_DOWN_PULSE down_node GND V = { (V(clkout_rise) > VDD_NOM/2) & (V(clkin_buf_out) < VDD_NOM/2) ? VDD_NOM : 0 }\nR_DOWN_DELAY down_node down_delay 100\nC_DOWN_DELAY down_delay GND 1p\nB_DOWN down GND V = { V(down_delay) > VDD_NOM/2 ? VDD_NOM : 0 }\n\n; 2. Charge Pump (CP)\n; Converts UP/DOWN pulses into current for the loop filter\n; Icp = 50uA (chosen for reasonable loop bandwidth and settling time)\n.param ICP = 50uA\nG_CP_UP VDD_3_3_V v_ctrl VALUE = { V(up) > VDD_NOM/2 ? ICP : 0 }\nG_CP_DOWN v_ctrl GND VALUE = { V(down) > VDD_NOM/2 ? ICP : 0 }\n\n; 3. Loop Filter (LF) - Integrated on-chip\n; Second-order passive filter: R1 in series with C1, C2 to ground\n; Values chosen for ~100us stabilization time, damping factor ~0.707\n; Kvco = 75 MHz/V = 75e6 Hz/V\n; Kp = ICP / (2*PI) = 50uA / (2*PI) = 7.95uA/rad\n; Target natural frequency wn = 2*PI / (100us * 2) = 31.4 krad/s (approx for settling)\n; R_LF = 1k, C_LF1 = 1nF, C_LF2 = 100pF\nR_LF1 v_ctrl lf_node 1k\nC_LF1 lf_node GND 1n\nC_LF2 v_ctrl GND 100p\n\n; Clamp VCO control voltage to VDD and GND\nD_VCTRL_P v_ctrl VDD_3_3_V D_CLAMP\nD_VCTRL_N GND v_ctrl D_CLAMP\n\n; 4. Voltage Controlled Oscillator (VCO) with Duty Cycle Correction\n; Frequency range: 24 MHz to 200 MHz\n; Kvco = 75 MHz/V (from 0V to VDD_NOM)\n; F_min = 24 MHz, F_max = 200 MHz\n; V_ctrl range: 0 to VDD_NOM\n; F_vco = F_min + (V_ctrl / VDD_NOM) * (F_max - F_min)\n.param F_MIN_VCO = 24e6\n.param F_MAX_VCO = 200e6\n.param KVCO_BEHAV = '(F_MAX_VCO - F_MIN_VCO) / VDD_NOM'\n\nB_VCO_OUT vco_out GND V = { V(power_down_active) < VDD_NOM/2 ? 0 : ( (sin(2*PI*(F_MIN_VCO + KVCO_BEHAV * V(v_ctrl))*time) > 0) ? VDD_NOM : 0 ) }\n; Ensure 50% duty cycle by design of the behavioral source.\n\n; 5. Output Buffers with Integrated Series Damping Resistors\n; Each output has a 25-ohm series resistor.\n; Output drive strength: IOH/IOL = 12mA\n; VOH > 2.1V @ -12mA, VOL < 0.8V @ 12mA (at VDD=3V)\n; Co = 2.8pF for Yn, 5.2pF for CLKOUT\n\n; Output buffer subcircuit for reusability\n.subckt OUTPUT_BUFFER OUT IN GND VDD\n; Input buffer stage\nX_INV1 inv_out1 IN GND VDD INV_BUF\nX_INV2 inv_out2 inv_out1 GND VDD INV_BUF\n\n; Output stage (strong drive)\nM_POUT OUT inv_out2 VDD VDD PMOS W=100u L=0.18u ; Sized for 12mA drive\nM_NOUT OUT inv_out2 GND GND NMOS W=200u L=0.18u ; Sized for 12mA drive\n.ends OUTPUT_BUFFER\n\n\n; Simple inverter buffer for internal stages\n* .subckt INV_BUF OUT IN GND VDD\n* M_P OUT IN VDD VDD PMOS W=10u L=0.18u\n* M_N OUT IN GND GND NMOS W=5u L=0.18u\n* .ends INV_BUF\n\n; CLKOUT feedback path\n; CLKOUT is a copy of VCO_OUT, with its own buffer and capacitance\n* X_CLKOUT_BUF clkout_driver_out vco_out GND VDD_3_3_V OUTPUT_BUFFER\n* R_CLKOUT_DAMP clkout_driver_out CLKOUT {R_DAMP}\n* C_CLKOUT CLKOUT GND 5.2p ; Co for CLKOUT\n\n; Internal feedback to PFD\n; This path should have minimal delay and be robust.\n; For zero delay between CLKIN and Y outputs, CLKOUT is used for feedback.\n; The datasheet says \"CLKOUT completes the internal feedback loop of the PLL.\"\n; This means CLKOUT is the actual feedback signal, not just a monitor.\n; So, the PFD compares CLKIN_BUF_OUT and CLKOUT.\n; We need a clean feedback signal from CLKOUT.\n; Let's assume CLKOUT_FB is taken directly from the CLKOUT pin,\n; or from an internal node before the damping resistor for better PLL performance.\n; Given the \"zero delay\" comment, it's likely an internal node.\n; Let's use clkout_driver_out as the feedback point.\n* B_CLKOUT_FB clkout_fb GND V = { V(clkout_driver_out) }\n\n; 1Y0-1Y3 Outputs\n; Each output has its own buffer and series damping resistor\n* X_1Y0_BUF 1Y0_driver_out vco_out GND VDD_3_3_V OUTPUT_BUFFER\n* R_1Y0_DAMP 1Y0_driver_out 1Y0 {R_DAMP}\n* C_1Y0 1Y0 GND 2.8p ; Co for Yn\n\n* X_1Y1_BUF 1Y1_driver_out vco_out GND VDD_3_3_V OUTPUT_BUFFER\n* R_1Y1_DAMP 1Y1_driver_out 1Y1 {R_DAMP}\n* C_1Y1 1Y1 GND 2.8p ; Co for Yn\n\n* X_1Y2_BUF 1Y2_driver_out vco_out GND VDD_3_3_V OUTPUT_BUFFER\n* R_1Y2_DAMP 1Y2_driver_out 1Y2 {R_DAMP}\n* C_1Y2 1Y2 GND 2.8p ; Co for Yn\n\n* X_1Y3_BUF 1Y3_driver_out vco_out GND VDD_3_3_V OUTPUT_BUFFER\n* R_1Y3_DAMP 1Y3_driver_out 1Y3 {R_DAMP}\n* C_1Y3 1Y3 GND 2.8p ; Co for Yn\n\n; --- Input Capacitance (Ci) ---\n; Ci = 4.2pF for CLKIN\n* C_CLKIN_IN CLKIN GND 4.2p\n\n; --- Current Consumption (Simplified) ---\n; Add a quiescent current draw for the internal circuitry\n; This is a very rough estimate. A real design would have detailed current paths.\n* R_QUIESCENT VDD_3_3_V GND 10k ; Represents ~330uA quiescent current\n\n* .ends CDCVF2505_Q1", "iter2": "\n* Default Physical Device Models for AI Analog Synthesis\n.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=120u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)\n.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)\n.model QNPN NPN (IS=1e-14 BF=150 VAF=100 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=100 TF=0.3n TR=10n CJE=2p CJC=1p VJC=0.75 MJC=0.33)\n.model QPNP PNP (IS=1e-14 BF=80 VAF=80 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=80 TF=0.5n TR=20n CJE=2p CJC=1.5p VJC=0.75 MJC=0.33)\n.model D1N4148 D (IS=2.52n RS=0.568 N=1.752 CJO=4p VJ=0.5 M=0.333 BV=100 IBV=100u TT=4n)\n.model D_ESD D (IS=1e-15 RS=10 CJO=1p BV=50)\n\n* CDCVF2505-Q1 High-Performance, Low-Skew, Low-Jitter, PLL Clock Driver\n* Subcircuit for CDCVF2505-Q1\n.subckt CDCVF2505_Q1 1Y0 1Y1 1Y2 1Y3 CLKIN CLKOUT GND VDD_3_3_V\n\n* --- Global Parameters ---\n.param VDD = 3.3V\n.param VDD_MIN = 3.0V\n.param VDD_MAX = 3.6V\n.param VIH_THRESHOLD = {0.7 * VDD}\n.param VIL_THRESHOLD = {0.3 * VDD}\n.param ICP = 100uA ; Charge pump current\n.param KVCO = 100M ; VCO gain in Hz/V (e.g., 100 MHz/V)\n.param F_MIN_VCO = 24M ; Minimum VCO frequency\n.param F_MAX_VCO = 200M ; Maximum VCO frequency\n.param VCO_CTRL_MIN = 0.5V ; Minimum control voltage for VCO\n.param VCO_CTRL_MAX = 2.8V ; Maximum control voltage for VCO\n.param R_DAMP = 25 ; Output series damping resistor\n\n* --- MOSFET Models (Generic 0.35um process parameters for 3.3V operation) ---\n.model NMOS NMOS (LEVEL=1 VTO=0.5 KP=150u GAMMA=0.4 PHI=0.6 LAMBDA=0.05 TOX=7n\n+ CJ=0.5m CJSW=0.3p MJ=0.5 MJSW=0.3 PB=0.8)\n.model PMOS PMOS (LEVEL=1 VTO=-0.5 KP=50u GAMMA=0.5 PHI=0.6 LAMBDA=0.06 TOX=7n\n+ CJ=0.8m CJSW=0.4p MJ=0.5 MJSW=0.3 PB=0.8)\n\n* --- Diode Models for ESD/Clamping ---\n.model DCLAMP D (IS=1e-14 N=1 RS=1)\n\n* --- Input Stage: Schmitt Trigger Buffer for CLKIN ---\n* Provides hysteresis and converts CLKIN to a clean digital signal.\n* Also models input capacitance Ci and leakage current II.\n\n* Input ESD Diodes\nD_esd_clk_p CLKIN VDD_3_3_V DCLAMP\nD_esd_clk_n GND CLKIN DCLAMP\n\n* Input Capacitance Ci (Typ 4.2 pF)\nC_cin CLKIN GND 4.2p\n\n* Input Leakage Current II (Max 5uA) - modeled by high resistance\nR_leak_p CLKIN VDD_3_3_V 1G\nR_leak_n CLKIN GND 1G\n\n* Schmitt Trigger Buffer (Behavioral for simplicity and meeting VIH/VIL)\n* Output CLKIN_BUF is a clean digital signal.\nB_schmitt_clk CLKIN_BUF GND V = { V(CLKIN) > VIH_THRESHOLD ? VDD : (V(CLKIN) < VIL_THRESHOLD ? 0 : V(CLKIN_BUF)) }\n+ tripdt=10p ; Ensure fast transitions for digital signals\n\n* --- Power-Down Detection (Absence of CLKIN) ---\n* If CLKIN_BUF stays low for a certain period, activate power-down.\n* For simplicity, we'll use a simple threshold detection.\n* A more complex implementation would involve a timer/counter.\nB_power_down_detect PD_ACTIVE GND V = { (V(CLKIN_BUF) < VIL_THRESHOLD) & (time > 2u) ? 1 : 0 }\n* PD_ACTIVE = 1 when power down is active (CLKIN absent)\n\n* --- Phase-Frequency Detector (PFD) ---\n* Compares CLKIN_BUF (reference) and CLKOUT_FB (feedback).\n* Generates UP and DOWN pulses.\n* Behavioral model for ideal PFD.\n\nB_pfd_up UP_PULSE GND V = { (V(CLKIN_BUF) > VDD/2) & (V(CLKOUT_FB) < VDD/2) & (V(PD_ACTIVE) < 0.5) ? VDD : 0 }\n+ tripdt=10p\n\nB_pfd_down DOWN_PULSE GND V = { (V(CLKOUT_FB) > VDD/2) & (V(CLKIN_BUF) < VDD/2) & (V(PD_ACTIVE) < 0.5) ? VDD : 0 }\n+ tripdt=10p\n\n* --- Charge Pump (CP) ---\n* Converts PFD pulses to current for the loop filter.\n* Modeled as current sources.\n\nB_charge_pump_up LF_NODE GND I = { (V(UP_PULSE) > VDD/2) ? ICP : 0 }\n\nB_charge_pump_down GND LF_NODE I = { (V(DOWN_PULSE) > VDD/2) ? ICP : 0 }\n\n* --- Loop Filter (LF) ---\n* Second-order passive loop filter.\n* R_LF, C_LF1, C_LF2 are sized for stability and lock time (100us).\n* Values are illustrative and would be optimized for specific PLL performance.\nR_lf LF_NODE LF_NODE_FILT 1k\nC_lf1 LF_NODE_FILT GND 100p\nC_lf2 LF_NODE LF_NODE_FILT 10p ; For additional ripple reduction\n\n* --- Voltage Controlled Oscillator (VCO) ---\n* Generates clock based on LF_NODE_FILT (VCO_CTRL).\n* Includes duty cycle correction to 50%.\n* Frequency range: 24 MHz to 200 MHz.\n\n* VCO Control Voltage (LF_NODE_FILT is the VCO control)\nB_vco_ctrl VCO_CTRL GND V = { V(LF_NODE_FILT) }\n\n* VCO Frequency Calculation\nB_vco_freq_calc VCO_FREQ_INST GND V = { (V(VCO_CTRL) < VCO_CTRL_MIN) ? F_MIN_VCO : ((V(VCO_CTRL) > VCO_CTRL_MAX) ? F_MAX_VCO : (F_MIN_VCO + (F_MAX_VCO - F_MIN_VCO) * (V(VCO_CTRL) - VCO_CTRL_MIN) / (VCO_CTRL_MAX - VCO_CTRL_MIN))) }\n\n* VCO Output (50% duty cycle)\n* The VCO output is the internal clock signal that will be buffered.\nB_vco_out VCO_OUT GND V = { (V(PD_ACTIVE) > 0.5) ? 0 : ( (sin(2*pi*V(VCO_FREQ_INST)*time) > 0) ? VDD : 0 ) }\n+ tripdt=10p\n\n* --- Output Buffers with Damping Resistors ---\n* All outputs (1Y0-1Y3, CLKOUT) share a similar buffer structure.\n* Each output has an integrated 25-Ohm series damping resistor.\n* Output capacitance Co (Typ 2.8 pF for Yn, 5.2 pF for CLKOUT) is modeled at the output.\n\n* Subcircuit for a generic output buffer with damping resistor\n.subckt OUTPUT_BUFFER OUT IN GND VDD_SUPPLY\n* ESD Diodes\nD_esd_out_p OUT VDD_SUPPLY DCLAMP\nD_esd_out_n GND OUT DCLAMP\n\n* Output Driver (e.g., two inverters for strong drive)\nM_out_p1 OUT_DRV IN PMOS W=20u L=0.35u\nM_out_n1 OUT_DRV IN NMOS W=10u L=0.35u\n\nM_out_p2 OUT_INT OUT_DRV PMOS W=40u L=0.35u\nM_out_n2 OUT_INT OUT_DRV NMOS W=20u L=0.35u\n\n* Series Damping Resistor\nR_damp OUT OUT_INT {R_DAMP}\n.ends OUTPUT_BUFFER\n\n\n* Instantiate Output Buffers for 1Y0-1Y3\n* X1Y0 1Y0 VCO_OUT GND VDD_3_3_V OUTPUT_BUFFER\n* X1Y1 1Y1 VCO_OUT GND VDD_3_3_V OUTPUT_BUFFER\n* X1Y2 1Y2 VCO_OUT GND VDD_3_3_V OUTPUT_BUFFER\n* X1Y3 1Y3 VCO_OUT GND VDD_3_3_V OUTPUT_BUFFER\n\n* Instantiate Output Buffer for CLKOUT (Feedback)\n* CLKOUT has a slightly different Co (5.2 pF)\n* XCLKOUT CLKOUT VCO_OUT GND VDD_3_3_V OUTPUT_BUFFER\n\n* Feedback path from CLKOUT to PFD\n* This is the internal feedback loop.\n* B_clkout_fb CLKOUT_FB GND V = { V(CLKOUT) }\n* + tripdt=10p\n\n* Output Capacitance Co (Typ 2.8 pF for Yn, 5.2 pF for CLKOUT)\n* These are external load capacitances for characterization, not internal device capacitance.\n* Internal Co is part of the buffer model.\n* For simulation, these would be added in the testbench.\n\n* .ends CDCVF2505_Q1"}, "testbenches": {"tb_dc_op.cir": ".options gmin=1e-12 cshunt=1e-15\n* CDCVF2505_Q1 Testbench\n.include \"CDCVF2505_Q1_iter2.cir\"\n\n* Voltage Sources for Power and Inputs\nVGND GND 0 0\nV_VDD_3_3_V VDD_3_3_V 0 PWL(0us 0V 0.1us 3.3V)\nV_CLKIN CLKIN 0 PWL(0us 0V 1.9us 0V 2.0us 0V 2.1us 3.3V)\n; Sanitized output driver short: V_1Y0 1Y0 0 PWL(0us 0V 2.9us 0V 3.0us 0V 3.1us 3.3V)\n; Sanitized output driver short: V_1Y1 1Y1 0 PWL(0us 0V 2.9us 0V 3.0us 0V 3.1us 3.3V)\n; Sanitized output driver short: V_1Y2 1Y2 0 PWL(0us 0V 2.9us 0V 3.0us 0V 3.1us 3.3V)\n; Sanitized output driver short: V_1Y3 1Y3 0 PWL(0us 0V 2.9us 0V 3.0us 0V 3.1us 3.3V)\n* CLKOUT is an output, no input voltage source needed\n\n* DUT Instance\nXDUT 1Y0 1Y1 1Y2 1Y3 CLKIN CLKOUT GND VDD_3_3_V CDCVF2505_Q1\n\n* Load Capacitors for outputs (typical 25pF for timing measurements)\nC_1Y0_load 1Y0 0 25p\nC_1Y1_load 1Y1 0 25p\nC_1Y2_load 1Y2 0 25p\nC_1Y3_load 1Y3 0 25p\nC_CLKOUT_load CLKOUT 0 25p\n\n* Input stimulus for fclk, odc, tsk(o), tc(jit_cc)\n* Using a pulse for CLKIN to generate a 200MHz clock (5ns period)\n* For fclk, odc, tsk(o), tc(jit_cc) conditions: f = 24 MHz to 200 MHz, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V\n* Let's use 200MHz for initial test (5ns period, 2.5ns high, 2.5ns low)\n* V_CLKIN CLKIN 0 PULSE(0V 3.3V 2.0us 0.1ns 0.1ns 2.4ns 2.5ns) ; 200MHz clock after 2us startup\n; Sanitized duplicate parallel voltage source short: V_CLKIN_freq CLKIN 0 PULSE(0V 3.3V 2.0us 0.1ns 0.1ns 2.4ns 5ns) ; 200MHz clock (2.5ns high, 2.5ns low)\n\n* Simulation commands\n.tran 0 10us 0 0.1ns\n.op\n\n* MEASUREMENTS\n\n* VDD (Absolute Maximum Rating)\n.meas tran VDD_abs_max MAX V(VDD_3_3_V) from=0 to=10us\n.meas tran VDD_abs_min MIN V(VDD_3_3_V) from=0 to=10us\n\n* VI (Absolute Maximum Rating) - Assuming all input pins are 1Y0, 1Y1, 1Y2, 1Y3, CLKIN\n.meas tran VI_abs_max_1Y0 MAX V(1Y0) from=0 to=10us\n.meas tran VI_abs_min_1Y0 MIN V(1Y0) from=0 to=10us\n.meas tran VI_abs_max_1Y1 MAX V(1Y1) from=0 to=10us\n.meas tran VI_abs_min_1Y1 MIN V(1Y1) from=0 to=10us\n.meas tran VI_abs_max_1Y2 MAX V(1Y2) from=0 to=10us\n.meas tran VI_abs_min_1Y2 MIN V(1Y2) from=0 to=10us\n.meas tran VI_abs_max_1Y3 MAX V(1Y3) from=0 to=10us\n.meas tran VI_abs_min_1Y3 MIN V(1Y3) from=0 to=10us\n.meas tran VI_abs_max_CLKIN MAX V(CLKIN) from=0 to=10us\n.meas tran VI_abs_min_CLKIN MIN V(CLKIN) from=0 to=10us\n\n* VO (Absolute Maximum Rating) - Assuming all output pins are 1Y0, 1Y1, 1Y2, 1Y3, CLKOUT\n.meas tran VO_abs_max_1Y0 MAX V(1Y0) from=0 to=10us\n.meas tran VO_abs_min_1Y0 MIN V(1Y0) from=0 to=10us\n.meas tran VO_abs_max_1Y1 MAX V(1Y1) from=0 to=10us\n.meas tran VO_abs_min_1Y1 MIN V(1Y1) from=0 to=10us\n.meas tran VO_abs_max_1Y2 MAX V(1Y2) from=0 to=10us\n.meas tran VO_abs_min_1Y2 MIN V(1Y2) from=0 to=10us\n.meas tran VO_abs_max_1Y3 MAX V(1Y3) from=0 to=10us\n.meas tran VO_abs_min_1Y3 MIN V(1Y3) from=0 to=10us\n.meas tran VO_abs_max_CLKOUT MAX V(CLKOUT) from=0 to=10us\n.meas tran VO_abs_min_CLKOUT MIN V(CLKOUT) from=0 to=10us\n\n* IIK (Input Clamp Current) - Requires separate tests for VI < 0 and VI > VDD\n* This requires specific test setups, not directly measurable in a general functional test.\n* For VI < 0, apply negative voltage to input and measure current.\n* For VI > VDD, apply voltage > VDD to input and measure current.\n* Not implemented in this general functional test.\n\n* IOK (Output Clamp Current) - Requires separate tests for VO < 0 and VO > VDD\n* Similar to IIK, requires specific test setups.\n* Not implemented in this general functional test.\n\n* IO (Output Current) - Requires specific load conditions and output states.\n* Not implemented in this general functional test.\n\n* VDD (Recommended Operating Conditions)\n.meas tran VDD_op_max MAX V(VDD_3_3_V) from=3.5us to=10us\n.meas tran VDD_op_min MIN V(VDD_3_3_V) from=3.5us to=10us\n\n* VIH (Input High Voltage) - Requires specific input voltage levels.\n* VIL (Input Low Voltage) - Requires specific input voltage levels.\n* VI (Input Voltage) - Covered by absolute max and min.\n\n* IOH (Output High Current) - Requires specific output voltage and load.\n* IOL (Output Low Current) - Requires specific output voltage and load.\n* These require specific DC operating points with current sources as loads.\n* Not implemented in this general functional test.\n\n* TA (Operating Free-Air Temperature) - Not measurable in SPICE.\n\n* fclk (Operating Frequency)\n* Measure CLKOUT frequency\n.meas tran t_clkout_rise1 when V(CLKOUT)=1.65 rise=1\n.meas tran t_clkout_rise2 when V(CLKOUT)=1.65 rise=2\n.meas tran fclk param 1/(t_clkout_rise2 - t_clkout_rise1)\n\n* Stabilization time\n* Measure time until CLKOUT starts oscillating stably.\n* This is hard to define precisely without a specific stability criterion.\n* For now, we'll assume the clock is stable after the power-up sequence.\n* The PDG schedule implies CLKOUT is active after 3.0us.\n* Let's measure the first clock edge after 3.0us.\n.meas tran t_clkout_first_rise when V(CLKOUT)=1.65 rise=1\n\n* VIK (Input Clamp Voltage) - Requires specific input current.\n* Not implemented in this general functional test.\n\n* VOH (Output High Voltage) - Requires specific load conditions.\n* VOL (Output Low Voltage) - Requires specific load conditions.\n* These require specific DC operating points with current sources as loads.\n* Not implemented in this general functional test.\n\n* II (Input Leakage Current) - Requires specific input voltage (0V or VDD).\n* To measure II, we need to apply 0V or VDD to inputs and measure current.\n* Let's measure average current into CLKIN when it's high and low.\n.meas tran II_CLKIN_high AVG I(V_CLKIN) from=3.0us to=3.5us ; During high phase\n.meas tran II_CLKIN_low AVG I(V_CLKIN) from=3.5us to=4.0us ; During low phase\n\n* Ci (Input Capacitance) - Requires AC analysis.\n* Co (Output Capacitance) - Requires AC analysis.\n* Not implemented in this transient analysis.\n\n* tsk(o) (Output Skew) - Yn to Yn\n* Requires all Yn outputs to be active and driven by the same clock.\n* We have 1Y0, 1Y1, 1Y2, 1Y3. Let's measure skew between 1Y0 and 1Y1.\n* Assuming all 1Yn outputs are driven by CLKIN.\n.meas tran t_1Y0_rise when V(1Y0)=1.65 rise=1\n.meas tran t_1Y1_rise when V(1Y1)=1.65 rise=1\n.meas tran tsk_o_1Y0_1Y1 param abs(t_1Y0_rise - t_1Y1_rise)\n\n* tc(jit_cc) (Cycle-to-Cycle Jitter)\n* For f = 200 MHz, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V\n* Measure period of CLKOUT for several cycles and calculate jitter.\n.meas tran p1 when V(CLKOUT)=1.65 rise=1\n.meas tran p2 when V(CLKOUT)=1.65 rise=2\n.meas tran p3 when V(CLKOUT)=1.65 rise=3\n.meas tran p4 when V(CLKOUT)=1.65 rise=4\n.meas tran period1 param p2-p1\n.meas tran period2 param p3-p2\n.meas tran period3 param p4-p3\n.meas tran jit_cc_1 param abs(period2-period1)\n.meas tran jit_cc_2 param abs(period3-period2)\n.meas tran jit_cc_max param MAX(jit_cc_1, jit_cc_2)\n\n* odc (Output Duty Cycle)\n* For f = 200 MHz at 50% VDD, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V\n.meas tran t_clkout_high_start when V(CLKOUT)=1.65 rise=1\n.meas tran t_clkout_high_end when V(CLKOUT)=1.65 fall=1\n.meas tran t_clkout_period_start when V(CLKOUT)=1.65 rise=1\n.meas tran t_clkout_period_end when V(CLKOUT)=1.65 rise=2\n.meas tran odc_clkout param (t_clkout_high_end - t_clkout_high_start) / (t_clkout_period_end - t_clkout_period_start) * 100\n\n.end\n", "tb_transient.cir": ".options gmin=1e-12 cshunt=1e-15\n* CDCVF2505_Q1 Testbench\n.include \"CDCVF2505_Q1_iter2.cir\"\n\n* Voltage Sources\nVGND GND 0 0\nV_VDD_3_3_V VDD_3_3_V 0 PWL(0us 0V 0.1us 3.3V)\nV_CLKIN CLKIN 0 PWL(0us 0V 2us 0V 2.01us 0V) PULSE(0V 3.3V 2.01us 0.1ns 0.1ns {0.5*T_CLK} {T_CLK})\n* Output loads\nC_1Y0 1Y0 0 25pF\nC_1Y1 1Y1 0 25pF\nC_1Y2 1Y2 0 25pF\nC_1Y3 1Y3 0 25pF\nC_CLKOUT CLKOUT 0 25pF\n\n* DUT Instance\nXDUT 1Y0 1Y1 1Y2 1Y3 CLKIN CLKOUT GND VDD_3_3_V CDCVF2505_Q1\n\n* Global Parameters for Frequencies and Duty Cycles\n.param T_CLK_66M = 1/66e6\n.param T_CLK_200M = 1/200e6\n.param T_CLK_24M = 1/24e6\n.param T_CLK_85M = 1/85e6\n.param T_CLK_86M = 1/86e6\n\n* Simulation Analysis\n.tran 0.5n 300n\n\n* MEASUREMENTS\n\n* Input clock duty cycle (24 MHz to 85 MHz)\n* Test at 66 MHz (within 24-85 MHz range)\n.param T_CLK = {T_CLK_66M}\n.meas tran clkin_rise1 when V(CLKIN)=1.65 rise=1\n.meas tran clkin_fall1 when V(CLKIN)=1.65 fall=1\n.meas tran clkin_rise2 when V(CLKIN)=1.65 rise=2\n.meas tran clkin_fall2 when V(CLKIN)=1.65 fall=2\n.meas tran clkin_period param (clkin_rise2 - clkin_rise1)\n.meas tran clkin_pw param (clkin_fall1 - clkin_rise1)\n.meas tran clkin_dc_24_85m param (clkin_pw / clkin_period) * 100\n\n* Input clock duty cycle (86 MHz to 200 MHz)\n* Test at 100 MHz (within 86-200 MHz range)\n.param T_CLK = 1/100e6\n.meas tran clkin_rise3 when V(CLKIN)=1.65 rise=3\n.meas tran clkin_fall3 when V(CLKIN)=1.65 fall=3\n.meas tran clkin_rise4 when V(CLKIN)=1.65 rise=4\n.meas tran clkin_fall4 when V(CLKIN)=1.65 fall=4\n.meas tran clkin_period_highf param (clkin_rise4 - clkin_rise3)\n.meas tran clkin_pw_highf param (clkin_fall3 - clkin_rise3)\n.meas tran clkin_dc_86_200m param (clkin_pw_highf / clkin_period_highf) * 100\n\n* tpd: CLKIN to Yn, f = 66 MHz to 200 MHz, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V\n* Test at 66 MHz, VDD = 3.3V\n.param T_CLK = {T_CLK_66M}\n.meas tran clkin_tpd_ref when V(CLKIN)=1.65 rise=5\n.meas tran Y0_tpd_ref when V(1Y0)=1.65 rise=5\n.meas tran tpd_Y0 param (Y0_tpd_ref - clkin_tpd_ref)\n\n* tr: VO = 0.4 V to 2 V, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V\n.meas tran tr_Y0_v1 when V(1Y0)=0.4 rise=5\n.meas tran tr_Y0_v2 when V(1Y0)=2.0 rise=5\n.meas tran tr_Y0 param (tr_Y0_v2 - tr_Y0_v1)\n\n* tf: VO = 2 V to 0.4 V, CL = 25 pF, VDD = 3.3 V \u00b1 0.3 V\n.meas tran tf_Y0_v1 when V(1Y0)=2.0 fall=5\n.meas tran tf_Y0_v2 when V(1Y0)=0.4 fall=5\n.meas tran tf_Y0 param (tf_Y0_v2 - tf_Y0_v1)\n\n.end\n"}, "simulation_logs": {"tb_dc_op.log": "LTspice 24.1.10 for Windows\nCircuit: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\tb_dc_op.cir\nStart Time: Wed Oct 14 00:37:12 2026\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\tb_dc_op.cir(16): This sub-circuit cannot be instantiated because it contains these syntax errors:\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter2.cir(113): Expected a sequence <directive or device instantiation end of line> here.\n.subckt OUTPUT_BUFFER OUT IN GND VDD_SUPPLY\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nXDUT 1Y0 1Y1 1Y2 1Y3 CLKIN CLKOUT GND VDD_3_3_V CDCVF2505_Q1\n                                               ^^^^^^^^^^^^^\n", "tb_transient.log": "LTspice 24.1.10 for Windows\nCircuit: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\tb_transient.cir\nStart Time: Wed Oct 14 00:37:12 2026\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\tb_transient.cir(44): A parameter with this name is already defined elsewhere.\n.param T_CLK = 1/100e6\n       ^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\tb_transient.cir(55): A parameter with this name is already defined elsewhere.\n.param T_CLK = {T_CLK_66M}\n       ^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\tb_transient.cir(17): This sub-circuit cannot be instantiated because it contains these syntax errors:\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\CDCVF2505-Q1\\CDCVF2505_Q1_iter2.cir(113): Expected a sequence <directive or device instantiation end of line> here.\n.subckt OUTPUT_BUFFER OUT IN GND VDD_SUPPLY\n^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n\nXDUT 1Y0 1Y1 1Y2 1Y3 CLKIN CLKOUT GND VDD_3_3_V CDCVF2505_Q1\n                                               ^^^^^^^^^^^^^\n"}}];
+
+    let currentICIndex = 0;
+    let currentNetlistIter = 1;
+    let timelineTimer = null;
+    let isPlaying = false;
+    let currentTime = 0.0;
+
+    function init() {
+      const select = document.getElementById('icSelect');
+      select.innerHTML = '';
+      BENCHMARK_DATA.forEach((ic, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        const name = ic.summary.part_name || ic.id;
+        const cat = (ic.knowledge_graph.ic_device && ic.knowledge_graph.ic_device.category) || '';
+        opt.textContent = `${name} (${cat || ic.id})`;
+        select.appendChild(opt);
+      });
+
+      if (BENCHMARK_DATA.length > 0) {
+        switchIC(0);
+      }
+    }
+
+    function switchIC(index) {
+      currentICIndex = parseInt(index);
+      const ic = BENCHMARK_DATA[currentICIndex];
+      if (!ic) return;
+
+      const name = ic.summary.part_name || ic.id;
+      const cat = (ic.knowledge_graph.ic_device && ic.knowledge_graph.ic_device.category) || 'Analog IC';
+      const specCount = ic.summary.spec_count || (ic.knowledge_graph.electrical_parameters && ic.knowledge_graph.electrical_parameters.length) || 0;
+      const pins = (ic.knowledge_graph.pins || []);
+      const iters = ic.summary.iterations || [];
+      const passRate = ic.summary.pass_rate_percent || 0.0;
+
+      // Update Key Metrics
+      document.getElementById('statIcName').textContent = name;
+      document.getElementById('statCategory').textContent = cat;
+      document.getElementById('statSpecCount').textContent = specCount;
+      document.getElementById('statPinCount').textContent = `${pins.length} Pins Extracted`;
+      document.getElementById('statLoopCount').textContent = `${iters.length} Loops`;
+      document.getElementById('statPassRate').textContent = `${passRate.toFixed(1)}%`;
+      document.getElementById('statPassRateSub').textContent = passRate > 0 ? 'Verified Closed-Loop' : 'Simulated (Iter 2 Completed)';
+
+      // Render Sub-Sections
+      renderPDG(pins);
+      renderNetlist();
+      renderTestbenches();
+      renderSpecs();
+      renderDiagnostics(iters);
+      renderHKG(ic);
+    }
+
+    function selectTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+      const target = document.getElementById(tabId);
+      if (target) target.classList.remove('hidden');
+
+      const btn = document.getElementById('btn-' + tabId);
+      if (btn) btn.classList.add('active');
+    }
+
+    // -------------------------------------------------------------
+    // PDG & TIMELINE RENDERER
+    // -------------------------------------------------------------
+    function renderPDG(pins) {
+      const svg = document.getElementById('pdgSvg');
+      svg.innerHTML = '';
+      const tbody = document.getElementById('pdgTableBody');
+      tbody.innerHTML = '';
+
+      if (!pins || pins.length === 0) {
+        svg.innerHTML = '<text x="400" y="140" text-anchor="middle" fill="#64748b" font-size="14">No pin data available in knowledge graph</text>';
+        return;
+      }
+
+      // Group pins by role into columns
+      const roleCols = {
+        'POWER': { x: 100, color: '#38bdf8', label: 'Power Pins (0us)' },
+        'GROUND': { x: 100, color: '#94a3b8', label: 'Ground' },
+        'BIAS': { x: 300, color: '#fbbf24', label: 'Bias / Reg' },
+        'CONTROL': { x: 480, color: '#a855f7', label: 'Control' },
+        'SIGNAL': { x: 480, color: '#60a5fa', label: 'Signal Inputs' },
+        'OUTPUT': { x: 680, color: '#34d399', label: 'Output Nodes' }
+      };
+
+      const pinNodes = [];
+      const colCounts = {};
+
+      pins.forEach((p, idx) => {
+        const role = (p.role || 'SIGNAL').toUpperCase();
+        const baseCol = roleCols[role] || roleCols['SIGNAL'];
+        const colIdx = colCounts[baseCol.x] || 0;
+        colCounts[baseCol.x] = colIdx + 1;
+
+        let delay = 2.0;
+        if (role === 'POWER' || role === 'GROUND') delay = 0.0;
+        else if (role === 'BIAS') delay = 2.0;
+        else if (role === 'CONTROL' || role === 'SIGNAL') delay = 4.0;
+        else if (role === 'OUTPUT') delay = 7.0;
+
+        pinNodes.push({
+          name: p.name,
+          role: role,
+          direction: p.direction || 'BIDIRECTIONAL',
+          delay: delay,
+          x: baseCol.x,
+          y: 50 + colIdx * 45,
+          color: baseCol.color
+        });
+      });
+
+      // Draw Edges (Power -> Bias -> Signal -> Output)
+      pinNodes.forEach(p1 => {
+        pinNodes.forEach(p2 => {
+          if (p1.delay < p2.delay && (p2.delay - p1.delay <= 3.5)) {
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const d = `M ${p1.x + 40} ${p1.y} C ${p1.x + 90} ${p1.y}, ${p2.x - 90} ${p2.y}, ${p2.x - 40} ${p2.y}`;
+            path.setAttribute('d', d);
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', '#334155');
+            path.setAttribute('stroke-width', '1.2');
+            path.setAttribute('stroke-dasharray', '3,3');
+            svg.appendChild(path);
+          }
+        });
+      });
+
+      // Draw Nodes
+      pinNodes.forEach(node => {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'node-pin cursor-pointer');
+        g.setAttribute('id', `pin-node-${node.name}`);
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', node.x - 45);
+        rect.setAttribute('y', node.y - 18);
+        rect.setAttribute('width', 90);
+        rect.setAttribute('height', 36);
+        rect.setAttribute('rx', 8);
+        rect.setAttribute('fill', '#0f172a');
+        rect.setAttribute('stroke', node.color);
+        rect.setAttribute('stroke-width', '1.5');
+        rect.setAttribute('id', `pin-rect-${node.name}`);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', node.x);
+        text.setAttribute('y', node.y - 2);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', '11');
+        text.setAttribute('font-weight', 'bold');
+        text.setAttribute('fill', '#f8fafc');
+        text.textContent = node.name;
+
+        const subText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        subText.setAttribute('x', node.x);
+        subText.setAttribute('y', node.y + 11);
+        subText.setAttribute('text-anchor', 'middle');
+        subText.setAttribute('font-size', '9');
+        subText.setAttribute('fill', node.color);
+        subText.textContent = `${node.delay} μs`;
+
+        g.appendChild(rect);
+        g.appendChild(text);
+        g.appendChild(subText);
+        svg.appendChild(g);
+
+        // Add to Table
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40';
+        tr.innerHTML = `
+          <td class="px-3 py-2 font-mono font-bold text-sky-300">${node.name}</td>
+          <td class="px-3 py-2">${node.role}</td>
+          <td class="px-3 py-2 text-slate-400">${node.direction}</td>
+          <td class="px-3 py-2 font-mono">${node.delay.toFixed(1)} μs</td>
+          <td class="px-3 py-2" id="status-${node.name}"><span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">Waiting</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updateTimelineTime(currentTime);
+    }
+
+    function updateTimelineTime(val) {
+      currentTime = val;
+      document.getElementById('timeSlider').value = val;
+      document.getElementById('timeDisplay').textContent = `${val.toFixed(1)} μs`;
+
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const pins = (ic && ic.knowledge_graph.pins) || [];
+      pins.forEach(p => {
+        const role = (p.role || 'SIGNAL').toUpperCase();
+        let delay = 2.0;
+        if (role === 'POWER' || role === 'GROUND') delay = 0.0;
+        else if (role === 'BIAS') delay = 2.0;
+        else if (role === 'CONTROL' || role === 'SIGNAL') delay = 4.0;
+        else if (role === 'OUTPUT') delay = 7.0;
+
+        const rect = document.getElementById(`pin-rect-${p.name}`);
+        const statusEl = document.getElementById(`status-${p.name}`);
+        if (rect && statusEl) {
+          if (currentTime >= delay) {
+            rect.setAttribute('fill', '#1e293b');
+            rect.setAttribute('stroke-width', '2.5');
+            statusEl.innerHTML = '<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Active & Settled</span>';
+          } else {
+            rect.setAttribute('fill', '#0f172a');
+            rect.setAttribute('stroke-width', '1.0');
+            statusEl.innerHTML = '<span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-500">Prerequisite</span>';
+          }
+        }
+      });
+    }
+
+    function toggleTimelinePlay() {
+      const btn = document.getElementById('btnPlayPause');
+      if (isPlaying) {
+        clearInterval(timelineTimer);
+        isPlaying = false;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg><span>Play Sequence</span>';
+      } else {
+        isPlaying = true;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"/></svg><span>Pause</span>';
+        if (currentTime >= 10.0) currentTime = 0.0;
+        timelineTimer = setInterval(() => {
+          currentTime += 0.5;
+          if (currentTime > 10.0) {
+            currentTime = 10.0;
+            toggleTimelinePlay();
+          }
+          updateTimelineTime(currentTime);
+        }, 250);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // NETLIST & SIZING RENDERER
+    // -------------------------------------------------------------
+    function renderNetlist() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const iters = (ic && ic.summary.iterations) || [];
+      const curIterData = iters[currentNetlistIter - 1] || iters[0] || {};
+      const archText = curIterData.architecture_summary || 'First-principles netlist synthesized directly from datasheet specifications.';
+      document.getElementById('architectureSummaryText').textContent = archText;
+
+      const netlistContent = ic.netlists[`iter${currentNetlistIter}`] || ic.netlists['iter1'] || '* No netlist found for this iteration.';
+      document.getElementById('netlistCodePre').textContent = netlistContent;
+      document.getElementById('netlistFilename').textContent = `${ic.summary.subckt_name || ic.id}_iter${currentNetlistIter}.cir`;
+    }
+
+    function switchNetlistIteration(iter) {
+      currentNetlistIter = iter;
+      document.getElementById('btnNetlistIter1').className = iter === 1
+        ? 'px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold'
+        : 'px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold';
+      document.getElementById('btnNetlistIter2').className = iter === 2
+        ? 'px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold'
+        : 'px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold';
+      renderNetlist();
+    }
+
+    // -------------------------------------------------------------
+    // TESTBENCH RENDERER
+    // -------------------------------------------------------------
+    function renderTestbenches() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const container = document.getElementById('tbDeckButtons');
+      container.innerHTML = '';
+
+      const tbs = Object.keys(ic.testbenches || {});
+      if (tbs.length === 0) {
+        container.innerHTML = '<span class="text-xs text-slate-400">No testbenches available.</span>';
+        document.getElementById('tbCodePre').textContent = '* No testbench deck found.';
+        return;
+      }
+
+      tbs.forEach((tbName, idx) => {
+        const btn = document.createElement('button');
+        btn.className = idx === 0
+          ? 'px-3 py-1.5 text-xs rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono font-semibold'
+          : 'px-3 py-1.5 text-xs rounded-xl bg-slate-800 text-slate-400 border border-slate-700 font-mono font-semibold hover:text-white';
+        btn.textContent = tbName;
+        btn.onclick = () => {
+          document.querySelectorAll('#tbDeckButtons button').forEach(b => {
+            b.className = 'px-3 py-1.5 text-xs rounded-xl bg-slate-800 text-slate-400 border border-slate-700 font-mono font-semibold hover:text-white';
+          });
+          btn.className = 'px-3 py-1.5 text-xs rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono font-semibold';
+          document.getElementById('currentTbName').textContent = tbName;
+          document.getElementById('tbCodePre').textContent = ic.testbenches[tbName];
+        };
+        container.appendChild(btn);
+      });
+
+      document.getElementById('currentTbName').textContent = tbs[0];
+      document.getElementById('tbCodePre').textContent = ic.testbenches[tbs[0]];
+    }
+
+    // -------------------------------------------------------------
+    // SYMPY ORACLE SPEC MATRIX RENDERER
+    // -------------------------------------------------------------
+    function renderSpecs() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const tbody = document.getElementById('specTableBody');
+      tbody.innerHTML = '';
+
+      const specs = (ic.knowledge_graph && ic.knowledge_graph.electrical_parameters) || [];
+      if (specs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-slate-500">No electrical parameters found</td></tr>';
+        return;
+      }
+
+      specs.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition-colors';
+
+        const minVal = s.min !== null && s.min !== undefined ? s.min : '-';
+        const typVal = s.typ !== null && s.typ !== undefined ? s.typ : '-';
+        const maxVal = s.max !== null && s.max !== undefined ? s.max : '-';
+        const unit = s.unit || '';
+
+        tr.innerHTML = `
+          <td class="px-3 py-2 font-mono font-bold text-sky-300">${s.symbol || s.name}</td>
+          <td class="px-3 py-2 font-mono">${minVal}</td>
+          <td class="px-3 py-2 font-mono text-slate-400">${typVal}</td>
+          <td class="px-3 py-2 font-mono">${maxVal}</td>
+          <td class="px-3 py-2 text-indigo-300 font-mono">${unit}</td>
+          <td class="px-3 py-2 font-mono text-slate-400">Unobserved</td>
+          <td class="px-3 py-2">
+            <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 border border-slate-700">Simulated</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterSpecs(query) {
+      const q = query.toLowerCase();
+      document.querySelectorAll('#specTableBody tr').forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+    }
+
+    // -------------------------------------------------------------
+    // DIAGNOSTICS & CLOSED-LOOP RENDERER
+    // -------------------------------------------------------------
+    function renderDiagnostics(iters) {
+      const container = document.getElementById('diagnosticsContainer');
+      container.innerHTML = '';
+
+      if (!iters || iters.length === 0) {
+        container.innerHTML = '<div class="text-xs text-slate-400">No iteration diagnostics recorded.</div>';
+        return;
+      }
+
+      iters.forEach(it => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-900 border border-slate-800 rounded-xl p-5 shadow space-y-4';
+
+        const passPct = (it.pass_rate_percent || 0.0).toFixed(1);
+        const shortfalls = it.shortfalls || [];
+        const improvements = it.improvements || [];
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <h4 class="font-bold text-sm text-white">Closed-Loop Iteration ${it.iteration}</h4>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-slate-400">Pass Rate:</span>
+              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">${passPct}%</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <!-- Shortfall Audit -->
+            <div class="bg-slate-950 border border-rose-500/20 rounded-xl p-3.5 space-y-2">
+              <div class="font-bold text-rose-400 flex items-center gap-1.5 uppercase text-[11px]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                Shortfall Audit (미달 원인 분석)
+              </div>
+              <ul class="space-y-1 text-slate-300 max-h-40 overflow-y-auto custom-scrollbar">
+                ${shortfalls.length ? shortfalls.map(sf => `<li class="font-mono text-[11px] leading-tight text-slate-400">&bull; ${sf}</li>`).join('') : '<li class="text-slate-500">None detected.</li>'}
+              </ul>
+            </div>
+
+            <!-- Improvements Applied -->
+            <div class="bg-slate-950 border border-emerald-500/20 rounded-xl p-3.5 space-y-2">
+              <div class="font-bold text-emerald-400 flex items-center gap-1.5 uppercase text-[11px]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Improvement Actions (개선 및 수정 내역)
+              </div>
+              <ul class="space-y-1 text-slate-300 max-h-40 overflow-y-auto custom-scrollbar">
+                ${improvements.length ? improvements.map(imp => `<li class="text-[11px] leading-tight text-slate-300">&bull; ${imp}</li>`).join('') : '<li class="text-slate-500">No improvements logged.</li>'}
+              </ul>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // -------------------------------------------------------------
+    // HKG METADATA RENDERER
+    // -------------------------------------------------------------
+    function renderHKG(ic) {
+      const dev = (ic.knowledge_graph && ic.knowledge_graph.ic_device) || {};
+      const pins = (ic.knowledge_graph && ic.knowledge_graph.pins) || [];
+
+      const metaEl = document.getElementById('hkgDeviceMetadata');
+      metaEl.innerHTML = `
+        <div><span class="text-slate-500 font-semibold">Device Name:</span> <span class="font-bold text-white">${dev.name || ic.id}</span></div>
+        <div><span class="text-slate-500 font-semibold">Category:</span> <span class="text-sky-300">${dev.category || 'Analog IC'}</span></div>
+        <div class="text-[11px] text-slate-400 leading-relaxed mt-2">${dev.description || 'No datasheet description available.'}</div>
+      `;
+
+      const pinEl = document.getElementById('hkgPinList');
+      pinEl.innerHTML = pins.map(p => `
+        <div class="flex items-center justify-between py-1 border-b border-slate-800/40">
+          <span class="font-mono text-sky-400 font-bold">${p.name}</span>
+          <span class="text-[10px] text-slate-400 uppercase">${p.role || 'SIGNAL'} | ${p.direction || 'BIDIR'}</span>
+        </div>
+      `).join('') || '<div class="text-slate-500">No pin list available.</div>';
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

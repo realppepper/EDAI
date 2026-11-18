@@ -1,0 +1,1934 @@
+{
+  "ic_device": {
+    "name": "NE555",
+    "category": "Precision Timer",
+    "description": "Precision timing circuit capable of producing accurate time delays or oscillation in monostable or astable modes with adjustable duty cycle and TTL-compatible output sinking/sourcing up to 200mA.",
+    "package": "D (SOIC, 8)"
+  },
+  "pins": [
+    {
+      "name": "GND",
+      "pin_number": "1",
+      "role": "GROUND",
+      "direction": "GROUND",
+      "description": "Ground",
+      "page": 3,
+      "evidence": "Ground"
+    },
+    {
+      "name": "TRIG",
+      "pin_number": "2",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Start of timing input. TRIG < 1/2 CONT sets output high and discharge open",
+      "page": 3,
+      "evidence": "Start of timing input. TRIG < 1/2 CONT sets output high and discharge open"
+    },
+    {
+      "name": "OUT",
+      "pin_number": "3",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "description": "High current timer output signal",
+      "page": 3,
+      "evidence": "High current timer output signal"
+    },
+    {
+      "name": "RESET",
+      "pin_number": "4",
+      "role": "CONTROL",
+      "direction": "INPUT",
+      "description": "Active low reset input forces output and discharge low",
+      "page": 3,
+      "evidence": "Active low reset input forces output and discharge low"
+    },
+    {
+      "name": "CONT",
+      "pin_number": "5",
+      "role": "REFERENCE",
+      "direction": "BIDIRECTIONAL",
+      "description": "Controls comparator thresholds, Outputs 2/3 x VCC, allows bypass capacitor connection",
+      "page": 3,
+      "evidence": "Controls comparator thresholds, Outputs 2/3 x VCC, allows bypass capacitor connection"
+    },
+    {
+      "name": "THRES",
+      "pin_number": "6",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "End of timing input. THRES > CONT sets output low and discharge low",
+      "page": 3,
+      "evidence": "End of timing input. THRES > CONT sets output low and discharge low"
+    },
+    {
+      "name": "DISCH",
+      "pin_number": "7",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "description": "Open collector output to discharge timing capacitor",
+      "page": 3,
+      "evidence": "Open collector output to discharge timing capacitor"
+    },
+    {
+      "name": "VCC",
+      "pin_number": "8",
+      "role": "POWER",
+      "direction": "POWER",
+      "description": "Input supply voltage, 4.5V to 16V. SE555 maximum is 18V.",
+      "page": 3,
+      "evidence": "Input supply voltage, 4.5V to 16V. SE555 maximum is 18V."
+    }
+  ],
+  "port_dependencies": [
+    {
+      "source": "VCC",
+      "target": "OUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "Supply voltage 4.5V to 16V"
+    },
+    {
+      "source": "GND",
+      "target": "OUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "Ground reference"
+    },
+    {
+      "source": "VCC",
+      "target": "DISCH",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "Supply voltage 4.5V to 16V"
+    },
+    {
+      "source": "GND",
+      "target": "DISCH",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "Ground reference"
+    },
+    {
+      "source": "TRIG",
+      "target": "OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "TRIG < 1/2 CONT sets output high"
+    },
+    {
+      "source": "THRES",
+      "target": "OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "THRES > CONT sets output low"
+    },
+    {
+      "source": "RESET",
+      "target": "OUT",
+      "dependency_type": "CONTROL_GATE",
+      "settling_delay_us": null,
+      "condition": "Active low reset forces output low"
+    },
+    {
+      "source": "RESET",
+      "target": "DISCH",
+      "dependency_type": "CONTROL_GATE",
+      "settling_delay_us": null,
+      "condition": "Active low reset forces discharge low"
+    },
+    {
+      "source": "CONT",
+      "target": "OUT",
+      "dependency_type": "REFERENCE",
+      "settling_delay_us": null,
+      "condition": "Controls comparator thresholds for TRIG and THRES"
+    },
+    {
+      "source": "CONT",
+      "target": "DISCH",
+      "dependency_type": "REFERENCE",
+      "settling_delay_us": null,
+      "condition": "Controls comparator thresholds affecting discharge"
+    }
+  ],
+  "functional_blocks": [
+    {
+      "name": "Resistor Divider",
+      "type": "Reference Generator",
+      "description": "Generates 1/3 VCC and 2/3 VCC reference voltages for comparators",
+      "input_ports": [
+        "VCC",
+        "GND"
+      ],
+      "output_ports": [
+        "CONT"
+      ]
+    },
+    {
+      "name": "Trigger Comparator",
+      "type": "Comparator",
+      "description": "Compares TRIG voltage to 1/3 VCC threshold",
+      "input_ports": [
+        "TRIG",
+        "CONT"
+      ],
+      "output_ports": [
+        "Latch"
+      ]
+    },
+    {
+      "name": "Threshold Comparator",
+      "type": "Comparator",
+      "description": "Compares THRES voltage to 2/3 VCC threshold",
+      "input_ports": [
+        "THRES",
+        "CONT"
+      ],
+      "output_ports": [
+        "Latch"
+      ]
+    },
+    {
+      "name": "Latch",
+      "type": "Flip-Flop",
+      "description": "Set by trigger comparator, reset by threshold comparator or RESET",
+      "input_ports": [
+        "Trigger Comparator",
+        "Threshold Comparator",
+        "RESET"
+      ],
+      "output_ports": [
+        "Output Drive Stage",
+        "Discharge Transistor"
+      ]
+    },
+    {
+      "name": "Output Drive Stage",
+      "type": "Output Buffer",
+      "description": "High current output capable of sinking/sourcing 200mA",
+      "input_ports": [
+        "Latch"
+      ],
+      "output_ports": [
+        "OUT"
+      ]
+    },
+    {
+      "name": "Discharge Transistor",
+      "type": "Open Collector Switch",
+      "description": "Provides low-impedance path to GND when output is low",
+      "input_ports": [
+        "Latch"
+      ],
+      "output_ports": [
+        "DISCH"
+      ]
+    }
+  ],
+  "electrical_parameters": [
+    {
+      "symbol": "VCC",
+      "name": "Supply voltage",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 18,
+      "unit": "V",
+      "test_conditions": "All voltage values are with respect to GND",
+      "page": 4,
+      "evidence": "VCC | Supply voltage | 18{MAX} | V",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "VI",
+      "name": "Input voltage",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "CONT, RESET, THRES, TRIG pins; All voltage values are with respect to GND",
+      "page": 4,
+      "evidence": "VI | Input voltage | CONT, RESET, THRES, TRIG | VCC | V",
+      "related_pins": [
+        "CONT",
+        "RESET",
+        "THRES",
+        "TRIG"
+      ]
+    },
+    {
+      "symbol": "IO",
+      "name": "Output current",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 225,
+      "unit": "mA",
+      "test_conditions": "",
+      "page": 4,
+      "evidence": "IO | Output current | \u00b1225{MAX} | mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "TJ",
+      "name": "Operating virtual junction temperature",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": "",
+      "page": 4,
+      "evidence": "TJ | Operating virtual junction temperature | 150{MAX} | \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "Tcase",
+      "name": "Case temperature for 60 seconds",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 260,
+      "unit": "\u00b0C",
+      "test_conditions": "FK package",
+      "page": 4,
+      "evidence": "Case temperature for 60 seconds | FK package | 260{MAX} | \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "Tlead",
+      "name": "Lead temperature 1.6mm (1/16 inch) from case",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 300,
+      "unit": "\u00b0C",
+      "test_conditions": "JG package, 60 seconds",
+      "page": 4,
+      "evidence": "Lead temperature 1.6mm (1/16 inch) from case | JG package, 60 seconds | 300{MAX} | \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "Tstg",
+      "name": "Storage temperature",
+      "category": "ABS_MAX",
+      "min": -65,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": "",
+      "page": 4,
+      "evidence": "Tstg | Storage temperature | \u201365{MIN} | 150{MAX} | \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge (HBM)",
+      "category": "ESD",
+      "min": null,
+      "typ": null,
+      "max": 500,
+      "unit": "V",
+      "test_conditions": "Human-body model (HBM), per ANSI/ESDA/JEDEC JS-001",
+      "page": 4,
+      "evidence": "Human-body model (HBM), per ANSI/ESDA/JEDEC JS-001 | \u00b1500{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge (CDM)",
+      "category": "ESD",
+      "min": null,
+      "typ": null,
+      "max": 1500,
+      "unit": "V",
+      "test_conditions": "Charged device model (CDM), per ANSI/ESDA/JEDEC JS-002",
+      "page": 4,
+      "evidence": "Charged device model (CDM), per ANSI/ESDA/JEDEC JS-002 | \u00b11500{MAX}",
+      "related_pins": []
+    },
+    {
+      "symbol": "VCC",
+      "name": "Supply voltage",
+      "category": "RECOMMENDED",
+      "min": 4.5,
+      "typ": null,
+      "max": 16,
+      "unit": "V",
+      "test_conditions": "NA555, NE555, SA555",
+      "page": 4,
+      "evidence": "NA555, NE555, SA555 | 4.5{MIN} | 16{MAX} | V",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "VCC",
+      "name": "Supply voltage",
+      "category": "RECOMMENDED",
+      "min": 4.5,
+      "typ": null,
+      "max": 18,
+      "unit": "V",
+      "test_conditions": "SE555",
+      "page": 4,
+      "evidence": "SE555 | 4.5{MIN} | 18{MAX} | V",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "IO",
+      "name": "Output current",
+      "category": "RECOMMENDED",
+      "min": null,
+      "typ": null,
+      "max": 200,
+      "unit": "mA",
+      "test_conditions": "",
+      "page": 4,
+      "evidence": "IO | Output current | \u00b1200{MAX} | mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating free-air temperature",
+      "category": "RECOMMENDED",
+      "min": -40,
+      "typ": null,
+      "max": 105,
+      "unit": "\u00b0C",
+      "test_conditions": "NA555",
+      "page": 4,
+      "evidence": "NA555 | \u201340{MIN} | 105{MAX} | \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating free-air temperature",
+      "category": "RECOMMENDED",
+      "min": 0,
+      "typ": null,
+      "max": 70,
+      "unit": "\u00b0C",
+      "test_conditions": "NE555",
+      "page": 4,
+      "evidence": "NE555 | 0{MIN} | 70{MAX} | \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating free-air temperature",
+      "category": "RECOMMENDED",
+      "min": -40,
+      "typ": null,
+      "max": 85,
+      "unit": "\u00b0C",
+      "test_conditions": "SA555",
+      "page": 4,
+      "evidence": "SA555 | \u201340{MIN} | 85{MAX} | \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating free-air temperature",
+      "category": "RECOMMENDED",
+      "min": -55,
+      "typ": null,
+      "max": 125,
+      "unit": "\u00b0C",
+      "test_conditions": "SE555",
+      "page": 4,
+      "evidence": "SE555 | \u201355{MIN} | 125{MAX} | \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 125.4,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package D (SOIC), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JA Junction-to-ambient thermal resistance 125.4",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 92.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package FK (LCCC), 20 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JA Junction-to-ambient thermal resistance 92.2",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 125.0,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package JG (CDIP), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JA Junction-to-ambient thermal resistance 125.0",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 98.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package P (PDIP), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JA Junction-to-ambient thermal resistance 98.5",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 124.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package PS (SO), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JA Junction-to-ambient thermal resistance 124.5",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 164.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package PW (TSSOP), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JA Junction-to-ambient thermal resistance 164.2",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 64.9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package D (SOIC), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) Junction-to-case (top) thermal resistance 64.9",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 67.6,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package FK (LCCC), 20 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) Junction-to-case (top) thermal resistance 67.6",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 73.3,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package JG (CDIP), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) Junction-to-case (top) thermal resistance 73.3",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 77.8,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package P (PDIP), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) Junction-to-case (top) thermal resistance 77.8",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 61.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package PS (SO), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) Junction-to-case (top) thermal resistance 61.2",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case (top) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 70.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package PW (TSSOP), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JC(top) Junction-to-case (top) thermal resistance 70.5",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 73.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package D (SOIC), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JB Junction-to-board thermal resistance 73.2",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 66.7,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package FK (LCCC), 20 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JB Junction-to-board thermal resistance 66.7",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 114.9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package JG (CDIP), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JB Junction-to-board thermal resistance 114.9",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 61.0,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package P (PDIP), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JB Junction-to-board thermal resistance 61.0",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 79.3,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package PS (SO), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JB Junction-to-board thermal resistance 79.3",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 104.8,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package PW (TSSOP), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JB Junction-to-board thermal resistance 104.8",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 14.3,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package D (SOIC), 8 PINS",
+      "page": 5,
+      "evidence": "\u03c8JT Junction-to-top characterization parameter 14.3",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 61.6,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package FK (LCCC), 20 PINS",
+      "page": 5,
+      "evidence": "\u03c8JT Junction-to-top characterization parameter 61.6",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 44.4,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package JG (CDIP), 8 PINS",
+      "page": 5,
+      "evidence": "\u03c8JT Junction-to-top characterization parameter 44.4",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 43.9,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package P (PDIP), 8 PINS",
+      "page": 5,
+      "evidence": "\u03c8JT Junction-to-top characterization parameter 43.9",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 16.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package PS (SO), 8 PINS",
+      "page": 5,
+      "evidence": "\u03c8JT Junction-to-top characterization parameter 16.5",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 8.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package PW (TSSOP), 8 PINS",
+      "page": 5,
+      "evidence": "\u03c8JT Junction-to-top characterization parameter 8.2",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 72.1,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package D (SOIC), 8 PINS",
+      "page": 5,
+      "evidence": "\u03c8JB Junction-to-board characterization parameter 72.1",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 66.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package FK (LCCC), 20 PINS",
+      "page": 5,
+      "evidence": "\u03c8JB Junction-to-board characterization parameter 66.5",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 106.6,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package JG (CDIP), 8 PINS",
+      "page": 5,
+      "evidence": "\u03c8JB Junction-to-board characterization parameter 106.6",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 60.3,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package P (PDIP), 8 PINS",
+      "page": 5,
+      "evidence": "\u03c8JB Junction-to-board characterization parameter 60.3",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 77.8,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package PS (SO), 8 PINS",
+      "page": 5,
+      "evidence": "\u03c8JB Junction-to-board characterization parameter 77.8",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 103.1,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package PW (TSSOP), 8 PINS",
+      "page": 5,
+      "evidence": "\u03c8JB Junction-to-board characterization parameter 103.1",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package D (SOIC), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JC(bot) Junction-to-case (bottom) thermal resistance N/A",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 14.2,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package FK (LCCC), 20 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JC(bot) Junction-to-case (bottom) thermal resistance 14.2",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 29.3,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package JG (CDIP), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JC(bot) Junction-to-case (bottom) thermal resistance 29.3",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package P (PDIP), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JC(bot) Junction-to-case (bottom) thermal resistance N/A",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package PS (SO), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JC(bot) Junction-to-case (bottom) thermal resistance N/A",
+      "related_pins": []
+    },
+    {
+      "symbol": "R\u03b8JC(bot)",
+      "name": "Junction-to-case (bottom) thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "Package PW (TSSOP), 8 PINS",
+      "page": 5,
+      "evidence": "R\u03b8JC(bot) Junction-to-case (bottom) thermal resistance N/A",
+      "related_pins": []
+    },
+    {
+      "symbol": "Vth",
+      "name": "THRES voltage level",
+      "category": "ELECTRICAL",
+      "min": 8.8,
+      "typ": 10,
+      "max": 11.2,
+      "unit": "V",
+      "test_conditions": "NA555, NE555, SA555, VCC = 15V, TA = 25\u00b0C",
+      "page": 5,
+      "evidence": "THRES voltage level NA555 NE555 SA555 8.8 10 11.2 V",
+      "related_pins": [
+        "THRES"
+      ]
+    },
+    {
+      "symbol": "Vth",
+      "name": "THRES voltage level",
+      "category": "ELECTRICAL",
+      "min": 9.4,
+      "typ": 10,
+      "max": 10.6,
+      "unit": "V",
+      "test_conditions": "SE555, VCC = 15V, TA = 25\u00b0C",
+      "page": 5,
+      "evidence": "THRES voltage level SE555 9.4 10 10.6 V",
+      "related_pins": [
+        "THRES"
+      ]
+    },
+    {
+      "symbol": "Vth",
+      "name": "THRES voltage level",
+      "category": "ELECTRICAL",
+      "min": 2.4,
+      "typ": 3.3,
+      "max": 4.2,
+      "unit": "V",
+      "test_conditions": "NA555, NE555, SA555, VCC = 5V, TA = 25\u00b0C",
+      "page": 5,
+      "evidence": "THRES voltage level NA555 NE555 SA555 2.4 3.3 4.2 V",
+      "related_pins": [
+        "THRES"
+      ]
+    },
+    {
+      "symbol": "Vth",
+      "name": "THRES voltage level",
+      "category": "ELECTRICAL",
+      "min": 2.7,
+      "typ": 3.3,
+      "max": 4,
+      "unit": "V",
+      "test_conditions": "SE555, VCC = 5V, TA = 25\u00b0C",
+      "page": 5,
+      "evidence": "THRES voltage level SE555 2.7 3.3 4 V",
+      "related_pins": [
+        "THRES"
+      ]
+    },
+    {
+      "symbol": "Ith",
+      "name": "THRES current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 30,
+      "max": 250,
+      "unit": "nA",
+      "test_conditions": "TA = 25\u00b0C",
+      "page": 5,
+      "evidence": "THRES current 30 250 nA",
+      "related_pins": [
+        "THRES"
+      ]
+    },
+    {
+      "symbol": "Vtrig",
+      "name": "TRIG voltage level",
+      "category": "ELECTRICAL",
+      "min": 4.5,
+      "typ": 5,
+      "max": 5.6,
+      "unit": "V",
+      "test_conditions": "NA555, NE555, SA555, VCC = 15V, TA = 25\u00b0C",
+      "page": 5,
+      "evidence": "TRIG voltage level NA555 NE555 SA555 4.5 5 5.6 V",
+      "related_pins": [
+        "TRIG"
+      ]
+    },
+    {
+      "symbol": "Vtrig",
+      "name": "TRIG voltage level",
+      "category": "ELECTRICAL",
+      "min": 4.8,
+      "typ": 5,
+      "max": 5.2,
+      "unit": "V",
+      "test_conditions": "SE555, VCC = 15V, TA = 25\u00b0C",
+      "page": 5,
+      "evidence": "TRIG voltage level SE555 4.8 5 5.2 V",
+      "related_pins": [
+        "TRIG"
+      ]
+    },
+    {
+      "symbol": "Vtrig",
+      "name": "TRIG voltage level",
+      "category": "ELECTRICAL",
+      "min": 3,
+      "typ": null,
+      "max": 6,
+      "unit": "V",
+      "test_conditions": "SE555, VCC = 15V, TA = \u201355\u00b0C to +125\u00b0C",
+      "page": 5,
+      "evidence": "TRIG voltage level SE555 3 6 V",
+      "related_pins": [
+        "TRIG"
+      ]
+    },
+    {
+      "symbol": "Vtrig",
+      "name": "TRIG voltage level",
+      "category": "ELECTRICAL",
+      "min": 1.1,
+      "typ": 1.67,
+      "max": 2.2,
+      "unit": "V",
+      "test_conditions": "NA555, NE555, SA555, VCC = 5V, TA = 25\u00b0C",
+      "page": 5,
+      "evidence": "TRIG voltage level NA555 NE555 SA555 1.1 1.67 2.2 V",
+      "related_pins": [
+        "TRIG"
+      ]
+    },
+    {
+      "symbol": "Vtrig",
+      "name": "TRIG voltage level",
+      "category": "ELECTRICAL",
+      "min": 1.45,
+      "typ": 1.67,
+      "max": 1.9,
+      "unit": "V",
+      "test_conditions": "SE555, VCC = 5V, TA = 25\u00b0C",
+      "page": 5,
+      "evidence": "TRIG voltage level SE555 1.45 1.67 1.9 V",
+      "related_pins": [
+        "TRIG"
+      ]
+    },
+    {
+      "symbol": "Vtrig",
+      "name": "TRIG voltage level",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 1.9,
+      "unit": "V",
+      "test_conditions": "SE555, VCC = 5V, TA = \u201355\u00b0C to +125\u00b0C",
+      "page": 5,
+      "evidence": "TRIG voltage level SE555 1.9 V",
+      "related_pins": [
+        "TRIG"
+      ]
+    },
+    {
+      "symbol": "Itrig",
+      "name": "TRIG current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.5,
+      "max": 2,
+      "unit": "\u03bcA",
+      "test_conditions": "NA555, NE555, SA555, TRIG at 0V, TA = 25\u00b0C",
+      "page": 5,
+      "evidence": "TRIG current NA555 NE555 SA555 0.5 2 \u03bcA",
+      "related_pins": [
+        "TRIG"
+      ]
+    },
+    {
+      "symbol": "Itrig",
+      "name": "TRIG current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.5,
+      "max": 0.9,
+      "unit": "\u03bcA",
+      "test_conditions": "SE555, TRIG at 0V, TA = 25\u00b0C",
+      "page": 5,
+      "evidence": "TRIG current SE555 0.5 0.9 \u03bcA",
+      "related_pins": [
+        "TRIG"
+      ]
+    },
+    {
+      "symbol": "Vrst",
+      "name": "RESET voltage level",
+      "category": "ELECTRICAL",
+      "min": 0.3,
+      "typ": 0.7,
+      "max": 1,
+      "unit": "V",
+      "test_conditions": "NA555, NE555, SA555, TA = 25\u00b0C",
+      "page": 5,
+      "evidence": "RESET voltage level 0.3 0.7 1 V",
+      "related_pins": [
+        "RESET"
+      ]
+    },
+    {
+      "symbol": "Vrst",
+      "name": "RESET voltage level",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 1.1,
+      "unit": "V",
+      "test_conditions": "SE555, TA = \u201355\u00b0C to +125\u00b0C",
+      "page": 5,
+      "evidence": "RESET voltage level SE555 1.1 V",
+      "related_pins": [
+        "RESET"
+      ]
+    },
+    {
+      "symbol": "Irst",
+      "name": "RESET current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": 0.4,
+      "unit": "mA",
+      "test_conditions": "NA555, NE555, SA555, RESET at VCC, TA = 25\u00b0C",
+      "page": 5,
+      "evidence": "RESET current RESET at VCC 0.1 0.4 mA",
+      "related_pins": [
+        "RESET"
+      ]
+    },
+    {
+      "symbol": "Irst",
+      "name": "RESET current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -0.4,
+      "max": -1.5,
+      "unit": "mA",
+      "test_conditions": "NA555, NE555, SA555, RESET at 0V, TA = 25\u00b0C",
+      "page": 5,
+      "evidence": "RESET"
+    },
+    {
+      "symbol": "V_CONT",
+      "name": "CONT voltage (open circuit)",
+      "category": "ELECTRICAL",
+      "min": 9,
+      "typ": 10,
+      "max": 11,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, TA = 25\u00b0C, NA555/NE555/SA555",
+      "page": 6,
+      "evidence": "NA555, NE555, SA555 | 9{MIN} | 10{TYP} | 11{MAX} VCC = 15V",
+      "related_pins": [
+        "CONT"
+      ]
+    },
+    {
+      "symbol": "V_CONT",
+      "name": "CONT voltage (open circuit)",
+      "category": "ELECTRICAL",
+      "min": 9.6,
+      "typ": 10,
+      "max": 10.4,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, TA = 25\u00b0C, SE555",
+      "page": 6,
+      "evidence": "SE555 | 9.6{MIN} | 10{TYP} | 10.4{MAX} VCC = 15V",
+      "related_pins": [
+        "CONT"
+      ]
+    },
+    {
+      "symbol": "V_CONT",
+      "name": "CONT voltage (open circuit)",
+      "category": "ELECTRICAL",
+      "min": 9.6,
+      "typ": null,
+      "max": 10.4,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, TA = \u201355\u00b0C to +125\u00b0C, SE555",
+      "page": 6,
+      "evidence": "VCC = 15V, TA = \u201355\u00b0C to +125\u00b0C SE555 | 9.6{MIN} | 10.4{MAX}",
+      "related_pins": [
+        "CONT"
+      ]
+    },
+    {
+      "symbol": "V_CONT",
+      "name": "CONT voltage (open circuit)",
+      "category": "ELECTRICAL",
+      "min": 2.6,
+      "typ": 3.3,
+      "max": 4,
+      "unit": "V",
+      "test_conditions": "VCC = 5V, TA = 25\u00b0C, NA555/NE555/SA555",
+      "page": 6,
+      "evidence": "NA555, NE555, SA555 | 2.6{MIN} | 3.3{TYP} | 4{MAX} VCC = 5V",
+      "related_pins": [
+        "CONT"
+      ]
+    },
+    {
+      "symbol": "V_CONT",
+      "name": "CONT voltage (open circuit)",
+      "category": "ELECTRICAL",
+      "min": 2.9,
+      "typ": 3.3,
+      "max": 3.8,
+      "unit": "V",
+      "test_conditions": "VCC = 5V, TA = 25\u00b0C, SE555",
+      "page": 6,
+      "evidence": "SE555 | 2.9{MIN} | 3.3{TYP} | 3.8{MAX} VCC = 5V",
+      "related_pins": [
+        "CONT"
+      ]
+    },
+    {
+      "symbol": "V_CONT",
+      "name": "CONT voltage (open circuit)",
+      "category": "ELECTRICAL",
+      "min": 2.9,
+      "typ": null,
+      "max": 3.8,
+      "unit": "V",
+      "test_conditions": "VCC = 5V, TA = \u201355\u00b0C to +125\u00b0C, SE555",
+      "page": 6,
+      "evidence": "VCC = 5V, TA = \u201355\u00b0C to +125\u00b0C | SE555 | 2.9{MIN} | 3.8{MAX}",
+      "related_pins": [
+        "CONT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": 0.25,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, IOL = 10mA, TA = 25\u00b0C, NA555/NE555/SA555",
+      "page": 6,
+      "evidence": "NA555, NE555, SA555 | 0.1{TYP} | 0.25{MAX} VCC = 15V, IOL = 10mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": 0.15,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, IOL = 10mA, TA = 25\u00b0C, SE555",
+      "page": 6,
+      "evidence": "SE555 | 0.1{TYP} | 0.15{MAX} VCC = 15V, IOL = 10mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 0.2,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, IOL = 10mA, TA = \u201355\u00b0C to +125\u00b0C, SE555",
+      "page": 6,
+      "evidence": "SE555 | 0.2{MAX} TA = \u201355\u00b0C to +125\u00b0C",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.4,
+      "max": 0.75,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, IOL = 50mA, TA = 25\u00b0C, NA555/NE555/SA555",
+      "page": 6,
+      "evidence": "NA555, NE555, SA555 | 0.4{TYP} | 0.75{MAX} VCC = 15V, IOL = 50mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.4,
+      "max": 0.5,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, IOL = 50mA, TA = 25\u00b0C, SE555",
+      "page": 6,
+      "evidence": "SE555 | 0.4{TYP} | 0.5{MAX} VCC = 15V, IOL = 50mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 1,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, IOL = 50mA, TA = \u201355\u00b0C to +125\u00b0C, SE555",
+      "page": 6,
+      "evidence": "SE555 | 1{MAX} TA = \u201355\u00b0C to +125\u00b0C",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 2,
+      "max": 2.5,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, IOL = 100mA, TA = 25\u00b0C, NA555/NE555/SA555",
+      "page": 6,
+      "evidence": "NA555, NE555, SA555 | 2{TYP} | 2.5{MAX} VCC = 15V, IOL = 100mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 2,
+      "max": 2.2,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, IOL = 100mA, TA = 25\u00b0C, SE555",
+      "page": 6,
+      "evidence": "SE555 | 2{TYP} | 2.2{MAX} VCC = 15V, IOL = 100mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 2.7,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, IOL = 100mA, TA = \u201355\u00b0C to +125\u00b0C, SE555",
+      "page": 6,
+      "evidence": "SE555 | 2.7{MAX} TA = \u201355\u00b0C to +125\u00b0C",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 2.5,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, IOL = 200mA, TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "VCC = 15V, IOL = 200mA | 2.5{TYP}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 0.35,
+      "unit": "V",
+      "test_conditions": "VCC = 5V, IOL = 3.5mA, TA = \u201355\u00b0C to +125\u00b0C, SE555",
+      "page": 6,
+      "evidence": "VCC = 5V, IOL = 3.5mA, SE555 | 0.35{MAX} TA = \u201355\u00b0C to +125\u00b0C",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": 0.35,
+      "unit": "V",
+      "test_conditions": "VCC = 5V, IOL = 5mA, TA = 25\u00b0C, NA555/NE555/SA555",
+      "page": 6,
+      "evidence": "NA555, NE555, SA555 | 0.1{TYP} | 0.35{MAX} VCC = 5V, IOL = 5mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": 0.2,
+      "unit": "V",
+      "test_conditions": "VCC = 5V, IOL = 5mA, TA = 25\u00b0C, SE555",
+      "page": 6,
+      "evidence": "SE555 | 0.1{TYP} | 0.2{MAX} VCC = 5V, IOL = 5mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 0.8,
+      "unit": "V",
+      "test_conditions": "VCC = 5V, IOL = 5mA, TA = \u201355\u00b0C to +125\u00b0C, SE555",
+      "page": 6,
+      "evidence": "SE555 | 0.8{MAX} TA = \u201355\u00b0C to +125\u00b0C",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.15,
+      "max": 0.4,
+      "unit": "V",
+      "test_conditions": "VCC = 5V, IOL = 8mA, TA = 25\u00b0C, NA555/NE555/SA555",
+      "page": 6,
+      "evidence": "NA555, NE555, SA555 | 0.15{TYP} | 0.4{MAX} VCC = 5V, IOL = 8mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL",
+      "name": "Low-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.15,
+      "max": 0.25,
+      "unit": "V",
+      "test_conditions": "VCC = 5V, IOL = 8mA, TA = 25\u00b0C, SE555",
+      "page": 6,
+      "evidence": "SE555 | 0.15{TYP} | 0.25{MAX} VCC = 5V, IOL = 8mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOH",
+      "name": "High-level output voltage",
+      "category": "ELECTRICAL",
+      "min": 12.75,
+      "typ": 13.3,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, IOH = \u2013100mA, TA = 25\u00b0C, NA555/NE555/SA555",
+      "page": 6,
+      "evidence": "NA555, NE555, SA555 | 12.75{MIN} | 13.3{TYP} VCC = 15V, IOH = \u2013100mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOH",
+      "name": "High-level output voltage",
+      "category": "ELECTRICAL",
+      "min": 13,
+      "typ": 13.3,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, IOH = \u2013100mA, TA = 25\u00b0C, SE555",
+      "page": 6,
+      "evidence": "SE555 | 13{MIN} | 13.3{TYP} VCC = 15V, IOH = \u2013100mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOH",
+      "name": "High-level output voltage",
+      "category": "ELECTRICAL",
+      "min": 12,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, IOH = \u2013100mA, TA = \u201355\u00b0C to +125\u00b0C, SE555",
+      "page": 6,
+      "evidence": "SE555 | 12{MIN} TA = \u201355\u00b0C to +125\u00b0C",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOH",
+      "name": "High-level output voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 12.5,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VCC = 15V, IOH = \u2013200mA, TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "VCC = 15V, IOH = \u2013200mA | 12.5{TYP}",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOH",
+      "name": "High-level output voltage",
+      "category": "ELECTRICAL",
+      "min": 2.75,
+      "typ": 3.3,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VCC = 5V, IOH = \u2013100mA, TA = 25\u00b0C, NA555/NE555/SA555",
+      "page": 6,
+      "evidence": "NA555, NE555, SA555 | 2.75{MIN} | 3.3{TYP} VCC = 5V, IOH = \u2013100mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOH",
+      "name": "High-level output voltage",
+      "category": "ELECTRICAL",
+      "min": 3,
+      "typ": 3.3,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VCC = 5V, IOH = \u2013100mA, TA = 25\u00b0C, SE555",
+      "page": 6,
+      "evidence": "SE555 | 3{MIN} | 3.3{TYP} VCC = 5V, IOH = \u2013100mA",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOH",
+      "name": "High-level output voltage",
+      "category": "ELECTRICAL",
+      "min": 2,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VCC = 5V, IOH = \u2013100mA, TA = \u201355\u00b0C to +125\u00b0C, SE555",
+      "page": 6,
+      "evidence": "SE555 | 2{MIN} TA = \u201355\u00b0C to +125\u00b0C",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 10,
+      "max": 15,
+      "unit": "mA",
+      "test_conditions": "Output low, no load, VCC = 15V, TA = 25\u00b0C, NA555/NE555/SA555",
+      "page": 6,
+      "evidence": "NA555, NE555, SA555 | 10{TYP} | 15{MAX} Output low, no load, VCC = 15V",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 10,
+      "max": 12,
+      "unit": "mA",
+      "test_conditions": "Output low, no load, VCC = 15V, TA = 25\u00b0C, SE555",
+      "page": 6,
+      "evidence": "SE555 | 10{TYP} | 12{MAX} Output low, no load, VCC = 15V",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 3,
+      "max": 6,
+      "unit": "mA",
+      "test_conditions": "Output low, no load, VCC = 5V, TA = 25\u00b0C, NA555/NE555/SA555",
+      "page": 6,
+      "evidence": "NA555, NE555, SA555 | 3{TYP} | 6{MAX} Output low, no load, VCC = 5V",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 3,
+      "max": 5,
+      "unit": "mA",
+      "test_conditions": "Output low, no load, VCC = 5V, TA = 25\u00b0C, SE555",
+      "page": 6,
+      "evidence": "SE555 | 3{TYP} | 5{MAX} Output low, no load, VCC = 5V",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 9,
+      "max": 13,
+      "unit": "mA",
+      "test_conditions": "Output high, no load, VCC = 15V, TA = 25\u00b0C, NA555/NE555/SA555",
+      "page": 6,
+      "evidence": "NA555, NE555, SA555 | 9{TYP} | 13{MAX} Output high, no load, VCC = 15V",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 9,
+      "max": 10,
+      "unit": "mA",
+      "test_conditions": "Output high, no load, VCC = 15V, TA = 25\u00b0C, SE555",
+      "page": 6,
+      "evidence": "SE555 | 9{TYP} | 10{MAX} Output high, no load, VCC = 15V",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 2,
+      "max": 5,
+      "unit": "mA",
+      "test_conditions": "Output high, no load, VCC = 5V, TA = 25\u00b0C, NA555/NE555/SA555",
+      "page": 6,
+      "evidence": "NA555, NE555, SA555 | 2{TYP} | 5{MAX} Output high, no load, VCC = 5V",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 2,
+      "max": 4,
+      "unit": "mA",
+      "test_conditions": "Output high, no load, VCC = 5V, TA = 25\u00b0C, SE555",
+      "page": 6,
+      "evidence": "SE555 | 2{TYP} | 4{MAX} Output high, no load, VCC = 5V",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "",
+      "name": "Temperature coefficient of timing interval (monostable)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 50,
+      "max": null,
+      "unit": "ppm/\u00b0C",
+      "test_conditions": "VCC = 5V to 15V, TA = 25\u00b0C; NA555, NE555, SA555, TA = MIN to MAX; RA = 2k\u03a9 to 100k\u03a9, C = 0.1\u03bcF",
+      "page": 7,
+      "evidence": "NA555, NE555, SA555 TA = MIN to MAX 50{TYP}",
+      "related_pins": [
+        "OUT",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "",
+      "name": "Temperature coefficient of timing interval (monostable)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 30,
+      "max": 100,
+      "unit": "ppm/\u00b0C",
+      "test_conditions": "VCC = 5V to 15V, TA = 25\u00b0C; SE555, TA = MIN to MAX; RA = 2k\u03a9 to 100k\u03a9, C = 0.1\u03bcF",
+      "page": 7,
+      "evidence": "SE555 30 100",
+      "related_pins": [
+        "OUT",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "",
+      "name": "Temperature coefficient of timing interval (astable)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 150,
+      "max": null,
+      "unit": "ppm/\u00b0C",
+      "test_conditions": "VCC = 5V to 15V, TA = 25\u00b0C; NA555, NE555, SA555, TA = MIN to MAX; RA = 1k\u03a9 to 100k\u03a9, C = 0.1\u03bcF",
+      "page": 7,
+      "evidence": "NA555, NE555, SA555 TA = MIN to MAX 150",
+      "related_pins": [
+        "OUT",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "",
+      "name": "Temperature coefficient of timing interval (astable)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 90,
+      "max": null,
+      "unit": "ppm/\u00b0C",
+      "test_conditions": "VCC = 5V to 15V, TA = 25\u00b0C; SE555, TA = MIN to MAX; RA = 1k\u03a9 to 100k\u03a9, C = 0.1\u03bcF",
+      "page": 7,
+      "evidence": "SE555 90",
+      "related_pins": [
+        "OUT",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "",
+      "name": "Supply-voltage sensitivity of timing interval (monostable)",
+      "category": "ELECTRICAL",
+      "min": 0.1,
+      "typ": null,
+      "max": 0.5,
+      "unit": "%/V",
+      "test_conditions": "VCC = 5V to 15V, TA = 25\u00b0C; NA555, NE555, SA555; RA = 2k\u03a9 to 100k\u03a9, C = 0.1\u03bcF",
+      "page": 7,
+      "evidence": "NA555, NE555, SA555 0.1 0.5",
+      "related_pins": [
+        "OUT",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "",
+      "name": "Supply-voltage sensitivity of timing interval (monostable)",
+      "category": "ELECTRICAL",
+      "min": 0.05,
+      "typ": null,
+      "max": 0.2,
+      "unit": "%/V",
+      "test_conditions": "VCC = 5V to 15V, TA = 25\u00b0C; SE555; RA = 2k\u03a9 to 100k\u03a9, C = 0.1\u03bcF",
+      "page": 7,
+      "evidence": "SE555 0.05 0.2",
+      "related_pins": [
+        "OUT",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "",
+      "name": "Supply-voltage sensitivity of timing interval (astable)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.3,
+      "max": null,
+      "unit": "%/V",
+      "test_conditions": "VCC = 5V to 15V, TA = 25\u00b0C; NA555, NE555, SA555; RA = 1k\u03a9 to 100k\u03a9, C = 0.1\u03bcF",
+      "page": 7,
+      "evidence": "NA555, NE555, SA555 0.3",
+      "related_pins": [
+        "OUT",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "",
+      "name": "Supply-voltage sensitivity of timing interval (astable)",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.15,
+      "max": null,
+      "unit": "%/V",
+      "test_conditions": "VCC = 5V to 15V, TA = 25\u00b0C; SE555; RA = 1k\u03a9 to 100k\u03a9, C = 0.1\u03bcF",
+      "page": 7,
+      "evidence": "SE555 0.15",
+      "related_pins": [
+        "OUT",
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "tr",
+      "name": "Output-pulse rise time",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 100,
+      "max": 300,
+      "unit": "ns",
+      "test_conditions": "VCC = 5V to 15V, TA = 25\u00b0C; NA555, NE555, SA555; CL = 15pF, 20% to 80%",
+      "page": 7,
+      "evidence": "NA555, NE555, SA555 100 300 ns",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "tr",
+      "name": "Output-pulse rise time",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 100,
+      "max": 200,
+      "unit": "ns",
+      "test_conditions": "VCC = 5V to 15V, TA = 25\u00b0C; SE555; CL = 15pF, 20% to 80%",
+      "page": 7,
+      "evidence": "SE555 100 200 ns",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "tf",
+      "name": "Output-pulse fall time",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 100,
+      "max": 300,
+      "unit": "ns",
+      "test_conditions": "VCC = 5V to 15V, TA = 25\u00b0C; NA555, NE555, SA555; CL = 15pF, 80% to 20%",
+      "page": 7,
+      "evidence": "NA555, NE555, SA555 100 300 ns",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "tf",
+      "name": "Output-pulse fall time",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 100,
+      "max": 200,
+      "unit": "ns",
+      "test_conditions": "VCC = 5V to 15V, TA = 25\u00b0C; SE555; CL = 15pF, 80% to 20%",
+      "page": 7,
+      "evidence": "SE555 100 200 ns",
+      "related_pins": [
+        "OUT"
+      ]
+    }
+  ],
+  "provenance": {
+    "pin_pages": [
+      1,
+      3
+    ],
+    "spec_pages": [
+      4,
+      5,
+      6,
+      7
+    ],
+    "func_pages": [
+      10,
+      11
+    ],
+    "failed_spec_pages": [],
+    "source_file": "ne555.pdf"
+  }
+}

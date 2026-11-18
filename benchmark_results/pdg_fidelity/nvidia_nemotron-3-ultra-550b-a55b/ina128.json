@@ -1,0 +1,502 @@
+{
+  "ic": "ina128",
+  "model": "nvidia/nemotron-3-ultra-550b-a55b",
+  "llm_seconds": 165.4,
+  "llm_calls": [
+    {
+      "ts": 1792585610.970219,
+      "tag": "hkg_specs_p4",
+      "provider": "nim",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 12.8,
+      "total_s": 12.8,
+      "completion_tokens": 945,
+      "prompt_tokens": null,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792585612.094479,
+      "tag": "hkg_pins",
+      "provider": "nim",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 24.33,
+      "total_s": 24.33,
+      "completion_tokens": 1155,
+      "prompt_tokens": null,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792585670.1612573,
+      "tag": "hkg_specs_p6",
+      "provider": "nim",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 58.0,
+      "total_s": 58.01,
+      "completion_tokens": 1891,
+      "prompt_tokens": null,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792585671.562118,
+      "tag": "hkg_specs_p5",
+      "provider": "nim",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 60.57,
+      "total_s": 60.59,
+      "completion_tokens": 3331,
+      "prompt_tokens": null,
+      "finish_reason": "length"
+    },
+    {
+      "ts": 1792585671.643685,
+      "tag": "hkg_specs_p20",
+      "provider": "nim",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 1.42,
+      "total_s": 1.44,
+      "completion_tokens": 7,
+      "prompt_tokens": null,
+      "finish_reason": "stop"
+    },
+    {
+      "ts": 1792585711.7966259,
+      "tag": "hkg_specs_p7",
+      "provider": "nim",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 80.43,
+      "total_s": 80.43,
+      "completion_tokens": 3549,
+      "prompt_tokens": null,
+      "finish_reason": "length"
+    },
+    {
+      "ts": 1792585745.8074825,
+      "tag": "hkg_specs_p8",
+      "provider": "nim",
+      "model": "nvidia/nemotron-3-ultra-550b-a55b",
+      "attempt": 1,
+      "status": "ok",
+      "ttft_s": 86.4,
+      "total_s": 86.4,
+      "completion_tokens": 1256,
+      "prompt_tokens": null,
+      "finish_reason": "stop"
+    }
+  ],
+  "groundtruth_comparison": {
+    "ic": "INA128",
+    "score": 89.6,
+    "pins": {
+      "precision": 1.0,
+      "recall": 0.875,
+      "f1": 0.933,
+      "tp": 7,
+      "pred": 7,
+      "gt": 8,
+      "role_accuracy": 1.0,
+      "missing": [
+        "RG8"
+      ],
+      "extra": [],
+      "role_errors": []
+    },
+    "dependencies_full_pdg": {
+      "precision": 0.6,
+      "recall": 0.857,
+      "f1": 0.706,
+      "tp": 6,
+      "pred": 10,
+      "gt": 7,
+      "missing": [
+        [
+          "RG8",
+          "VO"
+        ]
+      ],
+      "spurious": [
+        [
+          "V+",
+          "RG1"
+        ],
+        [
+          "V-",
+          "RG1"
+        ],
+        [
+          "VIN+",
+          "RG1"
+        ],
+        [
+          "VIN-",
+          "RG1"
+        ]
+      ]
+    },
+    "dependencies_datasheet_only": {
+      "precision": 1.0,
+      "recall": 0.857,
+      "f1": 0.923,
+      "tp": 6,
+      "pred": 6,
+      "gt": 7
+    },
+    "schedule_consistency": {
+      "ratio": 1.0,
+      "checked": 6,
+      "violations": []
+    },
+    "spec_rows": {
+      "precision": 0.558,
+      "recall": 0.893,
+      "f1": 0.687,
+      "tp": 67,
+      "pred": 120,
+      "gt": 75
+    },
+    "electrical_spec_recall": 0.855,
+    "spec_value_accuracy": 0.918,
+    "spec_category_accuracy": 1.0,
+    "category_confusion": {
+      "ABS_MAX": {
+        "ABS_MAX": 8
+      },
+      "ESD": {
+        "ESD": 2
+      },
+      "RECOMMENDED": {
+        "RECOMMENDED": 4
+      },
+      "THERMAL": {
+        "THERMAL": 6
+      },
+      "ELECTRICAL": {
+        "ELECTRICAL": 47
+      }
+    },
+    "nonelectrical_leak_rate": 0.0,
+    "timing": {
+      "recall": 0.9,
+      "items": [
+        {
+          "symbol": "BW",
+          "found": true
+        },
+        {
+          "symbol": "BW",
+          "found": true
+        },
+        {
+          "symbol": "BW",
+          "found": true
+        },
+        {
+          "symbol": "BW",
+          "found": true
+        },
+        {
+          "symbol": "SR",
+          "found": false
+        },
+        {
+          "symbol": "SR",
+          "found": true
+        },
+        {
+          "symbol": "tS",
+          "found": true
+        },
+        {
+          "symbol": "tS",
+          "found": true
+        },
+        {
+          "symbol": "tS",
+          "found": true
+        },
+        {
+          "symbol": "",
+          "found": true
+        }
+      ],
+      "pdg_timing_specs": {
+        "turnon_settling_us": 80.0,
+        "propagation_delay_us": null,
+        "slew_rate_v_us": 7.0,
+        "bandwidth_mhz": 0.004,
+        "sources": {
+          "bandwidth_mhz": "BW",
+          "slew_rate_v_us": "SR",
+          "turnon_settling_us": "tS"
+        }
+      },
+      "pdg_uses_datasheet_delay": true
+    }
+  },
+  "provenance_audit": {
+    "mode": "groundtruth_free_provenance",
+    "fidelity_score_pct": 86.9,
+    "status": "TRUSTWORTHY",
+    "pin_provenance": {
+      "pins": 7,
+      "grounded": 7,
+      "grounded_pct": 100.0,
+      "ungrounded": []
+    },
+    "spec_provenance": {
+      "specs": 120,
+      "grounded": 112,
+      "grounded_pct": 93.3,
+      "by_category": {
+        "ABS_MAX": 8,
+        "ESD": 2,
+        "RECOMMENDED": 4,
+        "THERMAL": 10,
+        "ELECTRICAL": 96
+      },
+      "ungrounded_examples": [
+        {
+          "symbol": "IOUT",
+          "category": "ABS_MAX",
+          "page": 4,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "VCM",
+          "category": "RECOMMENDED",
+          "page": 4,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "VCM",
+          "category": "ELECTRICAL",
+          "page": 5,
+          "numbers_on_page": false,
+          "evidence_overlap": 0.0,
+          "grounded": false
+        },
+        {
+          "symbol": "G",
+          "category": "ELECTRICAL",
+          "page": 7,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "VO_POS",
+          "category": "ELECTRICAL",
+          "page": 7,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "VO_NEG",
+          "category": "ELECTRICAL",
+          "page": 7,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "ISC",
+          "category": "ELECTRICAL",
+          "page": 7,
+          "numbers_on_page": false,
+          "evidence_overlap": 1.0,
+          "grounded": false
+        },
+        {
+          "symbol": "ISC",
+          "category": "ELECTRICAL",
+          "page": 7,
+          "numbers_on_page": false,
+          "evidence_overlap": 0.0,
+          "grounded": false
+        }
+      ]
+    },
+    "topological_validity": {
+      "is_dag": true,
+      "unreachable_outputs": [],
+      "isolated_pins": []
+    },
+    "edge_origin": {
+      "edges": 14,
+      "datasheet_derived": 6,
+      "rule_injected": 8,
+      "datasheet_pct": 42.9
+    },
+    "timing_grounding": {
+      "delay_grounded_edges": 10,
+      "grounded_pct": 71.4,
+      "timing_specs_used": {
+        "turnon_settling_us": 80.0,
+        "propagation_delay_us": null,
+        "slew_rate_v_us": 7.0,
+        "bandwidth_mhz": 0.004,
+        "sources": {
+          "bandwidth_mhz": "BW",
+          "slew_rate_v_us": "SR",
+          "turnon_settling_us": "tS"
+        }
+      }
+    },
+    "edge_details": [
+      {
+        "from": "RG",
+        "to": "VO",
+        "delay_us": 80.0,
+        "type": "FEEDBACK_LOOP",
+        "origin": "datasheet",
+        "delay_source": "tS",
+        "condition": "Gain resistor between pins 1 and 8 sets gain from 1 to 10,000"
+      },
+      {
+        "from": "VIN_N",
+        "to": "VO",
+        "delay_us": 80.0,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": "tS",
+        "condition": "Negative differential input signal"
+      },
+      {
+        "from": "VIN_N",
+        "to": "RG",
+        "delay_us": 80.0,
+        "type": "SIGNAL_PATH",
+        "origin": "rule",
+        "delay_source": "tS",
+        "condition": "Turn-on settling (80us)"
+      },
+      {
+        "from": "VIN_P",
+        "to": "VO",
+        "delay_us": 80.0,
+        "type": "SIGNAL_PATH",
+        "origin": "datasheet",
+        "delay_source": "tS",
+        "condition": "Positive differential input signal"
+      },
+      {
+        "from": "VIN_P",
+        "to": "RG",
+        "delay_us": 80.0,
+        "type": "SIGNAL_PATH",
+        "origin": "rule",
+        "delay_source": "tS",
+        "condition": "Turn-on settling (80us)"
+      },
+      {
+        "from": "V_N",
+        "to": "VO",
+        "delay_us": 80.0,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": "tS",
+        "condition": "Negative supply must be within \u00b12.25V to \u00b118V"
+      },
+      {
+        "from": "V_N",
+        "to": "REF",
+        "delay_us": 20.0,
+        "type": "POWER_TO_BIAS",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Bias stabilization after supply ramp"
+      },
+      {
+        "from": "V_N",
+        "to": "RG",
+        "delay_us": 80.0,
+        "type": "POWER_FEED",
+        "origin": "rule",
+        "delay_source": "tS",
+        "condition": "Turn-on settling (80us)"
+      },
+      {
+        "from": "REF",
+        "to": "VO",
+        "delay_us": 80.0,
+        "type": "FEEDBACK_LOOP",
+        "origin": "datasheet",
+        "delay_source": "tS",
+        "condition": "Reference input must be driven by low impedance or connected to ground"
+      },
+      {
+        "from": "REF",
+        "to": "VIN_N",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "REF",
+        "to": "VIN_P",
+        "delay_us": 2.0,
+        "type": "TO_SIGNAL",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Operating point stabilization"
+      },
+      {
+        "from": "V_P",
+        "to": "VO",
+        "delay_us": 80.0,
+        "type": "POWER_FEED",
+        "origin": "datasheet",
+        "delay_source": "tS",
+        "condition": "Positive supply must be within \u00b12.25V to \u00b118V"
+      },
+      {
+        "from": "V_P",
+        "to": "REF",
+        "delay_us": 20.0,
+        "type": "POWER_TO_BIAS",
+        "origin": "rule",
+        "delay_source": null,
+        "condition": "Bias stabilization after supply ramp"
+      },
+      {
+        "from": "V_P",
+        "to": "RG",
+        "delay_us": 80.0,
+        "type": "POWER_FEED",
+        "origin": "rule",
+        "delay_source": "tS",
+        "condition": "Turn-on settling (80us)"
+      }
+    ],
+    "pin_coverage": {
+      "coverage_pct": 100.0
+    }
+  },
+  "schedule_us": {
+    "V_N": 0.0,
+    "V_P": 0.0,
+    "REF": 20.0,
+    "VIN_N": 22.0,
+    "VIN_P": 22.0,
+    "RG": 102.0,
+    "VO": 182.0
+  }
+}

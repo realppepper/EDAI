@@ -1,0 +1,79 @@
+* LM358B Dual Operational Amplifier Macro-model
+* Synthesized for LTspice and standard SPICE compatibility
+
+
+* Top-level Dual Op-Amp LM358B Subcircuit
+
+* --- Globally Hoisted Models for Multi-Subcircuit Visibility ---
+.model S_MODEL VSWITCH (RON=10 ROFF=1G VTH=0.5 VH=0.1)
+.model D_PROT D (IS=1e-15 N=1 RS=10)
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.5 PHI=0.8 LAMBDA=0.01)
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u GAMMA=0.4 PHI=0.7 LAMBDA=0.01)
+
+.subckt LM358B_SINGLE INP INN OUT VEE VCC
+* Quiescent Current Bias Generator (approx 300uA per channel)
+G_IQ VCC VEE VALUE = { 300u + 5u * (V(VCC, VEE) - 5) }
+
+* Input Bias & Offset Current
+I_IBP VCC INP 10n
+I_IBN VCC INN 10.5n
+R_INP INP VEE 4G
+R_INN INN VEE 4G
+R_DIFF INP INN 10MEG
+
+* Input Common Mode & Offset Voltage
+V_OS INP INP_INT DC 0.3m
+
+* Input Differential Transconductance Stage
+* gm = 150.8 uS, Cc = 20 pF -> GBW = gm / (2 * pi * Cc) = 1.2 MHz
+* Differential voltage clipping for slew rate = 0.5 V/us: Imax = Cc * SR = 20p * 0.5e6 = 10 uA
+* Vin_linear = 10uA / 150.8uS = 66.3 mV
+B_GM 0 INT1 I = { limit(150.8u * (V(INP_INT) - V(INN)), -10u, 10u) }
+R_INT1 INT1 0 1MEG
+C_INT1 INT1 0 20p
+
+* CMRR and PSRR Injection into intermediate node
+E_CMRR INT1_C 0 VALUE = { 0.5 * (V(INP_INT) + V(INN) - 2 * V(VEE)) * 31.6u }
+E_PSRR INT1_P 0 VALUE = { (V(VCC) - V(VEE) - 5.0) * 10u }
+
+* High Gain Second Stage
+* Total DC Open-loop Gain AOL = 140 V/mV = 140,000 (approx 103 dB)
+* Stage 1 gain = gm * R_INT1 = 150.8u * 1MEG = 150.8
+* Stage 2 gain = 140000 / 150.8 = 928.4
+E_GAIN INT2 0 VALUE = { 928.4 * (V(INT1) - V(INT1_C) - V(INT1_P)) }
+R_INT2 INT2 INT2_FILT 1k
+C_INT2 INT2_FILT 0 0.5p
+
+* Intermediate Voltage Reference (Mid-Supply tracking)
+E_VMID VMID 0 VALUE = { 0.5 * (V(VCC) + V(VEE)) }
+
+* Output Voltage Swing Limits (LM358B characteristics)
+* High Rail: VCC - 1.4V
+* Low Rail: VEE + 5mV (with weak pulldown), up to VEE + 0.75V when sinking 1mA
+B_VOUT_DRV VDRV 0 VALUE = { limit(V(VMID) + V(INT2_FILT), V(VEE) + 0.005, V(VCC) - 1.4) }
+
+* Output Current Limiting Stage (40mA source, -30mA sink)
+* Output resistance Ro = 50 ohms DC, high frequency impedance via Ro_ac
+B_IOUT OUT_INT 0 VALUE = { V(VDRV) }
+R_OUT_SENSE OUT_INT OUT_NODE 50
+
+* Output Short-Circuit Current Clamping
+B_CLAMPH VCC OUT_NODE I = { max(0, (V(OUT_INT) - V(OUT_NODE))/50 - 0.040) }
+.ic V(OUT_NODE)=0
+B_CLAMPL OUT_NODE VEE I = { max(0, (0 - V(OUT_INT))/50 - 0.030) }
+
+* Output Pin Impedance & AC Characteristics
+R_OUT OUT_NODE OUT 1.0
+C_OUT OUT VEE 20p
+R_DUMMY OUT VEE 10MEG
+
+.ends LM358B_SINGLE
+
+.subckt LM358B OUT1 IN1 IN1_P V IN2_P IN2 OUT2 V_P
+* Channel 1 Instance
+X_U1 IN1_P IN1 OUT1 V V_P LM358B_SINGLE
+
+* Channel 2 Instance
+X_U2 IN2_P IN2 OUT2 V V_P LM358B_SINGLE
+
+.ends LM358B

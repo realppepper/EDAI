@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autonomous Analog Circuit Design & Verification Visualizer</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --background: #090d16;
+      --card: #0f172a;
+      --card-hover: #1e293b;
+      --border: #334155;
+      --foreground: #f8fafc;
+      --muted-foreground: #94a3b8;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.25);
+      --accent: #818cf8;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    .glow-card {
+      box-shadow: 0 0 20px -5px rgba(56, 189, 248, 0.15);
+    }
+    .node-pin {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .node-pin:hover {
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 8px var(--primary));
+    }
+    .tab-btn.active {
+      background-color: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border-bottom: 2px solid #38bdf8;
+    }
+    .code-box {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+  </style>
+</head>
+<body class="min-h-screen custom-scrollbar p-3 md:p-6 antialiased">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- Top Navigation & IC Selector Header -->
+    <header class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-lg flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-sky-500/10 border border-sky-500/30 rounded-xl text-sky-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+              Autonomous Analog Circuit Verifier
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Neuro-Symbolic Engine</span>
+            </h1>
+            <p class="text-xs md:text-sm text-[var(--muted-foreground)] mt-0.5">
+              Deep Visual Inspection of First-Principles AI Circuit Synthesis, PDG Scheduling & Formal Verification
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- IC Selector Pills / Dropdown -->
+      <div class="flex items-center gap-2 w-full lg:w-auto">
+        <label for="icSelect" class="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider shrink-0">Selected IC:</label>
+        <select id="icSelect" onchange="switchIC(this.value)" class="w-full lg:w-72 bg-slate-900 border border-[var(--border)] text-sky-300 font-semibold text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-sky-400">
+        </select>
+      </div>
+    </header>
+
+    <!-- Sub-Process Master Flowchart (Breadcrumb Pipeline) -->
+    <section class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-lg">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xs uppercase tracking-wider font-bold text-sky-400 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Execution Sub-Process Architecture (6 Core Phases)
+        </h2>
+        <span id="pipelineStatusBadge" class="text-xs font-medium px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300 border border-sky-500/30">Active</span>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+        <!-- Phase 1 -->
+        <div onclick="selectTab('tab-hkg')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 1</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">PDF to HKG</div>
+          <div class="text-[11px] text-slate-400 mt-1">Layout, tables & knowledge graph</div>
+        </div>
+
+        <!-- Phase 2 -->
+        <div onclick="selectTab('tab-pdg')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 2</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">PDG & Schedule</div>
+          <div class="text-[11px] text-slate-400 mt-1">Causal DAG & delay &sigma;(p)</div>
+        </div>
+
+        <!-- Phase 3 -->
+        <div onclick="selectTab('tab-synthesis')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 3</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">AI Netlist Synthesis</div>
+          <div class="text-[11px] text-slate-400 mt-1">Transistor sizing & topology</div>
+        </div>
+
+        <!-- Phase 4 -->
+        <div onclick="selectTab('tab-testbenches')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 4</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">Testbench Deck</div>
+          <div class="text-[11px] text-slate-400 mt-1">.op / .tran / .ac auto decks</div>
+        </div>
+
+        <!-- Phase 5 -->
+        <div onclick="selectTab('tab-verification')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 5</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">LTspice & SymPy</div>
+          <div class="text-[11px] text-slate-400 mt-1">Batch sim & formal interval</div>
+        </div>
+
+        <!-- Phase 6 -->
+        <div onclick="selectTab('tab-healing')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 6</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">Self-Healing Loop</div>
+          <div class="text-[11px] text-slate-400 mt-1">Shortfall &rarr; Re-synthesis</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Metrics Cards for Current Selected IC -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">TARGET IC / CATEGORY</div>
+        <div id="statIcName" class="text-lg md:text-xl font-bold text-white mt-1 truncate">--</div>
+        <div id="statCategory" class="text-xs text-sky-400 truncate mt-0.5">--</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">EXTRACTED SPECS</div>
+        <div id="statSpecCount" class="text-lg md:text-xl font-bold text-white mt-1">--</div>
+        <div id="statPinCount" class="text-xs text-indigo-400 mt-0.5">-- Pins Identified</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">CLOSED-LOOP ITERATIONS</div>
+        <div id="statLoopCount" class="text-lg md:text-xl font-bold text-white mt-1">--</div>
+        <div id="statLoopStatus" class="text-xs text-amber-400 mt-0.5">2 Iterations Executed</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">FINAL VERIFICATION PASS</div>
+        <div id="statPassRate" class="text-lg md:text-xl font-bold text-emerald-400 mt-1">--%</div>
+        <div id="statPassRateSub" class="text-xs text-slate-400 mt-0.5">LTspice Neuro-Symbolic</div>
+      </div>
+    </section>
+
+    <!-- Interactive Navigation Tabs -->
+    <div class="border-b border-slate-700 flex overflow-x-auto gap-2 text-sm font-medium">
+      <button onclick="selectTab('tab-overview')" id="btn-tab-overview" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all active">
+        1. Sub-Process Flowchart
+      </button>
+      <button onclick="selectTab('tab-pdg')" id="btn-tab-pdg" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        2. Port Dependency Graph & Timing
+      </button>
+      <button onclick="selectTab('tab-synthesis')" id="btn-tab-synthesis" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        3. AI Netlist & Transistor Sizing
+      </button>
+      <button onclick="selectTab('tab-testbenches')" id="btn-tab-testbenches" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        4. Testbench Decks
+      </button>
+      <button onclick="selectTab('tab-verification')" id="btn-tab-verification" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        5. SymPy Oracle & Measurements
+      </button>
+      <button onclick="selectTab('tab-healing')" id="btn-tab-healing" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        6. Closed-Loop Diagnostics
+      </button>
+      <button onclick="selectTab('tab-hkg')" id="btn-tab-hkg" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        7. Knowledge Graph (HKG)
+      </button>
+    </div>
+
+    <!-- TAB 1: SUB-PROCESS FLOWCHART & SYSTEM ARCHITECTURE -->
+    <div id="tab-overview" class="tab-content space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+          Detailed Internal Sub-Processes Execution Flow
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-6">
+          Every analog IC undergoes an automated, six-phase end-to-end synthesis and verification cycle without template hardcoding.
+        </p>
+
+        <!-- SVG Flowchart -->
+        <div class="overflow-x-auto py-2">
+          <svg class="w-full min-w-[850px] h-64 text-slate-200" viewBox="0 0 950 260">
+            <defs>
+              <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0284c7"/>
+                <stop offset="100%" stop-color="#0369a1"/>
+              </linearGradient>
+              <linearGradient id="grad-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6366f1"/>
+                <stop offset="100%" stop-color="#4f46e5"/>
+              </linearGradient>
+              <linearGradient id="grad-emerald" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#059669"/>
+                <stop offset="100%" stop-color="#047857"/>
+              </linearGradient>
+              <linearGradient id="grad-amber" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#d97706"/>
+                <stop offset="100%" stop-color="#b45309"/>
+              </linearGradient>
+              <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+              </marker>
+              <marker id="arrow-feedback" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b"/>
+              </marker>
+            </defs>
+
+            <!-- Box 1: PDF to HKG -->
+            <rect x="20" y="40" width="130" height="90" rx="12" fill="url(#grad-blue)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="85" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">1. PDF Parsing</text>
+            <text x="85" y="90" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Layout & Tables</text>
+            <text x="85" y="105" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; HKG Graph</text>
+
+            <line x1="150" y1="85" x2="180" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 2: PDG Scheduling -->
+            <rect x="180" y="40" width="130" height="90" rx="12" fill="url(#grad-blue)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="245" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">2. PDG Engine</text>
+            <text x="245" y="90" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Pin Dependency</text>
+            <text x="245" y="105" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Delay Schedule &sigma;(p)</text>
+
+            <line x1="310" y1="85" x2="340" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 3: LLM Circuit Synthesis -->
+            <rect x="340" y="40" width="140" height="90" rx="12" fill="url(#grad-purple)" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="410" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">3. AI Synthesis</text>
+            <text x="410" y="90" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; First-Principles</text>
+            <text x="410" y="105" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; Transistor Sizing</text>
+
+            <line x1="480" y1="85" x2="510" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 4: Testbench Deck Synthesis -->
+            <rect x="510" y="40" width="130" height="90" rx="12" fill="url(#grad-purple)" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="575" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">4. Testbench Decks</text>
+            <text x="575" y="90" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; .op / .tran / .ac</text>
+            <text x="575" y="105" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; Auto .meas Bindings</text>
+
+            <line x1="640" y1="85" x2="670" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 5: LTspice & SymPy -->
+            <rect x="670" y="40" width="130" height="90" rx="12" fill="url(#grad-emerald)" stroke="#34d399" stroke-width="1.5"/>
+            <text x="735" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">5. Verification</text>
+            <text x="735" y="90" text-anchor="middle" font-size="10" fill="#d1fae5">&bull; Headless LTspice</text>
+            <text x="735" y="105" text-anchor="middle" font-size="10" fill="#d1fae5">&bull; SymPy Oracles</text>
+
+            <line x1="800" y1="85" x2="830" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 6: Decision / Self-Healing -->
+            <polygon points="885,55 935,85 885,115 835,85" fill="url(#grad-amber)" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="885" y="82" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">All</text>
+            <text x="885" y="95" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">Pass?</text>
+
+            <!-- Feedback Loop Arrow back to Phase 3 -->
+            <path d="M 885 115 L 885 180 L 410 180 L 410 135" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrow-feedback)"/>
+            <text x="645" y="195" text-anchor="middle" font-size="10" font-weight="bold" fill="#fbbf24">Self-Healing Iteration Feedback (Shortfalls &amp; Diagnosis)</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PORT DEPENDENCY GRAPH (PDG) & INTERACTIVE TIMING -->
+    <div id="tab-pdg" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              Interactive Port Dependency Graph (PDG) &amp; Startup Timeline
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+              Topological activation sequence derived from physical pin roles (Power &rarr; Bias &rarr; Signal &rarr; Output)
+            </p>
+          </div>
+
+          <!-- Playback Controls -->
+          <div class="flex items-center gap-3 bg-slate-900 border border-slate-700 px-4 py-2 rounded-xl">
+            <button onclick="toggleTimelinePlay()" id="btnPlayPause" class="text-sky-400 hover:text-sky-300 font-bold text-xs flex items-center gap-1.5">
+              <svg id="playIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg>
+              <span>Play Sequence</span>
+            </button>
+            <input type="range" id="timeSlider" min="0" max="10" step="0.5" value="0" oninput="updateTimelineTime(parseFloat(this.value))" class="w-36 accent-sky-400 cursor-pointer">
+            <span id="timeDisplay" class="text-xs font-mono font-bold text-sky-300 min-w-[55px] text-right">0.0 &mu;s</span>
+          </div>
+        </div>
+
+        <!-- Dynamic PDG SVG Container -->
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 overflow-x-auto min-h-[320px] flex items-center justify-center">
+          <svg id="pdgSvg" class="w-full max-w-4xl h-72 text-slate-200" viewBox="0 0 800 280">
+            <!-- Rendered dynamically by renderPDG() -->
+          </svg>
+        </div>
+
+        <!-- Schedule Table -->
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="text-slate-400 bg-slate-900/60 uppercase text-[11px] border-b border-slate-800">
+              <tr>
+                <th class="px-3 py-2">Pin Name</th>
+                <th class="px-3 py-2">Physical Role</th>
+                <th class="px-3 py-2">Direction</th>
+                <th class="px-3 py-2">Settling Delay &sigma;(p)</th>
+                <th class="px-3 py-2">Status at Current Time</th>
+              </tr>
+            </thead>
+            <tbody id="pdgTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: AI NETLIST SYNTHESIS & ARCHITECTURE -->
+    <div id="tab-synthesis" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+          First-Principles Transistor Netlist Synthesis &amp; Sizing Rationale
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          LLM-generated SPICE netlist without hardcoded circuit templates. Compare Loop 1 (initial synthesis) vs Loop 2 (autonomous refinement).
+        </p>
+
+        <!-- Loop Selector for Netlist -->
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-xs text-slate-400 font-semibold uppercase">View Netlist:</span>
+          <button onclick="switchNetlistIteration(1)" id="btnNetlistIter1" class="px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold">Iteration 1</button>
+          <button onclick="switchNetlistIteration(2)" id="btnNetlistIter2" class="px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold">Iteration 2</button>
+        </div>
+
+        <!-- Architecture Rationale Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 mb-4">
+          <h4 class="text-xs uppercase font-bold text-sky-400 mb-1">Architecture Rationale &amp; Block Topology</h4>
+          <p id="architectureSummaryText" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line"></p>
+        </div>
+
+        <!-- Netlist Code Box -->
+        <div class="relative bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span id="netlistFilename" class="font-mono text-sky-300">circuit.cir</span>
+            <span>SPICE Dialect: LTspice</span>
+          </div>
+          <pre id="netlistCodePre" class="p-4 text-xs font-mono text-slate-300 overflow-x-auto max-h-96 custom-scrollbar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: TESTBENCH DECKS -->
+    <div id="tab-testbenches" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+          Synthesized Multi-Domain Testbenches
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          Automated SPICE testbenches for DC Operating Point (.op), Dynamic Transient (.tran), and AC Frequency Sweeps (.ac) aligned with PDG schedule.
+        </p>
+
+        <div class="flex items-center gap-2 mb-4" id="tbDeckButtons">
+          <!-- Dynamically filled with testbench buttons -->
+        </div>
+
+        <div class="relative bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span id="currentTbName" class="font-mono text-purple-300">tb_dc_op.cir</span>
+            <span>Analysis Mode: Automated .meas</span>
+          </div>
+          <pre id="tbCodePre" class="p-4 text-xs font-mono text-slate-300 overflow-x-auto max-h-96 custom-scrollbar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: SYMPY ORACLE VERIFICATION & MEASUREMENTS -->
+    <div id="tab-verification" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              Neuro-Symbolic Specification Matrix &amp; Oracle Interval Audit
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+              Datasheet specifications formally bounded by SymPy interval algebra &amp; evaluated against LTspice measurements.
+            </p>
+          </div>
+
+          <!-- Filter Search -->
+          <div class="flex items-center gap-2 w-full md:w-auto">
+            <input type="text" id="specSearchInput" oninput="filterSpecs(this.value)" placeholder="Search parameter (e.g. VCC, Gain)..." class="text-xs bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-slate-200 focus:outline-none focus:border-sky-400 w-full md:w-56">
+          </div>
+        </div>
+
+        <!-- Spec Table -->
+        <div class="overflow-x-auto max-h-[460px] custom-scrollbar border border-slate-800 rounded-xl">
+          <table class="w-full text-xs text-left">
+            <thead class="sticky top-0 text-slate-300 bg-slate-900 uppercase text-[11px] border-b border-slate-800 shadow">
+              <tr>
+                <th class="px-3 py-2.5">Parameter Symbol</th>
+                <th class="px-3 py-2.5">Min Limit</th>
+                <th class="px-3 py-2.5">Typ Target</th>
+                <th class="px-3 py-2.5">Max Limit</th>
+                <th class="px-3 py-2.5">Unit</th>
+                <th class="px-3 py-2.5">Measured in Sim</th>
+                <th class="px-3 py-2.5">SymPy Status</th>
+              </tr>
+            </thead>
+            <tbody id="specTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: CLOSED-LOOP DIAGNOSTICS & REFINEMENT -->
+    <div id="tab-healing" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+          Closed-Loop Refinement History &amp; Shortfall Analysis
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-6">
+          Step-by-step diagnostic breakdown showing what fell short in each loop iteration and what improvements were applied.
+        </p>
+
+        <div id="diagnosticsContainer" class="space-y-6">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 7: HARDWARE KNOWLEDGE GRAPH (HKG) -->
+    <div id="tab-hkg" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+          Hardware Knowledge Graph (HKG) Topology
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          Hierarchical document entity graph extracted from PDF text, layout blocks, and electrical tables.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h4 class="text-xs font-bold uppercase text-sky-400 mb-2">Device Metadata</h4>
+            <div id="hkgDeviceMetadata" class="text-xs text-slate-300 space-y-1.5"></div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h4 class="text-xs font-bold uppercase text-indigo-400 mb-2">Pin Definitions &amp; Roles</h4>
+            <div id="hkgPinList" class="text-xs text-slate-300 max-h-48 overflow-y-auto custom-scrollbar space-y-1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Embedded Benchmark Data -->
+  <script>
+    const BENCHMARK_DATA = [{"id": "OPA2134", "folder_name": "OPA2134", "summary": {"part_name": "OPAx134", "subckt_name": "OPAX134", "pass_rate_percent": 0.0, "spec_count": 15, "iterations": [{"iteration": 1, "netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\OPA2134\\OPAX134_iter1.cir", "pass_rate_percent": 0.0, "passed_specs": 0, "failed_specs": 0, "unmeasured_specs": 9, "passed_symbols": [], "simulation_errors": [], "shortfalls": ["Param 'VS' violated: Parameter 'VS' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Input voltage' violated: Parameter 'Input voltage' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Input current' violated: Parameter 'Input current' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'ISC' violated: Parameter 'ISC' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'TA' violated: Parameter 'TA' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'TJ' violated: Parameter 'TJ' was not observed in simulation measurements. (Measured: Unobserved)"], "improvements": ["Initial first-principles topology and Level-1 parameter sizing synthesized from scratch."], "architecture_summary": "The OPAx134 is designed as a high-performance audio operational amplifier, emphasizing low distortion, low noise, and a true FET input stage. The architecture chosen reflects these requirements, focusing on a differential FET input stage, a high-gain voltage amplifier stage (VAS), and a robust class AB output stage. Frequency compensation is critical for stability and is implemented using a Miller compensation scheme. The dual and quad versions imply independent channels, so the netlist will focus on a single channel, with the understanding that multiple instances would be used for multi-channel devices.\n\n**1. Input Stage (Differential FET Input):**\n   - **Topology:** A differential pair using N-channel JFETs (or large W/L NMOS devices configured for low noise and high input impedance) is chosen for the input stage. This provides the \"true FET input\" characteristic, offering very high input impedance and low input bias current, crucial for audio applications.\n   - **Cascode:** Input cascode circuitry is mentioned in the datasheet for excellent common-mode rejection and maintaining low input bias current. This is implemented by adding common-gate transistors above the differential pair, effectively shielding the input FETs from large drain-source voltage variations, thus reducing the Early effect and improving CMRR.\n   - **Current Source:** A constant current source biases the differential pair. This ensures consistent transconductance and gain, and contributes to high CMRR.\n   - **Sizing:**\n     - JFETs (or large W/L NMOS): Large W/L ratios are used to minimize noise (1/f noise and thermal noise) and maximize transconductance (gm) for high open-loop gain. For a typical audio op-amp, W/L ratios in the range of 1000/1 to 5000/1 might be used for input FETs to achieve low noise.\n     - Cascode transistors: Sized to handle the current from the differential pair and provide sufficient voltage headroom.\n     - Current source: Designed to provide a few tens of microamperes to hundreds of microamperes, balancing quiescent current consumption with noise performance and slew rate.\n\n**2. Voltage Amplifier Stage (VAS):**\n   - **Topology:** A common-emitter (or common-source for MOSFETs) amplifier with an active load (current mirror) is used. This stage provides the majority of the open-loop voltage gain.\n   - **Active Load:** A current mirror acts as a high-impedance load, maximizing the gain of the VAS.\n   - **Sizing:**\n     - Transistors: Sized to provide high gain and sufficient current drive for the compensation capacitor.\n     - Current mirror: Designed to accurately reflect the current from the input stage.\n\n**3. Output Stage (Class AB):**\n   - **Topology:** A complementary push-pull (Class AB) output stage is employed to provide high output current drive capability and low output impedance. This stage typically consists of NPN and PNP (or NMOS and PMOS) emitter/source followers.\n   - **Bias Network:** A Vbe multiplier (or diode string) is used to set the quiescent current in the output stage, minimizing crossover distortion while keeping power consumption reasonable.\n   - **Output Swing:** The datasheet specifies a wide output swing (within 1V of the rails). This implies careful design of the output stage to minimize voltage drops across the output transistors and their drivers. This might involve using Darlington pairs or compound pairs for higher current gain and lower saturation voltages, or using rail-to-rail output stages (though the \"within 1V\" suggests it's not strictly rail-to-rail). For this design, a standard complementary emitter follower with appropriate biasing will be used, aiming for the 1V headroom.\n   - **Short-Circuit Protection:** Current limiting resistors or active current limiting circuits are typically included to protect the output stage from excessive current during short-circuit conditions. For simplicity in this model, current limiting resistors will be used.\n   - **Sizing:**\n     - Output transistors: Large devices (high W/L for MOSFETs, large emitter area for BJTs) are used to handle high output currents and dissipate power.\n     - Driver transistors: Sized to provide sufficient base current to the output transistors.\n     - Bias network: Resistors and diodes/transistors are chosen to set the quiescent current (e.g., 1-10mA) in the output stage.\n\n**4. Frequency Compensation:**\n   - **Topology:** Miller compensation is the most common and effective method for stabilizing op-amps. A capacitor (Cc) is placed between the output of the VAS and its input (or the input of the second stage). This creates a dominant pole, ensuring stability.\n   - **Sizing:** The compensation capacitor (Cc) is chosen to set the unity-gain bandwidth (GBW) and phase margin. For audio applications, a GBW of several MHz is typical. A Cc value in the range of 10pF to 50pF is common. The datasheet mentions unity-gain stability, which is a direct result of proper compensation.\n\n**5. Bias Network:**\n   - A stable current reference (e.g., a bandgap reference or a simple resistor-diode/transistor current source) is used to generate the bias currents for the input stage, VAS, and output stage. This ensures consistent performance across temperature and supply voltage variations.\n\n**6. ESD Protection:**\n   - The datasheet mentions ESD ratings. While not explicitly modeled with complex protection structures in a functional SPICE netlist, it's understood that real devices would have input/output clamping diodes to the supply rails. For this model, simple diodes to V+ and V- will be included at the inputs.\n\n**Component Sizing Analytical Approach:**\n\n*   **Input Stage (JFETs/NMOS):**\n    *   Assume target input bias current (IB) is very low (pA range for JFETs).\n    *   Assume target input noise voltage (e_n) is low (e.g., 5 nV/\u221aHz).\n    *   Transconductance (gm) for noise: `gm = 2 * ID / (Vgs - Vth)`. For low noise, `gm` should be high, implying large `ID` and/or low `(Vgs - Vth)`.\n    *   For JFETs, `gm = 2 * sqrt(IDSS * ID) / |Vp|`.\n    *   W/L for NMOS: `gm = sqrt(2 * mu_n * Cox * (W/L) * ID)`. To achieve high `gm` for low noise, `W/L` will be large.\n    *   Input capacitance: Large `W/L` also means higher input capacitance, which needs to be considered for high-frequency performance.\n    *   Cascode transistors: Sized to ensure sufficient voltage headroom for the input FETs.\n\n*   **Current Mirror (Input Stage Bias):**\n    *   Set reference current `I_ref` (e.g., 100uA).\n    *   Mirror ratio `(W/L)_mirror / (W/L)_ref` determines the output current.\n\n*   **Voltage Amplifier Stage (VAS):**\n    *   Gain: `A_VAS = gm_VAS * R_load_VAS`. `R_load_VAS` is the output impedance of the active load.\n    *   Slew Rate (SR): `SR = I_VAS / Cc`. `I_VAS` is the current available to charge/discharge `Cc`. For audio, SR of 10-20 V/us is good. If `Cc` is 20pF and `SR` is 15V/us, then `I_VAS = 15V/us * 20pF = 300uA`.\n    *   Transistors sized to provide `I_VAS` and high `gm`.\n\n*   **Frequency Compensation (Cc):**\n    *   Unity Gain Bandwidth (GBW): `GBW = gm_input / (2 * pi * Cc)`.\n    *   For a target GBW (e.g., 10 MHz) and `gm_input` (e.g., 1mA/V), `Cc = gm_input / (2 * pi * GBW) = 1mA/V / (2 * pi * 10MHz) = 15.9 pF`.\n\n*   **Output Stage (Class AB):**\n    *   Quiescent current (IQ): Set by the Vbe multiplier. Typically 1-10mA to minimize crossover distortion.\n    *   Output current (I_out_max): Determined by the size of the output transistors and the available current from the drivers. The datasheet implies high output drive.\n    *   Output resistance: Low, typically a few ohms or less.\n    *   Current limiting resistors: `R_limit = V_sense / I_limit`. If `V_sense` is 0.7V (Vbe drop) and `I_limit` is 50mA, `R_limit = 14 Ohms`.\n\n*   **Power Supply Rejection Ratio (PSRR):**\n    *   Achieved through careful design of current sources and differential stages. Cascoding helps.\n\n**Startup Sequence Implementation:**\nThe `PORT DEPENDENCY SCHEDULE` is handled by using behavioral voltage sources (`B_VCC`, `B_VEE`) that ramp up the supply voltages at the specified times. The input and output pins are then connected to the internal circuitry after the supplies are stable, using switches or behavioral sources that become active. For a typical SPICE model, the internal circuitry is always connected, and the \"activation\" refers to when the external signals are applied or when the device is considered fully operational. The netlist will reflect the power supply ramp-up, and the internal components will be continuously connected. The NC pins are simply left unconnected internally.\n\n**Dual/Quad Channel Implementation:**\nThe provided pinout includes pins for a single channel (NC, _IN, _IN, V-, NC, OUT, V+, NC) and then pins for dual channels (OUT_A, _IN_A, _IN_A, V-, _IN_B, _IN_B, OUT_B, V+). This suggests a single subcircuit definition that can represent either a single, dual, or quad device by connecting the appropriate pins. For simplicity and to meet the \"single channel\" focus of the internal architecture, the netlist will primarily model one channel, with the understanding that the dual/quad versions would instantiate this core channel multiple times, sharing only the power supply pins. The subcircuit definition will include all specified pins, but the internal implementation will focus on one functional amplifier. The NC pins will be left floating internally.\n\nThe design will use standard BJT and MOSFET models. For the FET input, NMOS transistors will be used, configured to mimic JFET behavior for high input impedance and low noise.\n\n```\n* Model Parameters (example values, would be tuned for specific performance)\n.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u LAMBDA=0.01 TOX=10n PB=0.8 MJ=0.5 MJSW=0.3)\n.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u LAMBDA=0.02 TOX=10n PB=0.8 MJ=0.5 MJSW=0.3)\n.model NPN NPN (IS=10f BF=200 VAF=100 IKF=0.1 NE=1.5 RB=10 RC=1 RE=0.1 CJE=1p CJC=0.5p TF=0.3n TR=6n)\n.model PNP PNP (IS=10f BF=100 VAF=50 IKF=0.05 NE=1.5 RB=20 RC=2 RE=0.2 CJE=2p CJC=1p TF=0.6n TR=12n)\n.model D D (IS=10f RS=1 N=1.0 TT=10n CJO=1p)\n```\nThese models will be used to construct the circuit. The W/L ratios and component values will be chosen to meet the specified electrical characteristics, particularly focusing on input impedance, output swing, and stability.", "design_rationale": {"summary": "The OPAx134 is designed as a high-performance audio operational amplifier, emphasizing low distortion, low noise, and a true FET input stage. The architecture chosen reflects these requirements, focusing on a differential FET input stage, a high-gain voltage amplifier stage (VAS), and a robust class AB output stage. Frequency compensation is critical for stability and is implemented using a Miller compensation scheme. The dual and quad versions imply independent channels, so the netlist will focus on a single channel, with the understanding that multiple instances would be used for multi-channel devices.\n\n**1. Input Stage (Differential FET Input):**\n   - **Topology:** A differential pair using N-channel JFETs (or large W/L NMOS devices configured for low noise and high input impedance) is chosen for the input stage. This provides the \"true FET input\" characteristic, offering very high input impedance and low input bias current, crucial for audio applications.\n   - **Cascode:** Input cascode circuitry is mentioned in the datasheet for excellent common-mode rejection and maintaining low input bias current. This is implemented by adding common-gate transistors above the differential pair, effectively shielding the input FETs from large drain-source voltage variations, thus reducing the Early effect and improving CMRR.\n   - **Current Source:** A constant current source biases the differential pair. This ensures consistent transconductance and gain, and contributes to high CMRR.\n   - **Sizing:**\n     - JFETs (or large W/L NMOS): Large W/L ratios are used to minimize noise (1/f noise and thermal noise) and maximize transconductance (gm) for high open-loop gain. For a typical audio op-amp, W/L ratios in the range of 1000/1 to 5000/1 might be used for input FETs to achieve low noise.\n     - Cascode transistors: Sized to handle the current from the differential pair and provide sufficient voltage headroom.\n     - Current source: Designed to provide a few tens of microamperes to hundreds of microamperes, balancing quiescent current consumption with noise performance and slew rate.\n\n**2. Voltage Amplifier Stage (VAS):**\n   - **Topology:** A common-emitter (or common-source for MOSFETs) amplifier with an active load (current mirror) is used. This stage provides the majority of the open-loop voltage gain.\n   - **Active Load:** A current mirror acts as a high-impedance load, maximizing the gain of the VAS.\n   - **Sizing:**\n     - Transistors: Sized to provide high gain and sufficient current drive for the compensation capacitor.\n     - Current mirror: Designed to accurately reflect the current from the input stage.\n\n**3. Output Stage (Class AB):**\n   - **Topology:** A complementary push-pull (Class AB) output stage is employed to provide high output current drive capability and low output impedance. This stage typically consists of NPN and PNP (or NMOS and PMOS) emitter/source followers.\n   - **Bias Network:** A Vbe multiplier (or diode string) is used to set the quiescent current in the output stage, minimizing crossover distortion while keeping power consumption reasonable.\n   - **Output Swing:** The datasheet specifies a wide output swing (within 1V of the rails). This implies careful design of the output stage to minimize voltage drops across the output transistors and their drivers. This might involve using Darlington pairs or compound pairs for higher current gain and lower saturation voltages, or using rail-to-rail output stages (though the \"within 1V\" suggests it's not strictly rail-to-rail). For this design, a standard complementary emitter follower with appropriate biasing will be used, aiming for the 1V headroom.\n   - **Short-Circuit Protection:** Current limiting resistors or active current limiting circuits are typically included to protect the output stage from excessive current during short-circuit conditions. For simplicity in this model, current limiting resistors will be used.\n   - **Sizing:**\n     - Output transistors: Large devices (high W/L for MOSFETs, large emitter area for BJTs) are used to handle high output currents and dissipate power.\n     - Driver transistors: Sized to provide sufficient base current to the output transistors.\n     - Bias network: Resistors and diodes/transistors are chosen to set the quiescent current (e.g., 1-10mA) in the output stage.\n\n**4. Frequency Compensation:**\n   - **Topology:** Miller compensation is the most common and effective method for stabilizing op-amps. A capacitor (Cc) is placed between the output of the VAS and its input (or the input of the second stage). This creates a dominant pole, ensuring stability.\n   - **Sizing:** The compensation capacitor (Cc) is chosen to set the unity-gain bandwidth (GBW) and phase margin. For audio applications, a GBW of several MHz is typical. A Cc value in the range of 10pF to 50pF is common. The datasheet mentions unity-gain stability, which is a direct result of proper compensation.\n\n**5. Bias Network:**\n   - A stable current reference (e.g., a bandgap reference or a simple resistor-diode/transistor current source) is used to generate the bias currents for the input stage, VAS, and output stage. This ensures consistent performance across temperature and supply voltage variations.\n\n**6. ESD Protection:**\n   - The datasheet mentions ESD ratings. While not explicitly modeled with complex protection structures in a functional SPICE netlist, it's understood that real devices would have input/output clamping diodes to the supply rails. For this model, simple diodes to V+ and V- will be included at the inputs.\n\n**Component Sizing Analytical Approach:**\n\n*   **Input Stage (JFETs/NMOS):**\n    *   Assume target input bias current (IB) is very low (pA range for JFETs).\n    *   Assume target input noise voltage (e_n) is low (e.g., 5 nV/\u221aHz).\n    *   Transconductance (gm) for noise: `gm = 2 * ID / (Vgs - Vth)`. For low noise, `gm` should be high, implying large `ID` and/or low `(Vgs - Vth)`.\n    *   For JFETs, `gm = 2 * sqrt(IDSS * ID) / |Vp|`.\n    *   W/L for NMOS: `gm = sqrt(2 * mu_n * Cox * (W/L) * ID)`. To achieve high `gm` for low noise, `W/L` will be large.\n    *   Input capacitance: Large `W/L` also means higher input capacitance, which needs to be considered for high-frequency performance.\n    *   Cascode transistors: Sized to ensure sufficient voltage headroom for the input FETs.\n\n*   **Current Mirror (Input Stage Bias):**\n    *   Set reference current `I_ref` (e.g., 100uA).\n    *   Mirror ratio `(W/L)_mirror / (W/L)_ref` determines the output current.\n\n*   **Voltage Amplifier Stage (VAS):**\n    *   Gain: `A_VAS = gm_VAS * R_load_VAS`. `R_load_VAS` is the output impedance of the active load.\n    *   Slew Rate (SR): `SR = I_VAS / Cc`. `I_VAS` is the current available to charge/discharge `Cc`. For audio, SR of 10-20 V/us is good. If `Cc` is 20pF and `SR` is 15V/us, then `I_VAS = 15V/us * 20pF = 300uA`.\n    *   Transistors sized to provide `I_VAS` and high `gm`.\n\n*   **Frequency Compensation (Cc):**\n    *   Unity Gain Bandwidth (GBW): `GBW = gm_input / (2 * pi * Cc)`.\n    *   For a target GBW (e.g., 10 MHz) and `gm_input` (e.g., 1mA/V), `Cc = gm_input / (2 * pi * GBW) = 1mA/V / (2 * pi * 10MHz) = 15.9 pF`.\n\n*   **Output Stage (Class AB):**\n    *   Quiescent current (IQ): Set by the Vbe multiplier. Typically 1-10mA to minimize crossover distortion.\n    *   Output current (I_out_max): Determined by the size of the output transistors and the available current from the drivers. The datasheet implies high output drive.\n    *   Output resistance: Low, typically a few ohms or less.\n    *   Current limiting resistors: `R_limit = V_sense / I_limit`. If `V_sense` is 0.7V (Vbe drop) and `I_limit` is 50mA, `R_limit = 14 Ohms`.\n\n*   **Power Supply Rejection Ratio (PSRR):**\n    *   Achieved through careful design of current sources and differential stages. Cascoding helps.\n\n**Startup Sequence Implementation:**\nThe `PORT DEPENDENCY SCHEDULE` is handled by using behavioral voltage sources (`B_VCC`, `B_VEE`) that ramp up the supply voltages at the specified times. The input and output pins are then connected to the internal circuitry after the supplies are stable, using switches or behavioral sources that become active. For a typical SPICE model, the internal circuitry is always connected, and the \"activation\" refers to when the external signals are applied or when the device is considered fully operational. The netlist will reflect the power supply ramp-up, and the internal components will be continuously connected. The NC pins are simply left unconnected internally.\n\n**Dual/Quad Channel Implementation:**\nThe provided pinout includes pins for a single channel (NC, _IN, _IN, V-, NC, OUT, V+, NC) and then pins for dual channels (OUT_A, _IN_A, _IN_A, V-, _IN_B, _IN_B, OUT_B, V+). This suggests a single subcircuit definition that can represent either a single, dual, or quad device by connecting the appropriate pins. For simplicity and to meet the \"single channel\" focus of the internal architecture, the netlist will primarily model one channel, with the understanding that the dual/quad versions would instantiate this core channel multiple times, sharing only the power supply pins. The subcircuit definition will include all specified pins, but the internal implementation will focus on one functional amplifier. The NC pins will be left floating internally.\n\nThe design will use standard BJT and MOSFET models. For the FET input, NMOS transistors will be used, configured to mimic JFET behavior for high input impedance and low noise.\n\n```\n* Model Parameters (example values, would be tuned for specific performance)\n.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u LAMBDA=0.01 TOX=10n PB=0.8 MJ=0.5 MJSW=0.3)\n.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u LAMBDA=0.02 TOX=10n PB=0.8 MJ=0.5 MJSW=0.3)\n.model NPN NPN (IS=10f BF=200 VAF=100 IKF=0.1 NE=1.5 RB=10 RC=1 RE=0.1 CJE=1p CJC=0.5p TF=0.3n TR=6n)\n.model PNP PNP (IS=10f BF=100 VAF=50 IKF=0.05 NE=1.5 RB=20 RC=2 RE=0.2 CJE=2p CJC=1p TF=0.6n TR=12n)\n.model D D (IS=10f RS=1 N=1.0 TT=10n CJO=1p)\n```\nThese models will be used to construct the circuit. The W/L ratios and component values will be chosen to meet the specified electrical characteristics, particularly focusing on input impedance, output swing, and stability."}}, {"iteration": 2, "netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\OPA2134\\OPAX134_iter2.cir", "pass_rate_percent": 0.0, "passed_specs": 0, "failed_specs": 0, "unmeasured_specs": 9, "passed_symbols": [], "simulation_errors": [], "shortfalls": ["Param 'VS' violated: Parameter 'VS' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Input voltage' violated: Parameter 'Input voltage' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'Input current' violated: Parameter 'Input current' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'ISC' violated: Parameter 'ISC' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'TA' violated: Parameter 'TA' was not observed in simulation measurements. (Measured: Unobserved)", "Param 'TJ' violated: Parameter 'TJ' was not observed in simulation measurements. (Measured: Unobserved)"], "improvements": ["Topology refinement: The OPAx134 is a high-performance audio operational amplifier, characterized by its FET input stage, low distortion, low noise, and high out..."], "architecture_summary": "The OPAx134 is a high-performance audio operational amplifier, characterized by its FET input stage, low distortion, low noise, and high output drive capability. The architecture chosen for this SPICE netlist aims to capture these key features while adhering to the specified electrical characteristics and pinout.\n\n**Overall Architecture:**\nThe OPAx134 is modeled as a dual-channel operational amplifier (OPA2134/OPA4134) with a single-channel representation for the OPA134. The subcircuit header reflects the OPA4134 pinout, allowing for flexibility. The core architecture for each channel consists of:\n1.  **FET Input Stage:** A differential pair using JFETs (or large W/L PMOS for simplicity in a generic model) provides high input impedance and low input bias current. This stage is cascoded to improve common-mode rejection and maintain low input bias current over a wide input voltage range.\n2.  **Second Gain Stage:** A high-gain voltage amplifier stage, typically a differential pair with an active load, provides the majority of the open-loop gain.\n3.  **Output Stage:** A class AB output stage with push-pull configuration provides high output current drive and wide output swing. This stage is designed to swing within 1V of the rails.\n4.  **Bias Network:** A robust bias network generates stable reference currents for all stages, ensuring consistent performance across supply voltage and temperature variations.\n5.  **Frequency Compensation:** A dominant pole compensation capacitor is included to ensure unity-gain stability and prevent oscillations.\n\n**Component Sizing and Design Choices:**\n\n*   **Input Stage (JFET/PMOS Differential Pair):**\n    *   To achieve the \"true FET input stage\" characteristic, PMOS transistors with large W/L ratios are used for the differential pair (M1, M2). This provides high input impedance and low input bias current.\n    *   Cascode transistors (M3, M4) are used to increase the input stage's output impedance and improve common-mode rejection ratio (CMRR).\n    *   A current mirror (M5, M6) acts as the active load for the differential pair, converting the differential current to a single-ended voltage.\n    *   The input bias current is primarily determined by the gate leakage of the input FETs. In a simplified model, this is often represented by very small current sources or by the inherent leakage of the MOSFET models. For this model, the high input impedance is primarily achieved by the large W/L of the input PMOS.\n    *   Input voltage range: The cascode structure helps extend the input common-mode range. The input transistors are designed to operate well within the supply rails, allowing for input voltages close to the rails.\n\n*   **Second Gain Stage:**\n    *   A common-source amplifier (M7) with an active load (M8) forms the second gain stage. This stage provides significant voltage gain.\n    *   The current through this stage is set by the bias network.\n\n*   **Output Stage (Class AB):**\n    *   A complementary push-pull output stage (M9, M10) is used to provide high current drive.\n    *   Diode-connected transistors (D1, D2 or Vbe multipliers) are used to provide a small quiescent current, minimizing crossover distortion (Class AB operation). Here, voltage sources VbiasP and VbiasN are used for simplicity to set the quiescent current.\n    *   The output swing is designed to be within 1V of the rails. This implies that the output transistors have low Vds_sat and the driver stages can swing close to the rails.\n\n*   **Bias Network:**\n    *   A simple current mirror (M11, M12) generates the reference current for the input stage.\n    *   Additional current mirrors (M13, M14, M15, M16) distribute bias currents to the second gain stage and output stage drivers.\n    *   The bias network is designed to be relatively insensitive to supply voltage variations.\n\n*   **Frequency Compensation:**\n    *   A Miller compensation capacitor (Cc) is placed between the output of the first stage (or second stage) and the input of the second stage (or output stage driver). This creates a dominant pole, ensuring stability. The value of Cc is chosen to achieve unity-gain stability with sufficient phase margin. A typical value for audio op-amps might be in the range of 10-30 pF. Here, 20pF is chosen as a starting point.\n\n*   **Power Supplies and ESD Protection:**\n    *   The `VS` parameters indicate a wide operating supply range (\u00b12.5V to \u00b118V dual, or 5V to 36V single). The internal circuitry is designed to operate correctly across this range.\n    *   ESD protection is typically implemented with diodes to the supply rails at the input and output pins. While not explicitly modeled with discrete diodes in this core functional model, the input voltage limits (V- - 0.5V to V+ + 0.5V) imply such protection.\n\n*   **Dual/Quad Channel Implementation:**\n    *   The subcircuit header includes pins for dual/quad channels (OUT_A, _IN_A, _IN_B, OUT_B). For this model, a single amplifier core is implemented. To represent dual/quad versions, this core would be instantiated multiple times with independent circuitry, as stated in the datasheet. The provided netlist focuses on one channel's internal structure.\n\n**Addressing Previous Feedback:**\nThe previous feedback indicated that several parameters were \"not observed in simulation measurements.\" This is because the netlist itself does not *measure* these parameters; it *implements* the circuit that *exhibits* these parameters. The simulation environment (testbench) is responsible for measuring them.\n\n*   **VS (Supply Voltage):** The circuit is designed to operate within the specified supply ranges. The models for transistors are assumed to be valid over these ranges.\n*   **Input Voltage/Current:** The FET input stage inherently provides high input impedance and low input current. The input voltage range is limited by the cascode and the supply rails.\n*   **ISC (Short-Circuit Current):** The output stage is designed to handle continuous short-circuit to ground. This implies current limiting within the output stage, which is not explicitly modeled with current limiters but is an inherent characteristic of the output transistors' current capabilities.\n*   **TA, TJ, Tstg (Temperature):** These are environmental and operational limits. The SPICE models for transistors typically include temperature dependencies, allowing for simulations at different temperatures. The netlist itself doesn't \"measure\" these, but the component models are chosen to reflect behavior over these ranges.\n*   **V(ESD):** ESD protection is typically external to the core functional op-amp model and involves protection diodes. This model focuses on the functional circuit.\n\n**Simplifications and Assumptions:**\n*   **Generic MOSFET Models:** Standard Level 1 MOSFET models are used for simplicity. In a real design, more advanced models (e.g., BSIM) would be used.\n*   **Ideal Current Sources/Voltage Sources:** Some ideal sources are used for biasing to simplify the model and focus on the core op-amp functionality. In a full design, these would be implemented with more complex transistor-based current mirrors and voltage references.\n*   **No Explicit ESD Diodes:** While the datasheet mentions ESD ratings, explicit ESD diodes are not included in this functional model to keep it concise.\n*   **Single Channel Focus:** The internal implementation details are for a single amplifier channel. The dual/quad versions would instantiate this core multiple times.\n*   **No Thermal Modeling:** The model does not include explicit thermal components or self-heating effects, which would be crucial for detailed power dissipation analysis.\n\nThis architecture provides a robust foundation for an audio-grade operational amplifier, balancing performance requirements with model complexity for SPICE simulation.", "design_rationale": {"summary": "The OPAx134 is a high-performance audio operational amplifier, characterized by its FET input stage, low distortion, low noise, and high output drive capability. The architecture chosen for this SPICE netlist aims to capture these key features while adhering to the specified electrical characteristics and pinout.\n\n**Overall Architecture:**\nThe OPAx134 is modeled as a dual-channel operational amplifier (OPA2134/OPA4134) with a single-channel representation for the OPA134. The subcircuit header reflects the OPA4134 pinout, allowing for flexibility. The core architecture for each channel consists of:\n1.  **FET Input Stage:** A differential pair using JFETs (or large W/L PMOS for simplicity in a generic model) provides high input impedance and low input bias current. This stage is cascoded to improve common-mode rejection and maintain low input bias current over a wide input voltage range.\n2.  **Second Gain Stage:** A high-gain voltage amplifier stage, typically a differential pair with an active load, provides the majority of the open-loop gain.\n3.  **Output Stage:** A class AB output stage with push-pull configuration provides high output current drive and wide output swing. This stage is designed to swing within 1V of the rails.\n4.  **Bias Network:** A robust bias network generates stable reference currents for all stages, ensuring consistent performance across supply voltage and temperature variations.\n5.  **Frequency Compensation:** A dominant pole compensation capacitor is included to ensure unity-gain stability and prevent oscillations.\n\n**Component Sizing and Design Choices:**\n\n*   **Input Stage (JFET/PMOS Differential Pair):**\n    *   To achieve the \"true FET input stage\" characteristic, PMOS transistors with large W/L ratios are used for the differential pair (M1, M2). This provides high input impedance and low input bias current.\n    *   Cascode transistors (M3, M4) are used to increase the input stage's output impedance and improve common-mode rejection ratio (CMRR).\n    *   A current mirror (M5, M6) acts as the active load for the differential pair, converting the differential current to a single-ended voltage.\n    *   The input bias current is primarily determined by the gate leakage of the input FETs. In a simplified model, this is often represented by very small current sources or by the inherent leakage of the MOSFET models. For this model, the high input impedance is primarily achieved by the large W/L of the input PMOS.\n    *   Input voltage range: The cascode structure helps extend the input common-mode range. The input transistors are designed to operate well within the supply rails, allowing for input voltages close to the rails.\n\n*   **Second Gain Stage:**\n    *   A common-source amplifier (M7) with an active load (M8) forms the second gain stage. This stage provides significant voltage gain.\n    *   The current through this stage is set by the bias network.\n\n*   **Output Stage (Class AB):**\n    *   A complementary push-pull output stage (M9, M10) is used to provide high current drive.\n    *   Diode-connected transistors (D1, D2 or Vbe multipliers) are used to provide a small quiescent current, minimizing crossover distortion (Class AB operation). Here, voltage sources VbiasP and VbiasN are used for simplicity to set the quiescent current.\n    *   The output swing is designed to be within 1V of the rails. This implies that the output transistors have low Vds_sat and the driver stages can swing close to the rails.\n\n*   **Bias Network:**\n    *   A simple current mirror (M11, M12) generates the reference current for the input stage.\n    *   Additional current mirrors (M13, M14, M15, M16) distribute bias currents to the second gain stage and output stage drivers.\n    *   The bias network is designed to be relatively insensitive to supply voltage variations.\n\n*   **Frequency Compensation:**\n    *   A Miller compensation capacitor (Cc) is placed between the output of the first stage (or second stage) and the input of the second stage (or output stage driver). This creates a dominant pole, ensuring stability. The value of Cc is chosen to achieve unity-gain stability with sufficient phase margin. A typical value for audio op-amps might be in the range of 10-30 pF. Here, 20pF is chosen as a starting point.\n\n*   **Power Supplies and ESD Protection:**\n    *   The `VS` parameters indicate a wide operating supply range (\u00b12.5V to \u00b118V dual, or 5V to 36V single). The internal circuitry is designed to operate correctly across this range.\n    *   ESD protection is typically implemented with diodes to the supply rails at the input and output pins. While not explicitly modeled with discrete diodes in this core functional model, the input voltage limits (V- - 0.5V to V+ + 0.5V) imply such protection.\n\n*   **Dual/Quad Channel Implementation:**\n    *   The subcircuit header includes pins for dual/quad channels (OUT_A, _IN_A, _IN_B, OUT_B). For this model, a single amplifier core is implemented. To represent dual/quad versions, this core would be instantiated multiple times with independent circuitry, as stated in the datasheet. The provided netlist focuses on one channel's internal structure.\n\n**Addressing Previous Feedback:**\nThe previous feedback indicated that several parameters were \"not observed in simulation measurements.\" This is because the netlist itself does not *measure* these parameters; it *implements* the circuit that *exhibits* these parameters. The simulation environment (testbench) is responsible for measuring them.\n\n*   **VS (Supply Voltage):** The circuit is designed to operate within the specified supply ranges. The models for transistors are assumed to be valid over these ranges.\n*   **Input Voltage/Current:** The FET input stage inherently provides high input impedance and low input current. The input voltage range is limited by the cascode and the supply rails.\n*   **ISC (Short-Circuit Current):** The output stage is designed to handle continuous short-circuit to ground. This implies current limiting within the output stage, which is not explicitly modeled with current limiters but is an inherent characteristic of the output transistors' current capabilities.\n*   **TA, TJ, Tstg (Temperature):** These are environmental and operational limits. The SPICE models for transistors typically include temperature dependencies, allowing for simulations at different temperatures. The netlist itself doesn't \"measure\" these, but the component models are chosen to reflect behavior over these ranges.\n*   **V(ESD):** ESD protection is typically external to the core functional op-amp model and involves protection diodes. This model focuses on the functional circuit.\n\n**Simplifications and Assumptions:**\n*   **Generic MOSFET Models:** Standard Level 1 MOSFET models are used for simplicity. In a real design, more advanced models (e.g., BSIM) would be used.\n*   **Ideal Current Sources/Voltage Sources:** Some ideal sources are used for biasing to simplify the model and focus on the core op-amp functionality. In a full design, these would be implemented with more complex transistor-based current mirrors and voltage references.\n*   **No Explicit ESD Diodes:** While the datasheet mentions ESD ratings, explicit ESD diodes are not included in this functional model to keep it concise.\n*   **Single Channel Focus:** The internal implementation details are for a single amplifier channel. The dual/quad versions would instantiate this core multiple times.\n*   **No Thermal Modeling:** The model does not include explicit thermal components or self-heating effects, which would be crucial for detailed power dissipation analysis.\n\nThis architecture provides a robust foundation for an audio-grade operational amplifier, balancing performance requirements with model complexity for SPICE simulation."}}], "final_netlist_path": "C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\OPA2134\\OPAX134_iter2.cir"}, "knowledge_graph": {"ic_device": {"name": "OPAx134", "category": "Operational Amplifier", "description": "The OPA134, OPA2134, and OPA4134 (OPAx134) series are ultra-low distortion, low-noise operational amplifiers fully specified for audio applications. A true FET input stage is incorporated to provide excellent sound quality and speed for exceptional audio performance. This feature, in combination with high output drive capability and excellent dc performance, allows for use in a wide variety of demanding applications. In addition, the OPAx134 series has a wide output swing, to within 1V of the rails, allowing increased headroom and making these devices an excellent choice for use in any audio circuit. The OPAx134 SoundPlus\u2122 audio operational amplifiers are easy to use and free from phase-inversion and the overload problems often found in common FET-input operational amplifiers. The devices can be operated from \u00b12.5V to \u00b118V power supplies. Input cascode circuitry provides excellent common-mode rejection and maintains low input bias current over the wide input voltage range, minimizing distortion. The OPAx134 series operational amplifiers are unity-gain stable and provide excellent dynamic behavior over a wide range of load conditions, including high load capacitance. The dual and quad versions feature completely independent circuitry for lowest crosstalk and freedom from interaction, even when overdriven or overloaded."}, "pins": [{"name": "NC", "pin_number": "1", "direction": "null", "role": "null", "description": "Do not connect these pins"}, {"name": "_IN", "pin_number": "2", "direction": "INPUT", "role": "SIGNAL", "description": "Inverting input"}, {"name": "_IN", "pin_number": "3", "direction": "INPUT", "role": "SIGNAL", "description": "Noninverting input"}, {"name": "V_", "pin_number": "4", "direction": "POWER", "role": "POWER", "description": "Negative power supply"}, {"name": "NC", "pin_number": "5", "direction": "null", "role": "null", "description": "Do not connect these pins"}, {"name": "OUT", "pin_number": "6", "direction": "OUTPUT", "role": "OUTPUT", "description": "Output"}, {"name": "V_", "pin_number": "7", "direction": "POWER", "role": "POWER", "description": "Positive power supply"}, {"name": "NC", "pin_number": "8", "direction": "null", "role": "null", "description": "No internal connection. Float this pin."}, {"name": "OUT_A", "pin_number": "1", "direction": "OUTPUT", "role": "OUTPUT", "description": "Output, channel A"}, {"name": "_IN_A", "pin_number": "2", "direction": "INPUT", "role": "SIGNAL", "description": "Inverting input, channel A"}, {"name": "_IN_A", "pin_number": "3", "direction": "INPUT", "role": "SIGNAL", "description": "Noninverting input, channel A"}, {"name": "V_", "pin_number": "4", "direction": "POWER", "role": "POWER", "description": "Negative (lowest) power supply"}, {"name": "_IN_B", "pin_number": "5", "direction": "INPUT", "role": "SIGNAL", "description": "Noninverting input, channel B"}, {"name": "_IN_B", "pin_number": "6", "direction": "INPUT", "role": "SIGNAL", "description": "Inverting input, channel B"}, {"name": "OUT_B", "pin_number": "7", "direction": "OUTPUT", "role": "OUTPUT", "description": "Output, channel B"}, {"name": "V_", "pin_number": "8", "direction": "POWER", "role": "POWER", "description": "Positive (highest) power supply"}], "electrical_parameters": [{"symbol": "VS", "name": "Supply voltage, (V+) \u2013 (V\u2013)", "min": null, "typ": null, "max": 36.0, "unit": "V", "test_conditions": "Single supply", "related_pins": ["V+", "V-"], "category": "Absolute Maximum Ratings"}, {"symbol": "Input voltage", "name": "Input voltage", "min": null, "typ": null, "max": null, "unit": "V", "test_conditions": "(V\u2013) \u2013 0.5 to (V+) + 0.5", "related_pins": ["+IN", "-IN"], "category": "Absolute Maximum Ratings"}, {"symbol": "Input current", "name": "Input current", "min": -10.0, "typ": null, "max": 10.0, "unit": "mA", "test_conditions": null, "related_pins": ["+IN", "-IN"], "category": "Absolute Maximum Ratings"}, {"symbol": "ISC", "name": "Output short-circuit", "min": null, "typ": null, "max": null, "unit": "Continuous", "test_conditions": "Short-circuit to ground, one amplifier per package", "related_pins": ["OUT"], "category": "Absolute Maximum Ratings"}, {"symbol": "TA", "name": "Operating temperature", "min": -40.0, "typ": null, "max": 125.0, "unit": "\u00b0C", "test_conditions": null, "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "TJ", "name": "Junction temperature", "min": null, "typ": null, "max": 150.0, "unit": "\u00b0C", "test_conditions": null, "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "Tstg", "name": "Storage temperature", "min": -55.0, "typ": null, "max": 125.0, "unit": "\u00b0C", "test_conditions": null, "related_pins": [], "category": "Absolute Maximum Ratings"}, {"symbol": "V(ESD)", "name": "Electrostatic discharge Human-body model (HBM)", "min": null, "typ": null, "max": 2000.0, "unit": "V", "test_conditions": "per ANSI/ESDA/JEDEC JS-001, OPA134 in SOIC and PDIP Packages, and OPA2134 in PDIP Package", "related_pins": [], "category": "ESD Ratings"}, {"symbol": "V(ESD)", "name": "Electrostatic discharge Human-body model (HBM)", "min": null, "typ": null, "max": 2000.0, "unit": "V", "test_conditions": "per ANSI/ESDA/JEDEC JS-001, OPA2134 in SOIC Package", "related_pins": [], "category": "ESD Ratings"}, {"symbol": "V(ESD)", "name": "Electrostatic discharge Charged-device model (CDM)", "min": null, "typ": null, "max": 500.0, "unit": "V", "test_conditions": "per JEDEC specification JESD22-C101, OPA2134 in SOIC Package", "related_pins": [], "category": "ESD Ratings"}, {"symbol": "V(ESD)", "name": "Electrostatic discharge Human-body model (HBM)", "min": null, "typ": null, "max": 2000.0, "unit": "V", "test_conditions": "per ANSI/ESDA/JEDEC JS-001, OPA4134 in SOIC Package", "related_pins": [], "category": "ESD Ratings"}, {"symbol": "V(ESD)", "name": "Electrostatic discharge Charged-device model (CDM)", "min": null, "typ": null, "max": 200.0, "unit": "V", "test_conditions": "per JEDEC specification JESD22-C101, OPA4134 in SOIC Package", "related_pins": [], "category": "ESD Ratings"}, {"symbol": "VS", "name": "Supply voltage, (V+) \u2013 (V\u2013)", "min": 2.5, "typ": 15.0, "max": 18.0, "unit": "V", "test_conditions": "Dual supply", "related_pins": ["V+", "V-"], "category": "Recommended Operating Conditions"}, {"symbol": "VS", "name": "Supply voltage, (V+) \u2013 (V\u2013)", "min": 5.0, "typ": 30.0, "max": 36.0, "unit": "V", "test_conditions": "Single supply", "related_pins": ["V+", "V-"], "category": "Recommended Operating Conditions"}, {"symbol": "TA", "name": "Ambient temperature", "min": -40.0, "typ": null, "max": 85.0, "unit": "\u00b0C", "test_conditions": null, "related_pins": [], "category": "Recommended Operating Conditions"}], "functional_blocks": ["FET input stage", "Input cascode circuitry"]}, "report_md": "# Autonomous AI Analog Circuit Synthesis & Verification Report\n**Target IC:** `OPAx134` | **Subcircuit:** `OPAX134`\n**Overall Datasheet Specification Pass Rate:** `0.0%`\n\n## 1. Executive Summary\n- **IC Category:** The OPA134, OPA2134, and OPA4134 (OPAx134) series are ultra-low distortion, low-noise operational amplifiers fully specified for audio applications. A true FET input stage is incorporated to provide excellent sound quality and speed for exceptional audio performance. This feature, in combination with high output drive capability and excellent dc performance, allows for use in a wide variety of demanding applications. In addition, the OPAx134 series has a wide output swing, to within 1V of the rails, allowing increased headroom and making these devices an excellent choice for use in any audio circuit. The OPAx134 SoundPlus\u2122 audio operational amplifiers are easy to use and free from phase-inversion and the overload problems often found in common FET-input operational amplifiers. The devices can be operated from \u00b12.5V to \u00b118V power supplies. Input cascode circuitry provides excellent common-mode rejection and maintains low input bias current over the wide input voltage range, minimizing distortion. The OPAx134 series operational amplifiers are unity-gain stable and provide excellent dynamic behavior over a wide range of load conditions, including high load capacitance. The dual and quad versions feature completely independent circuitry for lowest crosstalk and freedom from interaction, even when overdriven or overloaded.\n- **Total Datasheet Specifications Extracted:** 15\n- **Design Iterations Required:** 2\n- **Synthesized Netlist Location:** `C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\OPA2134\\OPAX134_iter2.cir`\n\n## 2. Port Dependency Graph (PDG) Scheduling\nTopological activation sequence derived from physical pin roles:\n| Pin Name | Physical Role | Direction | Activation Time (us) |\n| :--- | :--- | :--- | :--- |\n| `NC` | `null` | `null` | 2.00 us |\n| `_IN` | `SIGNAL` | `INPUT` | 2.00 us |\n| `_IN` | `SIGNAL` | `INPUT` | 2.00 us |\n| `V_` | `POWER` | `POWER` | 0.00 us |\n| `NC` | `null` | `null` | 2.00 us |\n| `OUT` | `OUTPUT` | `OUTPUT` | 3.00 us |\n| `V_` | `POWER` | `POWER` | 0.00 us |\n| `NC` | `null` | `null` | 2.00 us |\n| `OUT_A` | `OUTPUT` | `OUTPUT` | 3.00 us |\n| `_IN_A` | `SIGNAL` | `INPUT` | 2.00 us |\n| `_IN_A` | `SIGNAL` | `INPUT` | 2.00 us |\n| `V_` | `POWER` | `POWER` | 0.00 us |\n| `_IN_B` | `SIGNAL` | `INPUT` | 2.00 us |\n| `_IN_B` | `SIGNAL` | `INPUT` | 2.00 us |\n| `OUT_B` | `OUTPUT` | `OUTPUT` | 3.00 us |\n| `V_` | `POWER` | `POWER` | 0.00 us |\n\n### 2.1 Port Dependency Graph Topology\n```mermaid\ngraph TD\n    NC[\"NC (null)<br/>2.0us\"]\n    _IN[\"_IN (SIGNAL)<br/>2.0us\"]\n    _IN[\"_IN (SIGNAL)<br/>2.0us\"]\n    V_[\"V_ (POWER)<br/>0.0us\"]\n    NC[\"NC (null)<br/>2.0us\"]\n    OUT[\"OUT (OUTPUT)<br/>3.0us\"]\n    V_[\"V_ (POWER)<br/>0.0us\"]\n    NC[\"NC (null)<br/>2.0us\"]\n    OUT_A[\"OUT_A (OUTPUT)<br/>3.0us\"]\n    _IN_A[\"_IN_A (SIGNAL)<br/>2.0us\"]\n    _IN_A[\"_IN_A (SIGNAL)<br/>2.0us\"]\n    V_[\"V_ (POWER)<br/>0.0us\"]\n    _IN_B[\"_IN_B (SIGNAL)<br/>2.0us\"]\n    _IN_B[\"_IN_B (SIGNAL)<br/>2.0us\"]\n    OUT_B[\"OUT_B (OUTPUT)<br/>3.0us\"]\n    V_[\"V_ (POWER)<br/>0.0us\"]\n    NC -->|0.0us| OUT\n    NC -->|0.0us| OUT_A\n    NC -->|0.0us| OUT_B\n    _IN -->|0.0us| OUT\n    _IN -->|0.0us| OUT_A\n    _IN -->|0.0us| OUT_B\n    V_ -->|0.0us| NC\n    V_ -->|0.0us| _IN\n    V_ -->|0.0us| OUT\n    V_ -->|0.0us| OUT_A\n    V_ -->|0.0us| _IN_A\n    V_ -->|0.0us| _IN_B\n    V_ -->|0.0us| OUT_B\n    _IN_A -->|0.0us| OUT\n    _IN_A -->|0.0us| OUT_A\n    _IN_A -->|0.0us| OUT_B\n    _IN_B -->|0.0us| OUT\n    _IN_B -->|0.0us| OUT_A\n    _IN_B -->|0.0us| OUT_B\n```\n\n## 3. Specification Verification & SymPy Oracle Audit\nDetailed verification results evaluated against SymPy interval constraints:\n| Parameter | Min Target | Typ Target | Max Target | Measured Value | Unit | Status |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| `VS` | - | - | 36 | **N/A** | V | \u274c FAIL |\n| `Input voltage` | - | - | - | **N/A** | V | \u274c FAIL |\n| `Input current` | -0.01 | - | 0.01 | **N/A** | mA | \u274c FAIL |\n| `ISC` | - | - | - | **N/A** | Continuous | \u274c FAIL |\n| `TA` | -40 | - | 125 | **N/A** | \u00b0C | \u274c FAIL |\n| `TJ` | - | - | 150 | **N/A** | \u00b0C | \u274c FAIL |\n| `VS` | 2.5 | 15 | 18 | **N/A** | V | \u274c FAIL |\n| `VS` | 5 | 30 | 36 | **N/A** | V | \u274c FAIL |\n| `TA` | -40 | - | 85 | **N/A** | \u00b0C | \u274c FAIL |\n\n## 4. Closed-Loop Iteration History & Root Cause Analysis\n| Iteration | Pass Rate | Passed Specs | Failed Specs | Architecture Notes |\n| :--- | :--- | :--- | :--- | :--- |\n| Iteration 1 | 0.0% | 0 | 0 | The OPAx134 is designed as a high-performance audio operational amplifier, empha... |\n| Iteration 2 | 0.0% | 0 | 0 | The OPAx134 is a high-performance audio operational amplifier, characterized by ... |\n\n### 4.1 Loop 1 Detailed Audit\n- **Pass Rate**: `0.0%` (0/0 specs passed)\n\n**Shortfall Audit (\ubbf8\ub2ec \uc6d0\uc778 \ubd84\uc11d):**\n- Param 'VS' violated: Parameter 'VS' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Input voltage' violated: Parameter 'Input voltage' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Input current' violated: Parameter 'Input current' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'ISC' violated: Parameter 'ISC' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'TA' violated: Parameter 'TA' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'TJ' violated: Parameter 'TJ' was not observed in simulation measurements. (Measured: Unobserved)\n\n**Improvement Actions (\uac1c\uc120 \ubc0f \uc218\uc815 \uc0ac\ud56d):**\n- Initial first-principles topology and Level-1 parameter sizing synthesized from scratch.\n\n### 4.2 Loop 2 Detailed Audit\n- **Pass Rate**: `0.0%` (0/0 specs passed)\n\n**Shortfall Audit (\ubbf8\ub2ec \uc6d0\uc778 \ubd84\uc11d):**\n- Param 'VS' violated: Parameter 'VS' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Input voltage' violated: Parameter 'Input voltage' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'Input current' violated: Parameter 'Input current' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'ISC' violated: Parameter 'ISC' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'TA' violated: Parameter 'TA' was not observed in simulation measurements. (Measured: Unobserved)\n- Param 'TJ' violated: Parameter 'TJ' was not observed in simulation measurements. (Measured: Unobserved)\n\n**Improvement Actions (\uac1c\uc120 \ubc0f \uc218\uc815 \uc0ac\ud56d):**\n- Topology refinement: The OPAx134 is a high-performance audio operational amplifier, characterized by its FET input stage, low distortion, low noise, and high out...\n\n## 5. Synthesized SPICE Netlist Architecture\nNetlist file: `C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\OPA2134\\OPAX134_iter2.cir`\n```spice\n* OPAx134 Ultra-Low Distortion, Low-Noise Operational Amplifier\n* Subcircuit for a single channel of the OPAx134 series.\n* This model aims to capture the essential characteristics of the OPAx134,\n* including FET input, low distortion, low noise, and high output drive.\n*\n* Pinout for OPA4134 (quad) is used for the subcircuit header to be comprehensive.\n* For OPA134 (single), use _IN, _IN, OUT.\n* For OPA2134 (dual), use _IN_A, _IN_A, OUT_A and _IN_B, _IN_B, OUT_B.\n*\n.subckt OPAX134 NC1 IN_NEG IN_POS V_NEG NC2 OUT V_POS NC3 OUT_A IN_NEG_A IN_POS_A V_NEG_A IN_POS_B IN_NEG_B OUT_B V_POS_A\n\n* --- Model Definitions ---\n.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u LAMBDA=0.01)\n.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u LAMBDA=0.01)\n.model NPN NPN (IS=1e-14 BF=100 VAF=100)\n.model PNP PNP (IS=1e-14 BF=100 VAF=100)\n.model D D (IS=1e-14) ; Generic diode model\n\n* --- Global Parameters (for typical operation) ---\n.param VDD = 15V\n.param VSS = -15V\n.param IBias_Input = 10uA ; Input stage bias current\n.param IBias_Gain = 50uA ; Gain stage bias current\n.param IBias_Output = 100uA ; Output stage quiescent current\n\n* --- Channel A (Core Amplifier - OPA134/OPA2134/OPA4134) ---\n* This section implements one complete amplifier channel.\n* For OPA134, use IN_NEG, IN_POS, OUT.\n* For OPA2134/OPA4134, use IN_NEG_A, IN_POS_A, OUT_A.\n\n* --- 1. FET Input Stage (Differential Pair with Cascode) ---\n* High input impedance, low noise, low input bias current.\n* PMOS input transistors for better noise performance and common-mode range near V_NEG.\nM1_A  diff_out_pos IN_POS_A source_bias_in V_POS PMOS W=100u L=2u ; Non-inverting input PMOS\nM2_A  diff_out_neg IN_NEG_A source_bias_in V_POS PMOS W=100u L=2u ; Inverting input PMOS\n\n* Cascode transistors for improved CMRR and higher gain\nM3_A  cascode_out_pos diff_out_pos V_POS diff_out_pos PMOS W=20u L=2u ; Cascode for M1_A\nM4_A  cascode_out_neg diff_out_neg V_POS diff_out_neg PMOS W=20u L=2u ; Cascode for M2_A\n\n* Current mirror active load for differential stage\nM5_A  cascode_out_pos cascode_out_pos V_NEG V_NEG NMOS W=40u L=2u ; Diode-connected for current mirror reference\nM6_A  gain_stage_in cascode_out_pos V_NEG V_NEG NMOS W=40u L=2u ; Current mirror load for M4_A\n\n* Tail current source for input differential pair\nM_tail_A source_bias_in bias_ref_in V_NEG V_NEG NMOS W=50u L=2u\n\n* --- 2. Second Gain Stage ---\n* Common-source amplifier with active load for high voltage gain.\nM7_A  gain_stage_out gain_stage_in V_NEG V_NEG NMOS W=80u L=2u ; Common-source amplifier\nM8_A  gain_stage_out bias_ref_gain V_POS V_POS PMOS W=160u L=2u ; Active load for M7_A\n\n* --- 3. Output Stage (Class AB Push-Pull) ---\n* High current drive, wide output swing.\n* Driver transistors\nM9_A  out_driver_p gain_stage_out V_POS V_POS PMOS W=20u L=2u ; P-driver\nM10_A out_driver_n gain_stage_out V_NEG V_NEG NMOS W=20u L=2u ; N-driver\n\n* Output transistors\nM11_A OUT_A out_driver_p V_POS V_POS PMOS W=500u L=2u ; P-channel output transistor\nM12_A OUT_A out_driver_n V_NEG V_NEG NMOS W=500u L=2u ; N-channel output transistor\n\n* Quiescent current setting for Class AB (simplified with voltage sources)\n* In a real design, this would be Vbe multipliers or diode strings.\nVbiasP_A out_driver_p V_POS DC 0.7V ; Sets quiescent current for PMOS output\nVbiasN_A out_driver_n V_NEG DC -0.7V ; Sets quiescent current for NMOS output\n\n* --- 4. Bias Network ---\n* Generates stable bias currents for all stages.\n* Input stage bias reference\nM13_A bias_ref_in bias_ref_in V_NEG V_NEG NMOS W=20u L=2u ; Diode-connected for reference\nI_bias_in_A bias_ref_in V_POS DC {IBias_Input} ; Sets input stage tail current\n\n* Gain stage bias reference\nM14_A bias_ref_gain bias_ref_gain V_POS V_POS PMOS W=40u L=2u ; Diode-connected for reference\nI_bias_gain_A bias_ref_gain V_NEG DC {IBias_Gain} ; Sets gain stage active load current\n\n* --- 5. Frequency Compensation ---\n* Miller compensation capacitor for unity-gain stability.\nCc_A gain_stage_out gain_stage_in 20p\n\n* --- ESD Protection (Simplified - Diodes to rails) ---\n* These diodes protect the input pins from overvoltage.\nD_IN_POS_A_P IN_POS_A V_POS D\nD_IN_POS_A_N V_NEG IN_POS_A D\nD_IN_NEG_A_P IN_NEG_A V_POS D\nD_IN_NEG_A_N V_NEG IN_NEG_A D\n\n* --- Channel B (OPA2134/OPA4134) ---\n* This section is a duplicate of Channel A for dual/quad versions.\n* For OPA134, these pins are NC or not used.\n* For OPA2134/OPA4134, use IN_NEG_B, IN_POS_B, OUT_B.\n\n* --- 1. FET Input Stage (Differential Pair with Cascode) ---\nM1_B  diff_out_pos_B IN_POS_B source_bias_in_B V_POS_A PMOS W=100u L=2u\nM2_B  diff_out_neg_B IN_NEG_B source_bias_in_B V_POS_A PMOS W=100u L=2u\n\nM3_B  cascode_out_pos_B diff_out_pos_B V_POS_A diff_out_pos_B PMOS W=20u L=2u\nM4_B  cascode_out_neg_B diff_out_neg_B V_POS_A diff_out_neg_B PMOS W=20u L=2u\n\nM5_B  cascode_out_pos_B cascode_out_pos_B V_NEG_A V_NEG_A NMOS W=40u L=2u\nM6_B  gain_stage_in_B cascode_out_pos_B V_NEG_A V_NEG_A NMOS W=40u L=2u\n\nM_tail_B source_bias_in_B bias_ref_in_B V_NEG_A V_NEG_A NMOS W=50u L=2u\n\n* --- 2. Second Gain Stage ---\nM7_B  gain_stage_out_B gain_stage_in_B V_NEG_A V_NEG_A NMOS W=80u L=2u\nM8_B  gain_stage_out_B bias_ref_gain_B V_POS_A V_POS_A PMOS W=160u L=2u\n\n* --- 3. Output Stage (Class AB Push-Pull) ---\nM9_B  out_driver_p_B gain_stage_out_B V_POS_A V_POS_A PMOS W=20u L=2u\nM10_B out_driver_n_B gain_stage_out_B V_NEG_A V_NEG_A NMOS W=20u L=2u\n\nM11_B OUT_B out_driver_p_B V_POS_A V_POS_A PMOS W=500u L=2u\nM12_B OUT_B out_driver_n_B V_NEG_A V_NEG_A NMOS W=500u L=2u\n\nVbiasP_B out_driver_p_B V_POS_A DC 0.7V\nVbiasN_B out_driver_n_B V_NEG_A DC -0.7V\n\n* --- 4. Bias Network ---\nM13_B bias_ref_in_B bias_ref_in_B V_NEG_A V_NEG_A NMOS W=20u L=2u\nI_bias_in_B bias_ref_in_B V_POS_A DC {IBias_Input}\n\nM14_B bias_ref_gain_B bias_ref_gain_B V_POS_A V_POS_A PMOS W=40u L=2u\nI_bias_gain_B bias_ref_gain_B V_NEG_A DC {IBias_Gain}\n\n* --- 5. Frequency Compensation ---\nCc_B gain_stage_out_B gain_stage_in_B 20p\n\n* --- ESD Protection (Simplified - Diodes to rails) ---\nD_IN_POS_B_P IN_POS_B V_POS_A D\nD_IN_POS_B_N V_NEG_A IN_POS_B D\nD_IN_NEG_B_P IN_NEG_B V_POS_A D\nD_IN_NEG_B_N V_NEG_A IN_NEG_B D\n\n* --- Power Supply Connections for Dual/Quad ---\n* V_NEG and V_POS are the main supply rails.\n* V_NEG_A and V_POS_A are connected to the main rails for channel A and B.\n* In a real quad package, V_NEG and V_POS would be shared.\n* For this model, V_NEG_A and V_POS_A are connected to V_NEG and V_POS respectively.\nR_VNEG_A V_NEG_A V_NEG 1m ; Connect V_NEG_A to V_NEG\nR_VPOS_A V_POS_A V_POS 1m ; Connect V_POS_A to V_POS\n\n.ends OPAX134\n```", "netlists": {"iter1": "\n.subckt OPAX134 NC_pin1 IN_NEG IN_POS V_NEG NC_pin2 OUT V_POS NC_pin3 OUT_A IN_NEG_A IN_POS_A V_NEG_A IN_NEG_B IN_POS_B OUT_B V_POS_B\n\n* OPAx134 - Ultra-low distortion, low-noise operational amplifier for audio applications.\n* This subcircuit models a single amplifier channel. For dual/quad versions,\n* multiple instances of the core amplifier would be used, sharing power supplies.\n* Pin mapping for a single channel (e.g., OPA134):\n* 1: NC_pin1 (NC)\n* 2: IN_NEG (Inverting Input)\n* 3: IN_POS (Non-inverting Input)\n* 4: V_NEG (Negative Power Supply)\n* 5: NC_pin2 (NC)\n* 6: OUT (Output)\n* 7: V_POS (Positive Power Supply)\n* 8: NC_pin3 (NC)\n\n* Pin mapping for dual channel (e.g., OPA2134) - only relevant pins are used for the single channel model\n* 1: OUT_A (Output, channel A)\n* 2: IN_NEG_A (Inverting input, channel A)\n* 3: IN_POS_A (Noninverting input, channel A)\n* 4: V_NEG_A (Negative (lowest) power supply) - connected to V_NEG\n* 5: IN_POS_B (Noninverting input, channel B)\n* 6: IN_NEG_B (Inverting input, channel B)\n* 7: OUT_B (Output, channel B)\n* 8: V_POS_B (Positive (highest) power supply) - connected to V_POS\n\n* Power Supply Nodes (internal)\nV_POS_INT V_POS 0 DC 0\nV_NEG_INT V_NEG 0 DC 0\n\n* Behavioral Power Supply Ramp-up (to meet PORT DEPENDENCY SCHEDULE)\n* V_POS and V_NEG are the external pins. Internal nodes are used for the circuit.\n* This assumes V_POS_B and V_NEG_A are tied to V_POS and V_NEG respectively for multi-channel devices.\n* For this single channel model, we use V_POS and V_NEG directly.\nB_VCC VCC_RAMP 0 V = { (time < 0.00u) ? 0 : (time < 2.00u) ? (time/2.00u)*V(V_POS) : V(V_POS) }\nB_VEE VEE_RAMP 0 V = { (time < 0.00u) ? 0 : (time < 2.00u) ? (time/2.00u)*V(V_NEG) : V(V_NEG) }\n\n* Ensure VCC_RAMP and VEE_RAMP are connected to the internal circuit.\n* For simplicity, we'll assume V_POS and V_NEG are the actual supply rails for the internal circuit,\n* and the external sources connected to V_POS and V_NEG will handle the ramp.\n* The \"activation\" of pins refers to when they are ready for use, not necessarily\n* when the internal circuit connects to them. The internal circuit is always connected.\n\n* ESD Protection Diodes (Simplified)\n* These diodes protect the input pins from overvoltage.\nD_ESD_IN_POS_P IN_POS V_POS D\nD_ESD_IN_POS_N V_NEG IN_POS D\nD_ESD_IN_NEG_P IN_NEG V_POS D\nD_ESD_IN_NEG_N V_NEG IN_NEG D\n\n* --- Current Reference and Bias Generation ---\n* Simple current mirror based bias for the entire circuit.\n* R_BIAS sets the reference current.\nR_BIAS VCC_RAMP BIAS_REF 100k\nM_BIAS_REF BIAS_REF BIAS_REF VEE_RAMP VEE_RAMP NMOS W=10u L=2u\nM_BIAS_N1 BIAS_N BIAS_REF VEE_RAMP VEE_RAMP NMOS W=20u L=2u ; Provides current for input stage\nM_BIAS_P1 BIAS_P BIAS_REF VCC_RAMP VCC_RAMP PMOS W=40u L=2u ; Provides current for VAS and output drivers\n\n* --- Input Stage: Differential FET Input with Cascode ---\n* True FET input for high impedance and low noise. NMOS used to simulate JFET behavior.\n* M1, M2: Input differential pair\n* M3, M4: Cascode transistors for improved CMRR and reduced input capacitance variation.\n* M5: Tail current source for the differential pair.\n\nM1 D_IN_POS IN_POS S_IN_POS VEE_RAMP NMOS W=2000u L=2u ; Large W/L for low noise, high gm\nM2 D_IN_NEG IN_NEG S_IN_NEG VEE_RAMP NMOS W=2000u L=2u\n\n* Source degeneration for linearity (optional, but good for audio)\nR_S1 S_IN_POS S_TAIL 10\nR_S2 S_IN_NEG S_TAIL 10\n\n* Cascode transistors\nM3 D_IN_POS CAS_BIAS D_IN_POS VEE_RAMP NMOS W=100u L=2u\nM4 D_IN_NEG CAS_BIAS D_IN_NEG VEE_RAMP NMOS W=100u L=2u\n\n* Cascode bias voltage\nR_CAS_BIAS1 VCC_RAMP CAS_BIAS 100k\nR_CAS_BIAS2 CAS_BIAS VEE_RAMP 100k\nC_CAS_BIAS CAS_BIAS VEE_RAMP 100p ; Decoupling\n\n* Tail current source for differential pair\nM5 S_TAIL BIAS_N VEE_RAMP VEE_RAMP NMOS W=50u L=2u\n\n* Active Load for Input Stage (Current Mirror)\n* M6, M7: PMOS current mirror as active load.\nM6 D_IN_POS D_IN_POS VCC_RAMP VCC_RAMP PMOS W=100u L=2u\nM7 D_IN_NEG D_IN_POS VCC_RAMP VCC_RAMP PMOS W=100u L=2u\n\n* Output of input stage (differential to single-ended conversion)\n* The output of the input stage is taken from D_IN_NEG (high gain node).\n\n* --- Voltage Amplifier Stage (VAS) ---\n* M8: Common-source amplifier, providing high gain.\n* M9: Active load for VAS.\n* Cc: Miller compensation capacitor.\n\nM8 VAS_OUT D_IN_NEG VEE_RAMP VEE_RAMP NMOS W=200u L=2u ; VAS input from D_IN_NEG\nM9 VAS_OUT BIAS_P VCC_RAMP VCC_RAMP PMOS W=200u L=2u ; Active load for VAS\n\n* Miller Compensation\nC_COMP VAS_OUT D_IN_NEG 20p ; Compensation capacitor for stability (GBW ~10MHz)\n\n* --- Output Stage: Class AB Buffer ---\n* Q1, Q2: NPN/PNP complementary output pair.\n* D1, D2, R_VBE: Vbe multiplier for Class AB biasing.\n* R_OUT_P, R_OUT_N: Current limiting resistors.\n\n* Vbe Multiplier for Class AB Bias\nR_VBE VCC_RAMP VBE_MULT 10k\nQ_VBE VBE_MULT VBE_MULT VEE_RAMP NPN   ; Placeholder for BJT model, W/L not applicable\n* For BJT, use area parameter, e.g., Q_VBE VBE_MULT VBE_MULT VEE_RAMP NPN A=10\n\n* Driver for NPN output transistor\nQ_DRV_P VCC_RAMP VAS_OUT DRV_P NPN ; Driver for Q_OUT_P\nR_DRV_P DRV_P VBE_MULT 100\n\n* Driver for PNP output transistor\nQ_DRV_N DRV_N VAS_OUT VEE_RAMP PNP ; Driver for Q_OUT_N\nR_DRV_N VBE_MULT DRV_N 100\n\n* Output Transistors (Complementary Emitter Followers)\nQ_OUT_P OUT_PRE DRV_P VCC_RAMP NPN ; NPN output transistor\nQ_OUT_N OUT_PRE DRV_N VEE_RAMP PNP ; PNP output transistor\n\n* Output current limiting resistors (simplified)\nR_OUT_P OUT_PRE OUT 10 ; Output current limiting\nR_OUT_N OUT VEE_RAMP 10 ; Output current limiting\n\n* Output buffer for the main OUT pin\n* This is a simplified representation. A real output stage would have more sophisticated current limiting and thermal protection.\n\n* --- Models ---\n.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u LAMBDA=0.01 TOX=10n PB=0.8 MJ=0.5 MJSW=0.3)\n.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u LAMBDA=0.02 TOX=10n PB=0.8 MJ=0.5 MJSW=0.3)\n.model NPN NPN (IS=10f BF=200 VAF=100 IKF=0.1 NE=1.5 RB=10 RC=1 RE=0.1 CJE=1p CJC=0.5p TF=0.3n TR=6n)\n.model PNP PNP (IS=10f BF=100 VAF=50 IKF=0.05 NE=1.5 RB=20 RC=2 RE=0.2 CJE=2p CJC=1p TF=0.6n TR=12n)\n.model D D (IS=10f RS=1 N=1.0 TT=10n CJO=1p)\n\n* NC pins are left unconnected internally as per description.\n* For multi-channel devices, V_NEG_A and V_POS_B would typically be tied to V_NEG and V_POS respectively.\n* The other channel pins (OUT_A, IN_NEG_A, IN_POS_A, IN_NEG_B, IN_POS_B, OUT_B) are not used in this single-channel model.\n* A full multi-channel model would instantiate this core amplifier multiple times.\n\n.ends OPAX134", "iter2": "* OPAx134 Ultra-Low Distortion, Low-Noise Operational Amplifier\n* Subcircuit for a single channel of the OPAx134 series.\n* This model aims to capture the essential characteristics of the OPAx134,\n* including FET input, low distortion, low noise, and high output drive.\n*\n* Pinout for OPA4134 (quad) is used for the subcircuit header to be comprehensive.\n* For OPA134 (single), use _IN, _IN, OUT.\n* For OPA2134 (dual), use _IN_A, _IN_A, OUT_A and _IN_B, _IN_B, OUT_B.\n*\n.subckt OPAX134 NC1 IN_NEG IN_POS V_NEG NC2 OUT V_POS NC3 OUT_A IN_NEG_A IN_POS_A V_NEG_A IN_POS_B IN_NEG_B OUT_B V_POS_A\n\n* --- Model Definitions ---\n.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u LAMBDA=0.01)\n.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u LAMBDA=0.01)\n.model NPN NPN (IS=1e-14 BF=100 VAF=100)\n.model PNP PNP (IS=1e-14 BF=100 VAF=100)\n.model D D (IS=1e-14) ; Generic diode model\n\n* --- Global Parameters (for typical operation) ---\n.param VDD = 15V\n.param VSS = -15V\n.param IBias_Input = 10uA ; Input stage bias current\n.param IBias_Gain = 50uA ; Gain stage bias current\n.param IBias_Output = 100uA ; Output stage quiescent current\n\n* --- Channel A (Core Amplifier - OPA134/OPA2134/OPA4134) ---\n* This section implements one complete amplifier channel.\n* For OPA134, use IN_NEG, IN_POS, OUT.\n* For OPA2134/OPA4134, use IN_NEG_A, IN_POS_A, OUT_A.\n\n* --- 1. FET Input Stage (Differential Pair with Cascode) ---\n* High input impedance, low noise, low input bias current.\n* PMOS input transistors for better noise performance and common-mode range near V_NEG.\nM1_A  diff_out_pos IN_POS_A source_bias_in V_POS PMOS W=100u L=2u ; Non-inverting input PMOS\nM2_A  diff_out_neg IN_NEG_A source_bias_in V_POS PMOS W=100u L=2u ; Inverting input PMOS\n\n* Cascode transistors for improved CMRR and higher gain\nM3_A  cascode_out_pos diff_out_pos V_POS diff_out_pos PMOS W=20u L=2u ; Cascode for M1_A\nM4_A  cascode_out_neg diff_out_neg V_POS diff_out_neg PMOS W=20u L=2u ; Cascode for M2_A\n\n* Current mirror active load for differential stage\nM5_A  cascode_out_pos cascode_out_pos V_NEG V_NEG NMOS W=40u L=2u ; Diode-connected for current mirror reference\nM6_A  gain_stage_in cascode_out_pos V_NEG V_NEG NMOS W=40u L=2u ; Current mirror load for M4_A\n\n* Tail current source for input differential pair\nM_tail_A source_bias_in bias_ref_in V_NEG V_NEG NMOS W=50u L=2u\n\n* --- 2. Second Gain Stage ---\n* Common-source amplifier with active load for high voltage gain.\nM7_A  gain_stage_out gain_stage_in V_NEG V_NEG NMOS W=80u L=2u ; Common-source amplifier\nM8_A  gain_stage_out bias_ref_gain V_POS V_POS PMOS W=160u L=2u ; Active load for M7_A\n\n* --- 3. Output Stage (Class AB Push-Pull) ---\n* High current drive, wide output swing.\n* Driver transistors\nM9_A  out_driver_p gain_stage_out V_POS V_POS PMOS W=20u L=2u ; P-driver\nM10_A out_driver_n gain_stage_out V_NEG V_NEG NMOS W=20u L=2u ; N-driver\n\n* Output transistors\nM11_A OUT_A out_driver_p V_POS V_POS PMOS W=500u L=2u ; P-channel output transistor\nM12_A OUT_A out_driver_n V_NEG V_NEG NMOS W=500u L=2u ; N-channel output transistor\n\n* Quiescent current setting for Class AB (simplified with voltage sources)\n* In a real design, this would be Vbe multipliers or diode strings.\nVbiasP_A out_driver_p V_POS DC 0.7V ; Sets quiescent current for PMOS output\nVbiasN_A out_driver_n V_NEG DC -0.7V ; Sets quiescent current for NMOS output\n\n* --- 4. Bias Network ---\n* Generates stable bias currents for all stages.\n* Input stage bias reference\nM13_A bias_ref_in bias_ref_in V_NEG V_NEG NMOS W=20u L=2u ; Diode-connected for reference\nI_bias_in_A bias_ref_in V_POS DC {IBias_Input} ; Sets input stage tail current\n\n* Gain stage bias reference\nM14_A bias_ref_gain bias_ref_gain V_POS V_POS PMOS W=40u L=2u ; Diode-connected for reference\nI_bias_gain_A bias_ref_gain V_NEG DC {IBias_Gain} ; Sets gain stage active load current\n\n* --- 5. Frequency Compensation ---\n* Miller compensation capacitor for unity-gain stability.\nCc_A gain_stage_out gain_stage_in 20p\n\n* --- ESD Protection (Simplified - Diodes to rails) ---\n* These diodes protect the input pins from overvoltage.\nD_IN_POS_A_P IN_POS_A V_POS D\nD_IN_POS_A_N V_NEG IN_POS_A D\nD_IN_NEG_A_P IN_NEG_A V_POS D\nD_IN_NEG_A_N V_NEG IN_NEG_A D\n\n* --- Channel B (OPA2134/OPA4134) ---\n* This section is a duplicate of Channel A for dual/quad versions.\n* For OPA134, these pins are NC or not used.\n* For OPA2134/OPA4134, use IN_NEG_B, IN_POS_B, OUT_B.\n\n* --- 1. FET Input Stage (Differential Pair with Cascode) ---\nM1_B  diff_out_pos_B IN_POS_B source_bias_in_B V_POS_A PMOS W=100u L=2u\nM2_B  diff_out_neg_B IN_NEG_B source_bias_in_B V_POS_A PMOS W=100u L=2u\n\nM3_B  cascode_out_pos_B diff_out_pos_B V_POS_A diff_out_pos_B PMOS W=20u L=2u\nM4_B  cascode_out_neg_B diff_out_neg_B V_POS_A diff_out_neg_B PMOS W=20u L=2u\n\nM5_B  cascode_out_pos_B cascode_out_pos_B V_NEG_A V_NEG_A NMOS W=40u L=2u\nM6_B  gain_stage_in_B cascode_out_pos_B V_NEG_A V_NEG_A NMOS W=40u L=2u\n\nM_tail_B source_bias_in_B bias_ref_in_B V_NEG_A V_NEG_A NMOS W=50u L=2u\n\n* --- 2. Second Gain Stage ---\nM7_B  gain_stage_out_B gain_stage_in_B V_NEG_A V_NEG_A NMOS W=80u L=2u\nM8_B  gain_stage_out_B bias_ref_gain_B V_POS_A V_POS_A PMOS W=160u L=2u\n\n* --- 3. Output Stage (Class AB Push-Pull) ---\nM9_B  out_driver_p_B gain_stage_out_B V_POS_A V_POS_A PMOS W=20u L=2u\nM10_B out_driver_n_B gain_stage_out_B V_NEG_A V_NEG_A NMOS W=20u L=2u\n\nM11_B OUT_B out_driver_p_B V_POS_A V_POS_A PMOS W=500u L=2u\nM12_B OUT_B out_driver_n_B V_NEG_A V_NEG_A NMOS W=500u L=2u\n\nVbiasP_B out_driver_p_B V_POS_A DC 0.7V\nVbiasN_B out_driver_n_B V_NEG_A DC -0.7V\n\n* --- 4. Bias Network ---\nM13_B bias_ref_in_B bias_ref_in_B V_NEG_A V_NEG_A NMOS W=20u L=2u\nI_bias_in_B bias_ref_in_B V_POS_A DC {IBias_Input}\n\nM14_B bias_ref_gain_B bias_ref_gain_B V_POS_A V_POS_A PMOS W=40u L=2u\nI_bias_gain_B bias_ref_gain_B V_NEG_A DC {IBias_Gain}\n\n* --- 5. Frequency Compensation ---\nCc_B gain_stage_out_B gain_stage_in_B 20p\n\n* --- ESD Protection (Simplified - Diodes to rails) ---\nD_IN_POS_B_P IN_POS_B V_POS_A D\nD_IN_POS_B_N V_NEG_A IN_POS_B D\nD_IN_NEG_B_P IN_NEG_B V_POS_A D\nD_IN_NEG_B_N V_NEG_A IN_NEG_B D\n\n* --- Power Supply Connections for Dual/Quad ---\n* V_NEG and V_POS are the main supply rails.\n* V_NEG_A and V_POS_A are connected to the main rails for channel A and B.\n* In a real quad package, V_NEG and V_POS would be shared.\n* For this model, V_NEG_A and V_POS_A are connected to V_NEG and V_POS respectively.\nR_VNEG_A V_NEG_A V_NEG 1m ; Connect V_NEG_A to V_NEG\nR_VPOS_A V_POS_A V_POS 1m ; Connect V_POS_A to V_POS\n\n.ends OPAX134"}, "testbenches": {"tb_dc_op.cir": ".options gmin=1e-12 cshunt=1e-15\n* OPAX134 Testbench for Specification Verification\n\n.include \"OPAX134_iter2.cir\"\n\n* Power Supplies\n* Dual Supply for VS (2.5V to 18V)\nV_POS_SUP V_POS 0 PWL(0 0 0.00u 0 0.01u 15V)\nV_NEG_SUP V_NEG 0 PWL(0 0 0.00u 0 0.01u -15V)\nV_POS_A_SUP V_POS_A 0 PWL(0 0 0.00u 0 0.01u 15V)\nV_NEG_A_SUP V_NEG_A 0 PWL(0 0 0.00u 0 0.01u -15V)\n\n* Single Supply for VS (5V to 36V) - Use for specific single supply tests\n* V_POS_SINGLE V_POS 0 PWL(0 0 0.00u 0 0.01u 30V)\n* V_NEG_SINGLE V_NEG 0 PWL(0 0 0.00u 0 0.01u 0V)\n* V_POS_A_SINGLE V_POS_A 0 PWL(0 0 0.00u 0 0.01u 30V)\n* V_NEG_A_SINGLE V_NEG_A 0 PWL(0 0 0.00u 0 0.01u 0V)\n\n* NC Pins (activated at 2.00 us)\nV_NC1 NC1 0 PWL(0 0 1.99u 0 2.00u 0)\nV_NC2 NC2 0 PWL(0 0 1.99u 0 2.00u 0)\nV_NC3 NC3 0 PWL(0 0 1.99u 0 2.00u 0)\n\n* Input Stimulus (activated at 2.00 us)\n* For Input Voltage measurement, we'll sweep the input.\n* For Input Current measurement, we'll apply a voltage and measure current.\n* Let's set up a DC bias for initial measurements.\nV_IN_POS IN_POS 0 PWL(0 0 1.99u 0 2.00u 0V)\nV_IN_NEG IN_NEG 0 PWL(0 0 1.99u 0 2.00u 0V)\nV_IN_POS_A IN_POS_A 0 PWL(0 0 1.99u 0 2.00u 0V)\nV_IN_NEG_A IN_NEG_A 0 PWL(0 0 1.99u 0 2.00u 0V)\nV_IN_POS_B IN_POS_B 0 PWL(0 0 1.99u 0 2.00u 0V)\nV_IN_NEG_B IN_NEG_B 0 PWL(0 0 1.99u 0 2.00u 0V)\n\n* Output Loads (activated at 3.00 us)\nR_OUT OUT 0 1k\nR_OUT_A OUT_A 0 1k\nR_OUT_B OUT_B 0 1k\n\n* DUT Instantiation\nXDUT NC1 IN_NEG IN_POS V_NEG NC2 OUT V_POS NC3 OUT_A IN_NEG_A IN_POS_A V_NEG_A IN_POS_B IN_NEG_B OUT_B V_POS_A OPAX134\n\n* Simulation Commands\n.tran 0 100u 0 0.1u startup\n.op\n\n* MEASUREMENTS\n\n* VS: Min=None, Typ=None, Max=36.0 V | Desc:  | Conditions: Single supply\n* This implies the maximum operating voltage for single supply. We'll set V_POS_SINGLE to 36V and V_NEG_SINGLE to 0V.\n* For this test, we'll use a separate run or modify the V_POS_SUP/V_NEG_SUP sources.\n* Let's assume the default V_POS_SUP/V_NEG_SUP are for dual supply.\n* To test single supply max, we'd need to change the power supplies.\n* For now, we'll measure the supply voltage as set.\n.meas tran vs_single_max_test PARAM V(V_POS) + ABS(V(V_NEG))\n\n* Input voltage: Min=None, Typ=None, Max=None V | Desc:  | Conditions: (V\u2013) \u2013 0.5 to (V+) + 0.5\n* This requires sweeping the input voltage. We'll set IN_POS to sweep and IN_NEG to a fixed voltage.\n* Let's set V_NEG to -15V and V_POS to 15V.\n* We'll sweep IN_POS from V_NEG-0.5 to V_POS+0.5.\n* This is a DC sweep, not a transient measurement.\n* For transient, we can check if input voltage stays within limits.\n.meas tran vin_pos_max MAX V(IN_POS) FROM=50u TO=100u\n.meas tran vin_pos_min MIN V(IN_POS) FROM=50u TO=100u\n.meas tran vin_neg_max MAX V(IN_NEG) FROM=50u TO=100u\n.meas tran vin_neg_min MIN V(IN_NEG) FROM=50u TO=100u\n\n* Input current: Min=-10.0, Typ=None, Max=10.0 mA | Desc:  | Conditions: None\n* We need to apply a voltage and measure the current into the input pins.\n* Let's apply a small differential voltage and measure the input current.\n; Sanitized duplicate parallel voltage source short: V_IN_POS_TEST IN_POS 0 PWL(0 0 1.99u 0 2.00u 0.1V)\n; Sanitized duplicate parallel voltage source short: V_IN_NEG_TEST IN_NEG 0 PWL(0 0 1.99u 0 2.00u 0V)\n.meas tran i_in_pos_avg AVG I(V_IN_POS_TEST) FROM=50u TO=100u\n.meas tran i_in_neg_avg AVG I(V_IN_NEG_TEST) FROM=50u TO=100u\n\n* ISC: Min=None, Typ=None, Max=None Continuous | Desc:  | Conditions: Short-circuit to ground, one amplifier per package\n* To measure ISC, we short the output to ground and measure the current.\n* We'll add a shorting resistor and measure current through it.\nR_ISC OUT 0 1m ; Small resistor to measure current\n.meas tran i_sc_out_avg AVG I(R_ISC) FROM=50u TO=100u\n\n* TA: Min=-40.0, Typ=None, Max=125.0 \u00b0C | Desc:  | Conditions: None\n* TJ: Min=None, Typ=None, Max=150.0 \u00b0C | Desc:  | Conditions: None\n* TA: Min=-40.0, Typ=None, Max=85.0 \u00b0C | Desc:  | Conditions: None\n* Temperature measurements are set via the .temp directive.\n* We'll run separate simulations for different temperatures.\n* For this run, we'll use the default temperature (27C).\n*.temp -40 27 85 125 150\n\n* VS: Min=2.5, Typ=15.0, Max=18.0 V | Desc:  | Conditions: Dual supply\n* We are currently running with 15V dual supply.\n.meas tran vs_dual_typ PARAM V(V_POS) - V(V_NEG)\n\n* VS: Min=5.0, Typ=30.0, Max=36.0 V | Desc:  | Conditions: Single supply\n* This requires a separate simulation run with single supply configuration.\n* For this run, we'll assume dual supply.\n\n.end\n"}, "simulation_logs": {"tb_dc_op.log": "LTspice 24.1.10 for Windows\nCircuit: C:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\OPA2134\\tb_dc_op.cir\nStart Time: Wed Oct 14 00:52:36 2026\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\OPA2134\\tb_dc_op.cir(8): Monotonically increasing value expected.\nV_POS_SUP V_POS 0 PWL(0 0 0.00u 0 0.01u 15V)\n                         ^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\OPA2134\\tb_dc_op.cir(9): Monotonically increasing value expected.\nV_NEG_SUP V_NEG 0 PWL(0 0 0.00u 0 0.01u -15V)\n                         ^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\OPA2134\\tb_dc_op.cir(10): Monotonically increasing value expected.\nV_POS_A_SUP V_POS_A 0 PWL(0 0 0.00u 0 0.01u 15V)\n                             ^^^^^^\nC:\\Users\\Sera\\.gemini\\antigravity\\worktrees\\Project2\\implement_circuit_test_methodology\\benchmark_results\\OPA2134\\tb_dc_op.cir(11): Monotonically increasing value expected.\nV_NEG_A_SUP V_NEG_A 0 PWL(0 0 0.00u 0 0.01u -15V)\n                             ^^^^^^\n"}}];
+
+    let currentICIndex = 0;
+    let currentNetlistIter = 1;
+    let timelineTimer = null;
+    let isPlaying = false;
+    let currentTime = 0.0;
+
+    function init() {
+      const select = document.getElementById('icSelect');
+      select.innerHTML = '';
+      BENCHMARK_DATA.forEach((ic, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        const name = ic.summary.part_name || ic.id;
+        const cat = (ic.knowledge_graph.ic_device && ic.knowledge_graph.ic_device.category) || '';
+        opt.textContent = `${name} (${cat || ic.id})`;
+        select.appendChild(opt);
+      });
+
+      if (BENCHMARK_DATA.length > 0) {
+        switchIC(0);
+      }
+    }
+
+    function switchIC(index) {
+      currentICIndex = parseInt(index);
+      const ic = BENCHMARK_DATA[currentICIndex];
+      if (!ic) return;
+
+      const name = ic.summary.part_name || ic.id;
+      const cat = (ic.knowledge_graph.ic_device && ic.knowledge_graph.ic_device.category) || 'Analog IC';
+      const specCount = ic.summary.spec_count || (ic.knowledge_graph.electrical_parameters && ic.knowledge_graph.electrical_parameters.length) || 0;
+      const pins = (ic.knowledge_graph.pins || []);
+      const iters = ic.summary.iterations || [];
+      const passRate = ic.summary.pass_rate_percent || 0.0;
+
+      // Update Key Metrics
+      document.getElementById('statIcName').textContent = name;
+      document.getElementById('statCategory').textContent = cat;
+      document.getElementById('statSpecCount').textContent = specCount;
+      document.getElementById('statPinCount').textContent = `${pins.length} Pins Extracted`;
+      document.getElementById('statLoopCount').textContent = `${iters.length} Loops`;
+      document.getElementById('statPassRate').textContent = `${passRate.toFixed(1)}%`;
+      document.getElementById('statPassRateSub').textContent = passRate > 0 ? 'Verified Closed-Loop' : 'Simulated (Iter 2 Completed)';
+
+      // Render Sub-Sections
+      renderPDG(pins);
+      renderNetlist();
+      renderTestbenches();
+      renderSpecs();
+      renderDiagnostics(iters);
+      renderHKG(ic);
+    }
+
+    function selectTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+      const target = document.getElementById(tabId);
+      if (target) target.classList.remove('hidden');
+
+      const btn = document.getElementById('btn-' + tabId);
+      if (btn) btn.classList.add('active');
+    }
+
+    // -------------------------------------------------------------
+    // PDG & TIMELINE RENDERER
+    // -------------------------------------------------------------
+    function renderPDG(pins) {
+      const svg = document.getElementById('pdgSvg');
+      svg.innerHTML = '';
+      const tbody = document.getElementById('pdgTableBody');
+      tbody.innerHTML = '';
+
+      if (!pins || pins.length === 0) {
+        svg.innerHTML = '<text x="400" y="140" text-anchor="middle" fill="#64748b" font-size="14">No pin data available in knowledge graph</text>';
+        return;
+      }
+
+      // Group pins by role into columns
+      const roleCols = {
+        'POWER': { x: 100, color: '#38bdf8', label: 'Power Pins (0us)' },
+        'GROUND': { x: 100, color: '#94a3b8', label: 'Ground' },
+        'BIAS': { x: 300, color: '#fbbf24', label: 'Bias / Reg' },
+        'CONTROL': { x: 480, color: '#a855f7', label: 'Control' },
+        'SIGNAL': { x: 480, color: '#60a5fa', label: 'Signal Inputs' },
+        'OUTPUT': { x: 680, color: '#34d399', label: 'Output Nodes' }
+      };
+
+      const pinNodes = [];
+      const colCounts = {};
+
+      pins.forEach((p, idx) => {
+        const role = (p.role || 'SIGNAL').toUpperCase();
+        const baseCol = roleCols[role] || roleCols['SIGNAL'];
+        const colIdx = colCounts[baseCol.x] || 0;
+        colCounts[baseCol.x] = colIdx + 1;
+
+        let delay = 2.0;
+        if (role === 'POWER' || role === 'GROUND') delay = 0.0;
+        else if (role === 'BIAS') delay = 2.0;
+        else if (role === 'CONTROL' || role === 'SIGNAL') delay = 4.0;
+        else if (role === 'OUTPUT') delay = 7.0;
+
+        pinNodes.push({
+          name: p.name,
+          role: role,
+          direction: p.direction || 'BIDIRECTIONAL',
+          delay: delay,
+          x: baseCol.x,
+          y: 50 + colIdx * 45,
+          color: baseCol.color
+        });
+      });
+
+      // Draw Edges (Power -> Bias -> Signal -> Output)
+      pinNodes.forEach(p1 => {
+        pinNodes.forEach(p2 => {
+          if (p1.delay < p2.delay && (p2.delay - p1.delay <= 3.5)) {
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const d = `M ${p1.x + 40} ${p1.y} C ${p1.x + 90} ${p1.y}, ${p2.x - 90} ${p2.y}, ${p2.x - 40} ${p2.y}`;
+            path.setAttribute('d', d);
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', '#334155');
+            path.setAttribute('stroke-width', '1.2');
+            path.setAttribute('stroke-dasharray', '3,3');
+            svg.appendChild(path);
+          }
+        });
+      });
+
+      // Draw Nodes
+      pinNodes.forEach(node => {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'node-pin cursor-pointer');
+        g.setAttribute('id', `pin-node-${node.name}`);
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', node.x - 45);
+        rect.setAttribute('y', node.y - 18);
+        rect.setAttribute('width', 90);
+        rect.setAttribute('height', 36);
+        rect.setAttribute('rx', 8);
+        rect.setAttribute('fill', '#0f172a');
+        rect.setAttribute('stroke', node.color);
+        rect.setAttribute('stroke-width', '1.5');
+        rect.setAttribute('id', `pin-rect-${node.name}`);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', node.x);
+        text.setAttribute('y', node.y - 2);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', '11');
+        text.setAttribute('font-weight', 'bold');
+        text.setAttribute('fill', '#f8fafc');
+        text.textContent = node.name;
+
+        const subText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        subText.setAttribute('x', node.x);
+        subText.setAttribute('y', node.y + 11);
+        subText.setAttribute('text-anchor', 'middle');
+        subText.setAttribute('font-size', '9');
+        subText.setAttribute('fill', node.color);
+        subText.textContent = `${node.delay} μs`;
+
+        g.appendChild(rect);
+        g.appendChild(text);
+        g.appendChild(subText);
+        svg.appendChild(g);
+
+        // Add to Table
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40';
+        tr.innerHTML = `
+          <td class="px-3 py-2 font-mono font-bold text-sky-300">${node.name}</td>
+          <td class="px-3 py-2">${node.role}</td>
+          <td class="px-3 py-2 text-slate-400">${node.direction}</td>
+          <td class="px-3 py-2 font-mono">${node.delay.toFixed(1)} μs</td>
+          <td class="px-3 py-2" id="status-${node.name}"><span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">Waiting</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updateTimelineTime(currentTime);
+    }
+
+    function updateTimelineTime(val) {
+      currentTime = val;
+      document.getElementById('timeSlider').value = val;
+      document.getElementById('timeDisplay').textContent = `${val.toFixed(1)} μs`;
+
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const pins = (ic && ic.knowledge_graph.pins) || [];
+      pins.forEach(p => {
+        const role = (p.role || 'SIGNAL').toUpperCase();
+        let delay = 2.0;
+        if (role === 'POWER' || role === 'GROUND') delay = 0.0;
+        else if (role === 'BIAS') delay = 2.0;
+        else if (role === 'CONTROL' || role === 'SIGNAL') delay = 4.0;
+        else if (role === 'OUTPUT') delay = 7.0;
+
+        const rect = document.getElementById(`pin-rect-${p.name}`);
+        const statusEl = document.getElementById(`status-${p.name}`);
+        if (rect && statusEl) {
+          if (currentTime >= delay) {
+            rect.setAttribute('fill', '#1e293b');
+            rect.setAttribute('stroke-width', '2.5');
+            statusEl.innerHTML = '<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Active & Settled</span>';
+          } else {
+            rect.setAttribute('fill', '#0f172a');
+            rect.setAttribute('stroke-width', '1.0');
+            statusEl.innerHTML = '<span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-500">Prerequisite</span>';
+          }
+        }
+      });
+    }
+
+    function toggleTimelinePlay() {
+      const btn = document.getElementById('btnPlayPause');
+      if (isPlaying) {
+        clearInterval(timelineTimer);
+        isPlaying = false;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg><span>Play Sequence</span>';
+      } else {
+        isPlaying = true;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"/></svg><span>Pause</span>';
+        if (currentTime >= 10.0) currentTime = 0.0;
+        timelineTimer = setInterval(() => {
+          currentTime += 0.5;
+          if (currentTime > 10.0) {
+            currentTime = 10.0;
+            toggleTimelinePlay();
+          }
+          updateTimelineTime(currentTime);
+        }, 250);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // NETLIST & SIZING RENDERER
+    // -------------------------------------------------------------
+    function renderNetlist() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const iters = (ic && ic.summary.iterations) || [];
+      const curIterData = iters[currentNetlistIter - 1] || iters[0] || {};
+      const archText = curIterData.architecture_summary || 'First-principles netlist synthesized directly from datasheet specifications.';
+      document.getElementById('architectureSummaryText').textContent = archText;
+
+      const netlistContent = ic.netlists[`iter${currentNetlistIter}`] || ic.netlists['iter1'] || '* No netlist found for this iteration.';
+      document.getElementById('netlistCodePre').textContent = netlistContent;
+      document.getElementById('netlistFilename').textContent = `${ic.summary.subckt_name || ic.id}_iter${currentNetlistIter}.cir`;
+    }
+
+    function switchNetlistIteration(iter) {
+      currentNetlistIter = iter;
+      document.getElementById('btnNetlistIter1').className = iter === 1
+        ? 'px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold'
+        : 'px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold';
+      document.getElementById('btnNetlistIter2').className = iter === 2
+        ? 'px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold'
+        : 'px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold';
+      renderNetlist();
+    }
+
+    // -------------------------------------------------------------
+    // TESTBENCH RENDERER
+    // -------------------------------------------------------------
+    function renderTestbenches() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const container = document.getElementById('tbDeckButtons');
+      container.innerHTML = '';
+
+      const tbs = Object.keys(ic.testbenches || {});
+      if (tbs.length === 0) {
+        container.innerHTML = '<span class="text-xs text-slate-400">No testbenches available.</span>';
+        document.getElementById('tbCodePre').textContent = '* No testbench deck found.';
+        return;
+      }
+
+      tbs.forEach((tbName, idx) => {
+        const btn = document.createElement('button');
+        btn.className = idx === 0
+          ? 'px-3 py-1.5 text-xs rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono font-semibold'
+          : 'px-3 py-1.5 text-xs rounded-xl bg-slate-800 text-slate-400 border border-slate-700 font-mono font-semibold hover:text-white';
+        btn.textContent = tbName;
+        btn.onclick = () => {
+          document.querySelectorAll('#tbDeckButtons button').forEach(b => {
+            b.className = 'px-3 py-1.5 text-xs rounded-xl bg-slate-800 text-slate-400 border border-slate-700 font-mono font-semibold hover:text-white';
+          });
+          btn.className = 'px-3 py-1.5 text-xs rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono font-semibold';
+          document.getElementById('currentTbName').textContent = tbName;
+          document.getElementById('tbCodePre').textContent = ic.testbenches[tbName];
+        };
+        container.appendChild(btn);
+      });
+
+      document.getElementById('currentTbName').textContent = tbs[0];
+      document.getElementById('tbCodePre').textContent = ic.testbenches[tbs[0]];
+    }
+
+    // -------------------------------------------------------------
+    // SYMPY ORACLE SPEC MATRIX RENDERER
+    // -------------------------------------------------------------
+    function renderSpecs() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const tbody = document.getElementById('specTableBody');
+      tbody.innerHTML = '';
+
+      const specs = (ic.knowledge_graph && ic.knowledge_graph.electrical_parameters) || [];
+      if (specs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-slate-500">No electrical parameters found</td></tr>';
+        return;
+      }
+
+      specs.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition-colors';
+
+        const minVal = s.min !== null && s.min !== undefined ? s.min : '-';
+        const typVal = s.typ !== null && s.typ !== undefined ? s.typ : '-';
+        const maxVal = s.max !== null && s.max !== undefined ? s.max : '-';
+        const unit = s.unit || '';
+
+        tr.innerHTML = `
+          <td class="px-3 py-2 font-mono font-bold text-sky-300">${s.symbol || s.name}</td>
+          <td class="px-3 py-2 font-mono">${minVal}</td>
+          <td class="px-3 py-2 font-mono text-slate-400">${typVal}</td>
+          <td class="px-3 py-2 font-mono">${maxVal}</td>
+          <td class="px-3 py-2 text-indigo-300 font-mono">${unit}</td>
+          <td class="px-3 py-2 font-mono text-slate-400">Unobserved</td>
+          <td class="px-3 py-2">
+            <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 border border-slate-700">Simulated</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterSpecs(query) {
+      const q = query.toLowerCase();
+      document.querySelectorAll('#specTableBody tr').forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+    }
+
+    // -------------------------------------------------------------
+    // DIAGNOSTICS & CLOSED-LOOP RENDERER
+    // -------------------------------------------------------------
+    function renderDiagnostics(iters) {
+      const container = document.getElementById('diagnosticsContainer');
+      container.innerHTML = '';
+
+      if (!iters || iters.length === 0) {
+        container.innerHTML = '<div class="text-xs text-slate-400">No iteration diagnostics recorded.</div>';
+        return;
+      }
+
+      iters.forEach(it => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-900 border border-slate-800 rounded-xl p-5 shadow space-y-4';
+
+        const passPct = (it.pass_rate_percent || 0.0).toFixed(1);
+        const shortfalls = it.shortfalls || [];
+        const improvements = it.improvements || [];
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <h4 class="font-bold text-sm text-white">Closed-Loop Iteration ${it.iteration}</h4>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-slate-400">Pass Rate:</span>
+              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">${passPct}%</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <!-- Shortfall Audit -->
+            <div class="bg-slate-950 border border-rose-500/20 rounded-xl p-3.5 space-y-2">
+              <div class="font-bold text-rose-400 flex items-center gap-1.5 uppercase text-[11px]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                Shortfall Audit (미달 원인 분석)
+              </div>
+              <ul class="space-y-1 text-slate-300 max-h-40 overflow-y-auto custom-scrollbar">
+                ${shortfalls.length ? shortfalls.map(sf => `<li class="font-mono text-[11px] leading-tight text-slate-400">&bull; ${sf}</li>`).join('') : '<li class="text-slate-500">None detected.</li>'}
+              </ul>
+            </div>
+
+            <!-- Improvements Applied -->
+            <div class="bg-slate-950 border border-emerald-500/20 rounded-xl p-3.5 space-y-2">
+              <div class="font-bold text-emerald-400 flex items-center gap-1.5 uppercase text-[11px]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Improvement Actions (개선 및 수정 내역)
+              </div>
+              <ul class="space-y-1 text-slate-300 max-h-40 overflow-y-auto custom-scrollbar">
+                ${improvements.length ? improvements.map(imp => `<li class="text-[11px] leading-tight text-slate-300">&bull; ${imp}</li>`).join('') : '<li class="text-slate-500">No improvements logged.</li>'}
+              </ul>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // -------------------------------------------------------------
+    // HKG METADATA RENDERER
+    // -------------------------------------------------------------
+    function renderHKG(ic) {
+      const dev = (ic.knowledge_graph && ic.knowledge_graph.ic_device) || {};
+      const pins = (ic.knowledge_graph && ic.knowledge_graph.pins) || [];
+
+      const metaEl = document.getElementById('hkgDeviceMetadata');
+      metaEl.innerHTML = `
+        <div><span class="text-slate-500 font-semibold">Device Name:</span> <span class="font-bold text-white">${dev.name || ic.id}</span></div>
+        <div><span class="text-slate-500 font-semibold">Category:</span> <span class="text-sky-300">${dev.category || 'Analog IC'}</span></div>
+        <div class="text-[11px] text-slate-400 leading-relaxed mt-2">${dev.description || 'No datasheet description available.'}</div>
+      `;
+
+      const pinEl = document.getElementById('hkgPinList');
+      pinEl.innerHTML = pins.map(p => `
+        <div class="flex items-center justify-between py-1 border-b border-slate-800/40">
+          <span class="font-mono text-sky-400 font-bold">${p.name}</span>
+          <span class="text-[10px] text-slate-400 uppercase">${p.role || 'SIGNAL'} | ${p.direction || 'BIDIR'}</span>
+        </div>
+      `).join('') || '<div class="text-slate-500">No pin list available.</div>';
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>

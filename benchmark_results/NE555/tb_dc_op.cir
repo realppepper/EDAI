@@ -1,0 +1,114 @@
+.options gmin=1e-12 cshunt=1e-15
+* LTspice Testbench for XX555_PRECISION_TIMERS
+
+.include "XX555_PRECISION_TIMERS_iter2.cir"
+
+* Voltage Sources for Power and Inputs
+VGND GND 0 0
+VVCC VCC 0 PWL(0 0V 4.99u 0V 5u 5V) ; VCC for initial tests, adjust as needed for specific VCC specs
+VCONT CONT 0 PWL(0 0V 4.99u 0V 5u 2.5V) ; CONT activated at 5us
+VRESET RESET 0 PWL(0 0V 4.99u 0V 5u 5V) ; RESET activated at 5us, set high for normal operation
+VNC NC 0 PWL(0 0V 6.99u 0V 7u 0V) ; NC activated at 7us, typically left floating or grounded
+VTHRES THRES 0 PWL(0 0V 6.99u 0V 7u 0V) ; THRES activated at 7us, initial state
+VTRIG TRIG 0 PWL(0 0V 6.99u 0V 7u 5V) ; TRIG activated at 7us, initial state
+; Sanitized output driver short: VDISCH DISCH 0 PWL(0 0V 7.99u 0V 8u 0V) ; DISCH activated at 8us, initial state
+VOUT_SENSE OUT_SENSE 0 PWL(0 0V 7.99u 0V 8u 0V) ; OUT activated at 8us, initial state
+
+* DUT Instance
+XDUT CONT DISCH GND NC OUT RESET THRES TRIG VCC XX555_PRECISION_TIMERS
+
+* Dummy load for OUT pin to measure current
+RLOAD OUT 0 1k ; A dummy load to allow current measurement
+
+* .OP analysis for DC measurements
+.op
+
+* Transient analysis for dynamic measurements and power-up
+.tran 0 100u 0 0.1u startup
+
+* MEASUREMENT DIRECTIVES
+
+* VCC: Max=18.0 V (General)
+.meas VCC_MAX_GEN MAX FIND V(VCC)
+
+* VI: Max=None V (CONT, RESET, THRES, TRIG) - This is a general input voltage spec, not a specific measurement.
+* We will measure the max voltage applied to these pins during the simulation.
+.meas VI_CONT_MAX MAX FIND V(CONT)
+.meas VI_RESET_MAX MAX FIND V(RESET)
+.meas VI_THRES_MAX MAX FIND V(THRES)
+.meas VI_TRIG_MAX MAX FIND V(TRIG)
+
+* IO: Min=-225.0, Max=225.0 mA (General)
+.meas IO_MAX MAX FIND I(RLOAD)
+.meas IO_MIN MIN FIND I(RLOAD)
+
+* TJ: Max=150.0 °C - Requires thermal model, not directly measurable in electrical simulation.
+* Case temperature for 60 seconds: Max=260.0 °C - Requires thermal model, not directly measurable.
+
+* VCC: Min=4.5, Max=16.0 V (NA555, NE555, SA555)
+* VCC: Min=4.5, Max=18.0 V (SE555)
+* These are operating conditions, not direct measurements from a single simulation.
+* We will measure the VCC applied.
+.meas VCC_APPLIED_MIN MIN FIND V(VCC)
+.meas VCC_APPLIED_MAX MAX FIND V(VCC)
+
+* IO: Min=-200.0, Max=200.0 mA (Specific condition)
+* This is a subset of the general IO spec, already covered by IO_MAX/MIN.
+
+* TA: Min/Max values - Operating temperature ranges, not directly measurable in electrical simulation.
+* RθJC(top), RθJB, ψJT, ψJB, RθJC(bot) - Thermal resistance/impedance, not directly measurable in electrical simulation.
+
+* THRES voltage level: VCC = 15V
+* To measure these, we need to set VCC to 15V and observe THRES.
+* This requires a separate simulation or a more complex PWL for VCC.
+* For now, we'll assume VCC is set to 5V as per initial setup.
+* To test VCC=15V, change VVCC to PWL(0 0V 4.99u 0V 5u 15V)
+.meas THRES_V_LEVEL_VCC5_OP V(THRES) at 100u ; Measure THRES voltage at steady state with VCC=5V
+
+* THRES current: Typ=30.0, Max=250.0 nA
+* To measure current into THRES, we need a voltage source in series or a small resistor.
+* Let's add a small voltage source to measure current.
+VTHRES_SENSE THRES_SENSE THRES 0V
+.meas I_THRES_OP I(VTHRES_SENSE) at 100u
+
+* RESET voltage level: Min=0.3, Typ=0.7, Max=1.0 V
+* This implies the voltage at which RESET becomes active or inactive.
+* We need to sweep RESET voltage to find these points.
+* For now, we measure the voltage applied to RESET.
+.meas RESET_V_LEVEL_APPLIED V(RESET) at 100u
+
+* RESET current: Typ=0.1, Max=0.4 mA (RESET at VCC)
+* To measure this, RESET needs to be tied to VCC.
+* Let's assume VRESET is tied to VCC for this measurement.
+* Change VRESET to VRESET RESET VCC 0V for this test.
+* For now, we measure the current into the RESET pin with VRESET at 5V.
+VRESET_SENSE RESET_SENSE RESET 0V
+.meas I_RESET_VCC_OP I(VRESET_SENSE) at 100u
+
+* RESET current: Min=-1.5, Typ=-0.4 mA (RESET at 0V)
+* To measure this, RESET needs to be tied to 0V.
+* Change VRESET to VRESET RESET 0 0V for this test.
+* For now, we measure the current into the RESET pin with VRESET at 5V.
+* This measurement is not directly captured by the current setup.
+
+* DISCH switch off-state current: Typ=20.0, Max=100.0 nA
+* To measure this, DISCH needs to be off (e.g., V(DISCH) = 0V and internal switch open).
+* We need the internal switch is off. This typically happens when OUT is high.
+* Let's measure current into DISCH when it's pulled low by the external source.
+VDISCH_SENSE DISCH_SENSE DISCH 0V
+.meas I_DISCH_OFF_OP I(VDISCH_SENSE) at 100u
+
+* DISCH switch on-state voltage: Typ=0.15, Max=0.4 V (VCC = 5V, IO = 8mA)
+* This requires forcing a current through DISCH and measuring its voltage.
+* This is a more complex setup, requiring a current source connected to DISCH.
+* For now, we measure the voltage at DISCH when it's pulled low.
+.meas V_DISCH_ON_OP V(DISCH) at 100u
+
+* CONT voltage (open circuit): Min=9.0 None
+* This implies the voltage at CONT when it's left floating or lightly loaded.
+* Our current setup drives CONT with a voltage source.
+* To measure open circuit, we would remove VCONT and add a high impedance probe.
+* For now, we measure the voltage applied to CONT.
+.meas V_CONT_OC_APPLIED V(CONT) at 100u
+
+.end

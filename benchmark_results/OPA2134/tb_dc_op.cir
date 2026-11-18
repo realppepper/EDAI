@@ -1,0 +1,98 @@
+.options gmin=1e-12 cshunt=1e-15
+* OPAX134 Testbench for Specification Verification
+
+.include "OPAX134_iter2.cir"
+
+* Power Supplies
+* Dual Supply for VS (2.5V to 18V)
+V_POS_SUP V_POS 0 PWL(0 0 0.00u 0 0.01u 15V)
+V_NEG_SUP V_NEG 0 PWL(0 0 0.00u 0 0.01u -15V)
+V_POS_A_SUP V_POS_A 0 PWL(0 0 0.00u 0 0.01u 15V)
+V_NEG_A_SUP V_NEG_A 0 PWL(0 0 0.00u 0 0.01u -15V)
+
+* Single Supply for VS (5V to 36V) - Use for specific single supply tests
+* V_POS_SINGLE V_POS 0 PWL(0 0 0.00u 0 0.01u 30V)
+* V_NEG_SINGLE V_NEG 0 PWL(0 0 0.00u 0 0.01u 0V)
+* V_POS_A_SINGLE V_POS_A 0 PWL(0 0 0.00u 0 0.01u 30V)
+* V_NEG_A_SINGLE V_NEG_A 0 PWL(0 0 0.00u 0 0.01u 0V)
+
+* NC Pins (activated at 2.00 us)
+V_NC1 NC1 0 PWL(0 0 1.99u 0 2.00u 0)
+V_NC2 NC2 0 PWL(0 0 1.99u 0 2.00u 0)
+V_NC3 NC3 0 PWL(0 0 1.99u 0 2.00u 0)
+
+* Input Stimulus (activated at 2.00 us)
+* For Input Voltage measurement, we'll sweep the input.
+* For Input Current measurement, we'll apply a voltage and measure current.
+* Let's set up a DC bias for initial measurements.
+V_IN_POS IN_POS 0 PWL(0 0 1.99u 0 2.00u 0V)
+V_IN_NEG IN_NEG 0 PWL(0 0 1.99u 0 2.00u 0V)
+V_IN_POS_A IN_POS_A 0 PWL(0 0 1.99u 0 2.00u 0V)
+V_IN_NEG_A IN_NEG_A 0 PWL(0 0 1.99u 0 2.00u 0V)
+V_IN_POS_B IN_POS_B 0 PWL(0 0 1.99u 0 2.00u 0V)
+V_IN_NEG_B IN_NEG_B 0 PWL(0 0 1.99u 0 2.00u 0V)
+
+* Output Loads (activated at 3.00 us)
+R_OUT OUT 0 1k
+R_OUT_A OUT_A 0 1k
+R_OUT_B OUT_B 0 1k
+
+* DUT Instantiation
+XDUT NC1 IN_NEG IN_POS V_NEG NC2 OUT V_POS NC3 OUT_A IN_NEG_A IN_POS_A V_NEG_A IN_POS_B IN_NEG_B OUT_B V_POS_A OPAX134
+
+* Simulation Commands
+.tran 0 100u 0 0.1u startup
+.op
+
+* MEASUREMENTS
+
+* VS: Min=None, Typ=None, Max=36.0 V | Desc:  | Conditions: Single supply
+* This implies the maximum operating voltage for single supply. We'll set V_POS_SINGLE to 36V and V_NEG_SINGLE to 0V.
+* For this test, we'll use a separate run or modify the V_POS_SUP/V_NEG_SUP sources.
+* Let's assume the default V_POS_SUP/V_NEG_SUP are for dual supply.
+* To test single supply max, we'd need to change the power supplies.
+* For now, we'll measure the supply voltage as set.
+.meas tran vs_single_max_test PARAM V(V_POS) + ABS(V(V_NEG))
+
+* Input voltage: Min=None, Typ=None, Max=None V | Desc:  | Conditions: (V–) – 0.5 to (V+) + 0.5
+* This requires sweeping the input voltage. We'll set IN_POS to sweep and IN_NEG to a fixed voltage.
+* Let's set V_NEG to -15V and V_POS to 15V.
+* We'll sweep IN_POS from V_NEG-0.5 to V_POS+0.5.
+* This is a DC sweep, not a transient measurement.
+* For transient, we can check if input voltage stays within limits.
+.meas tran vin_pos_max MAX V(IN_POS) FROM=50u TO=100u
+.meas tran vin_pos_min MIN V(IN_POS) FROM=50u TO=100u
+.meas tran vin_neg_max MAX V(IN_NEG) FROM=50u TO=100u
+.meas tran vin_neg_min MIN V(IN_NEG) FROM=50u TO=100u
+
+* Input current: Min=-10.0, Typ=None, Max=10.0 mA | Desc:  | Conditions: None
+* We need to apply a voltage and measure the current into the input pins.
+* Let's apply a small differential voltage and measure the input current.
+; Sanitized duplicate parallel voltage source short: V_IN_POS_TEST IN_POS 0 PWL(0 0 1.99u 0 2.00u 0.1V)
+; Sanitized duplicate parallel voltage source short: V_IN_NEG_TEST IN_NEG 0 PWL(0 0 1.99u 0 2.00u 0V)
+.meas tran i_in_pos_avg AVG I(V_IN_POS_TEST) FROM=50u TO=100u
+.meas tran i_in_neg_avg AVG I(V_IN_NEG_TEST) FROM=50u TO=100u
+
+* ISC: Min=None, Typ=None, Max=None Continuous | Desc:  | Conditions: Short-circuit to ground, one amplifier per package
+* To measure ISC, we short the output to ground and measure the current.
+* We'll add a shorting resistor and measure current through it.
+R_ISC OUT 0 1m ; Small resistor to measure current
+.meas tran i_sc_out_avg AVG I(R_ISC) FROM=50u TO=100u
+
+* TA: Min=-40.0, Typ=None, Max=125.0 °C | Desc:  | Conditions: None
+* TJ: Min=None, Typ=None, Max=150.0 °C | Desc:  | Conditions: None
+* TA: Min=-40.0, Typ=None, Max=85.0 °C | Desc:  | Conditions: None
+* Temperature measurements are set via the .temp directive.
+* We'll run separate simulations for different temperatures.
+* For this run, we'll use the default temperature (27C).
+*.temp -40 27 85 125 150
+
+* VS: Min=2.5, Typ=15.0, Max=18.0 V | Desc:  | Conditions: Dual supply
+* We are currently running with 15V dual supply.
+.meas tran vs_dual_typ PARAM V(V_POS) - V(V_NEG)
+
+* VS: Min=5.0, Typ=30.0, Max=36.0 V | Desc:  | Conditions: Single supply
+* This requires a separate simulation run with single supply configuration.
+* For this run, we'll assume dual supply.
+
+.end

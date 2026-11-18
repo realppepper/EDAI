@@ -1,0 +1,60 @@
+* LM358B dual operational-amplifier behavioral macromodel
+* Terminal order: OUT1 IN1 IN1_P V IN2_P IN2 OUT2 V_P
+* No internal connection to the simulator ground node.
+*
+* Standard device models are provided for extensions and characterization.
+.model LM358B_NPN NPN (IS=1e-15 BF=120 VAF=100 CJE=2p CJC=1p)
+.model LM358B_PNP PNP (IS=1e-15 BF=80 VAF=60 CJE=3p CJC=2p)
+.model LM358B_NMOS NMOS (LEVEL=1 VTO=0.8 KP=60u LAMBDA=0.02)
+.model LM358B_PMOS PMOS (LEVEL=1 VTO=-0.8 KP=25u LAMBDA=0.02)
+.model LM358B_DIODE D (IS=1e-15 N=1.2)
+
+
+* --- Globally Hoisted Models for Multi-Subcircuit Visibility ---
+.model S_MODEL VSWITCH (RON=10 ROFF=1G VTH=0.5 VH=0.1)
+.model D_PROT D (IS=1e-15 N=1 RS=10)
+.model LM358B_NPN NPN (IS=1e-15 BF=120 VAF=100 CJE=2p CJC=1p)
+.model LM358B_PNP PNP (IS=1e-15 BF=80 VAF=60 CJE=3p CJC=2p)
+.model LM358B_NMOS NMOS (LEVEL=1 VTO=0.8 KP=60u LAMBDA=0.02)
+.model LM358B_PMOS PMOS (LEVEL=1 VTO=-0.8 KP=25u LAMBDA=0.02)
+.model LM358B_DIODE D (IS=1e-15 N=1.2)
+
+.subckt LM358B OUT1 IN1 IN1_P V IN2_P IN2 OUT2 V_P
+*
+* Shared supply consumption: approximately 300 uA/channel at 5 V
+* and approximately 600 uA/channel at 36 V, excluding load current.
+B_IQ V_P V I={300u+19.35u*max(V(V_P,V)-5,0)}
+*
+* CHANNEL 1 -- input leakage, bias, offset and dominant stage
+R1_ID IN1_P IN1 10Meg
+R1_CP IN1_P V 4G
+R1_CN IN1 V 4G
+B1_BP V IN1_P I={10n}
+B1_BN V IN1 I={10.5n}
+B1_GM V N1_DOM I={4.64u*tanh((70u/4.64u)*(V(IN1_P,IN1)+300u+20u*(V(IN1_P,V)-2.5)+2u*(V(V_P,V)-5)))}
+R1_DOM N1_DOM V 2Meg
+C1_DOM N1_DOM V 9.28n
+B1_TARGET N1_TARGET V V={min(max(V(N1_DOM,V)+0.5*V(V_P,V),5m),max(5m,V(V_P,V)-1.35))}
+*
+* Asymmetric output driver. Currents, rather than an ideal output
+* voltage source, drive the externally accessible output node.
+B1_SOURCE V_P OUT1 I={30m*tanh(max(V(N1_TARGET,OUT1),0)/1.2)}
+B1_SINK OUT1 V I={20m*tanh(max(V(OUT1,N1_TARGET),0)/14)}
+R1_OUT OUT1 V 100Meg
+C1_OUT OUT1 V 20p
+*
+* CHANNEL 2 -- identical nominal electrical design
+R2_ID IN2_P IN2 10Meg
+R2_CP IN2_P V 4G
+R2_CN IN2 V 4G
+B2_BP V IN2_P I={10n}
+B2_BN V IN2 I={10.5n}
+B2_GM V N2_DOM I={4.64u*tanh((70u/4.64u)*(V(IN2_P,IN2)+300u+20u*(V(IN2_P,V)-2.5)+2u*(V(V_P,V)-5)))}
+R2_DOM N2_DOM V 2Meg
+C2_DOM N2_DOM V 9.28n
+B2_TARGET N2_TARGET V V={min(max(V(N2_DOM,V)+0.5*V(V_P,V),5m),max(5m,V(V_P,V)-1.35))}
+B2_SOURCE V_P OUT2 I={30m*tanh(max(V(N2_TARGET,OUT2),0)/1.2)}
+B2_SINK OUT2 V I={20m*tanh(max(V(OUT2,N2_TARGET),0)/14)}
+R2_OUT OUT2 V 100Meg
+C2_OUT OUT2 V 20p
+.ends LM358B
