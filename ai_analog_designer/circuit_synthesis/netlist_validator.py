@@ -1130,6 +1130,47 @@ class NetlistValidator:
                     f"(floating rail — DC operating point will not converge)."
                 )
 
+        # 8. Semantic device-model type check using .model symbol table
+        model_types: dict[str, str] = {}
+        for line in cleaned_netlist.splitlines():
+            m_def = re.match(r'^\s*\.model\s+([a-zA-Z0-9_]+)\s+([a-zA-Z0-9_]+)', line, re.IGNORECASE)
+            if m_def:
+                model_types[m_def.group(1).upper()] = m_def.group(2).upper()
+
+        for line in cleaned_netlist.splitlines():
+            s = line.strip()
+            if not s or s.startswith(('*', ';', '+', '.')):
+                continue
+            toks = s.split()
+            if not toks:
+                continue
+            first = toks[0].upper()
+            pos_toks = [t for t in toks[1:] if '=' not in t]
+            if first.startswith('Q') and len(pos_toks) >= 4:
+                mname = pos_toks[-1].upper()
+                mtype = model_types.get(mname)
+                if mtype and mtype not in ('NPN', 'PNP'):
+                    errors.append(
+                        f"SEMANTIC_ERROR on '{toks[0]}': BJT (Q) device references model '{mname}' of type '{mtype}' "
+                        f"(expected NPN/PNP). Either rename '{toks[0]}' to 'M...' or use a BJT model."
+                    )
+            elif first.startswith('M') and len(pos_toks) >= 5:
+                mname = pos_toks[-1].upper()
+                mtype = model_types.get(mname)
+                if mtype and mtype not in ('NMOS', 'PMOS'):
+                    errors.append(
+                        f"SEMANTIC_ERROR on '{toks[0]}': MOSFET (M) device references model '{mname}' of type '{mtype}' "
+                        f"(expected NMOS/PMOS)."
+                    )
+            elif first.startswith('D') and len(pos_toks) >= 3:
+                mname = pos_toks[-1].upper()
+                mtype = model_types.get(mname)
+                if mtype and mtype != 'D':
+                    errors.append(
+                        f"SEMANTIC_ERROR on '{toks[0]}': Diode (D) device references model '{mname}' of type '{mtype}' "
+                        f"(expected D)."
+                    )
+
         is_valid = len(errors) == 0
 
 
