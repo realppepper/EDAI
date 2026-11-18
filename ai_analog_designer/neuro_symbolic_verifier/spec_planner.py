@@ -605,7 +605,7 @@ def build_plan(ic_info: dict[str, Any], pins: list[dict[str, Any]], specs: list[
                                "vo_at": cond.get("vo_at"), "vo_offset": cond.get("vo_offset"),
                                "rst_level": rst}
             key = (kind, tuple(sorted((k, v) for k, v in item["fixture"].items() if v is not None)))
-            item["fixture_key"] = f"{kind}_{hashlib.md5(repr(key).encode()).hexdigest()[:6]}"
+            item["fixture_key"] = f"{kind}_{hashlib.md5(repr(key).encode(), usedforsecurity=False).hexdigest()[:6]}"
             seen_keys[key] = seen_keys.get(key, 0) + 1
     planned = [i for i in items if i["status"] == "PLANNED"]
     return {"device_class": device_class, "pin_map": pin_map, "vs_default": vs_default, "items": items,

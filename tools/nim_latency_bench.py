@@ -159,7 +159,7 @@ def main():
         if not oks:
             print(f"| {m} | 0/{len(rs)} | - | - | - | - | {rs[0].get('error','')[:60] if rs else ''} |")
             continue
-        med = lambda k: sorted(r[k] for r in oks)[len(oks) // 2]
+        med = lambda k, _oks=oks: sorted(r[k] for r in _oks)[len(_oks) // 2]
         print(f"| {m} | {len(oks)}/{len(rs)} | {med('ttft_s')} | {med('total_s')} | {med('tok_per_s')} | "
               f"{sum(r['json_valid'] for r in oks)}/{len(oks)} | {med('params_extracted')} |")
 

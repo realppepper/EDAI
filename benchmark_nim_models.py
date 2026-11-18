@@ -154,7 +154,9 @@ def run_queue_degradation_benchmark(target_models: list[str], num_repeats: int =
         queue_results[m_id] = history
     return queue_results
 
-def run_concurrency_stress_test(m_id: str, concurrency_levels: list[int] = [2, 4, 8]):
+def run_concurrency_stress_test(m_id: str, concurrency_levels: list[int] | None = None):
+    if concurrency_levels is None:
+        concurrency_levels = [2, 4, 8]
     print("\n" + "=" * 80)
     print(f"PHASE 3: CONCURRENCY QUEUE STRESS TEST: {m_id}")
     print("=" * 80)

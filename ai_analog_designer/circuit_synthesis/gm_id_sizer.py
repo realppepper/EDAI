@@ -151,7 +151,7 @@ def parse_ngspice_subckt(text: str) -> dict[str, Any]:
             continue
         if head.startswith("."):
             continue
-        net = lambda node: rename.get(node, node)  # noqa: E731
+        net = lambda node, _r=rename: _r.get(node, node)  # noqa: E731
         if head.startswith(("X", "M")):
             model = tokens[5] if len(tokens) > 5 else ""
             if model in NGSPICE_MODELS:

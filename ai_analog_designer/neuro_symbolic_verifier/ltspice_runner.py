@@ -36,8 +36,8 @@ class LTspiceRunner:
         cmd = [self.simulator_path, "-b", netlist_path]
         try:
             proc = subprocess.run(cmd, cwd=workdir, capture_output=True, text=True, timeout=timeout)
-        except subprocess.TimeoutExpired:
-            raise TimeoutError(f"LTspice timed out after {timeout} seconds on {netlist_path}")
+        except subprocess.TimeoutExpired as exc:
+            raise TimeoutError(f"LTspice timed out after {timeout} seconds on {netlist_path}") from exc
 
         if not os.path.exists(log_file):
             candidates = glob.glob(os.path.join(workdir, f"{base_name}*.log"))

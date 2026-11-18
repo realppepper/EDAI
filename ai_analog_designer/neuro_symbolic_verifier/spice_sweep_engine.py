@@ -187,7 +187,7 @@ def render_netlist(source: str, params: dict[str, float]) -> str:
     text = source
     for n, v in params.items():
         pat = r"(?im)^(\s*\.param\s+" + re.escape(n) + r"\s*=\s*)[^\n;]+"
-        text, count = re.subn(pat, lambda m: m.group(1) + format(v, ".12g"), text)
+        text, count = re.subn(pat, lambda m, _v=v: m.group(1) + format(_v, ".12g"), text)
         if count != 1:
             raise ValueError(f"Failed to substitute parameter {n}")
     return text

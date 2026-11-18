@@ -257,7 +257,7 @@ def handle_edai_post(handler: Any, path: str) -> bool:
                 llm_client = None
                 if data.get("use_ai"):
                     from ai_analog_designer.llm_client import LLMClient
-                    llm_client = LLMClient(role="fast", default_model=STUDIO_CONFIG.get("model") or None)
+                    llm_client = LLMClient(default_model=STUDIO_CONFIG.get("model") or None)
                 result = extract_evidence(data, llm_client=llm_client)
             finally:
                 AI_LOCK.release()

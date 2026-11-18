@@ -92,7 +92,7 @@ def main():
         for w in args.workloads.split(","):
             rs = [r for r in res if r["model"] == m and r["workload"] == w]
             oks = [r for r in rs if r["ok"]]
-            med = lambda k: sorted((r[k] or 0) for r in oks)[len(oks) // 2] if oks else "-"
+            med = lambda k, _oks=oks: sorted((r[k] or 0) for r in _oks)[len(_oks) // 2] if _oks else "-"
             cost = round(sum((r["cost_usd"] or 0) for r in oks) / len(oks), 5) if oks else "-"
             print(f"| {m} | {w} | {len(oks)}/{len(rs)} | {sum(r['valid'] for r in rs)}/{len(rs)} | {med('ttft_s')} | "
                   f"{med('total_s')} | {med('out_tokens')} | {cost} |")

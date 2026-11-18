@@ -117,8 +117,8 @@ def assemble_block_topology(
         if missing:
             return {"ok": False, "errors": [f"Stage2 '{stage2_name}' requires {missing} drive not provided by '{stage1_name}'"]}
         link = {"n": "gn", "p": "gp"} if len(needs) > 1 else {lvl: "o1" for lvl in needs}
+        s2_nets = fixed_nets(s2)
         for lvl, pin in needs.items():
-            s2_nets = fixed_nets(s2) if lvl == next(iter(needs)) else s2_nets
             s2_nets[pin] = link[lvl]
             s1_nets[drives[lvl]] = link[lvl]
             comp_nets.append(link[lvl])

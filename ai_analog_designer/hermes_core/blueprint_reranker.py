@@ -152,7 +152,7 @@ class BlueprintReranker:
                 import json
 
                 from ..llm_client import LLMClient
-                llm = LLMClient(role="fast")
+                llm = LLMClient()
                 if getattr(llm, "provider", "none") != "none":
                     briefs = [
                         {
