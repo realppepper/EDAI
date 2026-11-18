@@ -345,9 +345,52 @@ class HermesAnalogTools:
                 m = re.search(r"(\.subckt\b[\s\S]*?\.ends\b[^\r\n]*)", raw, re.IGNORECASE)
             netlist = m.group(1).strip() if m else raw.strip()
             val_res = self.validate_netlist_syntax(netlist)
+            repair_attempts = 0
+            max_syntax_repairs = 2
+            while not val_res.get("is_valid", False) and repair_attempts < max_syntax_repairs:
+                repair_attempts += 1
+                with trace_span(
+                    f"subagent.syntax_verifier.attempt_{repair_attempts}",
+                    span_kind="AGENT",
+                    attributes={"attempt": repair_attempts, "errors_count": len(val_res.get("errors", []))},
+                    input_data={"errors": val_res.get("errors", []), "netlist": val_res.get("cleaned_netlist", netlist)},
+                ) as sv_span:
+                    err_lines = "\n".join(f"- {e}" for e in val_res.get("errors", []))
+                    sv_sys = (
+                        "You are a dedicated SPICE Syntax Verifier & Repair Sub-Agent.\n"
+                        "Fix ONLY the SPICE syntax/guardrail errors below while preserving the circuit's intended topology.\n"
+                        "MANDATORY RULES:\n"
+                        "- BJT (Q): strictly 3 pins + NPN/PNP model: `Qxxx C B E <QNPN|QPNP>` (no W/L, no inline params).\n"
+                        "- MOSFET (M): strictly 4 pins + NMOS/PMOS model: `Mxxx D G S B <NMOS|PMOS> W=... L=...` (no inline params).\n"
+                        "- Diode (D): strictly 2 pins + model: `Dxxx A K <DMOD>`.\n"
+                        "- Every declared POWER/GROUND pin must connect to internal components.\n"
+                        "- Output ONLY `<spice_netlist>...</spice_netlist>`."
+                    )
+                    sv_prompt = (
+                        f"Target `.subckt {self.dut_name} {pins_line}`\n\n"
+                        f"## SYNTAX / GUARDRAIL ERRORS TO FIX:\n{err_lines}\n\n"
+                        f"## CURRENT NETLIST:\n{val_res.get('cleaned_netlist', netlist)}\n\n"
+                        "Return ONLY the repaired `<spice_netlist>...</spice_netlist>` block."
+                    )
+                    repaired_raw = client.complete(
+                        prompt=sv_prompt,
+                        system_prompt=sv_sys,
+                        temperature=0.0,
+                        max_tokens=4096,
+                        tag="dyn_tb",
+                    )
+                    m_rep = re.search(r"<spice_netlist>(.*?)</spice_netlist>", repaired_raw, re.DOTALL | re.IGNORECASE)
+                    if not m_rep:
+                        m_rep = re.search(r"(\.subckt\b[\s\S]*?\.ends\b[^\r\n]*)", repaired_raw, re.IGNORECASE)
+                    if m_rep:
+                        netlist = m_rep.group(1).strip()
+                        val_res = self.validate_netlist_syntax(netlist)
+                    set_span_output(sv_span, {"is_valid": val_res.get("is_valid", False), "errors": val_res.get("errors", [])})
+
             out = {
                 "status": "SYNTHESIZED" if val_res.get("is_valid") else "SYNTHESIZED_WITH_SYNTAX_ERRORS",
                 "subagent_invoked": True,
+                "syntax_repair_attempts": repair_attempts,
                 "is_valid": val_res.get("is_valid", False),
                 "errors": val_res.get("errors", []),
                 "device_counts": val_res.get("device_counts", {}),

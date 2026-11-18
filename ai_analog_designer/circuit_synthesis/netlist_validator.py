@@ -1085,9 +1085,20 @@ class NetlistValidator:
                 continue
             upper_line = s.upper()
             if first.startswith('Q'):
+                q_pos_toks = [t for t in toks[1:] if '=' not in t]
+                if len(q_pos_toks) < 4:
+                    errors.append(
+                        f"SPICE_SYNTAX_ERROR on '{toks[0]}': BJT (Q) devices require 3 pins (C B E) plus a model name. Line: '{s}'"
+                    )
                 if re.search(r'\b(NMOS|PMOS)\b', upper_line):
                     errors.append(
                         f"SPICE_SYNTAX_ERROR on '{toks[0]}': BJT (Q) devices must use NPN/PNP model, never NMOS/PMOS. Line: '{s}'"
+                    )
+            if first.startswith('D'):
+                d_pos_toks = [t for t in toks[1:] if '=' not in t]
+                if len(d_pos_toks) < 3:
+                    errors.append(
+                        f"SPICE_SYNTAX_ERROR on '{toks[0]}': Diode (D) devices require 2 pins (A K) plus a model name. Line: '{s}'"
                     )
             if (first.startswith('Q') or first.startswith('M') or first.startswith('D')) and re.search(r'\([^)]*=[^)]*\)', s):
                 errors.append(

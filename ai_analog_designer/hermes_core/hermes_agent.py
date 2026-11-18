@@ -621,6 +621,7 @@ CRITICAL: NEVER use ellipses, placeholders, or undefined X-subcircuit stubs in t
         self.messages = [{"role": "user", "content": task_prompt}]
         best_netlist = None
         best_pass_rate = 0.0
+        best_syntax_valid = False
         best_turn = None
 
         logger.info(f"Starting Hermes Autonomous Design Loop (Max Netlist Sub-Agent Calls: {max_turns}, Target: {target_pass_rate}%)...")
@@ -664,8 +665,21 @@ CRITICAL: NEVER use ellipses, placeholders, or undefined X-subcircuit stubs in t
                     "tool_calls": [c.get("name") for c in turn_res.tool_calls],
                 })
 
-            if turn_res.netlist_extracted and (turn_res.pass_rate > best_pass_rate or not best_netlist):
+            turn_syntax_valid = not any(
+                isinstance(o.get("output"), dict)
+                and (
+                    o["output"].get("is_valid") is False
+                    or o["output"].get("status") == "REJECTED_BY_GUARDRAIL"
+                )
+                for o in (turn_res.tool_outputs or [])
+            )
+            if turn_res.netlist_extracted and (
+                not best_netlist
+                or turn_res.pass_rate > best_pass_rate
+                or (turn_res.pass_rate == best_pass_rate and turn_syntax_valid and not best_syntax_valid)
+            ):
                 best_pass_rate = turn_res.pass_rate
+                best_syntax_valid = turn_syntax_valid
                 best_netlist = turn_res.netlist_extracted
                 best_turn = turn_res
 
