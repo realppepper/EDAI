@@ -92,6 +92,47 @@ class GoldenOracleAnchor:
 
         return None
 
+    @staticmethod
+    def _preflight_validate_deck(deck: str, subckt_name: str, pin_order: list[str]) -> list[str]:
+        """Checks common LTspice-hanging syntax errors before launching LTspice batch mode."""
+        errors: list[str] = []
+        lines = deck.splitlines()
+        xdut_found = False
+        has_analysis = False
+        has_meas = False
+        for idx, raw in enumerate(lines, start=1):
+            line = raw.strip()
+            if not line or line.startswith("*"):
+                continue
+            low = line.lower()
+            if re.match(r"^\.lib\s*$", low):
+                errors.append(f"Line {idx}: bare `.lib` without filename is invalid in LTspice.")
+            if re.match(r"^\.(control|endc)\b", low):
+                errors.append(f"Line {idx}: ngspice `.control/.endc` block is unsupported in LTspice.")
+            if re.match(r"^v\w+\s+\S+\s+dc\b", low):
+                errors.append(f"Line {idx}: voltage source `{line}` is missing its second node (syntax: `Vname n+ n- DC val`).")
+            if re.match(r"^\.(tran|ac|dc|op|noise|tf)\b", low):
+                has_analysis = True
+            if re.match(r"^\.meas\b", low):
+                has_meas = True
+            if re.match(r"^x\w+\s+", low):
+                tokens = line.split()
+                if len(tokens) >= 2 and tokens[-1].upper() == subckt_name.upper():
+                    xdut_found = True
+                    actual_pins = len(tokens) - 2
+                    if pin_order and actual_pins != len(pin_order):
+                        errors.append(
+                            f"Line {idx}: `{tokens[0]}` has {actual_pins} pins, expected {len(pin_order)} "
+                            f"for `{subckt_name}` ({' '.join(pin_order)})."
+                        )
+        if not xdut_found:
+            errors.append(f"Missing DUT instantiation calling `{subckt_name}` (expected {len(pin_order)} pins: {' '.join(pin_order)}).")
+        if not has_analysis:
+            errors.append("Missing LTspice analysis command (e.g., `.op`, `.dc`, `.ac`, or `.tran`).")
+        if not has_meas:
+            errors.append("Missing `.meas` directive to extract target specification.")
+        return errors
+
     def audit_fixture_candidate(
         self,
         target_kind: str,
@@ -132,26 +173,50 @@ class GoldenOracleAnchor:
                 "diagnostic": f"REJECTED by Golden Oracle: Fixture uses prohibited behavioral constructs: {prohibited}. Pure physical stimulus required."
             }
 
-        # Materialize golden DUT netlist and testbench
-        dut_file = os.path.join(out_dir, f"golden_{target_class}_dut.sub")
+        # Materialize golden DUT netlist and testbench (sanitize filenames & use absolute .include path)
+        safe_class = re.sub(r"[^A-Za-z0-9_.-]+", "_", target_class).strip("_") or "dut"
+        safe_kind = re.sub(r"[^A-Za-z0-9_.-]+", "_", target_kind).strip("_") or "spec"
+        dut_file = os.path.abspath(os.path.join(out_dir, f"golden_{safe_class}_dut.sub"))
         with open(dut_file, "w", encoding="utf-8") as f:
             f.write(netlist_content)
 
-        # Substitute DUT reference in proposed deck
+        # Substitute .include path and generic `DUT` subcircuit name with actual golden subckt_name
         dut_file_fwd = dut_file.replace("\\", "/")
+        if re.search(r'^\s*\.include\b', proposed_deck_template, flags=re.IGNORECASE | re.MULTILINE):
+            deck = re.sub(
+                r'(^\s*\.include\s+["\']?)[^\r\n"\']+(["\']?)',
+                lambda m: f'{m.group(1)}{dut_file_fwd}{m.group(2)}',
+                proposed_deck_template,
+                flags=re.IGNORECASE | re.MULTILINE,
+            )
+        else:
+            deck = f'* Golden Oracle Audit Fixture\n.include "{dut_file_fwd}"\n' + proposed_deck_template
+
         deck = re.sub(
-            r'(\.include\s+["\']?).*?(["\']?\s*\n)',
-            lambda m: f"{m.group(1)}{dut_file_fwd}{m.group(2)}",
-            proposed_deck_template,
-            flags=re.IGNORECASE
+            r'(?im)^(\s*X\w+\s+[^\r\n]+?\s+)DUT(\s*(?:;.*)?)$',
+            lambda m: f"{m.group(1)}{subckt_name}{m.group(2)}",
+            deck,
         )
-        tb_file = os.path.join(out_dir, f"audit_{target_kind}_{target_class}.cir")
+
+        # Preflight LTspice syntax validation to return immediate actionable diagnostics instead of hanging
+        preflight_errors = self._preflight_validate_deck(deck, subckt_name, pin_order)
+        if preflight_errors:
+            return {
+                "accepted": False,
+                "pass_rate": 0.0,
+                "false_verdict_count": len(preflight_errors),
+                "measured_value": None,
+                "diagnostic": "Preflight SPICE syntax error(s): " + " | ".join(preflight_errors),
+            }
+
+        tb_file = os.path.abspath(os.path.join(out_dir, f"audit_{safe_kind}_{safe_class}.cir"))
         with open(tb_file, "w", encoding="utf-8") as f:
             f.write(deck)
 
         # Execute simulation via LTspice
         try:
-            meas_results = self.runner.run_netlist(tb_file, timeout=45)
+            oracle_timeout = int(os.environ.get("GOLDEN_ORACLE_TIMEOUT_S", "120"))
+            meas_results = self.runner.run_netlist(tb_file, timeout=oracle_timeout)
         except Exception as e:
             return {
                 "accepted": False,

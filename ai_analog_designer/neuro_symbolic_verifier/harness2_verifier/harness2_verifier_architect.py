@@ -103,6 +103,10 @@ class Harness2VerifierArchitect:
         logger.info(f"[Dual-Harness² Verifier] Proposing evolution for {len(unsupported_specs)} unsupported specs in {device_class}...")
 
         evolved_rules = []
+        golden_info = self.anchor.get_golden_model_netlist(device_class)
+        golden_subckt = golden_info[1] if golden_info else "DUT"
+        golden_pins = " ".join(golden_info[2]) if (golden_info and golden_info[2]) else "<nodes...>"
+        max_attempts = 3
 
         for spec in unsupported_specs[:5]:  # Batch first 5 new specs
             sym = spec.get("symbol", "SPEC")
@@ -110,8 +114,7 @@ class Harness2VerifierArchitect:
             unit = spec.get("unit", "")
             cond = spec.get("test_conditions", "")
 
-            # 1. PROPOSE (LLM Synthesis of pure physical fixture)
-            prompt = f"""You are a Principal Test & Verification Architect in Analog IC Design.
+            base_prompt = f"""You are a Principal Test & Verification Architect in Analog IC Design.
 Design an automated LTspice physical measurement fixture for an unsupported specification.
 
 ## TARGET SPECIFICATION:
@@ -123,15 +126,15 @@ Design an automated LTspice physical measurement fixture for an unsupported spec
 
 ## STRICT INVARIANTS (MANDATORY):
 1. Pure Physical Analog Stimulus:
-   - Use standard independent voltage/current sources: `V... DC`, `SINE(0 amp freq delay)`, `PULSE(v1 v2 td tr tf pw per)`
+   - Use standard independent voltage/current sources with TWO nodes: `Vname n+ n- DC val`, `SINE(0 amp freq delay)`, `PULSE(v1 v2 td tr tf pw per)`
    - Use passive components: `R...`, `C...`, `L...`
    - STRICTLY PROHIBITED: ABSOLUTELY NO BEHAVIORAL SOURCES (Bxxx elements, V=if(...), I=if(...), table, laplace).
-   - STRICTLY PROHIBITED: ABSOLUTELY NO LOGIC A-DEVICES.
+   - STRICTLY PROHIBITED: ABSOLUTELY NO LOGIC A-DEVICES, NO bare `.lib`, NO ngspice `.control/.endc`.
 2. DUT Instantiation:
    - Must include `.include "golden_dut.sub"`
-   - Must instantiate DUT with subcircuit pins: `XDUT <nodes...> DUT`
+   - Must instantiate DUT with exact subcircuit name & pin count: `XDUT {golden_pins} {golden_subckt}`
 3. Measurement Directives:
-   - Must generate one or more `.meas` lines computing the target parameter.
+   - Must include a valid LTspice analysis (`.op`, `.dc`, `.ac`, or `.tran`) and `.meas` line(s).
    - Output measurement name should be '{str(sym).lower()}'.
 
 ## OUTPUT FORMAT:
@@ -146,47 +149,67 @@ Respond with:
 .end
 </fixture_deck>
 """
-            resp = self.llm_client.complete(prompt, max_tokens=2048, tag="verifier_propose")
+            feedback_history = ""
+            accepted = False
+            for attempt in range(1, max_attempts + 1):
+                prompt = base_prompt + feedback_history
+                resp = self.llm_client.complete(prompt, max_tokens=2048, tag="verifier_propose")
 
-            # Parse proposal
-            m_kind = re.search(r'<kind_name>(.*?)</kind_name>', resp, re.IGNORECASE)
-            m_sym = re.search(r'<symbol_regex>(.*?)</symbol_regex>', resp, re.IGNORECASE)
-            m_deck = re.search(r'<fixture_deck>(.*?)</fixture_deck>', resp, re.DOTALL | re.IGNORECASE)
+                m_kind = re.search(r'<kind_name>(.*?)</kind_name>', resp, re.IGNORECASE)
+                m_sym = re.search(r'<symbol_regex>(.*?)</symbol_regex>', resp, re.IGNORECASE)
+                m_deck = re.search(r'<fixture_deck>(.*?)</fixture_deck>', resp, re.DOTALL | re.IGNORECASE)
 
-            if not (m_kind and m_sym and m_deck):
-                logger.warning(f"Could not parse verifier proposal for spec '{sym}'.")
-                continue
+                if not (m_kind and m_sym and m_deck):
+                    logger.warning(f"Attempt {attempt}/{max_attempts}: Could not parse verifier proposal for spec '{sym}'.")
+                    feedback_history = (
+                        f"\n## PREVIOUS ATTEMPT {attempt} FAILED TO PARSE:\n"
+                        "You MUST output all three tags: `<kind_name>`, `<symbol_regex>`, and `<fixture_deck>...</fixture_deck>`.\n"
+                    )
+                    continue
 
-            kind_slug = m_kind.group(1).strip()
-            sym_regex = m_sym.group(1).strip()
-            deck_code = m_deck.group(1).strip()
+                kind_slug = m_kind.group(1).strip()
+                sym_regex = m_sym.group(1).strip()
+                deck_code = m_deck.group(1).strip()
 
-            # 2. PROBE (Golden Oracle Anchor Gatekeeper)
-            audit_res = self.anchor.audit_fixture_candidate(
-                target_kind=kind_slug,
-                target_class=device_class,
-                proposed_deck_template=deck_code,
-                expected_range=(spec.get("min"), spec.get("max")),
-                unit=unit
-            )
+                # 2. PROBE (Golden Oracle Anchor Gatekeeper)
+                audit_res = self.anchor.audit_fixture_candidate(
+                    target_kind=kind_slug,
+                    target_class=device_class,
+                    proposed_deck_template=deck_code,
+                    expected_range=(spec.get("min"), spec.get("max")),
+                    unit=unit
+                )
 
-            logger.info(f"  [Golden Oracle Gatekeeper] Spec '{sym}' -> Accepted: {audit_res['accepted']} | Pass Rate: {audit_res['pass_rate']}% | Diagnostic: {audit_res['diagnostic']}")
+                logger.info(
+                    f"  [Golden Oracle Gatekeeper] Spec '{sym}' (attempt {attempt}/{max_attempts}) -> "
+                    f"Accepted: {audit_res['accepted']} | Pass Rate: {audit_res['pass_rate']}% | Diagnostic: {audit_res['diagnostic']}"
+                )
 
-            # 3. COMPOSE (Only if Golden Oracle Gatekeeper validates 100% pass and 0 false verdicts)
-            if audit_res["accepted"]:
-                rule = {
-                    "classes": [device_class.lower()],
-                    "symbol_regex": sym_regex,
-                    "name_regex": re.escape(name.lower()),
-                    "kind": kind_slug,
-                    "canonical_unit": unit,
-                    "magnitude_compare": False
-                }
-                self.tree.register_classifier_rule(rule)
-                self.tree.register_fixture_template(kind_slug, deck_code)
-                evolved_rules.append(rule)
-            else:
-                logger.warning(f"Proposal for '{sym}' REJECTED by Golden Oracle Gatekeeper to prevent reward hacking.")
+                # 3. COMPOSE (Only if Golden Oracle Gatekeeper validates 100% pass and 0 false verdicts)
+                if audit_res["accepted"]:
+                    rule = {
+                        "classes": [device_class.lower()],
+                        "symbol_regex": sym_regex,
+                        "name_regex": re.escape(name.lower()),
+                        "kind": kind_slug,
+                        "canonical_unit": unit,
+                        "magnitude_compare": False
+                    }
+                    self.tree.register_classifier_rule(rule)
+                    self.tree.register_fixture_template(kind_slug, deck_code)
+                    evolved_rules.append(rule)
+                    accepted = True
+                    break
+
+                feedback_history = (
+                    f"\n## PREVIOUS ATTEMPT {attempt} REJECTED BY GOLDEN ORACLE:\n"
+                    f"Diagnostic: {audit_res['diagnostic']}\n"
+                    f"Previous deck:\n```spice\n{deck_code[:1200]}\n```\n"
+                    "Fix EVERY issue above and output a valid LTspice testbench.\n"
+                )
+
+            if not accepted:
+                logger.warning(f"Proposal for '{sym}' REJECTED after {max_attempts} attempts by Golden Oracle Gatekeeper.")
 
         if evolved_rules:
             self.save_persistent_experience()
