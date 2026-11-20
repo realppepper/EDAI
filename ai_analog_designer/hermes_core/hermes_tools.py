@@ -422,28 +422,53 @@ class HermesAnalogTools:
                 f"Diagnostic: {str(last_ev.get('diagnostic_feedback', ''))[:1500]}\n"
             )
 
+        from ..circuit_synthesis.circuit_builder import CircuitBuilder
+
         guardrails = getattr(self.harness_tree, "c2_guardrails", "") if self.harness_tree else ""
         sys_prompt = (
             "You are the dedicated Netlist Synthesis Sub-Agent for pure transistor-level SPICE circuit design.\n"
-            "Output ONLY a valid SPICE subcircuit enclosed in <spice_netlist>...</spice_netlist> tags.\n"
-            "STRICT LTSPICE SYNTAX RULES:\n"
-            "- BJT (Q): Qxxx C B E <NPN_MODEL|PNP_MODEL> (strictly 3 pins + BJT model; NEVER NMOS/PMOS or W/L).\n"
-            "- MOSFET (M): Mxxx D G S B <NMOS_MODEL|PMOS_MODEL> W=<val> L=<val> (strictly 4 pins + MOS model).\n"
-            "- NEVER put inline model parameters '(VTO=...)' on Q/M/D instance lines; define '.model <NAME> <TYPE>(...)' on separate lines.\n"
-            "- NEVER use behavioral B-sources, digital A-devices, or external node '0' directly inside the subcircuit.\n"
-            "- Keep internal nodes (N_TAIL, N_DIFF1, N_GAIN, N_BIAS) distinct from external subckt pins.\n"
-            "- PRECEDENCE: If ORCHESTRATOR DESIGN DIRECTIVES conflict with these STRICT LTSPICE SYNTAX RULES (e.g. W/L on BJTs or internal V sources), ALWAYS obey these rules.\n"
-            f"{guardrails[:1500]}"
+            "Output ONLY a structured JSON circuit inside <circuit_json>...</circuit_json> tags so CircuitBuilder compiles it into guaranteed-valid SPICE.\n"
+            "JSON SCHEMA:\n"
+            '{"models": [{"name": "QNPN", "type": "NPN", "params": "IS=1e-16 BF=150 VAF=100"}], '
+            '"devices": [\n'
+            '  {"kind": "bjt", "name": "Q1", "c": "N_C1", "b": "INP", "e": "N_TAIL", "model": "QNPN"},\n'
+            '  {"kind": "mos", "name": "M1", "d": "N_D", "g": "N_G", "s": "V_P", "b": "V_P", "model": "PMOS_MOD", "w": "20u", "l": "1u"},\n'
+            '  {"kind": "res", "name": "R1", "p": "V_P", "n": "N_BIAS", "value": "20k"},\n'
+            '  {"kind": "cap", "name": "C1", "p": "N_GAIN", "n": "OUTPUT", "value": "30p"},\n'
+            '  {"kind": "diode", "name": "D1", "a": "N_A", "k": "N_K", "model": "D1N4148"}\n'
+            "]}\n"
+            "STRICT RULES:\n"
+            "- ONLY physical kinds: bjt, mos, res, cap, ind, diode (NEVER v, i, b, a sources).\n"
+            "- Connect EVERY non-NC pin in PIN INTERFACE (especially POWER, SIGNAL, OUTPUT pins) using their EXACT pin names.\n"
+            "- Ensure a continuous transistor/passive signal path from SIGNAL inputs to OUTPUT.\n"
+            "- PRECEDENCE: If ORCHESTRATOR DESIGN DIRECTIVES conflict with these rules, ALWAYS obey these rules.\n"
+            f"{guardrails[:1200]}"
         )
         user_prompt = (
-            f"Synthesize the complete transistor-level SPICE subcircuit for `{self.dut_name}`.\n"
-            f"Mandatory header: `.subckt {self.dut_name} {pins_line}` and footer: `.ends {self.dut_name}`.\n\n"
+            f"Synthesize the complete transistor-level circuit for `{self.dut_name}`.\n"
+            f"Exact subcircuit pins: `{pins_line}`.\n\n"
             f"## PIN INTERFACE:\n{pins_desc}\n\n"
             f"## KEY SPECIFICATIONS:\n{specs_desc}\n\n"
             f"## ORCHESTRATOR DESIGN DIRECTIVES:\n{design_directives}\n"
             f"{bp_context}{prior_feedback}\n"
-            "Return ONLY the `<spice_netlist>...</spice_netlist>` block."
+            "Return ONLY the `<circuit_json>...</circuit_json>` block."
         )
+
+        def _extract_and_validate(raw_out: str) -> tuple[str, dict[str, Any]]:
+            built = CircuitBuilder.from_json(raw_out, subckt_name=self.dut_name, pins=self.pins)
+            if built is not None:
+                nl = built["netlist"]
+                vr = self.validate_netlist_syntax(nl)
+                if built["erc_errors"]:
+                    vr = dict(vr)
+                    vr["errors"] = list(built["erc_errors"]) + list(vr.get("errors") or [])
+                    vr["is_valid"] = False
+                return nl, vr
+            m_nl = re.search(r"<spice_netlist>(.*?)</spice_netlist>", raw_out, re.DOTALL | re.IGNORECASE)
+            if not m_nl:
+                m_nl = re.search(r"(\.subckt\b[\s\S]*?\.ends\b[^\r\n]*)", raw_out, re.IGNORECASE)
+            nl = m_nl.group(1).strip() if m_nl else raw_out.strip()
+            return nl, self.validate_netlist_syntax(nl)
 
         with trace_span(
             "subagent.netlist_synthesizer",
@@ -458,11 +483,7 @@ class HermesAnalogTools:
                 max_tokens=4096,
                 tag="hermes_turn_3",
             )
-            m = re.search(r"<spice_netlist>(.*?)</spice_netlist>", raw, re.DOTALL | re.IGNORECASE)
-            if not m:
-                m = re.search(r"(\.subckt\b[\s\S]*?\.ends\b[^\r\n]*)", raw, re.IGNORECASE)
-            netlist = m.group(1).strip() if m else raw.strip()
-            val_res = self.validate_netlist_syntax(netlist)
+            netlist, val_res = _extract_and_validate(raw)
             repair_attempts = 0
             max_syntax_repairs = 2
             while not val_res.get("is_valid", False) and repair_attempts < max_syntax_repairs:
@@ -475,20 +496,20 @@ class HermesAnalogTools:
                 ) as sv_span:
                     err_lines = "\n".join(f"- {e}" for e in val_res.get("errors", []))
                     sv_sys = (
-                        "You are a dedicated SPICE Syntax Verifier & Repair Sub-Agent.\n"
-                        "Fix ONLY the SPICE syntax/guardrail errors below while preserving the circuit's intended topology.\n"
+                        "You are a dedicated SPICE Syntax & ERC Repair Sub-Agent.\n"
+                        "Fix ALL ERC and SPICE syntax errors below while preserving the circuit's intended topology.\n"
                         "MANDATORY RULES:\n"
-                        "- BJT (Q): strictly 3 pins + NPN/PNP model: `Qxxx C B E <QNPN|QPNP>` (no W/L, no inline params).\n"
-                        "- MOSFET (M): strictly 4 pins + NMOS/PMOS model: `Mxxx D G S B <NMOS|PMOS> W=... L=...` (no inline params).\n"
-                        "- Diode (D): strictly 2 pins + model: `Dxxx A K <DMOD>`.\n"
-                        "- Every declared POWER/GROUND pin must connect to internal components.\n"
-                        "- Output ONLY `<spice_netlist>...</spice_netlist>`."
+                        "- Connect EVERY non-NC pin in the subcircuit header to internal devices.\n"
+                        "- Ensure continuous signal path from SIGNAL inputs to OUTPUT.\n"
+                        "- BJT (Q): strictly 3 pins + NPN/PNP model (no W/L, no inline params).\n"
+                        "- MOSFET (M): strictly 4 pins + NMOS/PMOS model + W/L (no inline params).\n"
+                        "- Output ONLY `<circuit_json>...</circuit_json>` (preferred) or `<spice_netlist>...</spice_netlist>`."
                     )
                     sv_prompt = (
                         f"Target `.subckt {self.dut_name} {pins_line}`\n\n"
-                        f"## SYNTAX / GUARDRAIL ERRORS TO FIX:\n{err_lines}\n\n"
+                        f"## ERC / SYNTAX ERRORS TO FIX:\n{err_lines}\n\n"
                         f"## CURRENT NETLIST:\n{val_res.get('cleaned_netlist', netlist)}\n\n"
-                        "Return ONLY the repaired `<spice_netlist>...</spice_netlist>` block."
+                        "Return ONLY the repaired `<circuit_json>...</circuit_json>` or `<spice_netlist>...</spice_netlist>` block."
                     )
                     repaired_raw = client.complete(
                         prompt=sv_prompt,
@@ -497,12 +518,7 @@ class HermesAnalogTools:
                         max_tokens=4096,
                         tag="dyn_tb",
                     )
-                    m_rep = re.search(r"<spice_netlist>(.*?)</spice_netlist>", repaired_raw, re.DOTALL | re.IGNORECASE)
-                    if not m_rep:
-                        m_rep = re.search(r"(\.subckt\b[\s\S]*?\.ends\b[^\r\n]*)", repaired_raw, re.IGNORECASE)
-                    if m_rep:
-                        netlist = m_rep.group(1).strip()
-                        val_res = self.validate_netlist_syntax(netlist)
+                    netlist, val_res = _extract_and_validate(repaired_raw)
                     set_span_output(sv_span, {"is_valid": val_res.get("is_valid", False), "errors": val_res.get("errors", [])})
 
             out = {
