@@ -41,7 +41,7 @@ class PDFDatasheetParser:
         self,
         max_pages: int = 30,
         api_key: str | None = None,
-        model: str = "nvidia/nemotron-parse",
+        model: str = "nvidia/nemotron-3.5-parse",
         concurrency: int = 3,
         dpi: int = 150,
         use_nemotron: bool = True
@@ -64,33 +64,29 @@ class PDFDatasheetParser:
         name = re.sub(r'_+', '_', name).strip('_')
         return name or "PIN"
 
-    def _call_nemotron_parse(self, b64_img: str, max_retries: int = 2) -> dict[str, Any]:
-        """Calls NVIDIA NIM nemotron-parse endpoint with image payload."""
-        payload = {
-            "model": self.model,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": [
-                        {
-                            "type": "image_url",
-                            "image_url": {"url": f"data:image/png;base64,{b64_img}"}
-                        }
-                    ]
-                }
-            ],
-            "max_tokens": 3000,
-            "temperature": 0.0
-        }
+    def _call_nemotron_parse(self, png_bytes: bytes, max_retries: int = 2) -> dict[str, Any]:
+        """Calls NVIDIA NIM nemotron-3.5-parse retrieval endpoint with multipart/form-data PNG payload."""
+        boundary = f"----EDAINemotronBoundary{int(time.time() * 1000)}"
+        options_json = json.dumps({"decoding": {"max_output_tokens": 9000}}).encode("utf-8")
+        body = (
+            f"--{boundary}\r\n"
+            'Content-Disposition: form-data; name="document"; filename="page.png"\r\n'
+            "Content-Type: image/png\r\n\r\n"
+        ).encode("utf-8") + png_bytes + (
+            f"\r\n--{boundary}\r\n"
+            'Content-Disposition: form-data; name="options"\r\n\r\n'
+        ).encode("utf-8") + options_json + f"\r\n--{boundary}--\r\n".encode("utf-8")
 
+        url = f"https://ai.api.nvidia.com/v1/retrieval/{self.model}/parse"
         req = urllib.request.Request(
-            "https://integrate.api.nvidia.com/v1/chat/completions",
-            data=json.dumps(payload).encode("utf-8"),
+            url,
+            data=body,
             headers={
                 "Authorization": f"Bearer {self.api_key}",
-                "Content-Type": "application/json",
-                "Accept": "application/json"
-            }
+                "Content-Type": f"multipart/form-data; boundary={boundary}",
+                "Accept": "application/json",
+            },
+            method="POST",
         )
 
         last_err = None
@@ -100,7 +96,6 @@ class PDFDatasheetParser:
                     return json.loads(resp.read().decode("utf-8"))
             except urllib.error.HTTPError as e:
                 last_err = e
-                # If 429 Too Many Requests, wait and retry
                 if e.code == 429 and attempt < max_retries:
                     time.sleep(2.0 * (attempt + 1))
                     continue
@@ -111,10 +106,36 @@ class PDFDatasheetParser:
                     time.sleep(1.0)
                     continue
                 break
-        raise last_err or RuntimeError("Failed to call Nemotron-Parse API.")
+        raise last_err or RuntimeError("Failed to call Nemotron-3.5-Parse API.")
+
+    @staticmethod
+    def _parse_nemotron35_content(content: str) -> tuple[str, list[dict[str, Any]]]:
+        """Strips Nemotron-3.5-Parse coordinate/class tags into clean Markdown + LaTeX tables and blocks."""
+        blocks: list[dict[str, Any]] = []
+        md_lines: list[str] = []
+        pattern = re.compile(
+            r"(?:<x_[\d.]+><y_[\d.]+>)?(.*?)(?:<x_[\d.]+><y_[\d.]+>)?<class_([^>]+)>",
+            re.DOTALL,
+        )
+        for m in pattern.finditer(content):
+            b_text = re.sub(r"<(?:x|y)_[\d.]+>", "", m.group(1)).strip()
+            b_class = m.group(2).strip().lower()
+            if not b_text:
+                continue
+            b_type = "table" if "table" in b_class or "\\begin{tabular}" in b_text else (
+                "header" if "header" in b_class or "title" in b_class else (
+                    "figure" if "picture" in b_class or "figure" in b_class else "text"
+                )
+            )
+            blocks.append({"type": b_type, "class": b_class, "text": b_text})
+            md_lines.append(b_text)
+        if not md_lines:
+            cleaned = re.sub(r"<(?:x|y)_[\d.]+>|<class_[^>]+>", "", content).strip()
+            return cleaned, blocks
+        return "\n\n".join(md_lines).strip(), blocks
 
     def parse_page_with_nemotron(self, page_index_0based: int, doc: pymupdf.Document) -> dict[str, Any]:
-        """Renders single page to image and parses it via NVIDIA Nemotron-Parse."""
+        """Renders single page to image and parses it via NVIDIA Nemotron-3.5-Parse."""
         page_num = page_index_0based + 1
         page = doc[page_index_0based]
         
@@ -134,47 +155,14 @@ class PDFDatasheetParser:
         try:
             # 2. Render to PNG image
             pix = page.get_pixmap(dpi=self.dpi)
-            b64_img = base64.b64encode(pix.tobytes("png")).decode("utf-8")
+            png_bytes = pix.tobytes("png")
 
-            # 3. Request Nemotron-Parse
-            res_data = self._call_nemotron_parse(b64_img)
-            choice = res_data["choices"][0]
-            msg = choice.get("message", {})
+            # 3. Request Nemotron-3.5-Parse
+            res_data = self._call_nemotron_parse(png_bytes)
 
-            # 4. Extract structured blocks from tool_calls arguments
-            blocks = []
-            if msg.get("tool_calls"):
-                for tc in msg["tool_calls"]:
-                    fn = tc.get("function", {})
-                    args_str = fn.get("arguments", "")
-                    try:
-                        args = json.loads(args_str)
-                        if isinstance(args, list):
-                            for sub in args:
-                                if isinstance(sub, list):
-                                    blocks.extend(sub)
-                                else:
-                                    blocks.append(sub)
-                        elif isinstance(args, dict):
-                            blocks.append(args)
-                    except Exception:
-                        pass
-
-            # 5. Build clean, structured layout text (Markdown + LaTeX tables)
-            md_lines = []
-            for b in blocks:
-                b_type = b.get("type", "text")
-                b_text = b.get("text", "")
-                if b_type in ["header", "title"]:
-                    md_lines.append(f"\n### {b_text}\n")
-                elif b_type == "table":
-                    md_lines.append(f"\n{b_text}\n")
-                elif b_type == "figure":
-                    md_lines.append(f"\n[Figure: {b_text}]\n")
-                else:
-                    md_lines.append(b_text)
-
-            structured_text = "\n".join(md_lines).strip()
+            # 4. Extract structured Markdown/LaTeX blocks
+            content = res_data.get("content", "")
+            structured_text, blocks = self._parse_nemotron35_content(content) if content else ("", [])
             final_text = structured_text if structured_text else raw_text
             classes = self.classify_page(final_text or raw_text)
 
