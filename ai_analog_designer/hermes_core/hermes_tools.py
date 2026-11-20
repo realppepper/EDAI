@@ -432,6 +432,7 @@ class HermesAnalogTools:
             "- NEVER put inline model parameters '(VTO=...)' on Q/M/D instance lines; define '.model <NAME> <TYPE>(...)' on separate lines.\n"
             "- NEVER use behavioral B-sources, digital A-devices, or external node '0' directly inside the subcircuit.\n"
             "- Keep internal nodes (N_TAIL, N_DIFF1, N_GAIN, N_BIAS) distinct from external subckt pins.\n"
+            "- PRECEDENCE: If ORCHESTRATOR DESIGN DIRECTIVES conflict with these STRICT LTSPICE SYNTAX RULES (e.g. W/L on BJTs or internal V sources), ALWAYS obey these rules.\n"
             f"{guardrails[:1500]}"
         )
         user_prompt = (

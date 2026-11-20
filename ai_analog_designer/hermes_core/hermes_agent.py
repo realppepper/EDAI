@@ -174,8 +174,14 @@ Available Tools:
 {tools_schema_json}
 
 === AGENT EXECUTION POLICY ===
-1. FIRST, call `retrieve_subcircuit_blueprint` (or `search_web_circuit_reference` via Tavily + Exa) to check for relevant proven circuit topologies and transistor-level reference designs.
-2. SYNTHESIZE your candidate SPICE netlist using ONLY explicit transistor/passive primitives (Q, M, R, C, D, I, V) and explicit `.model` cards. NEVER use undefined `X...` placeholder subcircuit calls.
+1. FIRST, call `retrieve_subcircuit_blueprint` (or `search_web_circuit_reference`) to check for relevant proven circuit topologies and transistor-level reference designs.
+2. ALWAYS invoke `synthesize_circuit_netlist` to generate or revise the SPICE netlist; NEVER hand-write raw netlists directly into `verify_circuit_pdg_gate`.
+   STRICT LTSPICE SYNTAX GUARDRAILS (MUST OBEY IN ALL DIRECTIVES & NETLISTS):
+   - Use ONLY physical transistors/passives (`Q`, `M`, `J`, `D`, `R`, `C`, `L`) and explicit `.model` cards.
+   - BJT (`Qxxx`): strictly 3 pins + NPN/PNP model; NEVER specify `W=` or `L=` for BJTs.
+   - MOSFET (`Mxxx`): strictly 4 pins + NMOS/PMOS model + `W=`/`L=`.
+   - NEVER use internal independent `V`/`I` voltage/current sources, behavioral `B` sources, digital `A` devices, or direct node `0` inside `.subckt`.
+   - Every declared power/signal pin in `.subckt {self.tools.dut_name} {pins_line}` (except `NC`) MUST be connected to internal devices.
 3. EXECUTE simulation via `verify_circuit_pdg_gate`. Inspect the 4-stage causal gate feedback carefully:
    - Stage 0 failure: Signal path disconnected or illegal behavioral elements.
    - Stage 1 failure: DC bias current out of range (short circuit or cutoff).

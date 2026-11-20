@@ -100,23 +100,34 @@ class GoldenOracleAnchor:
         xdut_found = False
         has_analysis = False
         has_meas = False
+        valid_directives = {
+            ".include", ".inc", ".lib", ".param", ".model", ".subckt", ".ends",
+            ".op", ".dc", ".ac", ".tran", ".noise", ".tf", ".step",
+            ".meas", ".measure", ".options", ".option", ".ic", ".nodeset",
+            ".temp", ".four", ".save", ".end", ".func", ".global",
+        }
         for idx, raw in enumerate(lines, start=1):
             line = raw.strip()
             if not line or line.startswith("*"):
                 continue
             low = line.lower()
-            if re.match(r"^\.lib\s*$", low):
-                errors.append(f"Line {idx}: bare `.lib` without filename is invalid in LTspice.")
-            if re.match(r"^\.(control|endc)\b", low):
-                errors.append(f"Line {idx}: ngspice `.control/.endc` block is unsupported in LTspice.")
-            if re.match(r"^v\w+\s+\S+\s+dc\b", low):
-                errors.append(f"Line {idx}: voltage source `{line}` is missing its second node (syntax: `Vname n+ n- DC val`).")
-            if re.match(r"^\.(tran|ac|dc|op|noise|tf)\b", low):
-                has_analysis = True
-            if re.match(r"^\.meas\b", low):
-                has_meas = True
-            if re.match(r"^x\w+\s+", low):
-                tokens = line.split()
+            tokens = line.split()
+            head = tokens[0].lower()
+            if head.startswith("."):
+                if head == ".lib" and len(tokens) < 2:
+                    errors.append(f"Line {idx}: bare `.lib` without filename is invalid in LTspice.")
+                elif head in (".control", ".endc"):
+                    errors.append(f"Line {idx}: ngspice `.control/.endc` block is unsupported in LTspice.")
+                elif head not in valid_directives:
+                    errors.append(f"Line {idx}: unsupported LTspice directive `{tokens[0]}`.")
+                if head in (".tran", ".ac", ".dc", ".op", ".noise", ".tf"):
+                    has_analysis = True
+                if head in (".meas", ".measure"):
+                    has_meas = True
+                continue
+            if re.match(r"^[vi]\w*$", head) and (len(tokens) < 4 or re.match(r"^[vi]\w*\s+\S+\s+dc\b", low)):
+                errors.append(f"Line {idx}: source `{line}` must have 2 nodes and a value (syntax: `Vname n+ n- DC val`).")
+            if head.startswith("x"):
                 if len(tokens) >= 2 and tokens[-1].upper() == subckt_name.upper():
                     xdut_found = True
                     actual_pins = len(tokens) - 2
