@@ -152,18 +152,35 @@ class CircuitBuilder:
             return errors
 
         adj: dict[str, set[str]] = defaultdict(set)
+        dc_adj: dict[str, set[str]] = defaultdict(set)
         node_degree: dict[str, int] = defaultdict(int)
-        for _, nodes in self.devices:
+        for spice_line, nodes in self.devices:
             uniq = set(nodes)
+            is_cap = spice_line.lstrip().upper().startswith("C")
             for n in uniq:
                 node_degree[n] += 1
             for a in uniq:
                 for b in uniq:
                     if a != b:
                         adj[a].add(b)
+                        if not is_cap:
+                            dc_adj[a].add(b)
+
+        pin_set = set(self.pin_names)
+        floating_internal = sorted(
+            n for n, deg in node_degree.items()
+            if n not in pin_set and deg < 2
+        )
+        if floating_internal:
+            sample = ", ".join(floating_internal[:6])
+            errors.append(
+                f"ERC_FLOATING_INTERNAL_NODE: Internal node(s) connected to only 1 device ({sample}). "
+                "Every internal node must connect to at least 2 device terminals."
+            )
 
         signal_pins: list[str] = []
         output_pins: list[str] = []
+        power_pins: list[str] = []
         for p in self.pins:
             if isinstance(p, dict):
                 pname = str(p.get("name") or "")
@@ -176,10 +193,31 @@ class CircuitBuilder:
                     signal_pins.append(pname)
                 elif role == "OUTPUT":
                     output_pins.append(pname)
+                elif role in ("POWER", "GROUND"):
+                    power_pins.append(pname)
             else:
                 pname = str(p)
                 if pname.upper() != "NC" and node_degree.get(pname, 0) == 0:
                     errors.append(f"ERC_UNCONNECTED_PORT: Declared pin '{pname}' has zero device connections.")
+
+        # Check DC bias path between power/ground rails (excluding capacitors)
+        if len(power_pins) >= 2 and all(node_degree.get(pp, 0) > 0 for pp in power_pins[:2]):
+            p0, p1 = power_pins[0], power_pins[1]
+            visited_dc: set[str] = set()
+            q_dc = deque([p0])
+            while q_dc:
+                cur = q_dc.popleft()
+                if cur in visited_dc:
+                    continue
+                visited_dc.add(cur)
+                for nxt in dc_adj.get(cur, ()):
+                    if nxt not in visited_dc:
+                        q_dc.append(nxt)
+            if p1 not in visited_dc:
+                errors.append(
+                    f"ERC_NO_DC_POWER_PATH: No DC bias current path between supply rails '{p0}' and '{p1}' "
+                    "(capacitors block DC). Add a DC biasing/tail path between supplies."
+                )
 
         # Check graph connectivity from signal inputs to outputs
         for out_p in output_pins:
