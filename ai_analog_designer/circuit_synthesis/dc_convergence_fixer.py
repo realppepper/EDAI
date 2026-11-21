@@ -40,7 +40,7 @@ def _classify_pin(pin: dict[str, Any] | str) -> tuple[str, str]:
     up = name.upper()
     if role == "NC" or up == "NC":
         return name, "NC"
-    if role == "GROUND" or up in ("GND", "VSS", "VEE", "V_N", "VN", "V") or "neg" in desc:
+    if role == "GROUND" or up in ("GND", "VSS", "VEE", "VNEG", "V_NEG", "V_N", "VN", "V") or "neg" in desc:
         return name, "VNEG"
     if role == "POWER" or up in ("VCC", "VDD", "V_P", "VP", "VS", "VIN") or "pos" in desc:
         return name, "VPOS"
