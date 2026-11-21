@@ -498,18 +498,26 @@ class HermesAnalogTools:
                     sv_sys = (
                         "You are a dedicated SPICE Syntax & ERC Repair Sub-Agent.\n"
                         "Fix ALL ERC and SPICE syntax errors below while preserving the circuit's intended topology.\n"
+                        "Output ONLY `<circuit_json>...</circuit_json>` using this exact JSON schema:\n"
+                        '{"models": [{"name": "QNPN", "type": "NPN", "params": "IS=1e-16 BF=150 VAF=100"}], '
+                        '"devices": [\n'
+                        '  {"kind": "bjt", "name": "Q1", "c": "N_C1", "b": "INP", "e": "N_TAIL", "model": "QNPN"},\n'
+                        '  {"kind": "mos", "name": "M1", "d": "N_D", "g": "N_G", "s": "V_P", "b": "V_P", "model": "PMOS_MOD", "w": "20u", "l": "1u"},\n'
+                        '  {"kind": "res", "name": "R1", "p": "V_P", "n": "N_BIAS", "value": "20k"},\n'
+                        '  {"kind": "cap", "name": "C1", "p": "N_GAIN", "n": "OUTPUT", "value": "30p"}\n'
+                        "]}\n"
                         "MANDATORY RULES:\n"
+                        "- NEVER output raw SPICE text; ALWAYS output `<circuit_json>...</circuit_json>`.\n"
                         "- Connect EVERY non-NC pin in the subcircuit header to internal devices.\n"
-                        "- Ensure continuous signal path from SIGNAL inputs to OUTPUT.\n"
-                        "- BJT (Q): strictly 3 pins + NPN/PNP model (no W/L, no inline params).\n"
-                        "- MOSFET (M): strictly 4 pins + NMOS/PMOS model + W/L (no inline params).\n"
-                        "- Output ONLY `<circuit_json>...</circuit_json>` (preferred) or `<spice_netlist>...</spice_netlist>`."
+                        "- Every internal node MUST connect to at least 2 device terminals (no floating nodes).\n"
+                        "- Ensure a continuous DC bias current path between supply rails (V_P to V_N) and signal path from SIGNAL inputs to OUTPUT.\n"
+                        f"{guardrails[:1000]}"
                     )
                     sv_prompt = (
                         f"Target `.subckt {self.dut_name} {pins_line}`\n\n"
                         f"## ERC / SYNTAX ERRORS TO FIX:\n{err_lines}\n\n"
                         f"## CURRENT NETLIST:\n{val_res.get('cleaned_netlist', netlist)}\n\n"
-                        "Return ONLY the repaired `<circuit_json>...</circuit_json>` or `<spice_netlist>...</spice_netlist>` block."
+                        "Return ONLY the repaired `<circuit_json>...</circuit_json>` block."
                     )
                     repaired_raw = client.complete(
                         prompt=sv_prompt,
@@ -521,10 +529,75 @@ class HermesAnalogTools:
                     netlist, val_res = _extract_and_validate(repaired_raw)
                     set_span_output(sv_span, {"is_valid": val_res.get("is_valid", False), "errors": val_res.get("errors", [])})
 
+            # Stage 3: DC Operating Point Convergence Fixer Sub-Agent
+            dc_repair_attempts = 0
+            dc_check: dict[str, Any] = {"converged": False, "skipped": True, "diagnostic": "Syntax invalid; DC .op skipped."}
+            if val_res.get("is_valid", False):
+                from ..circuit_synthesis.dc_convergence_fixer import run_quick_dc_op_check
+                dc_check = run_quick_dc_op_check(
+                    val_res.get("cleaned_netlist", netlist),
+                    subckt_name=self.dut_name,
+                    pins=self.pins,
+                    timeout_s=15,
+                )
+                max_dc_repairs = 2
+                while not dc_check.get("converged", False) and dc_repair_attempts < max_dc_repairs:
+                    dc_repair_attempts += 1
+                    with trace_span(
+                        f"subagent.dc_convergence_fixer.attempt_{dc_repair_attempts}",
+                        span_kind="AGENT",
+                        attributes={"attempt": dc_repair_attempts, "dc_diagnostic": dc_check.get("diagnostic", "")},
+                        input_data={"dc_check": dc_check, "netlist": val_res.get("cleaned_netlist", netlist)},
+                    ) as dc_span:
+                        dc_sys = (
+                            "You are the dedicated DC Operating Point (.op) Convergence Fixer Sub-Agent.\n"
+                            "Your ONLY job is to fix DC convergence, cutoff (~0A), short-circuit (>0.5A), or rail saturation "
+                            "in the analog subcircuit while keeping all ports connected and using ONLY physical devices.\n"
+                            "Output ONLY `<circuit_json>...</circuit_json>` using the CircuitBuilder JSON schema "
+                            '(kinds: bjt, mos, res, cap, ind, diode; NEVER v/i/b/a sources).\n'
+                            "DC CONVERGENCE BEST PRACTICES:\n"
+                            "- Ensure a proper DC tail current bias path from positive supply to negative supply (e.g., 100uA-2mA).\n"
+                            "- Avoid floating high-impedance nodes; ensure every BJT/MOSFET stage has realistic bias resistors (1k-100k).\n"
+                            "- Keep unity-gain DC output near 0V (not pegged at +/-15V supply rails)."
+                        )
+                        dc_prompt = (
+                            f"Target `.subckt {self.dut_name} {pins_line}`\n\n"
+                            f"## LTSPICE DC .OP FAILURE DIAGNOSTIC:\n{dc_check.get('diagnostic', '')}\n"
+                            f"Log excerpt:\n{dc_check.get('log_excerpt', '')}\n\n"
+                            f"## CURRENT NETLIST:\n{val_res.get('cleaned_netlist', netlist)}\n\n"
+                            "Return ONLY the DC-convergent `<circuit_json>...</circuit_json>` block."
+                        )
+                        dc_raw = client.complete(
+                            prompt=dc_prompt,
+                            system_prompt=dc_sys,
+                            temperature=0.1,
+                            max_tokens=4096,
+                            tag="hermes_turn_3",
+                        )
+                        cand_nl, cand_vr = _extract_and_validate(dc_raw)
+                        if cand_vr.get("is_valid", False):
+                            netlist, val_res = cand_nl, cand_vr
+                            dc_check = run_quick_dc_op_check(
+                                val_res.get("cleaned_netlist", netlist),
+                                subckt_name=self.dut_name,
+                                pins=self.pins,
+                                timeout_s=15,
+                            )
+                        else:
+                            dc_check = {
+                                "converged": False,
+                                "diagnostic": "DC fixer output failed ERC/syntax: " + "; ".join(cand_vr.get("errors", [])[:3]),
+                                "log_excerpt": "",
+                            }
+                        set_span_output(dc_span, {"converged": dc_check.get("converged", False), "diagnostic": dc_check.get("diagnostic", "")})
+
             out = {
                 "status": "SYNTHESIZED" if val_res.get("is_valid") else "SYNTHESIZED_WITH_SYNTAX_ERRORS",
                 "subagent_invoked": True,
                 "syntax_repair_attempts": repair_attempts,
+                "dc_repair_attempts": dc_repair_attempts,
+                "dc_converged": bool(dc_check.get("converged", False)),
+                "dc_diagnostic": dc_check.get("diagnostic", ""),
                 "is_valid": val_res.get("is_valid", False),
                 "errors": val_res.get("errors", []),
                 "device_counts": val_res.get("device_counts", {}),
