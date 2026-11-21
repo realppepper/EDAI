@@ -167,18 +167,26 @@ The subcircuit must work with its negative supply pin tied to 0 V (single supply
         if m_arch:
             arch_summary = m_arch.group(1).strip()
 
+        from ai_analog_designer.circuit_synthesis.circuit_builder import (
+            CircuitBuilder,
+        )
+
         netlist_code = ""
-        m_net = re.search(r'<spice_netlist>(.*?)</spice_netlist>', raw_resp, re.DOTALL | re.IGNORECASE)
-        if not m_net:
-            m_net = re.search(r'<spice_netlist>(.*)', raw_resp, re.DOTALL | re.IGNORECASE)
-        if m_net:
-            netlist_code = m_net.group(1).strip()
+        built = CircuitBuilder.from_json(raw_resp, subckt_name=subckt_name, pins=pins)
+        if built is not None:
+            netlist_code = built["netlist"]
         else:
-            m_code = re.search(r'```(?:spice|cir)?\s*(.*?)\s*```', raw_resp, re.DOTALL | re.IGNORECASE)
-            if m_code:
-                netlist_code = m_code.group(1).strip()
-            elif ".subckt" in raw_resp.lower():
-                netlist_code = raw_resp.strip()
+            m_net = re.search(r'<spice_netlist>(.*?)</spice_netlist>', raw_resp, re.DOTALL | re.IGNORECASE)
+            if not m_net:
+                m_net = re.search(r'<spice_netlist>(.*)', raw_resp, re.DOTALL | re.IGNORECASE)
+            if m_net:
+                netlist_code = m_net.group(1).strip()
+            else:
+                m_code = re.search(r'```(?:spice|cir)?\s*(.*?)\s*```', raw_resp, re.DOTALL | re.IGNORECASE)
+                if m_code:
+                    netlist_code = m_code.group(1).strip()
+                elif ".subckt" in raw_resp.lower():
+                    netlist_code = raw_resp.strip()
 
         if netlist_code.startswith("```"):
             netlist_code = re.sub(r'^```[a-zA-Z]*\n', '', netlist_code)

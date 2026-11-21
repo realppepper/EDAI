@@ -441,8 +441,8 @@ class HermesAnalogTools:
             "- ONLY physical kinds: bjt, mos, res, cap, ind, diode (NEVER v, i, b, a sources).\n"
             "- Connect EVERY non-NC pin in PIN INTERFACE (especially POWER, SIGNAL, OUTPUT pins) using their EXACT pin names.\n"
             "- Ensure a continuous transistor/passive signal path from SIGNAL inputs to OUTPUT.\n"
-            "- PRECEDENCE: If ORCHESTRATOR DESIGN DIRECTIVES conflict with these rules, ALWAYS obey these rules.\n"
-            f"{guardrails[:1200]}"
+            "- Every internal node MUST connect to >= 2 device terminals (no floating nodes), with a DC bias path between supply rails.\n"
+            "- PRECEDENCE: If ORCHESTRATOR DESIGN DIRECTIVES conflict with these rules, ALWAYS obey these rules."
         )
         user_prompt = (
             f"Synthesize the complete transistor-level circuit for `{self.dut_name}`.\n"
@@ -510,8 +510,7 @@ class HermesAnalogTools:
                         "- NEVER output raw SPICE text; ALWAYS output `<circuit_json>...</circuit_json>`.\n"
                         "- Connect EVERY non-NC pin in the subcircuit header to internal devices.\n"
                         "- Every internal node MUST connect to at least 2 device terminals (no floating nodes).\n"
-                        "- Ensure a continuous DC bias current path between supply rails (V_P to V_N) and signal path from SIGNAL inputs to OUTPUT.\n"
-                        f"{guardrails[:1000]}"
+                        "- Ensure a continuous DC bias current path between supply rails (V_P to V_N) and signal path from SIGNAL inputs to OUTPUT."
                     )
                     sv_prompt = (
                         f"Target `.subckt {self.dut_name} {pins_line}`\n\n"
