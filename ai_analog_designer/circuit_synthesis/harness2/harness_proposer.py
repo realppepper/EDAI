@@ -114,12 +114,14 @@ Return JSON format:
   "candidate_inv": {{
     "title": "<short description of fix>",
     "guardrails_addition": "<exact SPICE rules to append to C2 Guardrails, or empty>",
-    "memory_addition": "<exact convergence lesson to append to C3 Memory, or empty>"
+    "memory_addition": "<exact convergence lesson to append to C3 Memory, or empty>",
+    "workflow_policy_patch": {{"max_syntax_repairs": 3, "max_dc_repairs": 3}}
   }},
   "candidate_dom": {{
     "title": "<short description of fix>",
     "system_prompt_addition": "<exact synthesis directive to append to C1, or empty>",
     "memory_addition": "<exact sizing/topology lesson to append to C3, or empty>",
+    "workflow_policy_patch": {{"initial_strategy": "gm_id_first", "tool_priors": {{"auto_size_gm_id": 0.45}}}},
     "skill_addition": {{
       "name": "<e.g. low_dropout_biasing>",
       "content": "<compact blueprint text>"
@@ -142,6 +144,8 @@ Return JSON format:
             tree_inv.c2_guardrails += f"\n\n### HARNESS² INVARIANT DIRECTIVE:\n{inv_data['guardrails_addition'].strip()}"
         if inv_data.get("memory_addition"):
             tree_inv.c3_memory += f"\n- {inv_data['memory_addition'].strip()}"
+        if isinstance(inv_data.get("workflow_policy_patch"), dict):
+            self._apply_workflow_patch(tree_inv.workflow_policy, inv_data["workflow_policy_patch"])
 
         # Build Candidate B (Domain)
         tree_dom = current_tree.clone()
@@ -150,11 +154,26 @@ Return JSON format:
             tree_dom.c1_system_prompt += f"\n\n### HARNESS² DOMAIN DIRECTIVE:\n{dom_data['system_prompt_addition'].strip()}"
         if dom_data.get("memory_addition"):
             tree_dom.c3_memory += f"\n- {dom_data['memory_addition'].strip()}"
+        if isinstance(dom_data.get("workflow_policy_patch"), dict):
+            self._apply_workflow_patch(tree_dom.workflow_policy, dom_data["workflow_policy_patch"])
         skill = dom_data.get("skill_addition")
         if isinstance(skill, dict) and skill.get("name") and skill.get("content"):
             tree_dom.c5_skills[skill["name"]] = skill["content"].strip()
 
         return tree_inv, tree_dom
+
+    @staticmethod
+    def _apply_workflow_patch(policy: dict[str, Any], patch: dict[str, Any]) -> None:
+        if patch.get("initial_strategy") in ("blueprint_first", "gm_id_first", "topology_first"):
+            policy["initial_strategy"] = patch["initial_strategy"]
+        for k in ("max_syntax_repairs", "max_dc_repairs"):
+            if isinstance(patch.get(k), int) and 1 <= patch[k] <= 5:
+                policy[k] = patch[k]
+        if isinstance(patch.get("tool_priors"), dict):
+            priors = policy.setdefault("tool_priors", {})
+            for t, val in patch["tool_priors"].items():
+                if isinstance(val, (int, float)) and 0.0 <= float(val) <= 1.0:
+                    priors[str(t)] = float(val)
 
     def compose_harness(
         self,
@@ -230,12 +249,14 @@ Return JSON format:
 
         if adopt_inv:
             composed_tree.c2_guardrails = tree_a.c2_guardrails
-            decision_summary.append("Adopted Invariant (Candidate A) guardrails via Behavioral Contrast.")
+            self._apply_workflow_patch(composed_tree.workflow_policy, tree_a.workflow_policy)
+            decision_summary.append("Adopted Invariant (Candidate A) guardrails & workflow policy via Behavioral Contrast.")
 
         if adopt_dom:
             composed_tree.c1_system_prompt = tree_b.c1_system_prompt
             composed_tree.c5_skills.update(tree_b.c5_skills)
-            decision_summary.append("Adopted Domain (Candidate B) topology/sizing via Behavioral Contrast.")
+            self._apply_workflow_patch(composed_tree.workflow_policy, tree_b.workflow_policy)
+            decision_summary.append("Adopted Domain (Candidate B) topology/sizing & workflow policy via Behavioral Contrast.")
 
         # Merge memory additions from adopted candidates (or both if neither adopted yet)
         merged_memory = set(base_tree.c3_memory.splitlines())

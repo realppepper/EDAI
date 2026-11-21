@@ -57,7 +57,8 @@ class ToolDecisionRouter:
         has_netlist: bool,
         syntax_valid: bool,
         history_tool_names: list[str],
-        unmet_specs_count: int = 0
+        unmet_specs_count: int = 0,
+        workflow_policy: dict[str, Any] | None = None,
     ) -> dict[str, Any]:
         """
         Computes a calibrated probability distribution over tools
@@ -117,11 +118,24 @@ class ToolDecisionRouter:
             )
 
         # Soft Priors (no forced early return): guide without blocking active LLM tool choice
+        wp = workflow_policy or {}
+        strategy = wp.get("initial_strategy", "blueprint_first")
         if turn_idx == 1 and not has_netlist:
-            probs["retrieve_subcircuit_blueprint"] = 0.45
-            probs["search_web_circuit_reference"] = 0.25
-            probs["generate_topology_candidates"] = 0.15
-            reason = "Initial turn prior: explore blueprints, IEEE references, or topology candidates."
+            if strategy == "gm_id_first":
+                probs["auto_size_gm_id"] = 0.45
+                probs["generate_topology_candidates"] = 0.30
+                probs["retrieve_subcircuit_blueprint"] = 0.15
+                reason = "Initial turn prior (Harness² gm_id_first): prioritize gm/ID sizing & topology."
+            elif strategy == "topology_first":
+                probs["generate_topology_candidates"] = 0.45
+                probs["auto_size_gm_id"] = 0.25
+                probs["retrieve_subcircuit_blueprint"] = 0.15
+                reason = "Initial turn prior (Harness² topology_first): prioritize topology candidates."
+            else:
+                probs["retrieve_subcircuit_blueprint"] = 0.45
+                probs["search_web_circuit_reference"] = 0.25
+                probs["generate_topology_candidates"] = 0.15
+                reason = "Initial turn prior: explore blueprints, IEEE references, or topology candidates."
         elif has_netlist:
             probs["verify_circuit_pdg_gate"] = 0.45
             probs["validate_netlist_syntax"] = 0.20
@@ -133,6 +147,10 @@ class ToolDecisionRouter:
             probs["auto_size_gm_id"] = 0.15
             probs["search_web_circuit_reference"] = 0.10
             reason = "No candidate netlist yet prior: favor synthesis, topology, or gm/ID sizing."
+
+        for t, override_p in (wp.get("tool_priors") or {}).items():
+            if t in probs and isinstance(override_p, (int, float)):
+                probs[t] = max(0.0, min(1.0, float(override_p)))
 
         if os.environ.get("ANALOG_ENABLE_LLM_ROUTER", "1") == "1" and os.environ.get("ANALOG_DISABLE_LLM_PLANNER") != "1":
             try:

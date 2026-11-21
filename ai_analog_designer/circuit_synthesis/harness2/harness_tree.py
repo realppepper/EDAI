@@ -172,82 +172,60 @@ STRICT RULES FOR `<circuit_json>`:
 
 
 
+def default_workflow_policy() -> dict[str, Any]:
+    return {
+        "initial_strategy": "blueprint_first",
+        "max_syntax_repairs": 2,
+        "max_dc_repairs": 2,
+        "tool_priors": {},
+    }
+
+
 @dataclass
-
 class HarnessTree:
-
-    """Represents the 8 modular Harness² components."""
+    """Represents the 8 modular Harness² components + evolvable workflow policy."""
 
     c1_system_prompt: str = DEFAULT_C1_SYSTEM_PROMPT
-
     c2_guardrails: str = DEFAULT_C2_GUARDRAILS
-
     c3_memory: str = DEFAULT_C3_MEMORY
-
     c4_tool_guidance: str = DEFAULT_C4_TOOL_GUIDANCE
-
     c5_skills: dict[str, str] = field(default_factory=dict)
-
     c6_scripts: dict[str, str] = field(default_factory=dict)
-
     c7_subagents: dict[str, str] = field(default_factory=dict)
-
     c8_plugins: dict[str, str] = field(default_factory=dict)
-
-
+    workflow_policy: dict[str, Any] = field(default_factory=default_workflow_policy)
 
     def clone(self) -> HarnessTree:
-
         return copy.deepcopy(self)
 
-
-
     def to_dict(self) -> dict[str, Any]:
-
         return {
-
             "c1_system_prompt": self.c1_system_prompt,
-
             "c2_guardrails": self.c2_guardrails,
-
             "c3_memory": self.c3_memory,
-
             "c4_tool_guidance": self.c4_tool_guidance,
-
             "c5_skills": self.c5_skills,
-
             "c6_scripts": self.c6_scripts,
-
             "c7_subagents": self.c7_subagents,
-
             "c8_plugins": self.c8_plugins,
-
+            "workflow_policy": self.workflow_policy,
         }
 
-
-
     @classmethod
-
     def from_dict(cls, data: dict[str, Any]) -> HarnessTree:
-
+        wp = default_workflow_policy()
+        if isinstance(data.get("workflow_policy"), dict):
+            wp.update(data["workflow_policy"])
         return cls(
-
             c1_system_prompt=data.get("c1_system_prompt", DEFAULT_C1_SYSTEM_PROMPT),
-
             c2_guardrails=data.get("c2_guardrails", DEFAULT_C2_GUARDRAILS),
-
             c3_memory=data.get("c3_memory", DEFAULT_C3_MEMORY),
-
             c4_tool_guidance=data.get("c4_tool_guidance", DEFAULT_C4_TOOL_GUIDANCE),
-
             c5_skills=data.get("c5_skills", {}),
-
             c6_scripts=data.get("c6_scripts", {}),
-
             c7_subagents=data.get("c7_subagents", {}),
-
             c8_plugins=data.get("c8_plugins", {}),
-
+            workflow_policy=wp,
         )
 
 

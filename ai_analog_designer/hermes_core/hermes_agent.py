@@ -452,7 +452,8 @@ CRITICAL: NEVER use ellipses, placeholders, or undefined X-subcircuit stubs in t
             has_netlist=bool(current_nl),
             syntax_valid=True,
             history_tool_names=history_names,
-            unmet_specs_count=len(getattr(self.tools, "specifications", [])) if self.tools else 0
+            unmet_specs_count=len(getattr(self.tools, "specifications", [])) if self.tools else 0,
+            workflow_policy=getattr(getattr(self.tools, "harness_tree", None), "workflow_policy", None),
         )
         logger.info(f"[Jev Router] Selected: '{state_decision['selected_tool']}' (confidence: {state_decision['confidence']:.2f}, reason: {state_decision['reason']})")
 

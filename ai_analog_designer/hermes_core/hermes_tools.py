@@ -485,7 +485,8 @@ class HermesAnalogTools:
             )
             netlist, val_res = _extract_and_validate(raw)
             repair_attempts = 0
-            max_syntax_repairs = 2
+            wp = getattr(self.harness_tree, "workflow_policy", {}) or {}
+            max_syntax_repairs = int(wp.get("max_syntax_repairs", 2))
             while not val_res.get("is_valid", False) and repair_attempts < max_syntax_repairs:
                 repair_attempts += 1
                 with trace_span(
@@ -539,7 +540,7 @@ class HermesAnalogTools:
                     pins=self.pins,
                     timeout_s=15,
                 )
-                max_dc_repairs = 2
+                max_dc_repairs = int(wp.get("max_dc_repairs", 2))
                 while not dc_check.get("converged", False) and dc_repair_attempts < max_dc_repairs:
                     dc_repair_attempts += 1
                     with trace_span(
