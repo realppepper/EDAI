@@ -63,11 +63,51 @@ class CircuitBuilder:
             for p in self.pins
         ] or ["INP", "INN", "VCC", "VEE", "OUT"]
         self.neg_rail = _infer_neg_rail(self.pins)
+        self.pin_aliases = self._build_pin_aliases(self.pins, self.pin_names)
         self.devices: list[tuple[str, list[str]]] = []  # (spice_line, connected_nodes)
         self.models: dict[str, str] = {}
         self.referenced_models: set[str] = set()
         self._used_names: set[str] = set()
         self.build_errors: list[str] = []
+
+    @staticmethod
+    def _build_pin_aliases(pins: list[dict[str, Any]] | list[str], pin_names: list[str]) -> dict[str, str]:
+        """Maps common generic pin names (INP, INN, VCC, VEE, OUT) to actual DUT pin names."""
+        aliases: dict[str, str] = {}
+        exact_upper = {p.upper(): p for p in pin_names}
+        for p in pins:
+            if not isinstance(p, dict):
+                continue
+            pname = str(p.get("name") or "")
+            up = pname.upper()
+            role = str(p.get("role") or "").upper()
+            desc = str(p.get("description") or "").lower()
+            if role == "OUTPUT" or "OUT" in up:
+                for k in ("OUT", "VOUT", "OUTPUT"):
+                    if k not in exact_upper:
+                        aliases.setdefault(k, pname)
+            elif role == "GROUND" or "neg" in desc or up in ("V_N", "VN", "VEE", "VSS", "GND", "V"):
+                for k in ("VEE", "VSS", "GND", "V_N", "VN", "VNEG"):
+                    if k not in exact_upper:
+                        aliases.setdefault(k, pname)
+            elif role == "POWER" or "pos" in desc or up in ("V_P", "VP", "VCC", "VDD", "VPOS"):
+                for k in ("VCC", "VDD", "V_P", "VP", "VPOS"):
+                    if k not in exact_upper:
+                        aliases.setdefault(k, pname)
+            elif role == "SIGNAL":
+                if "NON" in up or "INP" in up or "non-inv" in desc or "noninv" in desc:
+                    for k in ("INP", "IN_P", "NONINV", "NONINVERTING_INPUT"):
+                        if k not in exact_upper:
+                            aliases.setdefault(k, pname)
+                elif "INV" in up or "INN" in up:
+                    for k in ("INN", "IN_N", "INV", "INVERTING_INPUT"):
+                        if k not in exact_upper:
+                            aliases.setdefault(k, pname)
+        return aliases
+
+    def _map_node(self, node: Any, _neg_rail: str | None = None) -> str:
+        n = _clean_node(node, self.neg_rail)
+        return self.pin_aliases.get(n.upper(), n)
 
     def _unique_name(self, prefix: str, raw_name: Any) -> str:
         base = re.sub(r"[^A-Za-z0-9_]", "", str(raw_name or ""))
@@ -97,19 +137,19 @@ class CircuitBuilder:
 
         if kind in ("bjt", "q", "npn", "pnp"):
             name = self._unique_name("Q", dev.get("name"))
-            c = _clean_node(dev.get("c") or dev.get("collector"), self.neg_rail)
-            b = _clean_node(dev.get("b") or dev.get("base"), self.neg_rail)
-            e = _clean_node(dev.get("e") or dev.get("emitter"), self.neg_rail)
+            c = self._map_node(dev.get("c") or dev.get("collector"), self.neg_rail)
+            b = self._map_node(dev.get("b") or dev.get("base"), self.neg_rail)
+            e = self._map_node(dev.get("e") or dev.get("emitter"), self.neg_rail)
             default_mod = "QPNP" if kind == "pnp" else "QNPN"
             model = _clean_model_name(dev.get("model"), default_mod)
             self.referenced_models.add(model)
             self.devices.append((f"{name} {c} {b} {e} {model}", [c, b, e]))
         elif kind in ("mos", "mosfet", "m", "nmos", "pmos"):
             name = self._unique_name("M", dev.get("name"))
-            d = _clean_node(dev.get("d") or dev.get("drain"), self.neg_rail)
-            g = _clean_node(dev.get("g") or dev.get("gate"), self.neg_rail)
-            s = _clean_node(dev.get("s") or dev.get("source"), self.neg_rail)
-            b = _clean_node(dev.get("b") or dev.get("bulk") or dev.get("body") or s, self.neg_rail)
+            d = self._map_node(dev.get("d") or dev.get("drain"), self.neg_rail)
+            g = self._map_node(dev.get("g") or dev.get("gate"), self.neg_rail)
+            s = self._map_node(dev.get("s") or dev.get("source"), self.neg_rail)
+            b = self._map_node(dev.get("b") or dev.get("bulk") or dev.get("body") or s, self.neg_rail)
             default_mod = "PMOS_MOD" if kind == "pmos" else "NMOS_MOD"
             model = _clean_model_name(dev.get("model"), default_mod)
             w = str(dev.get("w") or dev.get("W") or "20u").strip()
@@ -118,26 +158,26 @@ class CircuitBuilder:
             self.devices.append((f"{name} {d} {g} {s} {b} {model} W={w} L={l_val}", [d, g, s, b]))
         elif kind in ("res", "r", "resistor"):
             name = self._unique_name("R", dev.get("name"))
-            p = _clean_node(dev.get("p") or dev.get("n1") or dev.get("a"), self.neg_rail)
-            n = _clean_node(dev.get("n") or dev.get("n2") or dev.get("b"), self.neg_rail)
+            p = self._map_node(dev.get("p") or dev.get("n1") or dev.get("a"), self.neg_rail)
+            n = self._map_node(dev.get("n") or dev.get("n2") or dev.get("b"), self.neg_rail)
             val = str(dev.get("value") or dev.get("val") or "10k").strip()
             self.devices.append((f"{name} {p} {n} {val}", [p, n]))
         elif kind in ("cap", "c", "capacitor"):
             name = self._unique_name("C", dev.get("name"))
-            p = _clean_node(dev.get("p") or dev.get("n1") or dev.get("a"), self.neg_rail)
-            n = _clean_node(dev.get("n") or dev.get("n2") or dev.get("b"), self.neg_rail)
+            p = self._map_node(dev.get("p") or dev.get("n1") or dev.get("a"), self.neg_rail)
+            n = self._map_node(dev.get("n") or dev.get("n2") or dev.get("b"), self.neg_rail)
             val = str(dev.get("value") or dev.get("val") or "10p").strip()
             self.devices.append((f"{name} {p} {n} {val}", [p, n]))
         elif kind in ("ind", "l", "inductor"):
             name = self._unique_name("L", dev.get("name"))
-            p = _clean_node(dev.get("p") or dev.get("n1") or dev.get("a"), self.neg_rail)
-            n = _clean_node(dev.get("n") or dev.get("n2") or dev.get("b"), self.neg_rail)
+            p = self._map_node(dev.get("p") or dev.get("n1") or dev.get("a"), self.neg_rail)
+            n = self._map_node(dev.get("n") or dev.get("n2") or dev.get("b"), self.neg_rail)
             val = str(dev.get("value") or dev.get("val") or "1u").strip()
             self.devices.append((f"{name} {p} {n} {val}", [p, n]))
         elif kind in ("diode", "d"):
             name = self._unique_name("D", dev.get("name"))
-            a = _clean_node(dev.get("a") or dev.get("anode") or dev.get("p"), self.neg_rail)
-            k = _clean_node(dev.get("k") or dev.get("cathode") or dev.get("n"), self.neg_rail)
+            a = self._map_node(dev.get("a") or dev.get("anode") or dev.get("p"), self.neg_rail)
+            k = self._map_node(dev.get("k") or dev.get("cathode") or dev.get("n"), self.neg_rail)
             model = _clean_model_name(dev.get("model"), "D1N4148")
             self.referenced_models.add(model)
             self.devices.append((f"{name} {a} {k} {model}", [a, k]))
