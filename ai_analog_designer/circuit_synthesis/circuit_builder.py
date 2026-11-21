@@ -95,11 +95,11 @@ class CircuitBuilder:
                     if k not in exact_upper:
                         aliases.setdefault(k, pname)
             elif role == "SIGNAL":
-                if "NON" in up or "INP" in up or "non-inv" in desc or "noninv" in desc:
+                if "NON" in up or up in ("INP", "IN_P", "V_INP", "VINP") or "non-inv" in desc or "noninv" in desc:
                     for k in ("INP", "IN_P", "NONINV", "NONINVERTING_INPUT"):
                         if k not in exact_upper:
                             aliases.setdefault(k, pname)
-                elif "INV" in up or "INN" in up:
+                elif "INV" in up or up in ("INN", "IN_N", "V_INN", "VINN"):
                     for k in ("INN", "IN_N", "INV", "INVERTING_INPUT"):
                         if k not in exact_upper:
                             aliases.setdefault(k, pname)
