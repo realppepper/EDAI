@@ -1330,14 +1330,22 @@ class HermesAnalogTools:
         from pathlib import Path
         from ai_analog_designer.neuro_symbolic_verifier.spice_sweep_engine import optimize
 
-        if settings and netlist and netlist.strip():
-            sweep_dir = Path(self.output_dir) / f"sweep_{len(self.evaluation_history) + 1:02d}"
-            cfg = {"simulator": simulator}
-            return optimize(netlist, settings, cfg, sweep_dir)
+        is_full_sweep_project = (
+            isinstance(settings, dict)
+            and all(k in settings for k in ("parameters", "goals", "objective"))
+            and bool(netlist and re.search(r"(?im)^\s*\.end\s*$", netlist))
+        )
+        if is_full_sweep_project:
+            try:
+                sweep_dir = Path(self.output_dir) / f"sweep_{len(self.evaluation_history) + 1:02d}"
+                cfg = {"simulator": simulator}
+                return optimize(netlist, settings, cfg, sweep_dir)
+            except Exception as exc:
+                logger.warning(f"Standalone sweep_parameters_grid failed ({exc}); falling back to auto-subcircuit sweep.")
 
         base_subckt = (
-            (netlist or "").strip()
-            or (self.best_evaluation or {}).get("netlist", "").strip()
+            (self.best_evaluation or {}).get("netlist", "").strip()
+            or (netlist or "").strip()
             or (self.last_synthesized_netlist or "").strip()
         )
         if not base_subckt:
