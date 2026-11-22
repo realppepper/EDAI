@@ -510,6 +510,7 @@ Return ONLY valid JSON.
                 }
 
             pass_rate = final_evaluation.get("pass_rate_percent", 0.0)
+            best_eval = final_evaluation
 
             # Post-Hermes Propose -> Probe -> Compose cycle (Harness² contrastive refinement after baseline execution)
             if pass_rate < 100.0:
@@ -531,6 +532,7 @@ Return ONLY valid JSON.
                     )
                     if winning_eval and winning_eval.get("pass_rate_percent", 0.0) >= pass_rate:
                         final_evaluation = winning_eval
+                        best_eval = winning_eval
                         pass_rate = winning_eval.get("pass_rate_percent", 0.0)
                         active_harness_tree = composed_tree
                         refined_nl = (winning_res or {}).get("spice_netlist") or (winning_res or {}).get("netlist")
@@ -539,6 +541,7 @@ Return ONLY valid JSON.
                             with open(post_path, "w", encoding="utf-8") as f:
                                 f.write(refined_nl)
                             final_netlist_path = post_path
+                            best_netlist_path = post_path
                             best_netlist_code = refined_nl
                 except Exception as he:
                     logger.warning(f"Post-Hermes Harness² Propose-Probe-Compose skipped: {he}")
