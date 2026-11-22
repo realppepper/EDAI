@@ -150,21 +150,12 @@ DEFAULT_C4_TOOL_GUIDANCE = """## TOOL GUIDANCE & SIMULATION ALIGNMENT:
 
    - Enclose technical rationale in `<architecture_summary>...</architecture_summary>`.
 
-   - Enclose the complete SPICE netlist in `<circuit_json>
-{{
-  "models": [{{"name": "QNPN", "type": "NPN", "params": "IS=1e-16 BF=150 VAF=100"}}],
-  "devices": [
-    {{"kind": "bjt", "name": "Q1", "c": "N_C1", "b": "INP", "e": "N_TAIL", "model": "QNPN"}},
-    {{"kind": "mos", "name": "M1", "d": "N_D", "g": "N_G", "s": "V_P", "b": "V_P", "model": "PMOS_MOD", "w": "20u", "l": "1u"}},
-    {{"kind": "res", "name": "R1", "p": "V_P", "n": "N_BIAS", "value": "20k"}},
-    {{"kind": "cap", "name": "C1", "p": "N_GAIN", "n": "OUT", "value": "30p"}}
-  ]
-}}
-</circuit_json>
-STRICT RULES FOR `<circuit_json>`:
-- ONLY physical kinds: bjt, mos, res, cap, ind, diode (NEVER v, i, b, a sources).
-- Connect EVERY non-NC pin in PIN INTERFACE using exact pin names; every internal node must connect to >= 2 terminals.
-- Ensure a continuous DC bias path between supply rails and signal path from inputs to output.`.
+   - Enclose the complete circuit in `<circuit_json>...</circuit_json>` using the CircuitBuilder IR schema:
+     * ONLY physical kinds: bjt, mos, res, cap, ind, diode (NEVER v, i, b, a sources).
+     * Connect EVERY required POWER, GROUND, SIGNAL, and OUTPUT pin in PIN INTERFACE using exact pin names; every internal node must connect to >= 2 device terminals.
+     * Ensure a continuous DC bias path between supply rails and differential signal path from inputs to output.
+     * Example 0-ERC DC-convergent 2-stage op-amp skeleton:
+       {{"models":[{{"name":"QNPN","type":"NPN","params":"IS=1e-16 BF=200 VAF=100"}},{{"name":"QPNP","type":"PNP","params":"IS=1e-16 BF=80 VAF=80"}}],"devices":[{{"kind":"bjt","name":"Q1","c":"N_C1","b":"INP","e":"N_TAIL","model":"QNPN"}},{{"kind":"bjt","name":"Q2","c":"N_C2","b":"INN","e":"N_TAIL","model":"QNPN"}},{{"kind":"res","name":"RC1","p":"VCC","n":"N_C1","value":"15k"}},{{"kind":"res","name":"RC2","p":"VCC","n":"N_C2","value":"15k"}},{{"kind":"bjt","name":"Q3","c":"N_TAIL","b":"N_BIAS","e":"N_E3","model":"QNPN"}},{{"kind":"res","name":"RE3","p":"N_E3","n":"VEE","value":"1k"}},{{"kind":"bjt","name":"Q4","c":"N_BIAS","b":"N_BIAS","e":"N_E4","model":"QNPN"}},{{"kind":"res","name":"RE4","p":"N_E4","n":"VEE","value":"1k"}},{{"kind":"res","name":"RBIAS","p":"VCC","n":"N_BIAS","value":"30k"}},{{"kind":"bjt","name":"Q5","c":"N_G2","b":"N_C2","e":"VCC","model":"QPNP"}},{{"kind":"res","name":"RG2","p":"N_G2","n":"VEE","value":"10k"}},{{"kind":"cap","name":"CC","p":"N_C2","n":"N_G2","value":"30p"}},{{"kind":"bjt","name":"Q6","c":"VCC","b":"N_G2","e":"OUT","model":"QNPN"}},{{"kind":"res","name":"ROUT","p":"OUT","n":"VEE","value":"5k"}}]}}`
 
 """
 

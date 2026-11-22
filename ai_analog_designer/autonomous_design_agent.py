@@ -527,16 +527,19 @@ Return ONLY valid JSON.
                         eval_probe_fn=eval_probe,
                         measurement_plan=self.spec_plan,
                         user_prompt=user_prompt,
+                        base_synth={"spice_netlist": final_netlist},
                     )
                     if winning_eval and winning_eval.get("pass_rate_percent", 0.0) >= pass_rate:
                         final_evaluation = winning_eval
                         pass_rate = winning_eval.get("pass_rate_percent", 0.0)
                         active_harness_tree = composed_tree
-                        if winning_res and winning_res.get("netlist"):
+                        refined_nl = (winning_res or {}).get("spice_netlist") or (winning_res or {}).get("netlist")
+                        if refined_nl:
                             post_path = os.path.join(self.output_dir, f"{safe_part_name}_HARNESS2_REFINED.cir")
                             with open(post_path, "w", encoding="utf-8") as f:
-                                f.write(winning_res["netlist"])
+                                f.write(refined_nl)
                             final_netlist_path = post_path
+                            final_netlist = refined_nl
                 except Exception as he:
                     logger.warning(f"Post-Hermes Harness² Propose-Probe-Compose skipped: {he}")
 

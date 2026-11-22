@@ -170,36 +170,69 @@ The subcircuit must work with its negative supply pin tied to 0 V (single supply
         from ai_analog_designer.circuit_synthesis.circuit_builder import (
             CircuitBuilder,
         )
+        from ai_analog_designer.circuit_synthesis.dc_convergence_fixer import (
+            run_quick_dc_op_check,
+        )
 
-        netlist_code = ""
-        built = CircuitBuilder.from_json(raw_resp, subckt_name=subckt_name, pins=pins)
-        if built is not None:
-            netlist_code = built["netlist"]
-        else:
-            m_net = re.search(r'<spice_netlist>(.*?)</spice_netlist>', raw_resp, re.DOTALL | re.IGNORECASE)
+        def _parse_and_validate(resp_text: str) -> tuple[str, dict[str, Any]]:
+            nl = ""
+            built = CircuitBuilder.from_json(resp_text, subckt_name=subckt_name, pins=pins)
+            if built is not None:
+                nl = built["netlist"]
+                vr = self.validator.validate(nl, expected_subckt_name=subckt_name, expected_pins=pins)
+                if built["erc_errors"]:
+                    vr = dict(vr)
+                    vr["errors"] = list(built["erc_errors"]) + list(vr.get("errors") or [])
+                    vr["is_valid"] = False
+                return vr.get("cleaned_netlist", nl), vr
+            m_net = re.search(r'<spice_netlist>(.*?)</spice_netlist>', resp_text, re.DOTALL | re.IGNORECASE)
             if not m_net:
-                m_net = re.search(r'<spice_netlist>(.*)', raw_resp, re.DOTALL | re.IGNORECASE)
+                m_net = re.search(r'<spice_netlist>(.*)', resp_text, re.DOTALL | re.IGNORECASE)
             if m_net:
-                netlist_code = m_net.group(1).strip()
+                nl = m_net.group(1).strip()
             else:
-                m_code = re.search(r'```(?:spice|cir)?\s*(.*?)\s*```', raw_resp, re.DOTALL | re.IGNORECASE)
+                m_code = re.search(r'```(?:spice|cir)?\s*(.*?)\s*```', resp_text, re.DOTALL | re.IGNORECASE)
                 if m_code:
-                    netlist_code = m_code.group(1).strip()
-                elif ".subckt" in raw_resp.lower():
-                    netlist_code = raw_resp.strip()
+                    nl = m_code.group(1).strip()
+                elif ".subckt" in resp_text.lower():
+                    nl = resp_text.strip()
+            if nl.startswith("```"):
+                nl = re.sub(r'^```[a-zA-Z]*\n', '', nl)
+                nl = re.sub(r'\n```$', '', nl)
+            vr = self.validator.validate(nl, expected_subckt_name=subckt_name, expected_pins=pins)
+            return vr.get("cleaned_netlist", nl.strip()), vr
 
-        if netlist_code.startswith("```"):
-            netlist_code = re.sub(r'^```[a-zA-Z]*\n', '', netlist_code)
-            netlist_code = re.sub(r'\n```$', '', netlist_code)
+        cleaned_netlist, val_res = _parse_and_validate(raw_resp)
+        if not val_res.get("is_valid", False):
+            err_txt = "\n".join(val_res.get("errors", [])[:6])
+            fix_prompt = (
+                f"Fix ALL ERC/SPICE errors in `.subckt {subckt_name}` and output ONLY `<circuit_json>...</circuit_json>`:\n"
+                f"Errors:\n{err_txt}\n\nCurrent netlist:\n{cleaned_netlist}\n"
+            )
+            fix_raw = synth_client.complete(fix_prompt, system_prompt=tree.c1_system_prompt, temperature=0.0, max_tokens=4096, tag="harness2_synth")
+            cand_nl, cand_vr = _parse_and_validate(fix_raw)
+            if cand_vr.get("is_valid") or len(cand_vr.get("errors", [])) < len(val_res.get("errors", [])):
+                cleaned_netlist, val_res = cand_nl, cand_vr
 
-        val_res = self.validator.validate(netlist_code, expected_subckt_name=subckt_name, expected_pins=pins)
-        cleaned_netlist = val_res.get("cleaned_netlist", netlist_code.strip())
+        if val_res.get("is_valid", False):
+            dc_chk = run_quick_dc_op_check(cleaned_netlist, subckt_name=subckt_name, pins=pins, timeout_s=15)
+            if not dc_chk.get("converged", False):
+                dc_prompt = (
+                    f"Fix DC bias / unity-gain signal transfer in `.subckt {subckt_name}` and output ONLY `<circuit_json>...</circuit_json>`:\n"
+                    f"Diagnostic: {dc_chk.get('diagnostic', '')}\n\nCurrent netlist:\n{cleaned_netlist}\n"
+                )
+                dc_raw = synth_client.complete(dc_prompt, system_prompt=tree.c1_system_prompt, temperature=0.05, max_tokens=4096, tag="harness2_synth")
+                cand_nl, cand_vr = _parse_and_validate(dc_raw)
+                if cand_vr.get("is_valid", False):
+                    dc_chk2 = run_quick_dc_op_check(cand_nl, subckt_name=subckt_name, pins=pins, timeout_s=15)
+                    if dc_chk2.get("converged", False):
+                        cleaned_netlist = cand_nl
 
         return {
             "subcircuit_name": subckt_name,
             "architecture_summary": arch_summary,
             "spice_netlist": cleaned_netlist,
-            "raw_netlist": netlist_code,
+            "raw_netlist": cleaned_netlist,
             "design_rationale": {"summary": arch_summary},
             "harness_snapshot": tree.to_dict()
         }
@@ -251,6 +284,17 @@ The subcircuit must work with its negative supply pin tied to 0 V (single supply
             compiler_errors=compiler_errors
         )
 
+        base_nl = (base_synth or {}).get("spice_netlist") or (base_synth or {}).get("netlist") or ""
+        base_ctx = (
+            f"\n\n### CURRENT BEST WORKING NETLIST (Pass Rate: {base_eval.get('pass_rate_percent', 0.0):.1f}% — EVOLVE FROM THIS):\n{base_nl[:2400]}\n"
+            if base_nl
+            else ""
+        )
+        failed_ctx = "\n".join(
+            f"- {s.get('symbol')}: measured={s.get('measured')} (expected [{s.get('min_target', s.get('min'))}, {s.get('max_target', s.get('max'))}] {s.get('unit', '')})"
+            for s in failed_specs[:8] if s.get("measured") is not None
+        )
+
         # 2. Probe A (Invariant)
         tag_a = f"iter{iteration_index}_probe_a"
         logger.info(f"Executing Probe A ({tag_a}: Invariant Candidate)...")
@@ -262,7 +306,7 @@ The subcircuit must work with its negative supply pin tied to 0 V (single supply
             pdg_schedule=pdg_schedule,
             measurement_plan=measurement_plan,
             user_prompt=user_prompt,
-            prior_feedback="Focus strictly on SPICE convergence, numerical stability, and syntax invariants."
+            prior_feedback=f"Focus strictly on SPICE convergence, numerical stability, and syntax invariants.{base_ctx}"
         )
         eval_a = eval_probe_fn(res_a["spice_netlist"], tag_a)
 
@@ -277,7 +321,10 @@ The subcircuit must work with its negative supply pin tied to 0 V (single supply
             pdg_schedule=pdg_schedule,
             measurement_plan=measurement_plan,
             user_prompt=user_prompt,
-            prior_feedback="Focus strictly on circuit topology, stage biasing, and transistor sizing to satisfy unmet specifications."
+            prior_feedback=(
+                "Focus strictly on circuit topology, active current-mirror loads, stage biasing, and sizing to fix these failing specs:\n"
+                f"{failed_ctx}{base_ctx}"
+            )
         )
         eval_b = eval_probe_fn(res_b["spice_netlist"], tag_b)
 
