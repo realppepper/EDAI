@@ -527,7 +527,7 @@ Return ONLY valid JSON.
                         eval_probe_fn=eval_probe,
                         measurement_plan=self.spec_plan,
                         user_prompt=user_prompt,
-                        base_synth={"spice_netlist": final_netlist},
+                        base_synth={"spice_netlist": best_netlist_code},
                     )
                     if winning_eval and winning_eval.get("pass_rate_percent", 0.0) >= pass_rate:
                         final_evaluation = winning_eval
@@ -539,7 +539,7 @@ Return ONLY valid JSON.
                             with open(post_path, "w", encoding="utf-8") as f:
                                 f.write(refined_nl)
                             final_netlist_path = post_path
-                            final_netlist = refined_nl
+                            best_netlist_code = refined_nl
                 except Exception as he:
                     logger.warning(f"Post-Hermes Harness² Propose-Probe-Compose skipped: {he}")
 
