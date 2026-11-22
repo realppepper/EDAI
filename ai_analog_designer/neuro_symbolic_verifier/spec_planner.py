@@ -559,8 +559,17 @@ def build_plan(ic_info: dict[str, Any], pins: list[dict[str, Any]], specs: list[
     for idx, s in enumerate(specs):
         kind, unit, mag, status = classify_spec(device_class, s)
         cond = parse_conditions(s.get("test_conditions") or "")
+        s_min, s_typ, s_max = s.get("min"), s.get("typ"), s.get("max")
+        # Upper-bound-only op-amp specs (Vos, Ios, Ib, Iq) never have a lower-bound MIN in datasheets;
+        # when 2-column tables (TYP, MAX) shift into (min, typ, None), restore them to (None, typ, max).
+        if kind in ("vos", "ios", "ib", "iq") and s_min is not None and s_typ is not None and s_max is None:
+            try:
+                if float(s_min) >= 0 and float(s_typ) > float(s_min):
+                    s_min, s_typ, s_max = None, s_min, s_typ
+            except (TypeError, ValueError):
+                pass
         item = {"spec_index": idx, "symbol": s.get("symbol"), "name": s.get("name"), "category": s.get("category", "ELECTRICAL"),
-                "min": s.get("min"), "typ": s.get("typ"), "max": s.get("max"), "unit": s.get("unit"),
+                "min": s_min, "typ": s_typ, "max": s_max, "unit": s.get("unit"),
                 "test_conditions": s.get("test_conditions"), "kind": kind, "canonical_unit": unit, "magnitude": mag,
                 "status": status, "conditions": cond, "note": ""}
         items.append(item)

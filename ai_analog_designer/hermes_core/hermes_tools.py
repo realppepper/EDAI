@@ -1266,6 +1266,11 @@ class HermesAnalogTools:
             ".meas dc v_out_0 FIND abs(V(N_OUT)) AT 0",
             ".meas dc i_bias_na FIND abs(I(V_INP))*1e9 AT 0",
             ".meas dc aol_lin PARAM '2.0/max(1e-9,abs(v_id_p1-v_id_m1))'",
+            # RFChipAgent Sigmoid-Normalized Harmonic Mean multi-objective (A_OL, Vos, I_bias)
+            ".meas dc q_aol PARAM '1.0/(1.0+exp(-(20.0*log10(max(1.0,aol_lin))-94.0)/4.0))'",
+            ".meas dc q_vos PARAM '1.0/(1.0+exp(-(0.005-v_out_0)/0.002))'",
+            ".meas dc q_ib PARAM '1.0/(1.0+exp(-(500.0-i_bias_na)/100.0))'",
+            ".meas dc q_total PARAM '3.0/(1.0/max(1e-4,q_aol)+1.0/max(1e-4,q_vos)+1.0/max(1e-4,q_ib))'",
             ".end",
         ]
         deck = "\n".join(tb_lines) + "\n"
@@ -1279,7 +1284,7 @@ class HermesAnalogTools:
                 {"measure": "i_bias_na", "op": "<=", "value": 500.0},
                 {"measure": "aol_lin", "op": ">=", "value": 3000.0},
             ],
-            "objective": {"measure": "aol_lin", "sense": "max"},
+            "objective": {"measure": "q_total", "sense": "max"},
         }
         sweep_dir = Path(self.output_dir) / f"sweep_{len(self.evaluation_history) + 1:02d}"
         cfg = {"simulator": simulator}
