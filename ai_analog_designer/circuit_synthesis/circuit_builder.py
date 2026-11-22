@@ -221,13 +221,16 @@ class CircuitBuilder:
         signal_pins: list[str] = []
         output_pins: list[str] = []
         power_pins: list[str] = []
+        _optional_pin_tokens = ("NC", "OFFSET", "NULL", "BAL", "TRIM", "COMP", "SHDN", "STBY")
         for p in self.pins:
             if isinstance(p, dict):
                 pname = str(p.get("name") or "")
+                up = pname.upper()
                 role = str(p.get("role") or "").upper()
-                if role == "NC" or pname.upper() == "NC":
+                if role == "NC" or up == "NC":
                     continue
-                if node_degree.get(pname, 0) == 0:
+                is_optional_ctrl = role == "CONTROL" or any(tok in up for tok in _optional_pin_tokens)
+                if node_degree.get(pname, 0) == 0 and not is_optional_ctrl:
                     errors.append(f"ERC_UNCONNECTED_PORT: Declared {role or 'PIN'} '{pname}' has zero device connections.")
                 if role == "SIGNAL":
                     signal_pins.append(pname)
@@ -237,7 +240,8 @@ class CircuitBuilder:
                     power_pins.append(pname)
             else:
                 pname = str(p)
-                if pname.upper() != "NC" and node_degree.get(pname, 0) == 0:
+                up = pname.upper()
+                if up != "NC" and not any(tok in up for tok in _optional_pin_tokens) and node_degree.get(pname, 0) == 0:
                     errors.append(f"ERC_UNCONNECTED_PORT: Declared pin '{pname}' has zero device connections.")
 
         # Check DC bias path between power/ground rails (excluding capacitors)
@@ -345,3 +349,35 @@ class CircuitBuilder:
             "erc_errors": erc_errors,
             "device_count": len(builder.devices),
         }
+
+    @staticmethod
+    def schema_guide() -> str:
+        """Returns a compact, physically closed (0-ERC, DC-convergent) JSON IR schema guide."""
+        return (
+            "DEVICE KINDS (physical ONLY — NEVER v, i, b, a sources):\n"
+            '- bjt:   {"kind":"bjt","name":"Q1","c":"<node>","b":"<node>","e":"<node>","model":"QNPN"}\n'
+            '- mos:   {"kind":"mos","name":"M1","d":"<node>","g":"<node>","s":"<node>","b":"<node>","model":"NMOS_MOD","w":"20u","l":"1u"}\n'
+            '- res:   {"kind":"res","name":"R1","p":"<node>","n":"<node>","value":"10k"}\n'
+            '- cap:   {"kind":"cap","name":"C1","p":"<node>","n":"<node>","value":"30p"}\n'
+            '- diode: {"kind":"diode","name":"D1","a":"<node>","k":"<node>","model":"D1N4148"}\n'
+            "COMPLETE CONNECTED EXAMPLE (adapt pin names & sizing to target DUT):\n"
+            '{"models":[\n'
+            '  {"name":"QNPN","type":"NPN","params":"IS=1e-16 BF=150 VAF=100"},\n'
+            '  {"name":"QPNP","type":"PNP","params":"IS=1e-16 BF=80 VAF=80"}\n'
+            '],"devices":[\n'
+            '  {"kind":"bjt","name":"Q1","c":"N_C1","b":"INP","e":"N_TAIL","model":"QNPN"},\n'
+            '  {"kind":"bjt","name":"Q2","c":"N_C2","b":"INN","e":"N_TAIL","model":"QNPN"},\n'
+            '  {"kind":"res","name":"RC1","p":"VCC","n":"N_C1","value":"15k"},\n'
+            '  {"kind":"res","name":"RC2","p":"VCC","n":"N_C2","value":"15k"},\n'
+            '  {"kind":"bjt","name":"Q3","c":"N_TAIL","b":"N_BIAS","e":"N_E3","model":"QNPN"},\n'
+            '  {"kind":"res","name":"RE3","p":"N_E3","n":"VEE","value":"1k"},\n'
+            '  {"kind":"bjt","name":"Q4","c":"N_BIAS","b":"N_BIAS","e":"N_E4","model":"QNPN"},\n'
+            '  {"kind":"res","name":"RE4","p":"N_E4","n":"VEE","value":"1k"},\n'
+            '  {"kind":"res","name":"RBIAS","p":"VCC","n":"N_BIAS","value":"30k"},\n'
+            '  {"kind":"bjt","name":"Q5","c":"N_G2","b":"N_C2","e":"VCC","model":"QPNP"},\n'
+            '  {"kind":"res","name":"RG2","p":"N_G2","n":"VEE","value":"10k"},\n'
+            '  {"kind":"cap","name":"CC","p":"N_C2","n":"N_G2","value":"30p"},\n'
+            '  {"kind":"bjt","name":"Q6","c":"VCC","b":"N_G2","e":"OUT","model":"QNPN"},\n'
+            '  {"kind":"res","name":"ROUT","p":"OUT","n":"VEE","value":"5k"}\n'
+            "]}"
+        )

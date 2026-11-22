@@ -421,24 +421,18 @@ class HermesAnalogTools:
 
         from ..circuit_synthesis.circuit_builder import CircuitBuilder
 
-        guardrails = getattr(self.harness_tree, "c2_guardrails", "") if self.harness_tree else ""
+        schema_guide = CircuitBuilder.schema_guide()
         sys_prompt = (
             "You are the dedicated Netlist Synthesis Sub-Agent for pure transistor-level SPICE circuit design.\n"
-            "Output ONLY a structured JSON circuit inside <circuit_json>...</circuit_json> tags so CircuitBuilder compiles it into guaranteed-valid SPICE.\n"
-            "JSON SCHEMA:\n"
-            '{"models": [{"name": "QNPN", "type": "NPN", "params": "IS=1e-16 BF=150 VAF=100"}], '
-            '"devices": [\n'
-            '  {"kind": "bjt", "name": "Q1", "c": "N_C1", "b": "INP", "e": "N_TAIL", "model": "QNPN"},\n'
-            '  {"kind": "mos", "name": "M1", "d": "N_D", "g": "N_G", "s": "V_P", "b": "V_P", "model": "PMOS_MOD", "w": "20u", "l": "1u"},\n'
-            '  {"kind": "res", "name": "R1", "p": "V_P", "n": "N_BIAS", "value": "20k"},\n'
-            '  {"kind": "cap", "name": "C1", "p": "N_GAIN", "n": "OUTPUT", "value": "30p"},\n'
-            '  {"kind": "diode", "name": "D1", "a": "N_A", "k": "N_K", "model": "D1N4148"}\n'
-            "]}\n"
+            "Output ONLY a structured JSON circuit inside <circuit_json>...</circuit_json> tags so CircuitBuilder compiles it into guaranteed-valid SPICE.\n\n"
+            f"{schema_guide}\n\n"
             "STRICT RULES:\n"
             "- ONLY physical kinds: bjt, mos, res, cap, ind, diode (NEVER v, i, b, a sources).\n"
-            "- Connect EVERY non-NC pin in PIN INTERFACE (especially POWER, SIGNAL, OUTPUT pins) using their EXACT pin names.\n"
-            "- Ensure a continuous transistor/passive signal path from SIGNAL inputs to OUTPUT.\n"
+            "- Connect EVERY required pin in PIN INTERFACE (POWER, GROUND, SIGNAL inputs, OUTPUT) using their EXACT pin names.\n"
+            "- Optional auxiliary pins like OFFSET_NULL or NC may be left unconnected if not needed.\n"
+            "- Ensure a continuous transistor/passive signal path from BOTH SIGNAL inputs to OUTPUT.\n"
             "- Every internal node MUST connect to >= 2 device terminals (no floating nodes), with a DC bias path between supply rails.\n"
+            "- NEVER spam dummy 100k resistors to silence ERC; design a clean, physically meaningful topology.\n"
             "- PRECEDENCE: If ORCHESTRATOR DESIGN DIRECTIVES conflict with these rules, ALWAYS obey these rules."
         )
         user_prompt = (
@@ -495,20 +489,15 @@ class HermesAnalogTools:
                     err_lines = "\n".join(f"- {e}" for e in val_res.get("errors", []))
                     sv_sys = (
                         "You are a dedicated SPICE Syntax & ERC Repair Sub-Agent.\n"
-                        "Fix ALL ERC and SPICE syntax errors below while preserving the circuit's intended topology.\n"
-                        "Output ONLY `<circuit_json>...</circuit_json>` using this exact JSON schema:\n"
-                        '{"models": [{"name": "QNPN", "type": "NPN", "params": "IS=1e-16 BF=150 VAF=100"}], '
-                        '"devices": [\n'
-                        '  {"kind": "bjt", "name": "Q1", "c": "N_C1", "b": "INP", "e": "N_TAIL", "model": "QNPN"},\n'
-                        '  {"kind": "mos", "name": "M1", "d": "N_D", "g": "N_G", "s": "V_P", "b": "V_P", "model": "PMOS_MOD", "w": "20u", "l": "1u"},\n'
-                        '  {"kind": "res", "name": "R1", "p": "V_P", "n": "N_BIAS", "value": "20k"},\n'
-                        '  {"kind": "cap", "name": "C1", "p": "N_GAIN", "n": "OUTPUT", "value": "30p"}\n'
-                        "]}\n"
+                        "Fix ALL ERC and SPICE syntax errors below while preserving or replacing with a clean, physically connected circuit topology.\n"
+                        "Output ONLY `<circuit_json>...</circuit_json>`.\n\n"
+                        f"{schema_guide}\n\n"
                         "MANDATORY RULES:\n"
                         "- NEVER output raw SPICE text; ALWAYS output `<circuit_json>...</circuit_json>`.\n"
-                        "- Connect EVERY non-NC pin in the subcircuit header to internal devices.\n"
+                        "- Connect EVERY required POWER, GROUND, SIGNAL, and OUTPUT pin in the subcircuit header.\n"
                         "- Every internal node MUST connect to at least 2 device terminals (no floating nodes).\n"
-                        "- Ensure a continuous DC bias current path between supply rails (V_P to V_N) and signal path from SIGNAL inputs to OUTPUT."
+                        "- NEVER add meaningless resistor meshes (e.g. R3..R60 100k) to silence ERC — remove dead/floating stubs or wire real transistor stages.\n"
+                        "- Ensure a continuous DC bias current path between supply rails and signal path from SIGNAL inputs to OUTPUT."
                     )
                     sv_prompt = (
                         f"Target `.subckt {self.dut_name} {pins_line}`\n\n"
@@ -521,7 +510,7 @@ class HermesAnalogTools:
                         system_prompt=sv_sys,
                         temperature=0.0,
                         max_tokens=4096,
-                        tag="dyn_tb",
+                        tag="harness2_synth",
                     )
                     netlist, val_res = _extract_and_validate(repaired_raw)
                     set_span_output(sv_span, {"is_valid": val_res.get("is_valid", False), "errors": val_res.get("errors", [])})
