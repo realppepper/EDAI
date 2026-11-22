@@ -493,15 +493,15 @@ You are a PURE ORCHESTRATOR (Supervisor). Delegate ALL circuit authoring, syntax
                 })
                 tool_outputs.append({"tool": name, "output": output})
 
-                # Check if netlist sub-agent, validation, or verification was run
-                if name in ("synthesize_circuit_netlist", "validate_netlist_syntax", "verify_circuit_pdg_gate"):
+                # Check if netlist sub-agent, parameter sweep, validation, or verification was run
+                if name in ("synthesize_circuit_netlist", "sweep_parameters_grid", "validate_netlist_syntax", "verify_circuit_pdg_gate"):
                     candidate_nl = output.get("cleaned_netlist") or (args.get("netlist") if isinstance(args, dict) else None)
                     if candidate_nl and self._is_meaningful_netlist(candidate_nl):
                         turn_result.netlist_extracted = candidate_nl
                         # Strict PDG Causal Gating: ONLY run full PDG AC/transient verification
                         # once syntax/ERC AND Stage-2 DC bias + unity-gain transfer have passed.
-                        dc_ready = output.get("dc_converged", True) if name == "synthesize_circuit_netlist" else True
-                        if name in ("synthesize_circuit_netlist", "validate_netlist_syntax") and output.get("is_valid", False) and dc_ready:
+                        dc_ready = output.get("dc_converged", True) if name in ("synthesize_circuit_netlist", "sweep_parameters_grid") else True
+                        if name in ("synthesize_circuit_netlist", "sweep_parameters_grid", "validate_netlist_syntax") and output.get("is_valid", False) and dc_ready:
                             eval_out = self.tools.verify_circuit_pdg_gate(candidate_nl, tag=f"turn{turn_idx}")
                             turn_result.pass_rate = eval_out.get("pass_rate_percent", 0.0)
                             turn_result.unique_pass_rate = eval_out.get("unique_kind_pass_rate_pct", 0.0)

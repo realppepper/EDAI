@@ -139,8 +139,17 @@ class ToolDecisionRouter:
         elif has_netlist:
             probs["verify_circuit_pdg_gate"] = 0.45
             probs["validate_netlist_syntax"] = 0.20
-            probs["sweep_parameters_grid"] = 0.15 if pass_rate > 0 else 0.05
+            probs["sweep_parameters_grid"] = 0.25 if pass_rate > 0 else 0.05
             reason = "Netlist present prior: favor verification, syntax check, or parameter sweep."
+        elif (
+            pass_rate > 0
+            and pass_rate < 100.0
+            and len(history_tool_names) >= 2
+            and history_tool_names[-1] == "synthesize_circuit_netlist"
+        ):
+            probs["sweep_parameters_grid"] = 0.50
+            probs["synthesize_circuit_netlist"] = 0.35
+            reason = "DC-convergent partial pass prior: favor LTspice parameter sweep to tune Gain/Vos/Ibias."
         else:
             probs["synthesize_circuit_netlist"] = 0.40
             probs["generate_topology_candidates"] = 0.20

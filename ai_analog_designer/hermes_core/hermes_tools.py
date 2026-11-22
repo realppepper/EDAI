@@ -329,25 +329,34 @@ class HermesAnalogTools:
                 "type": "function",
                 "function": {
                     "name": "sweep_parameters_grid",
-                    "description": "Runs a bounded LTspice/ngspice parameter optimization sweep (grid or coordinate-descent feedback) on a standalone single-file SPICE netlist with .param and .meas statements.",
+                    "description": (
+                        "Runs a bounded LTspice/ngspice parameter optimization sweep (coordinate-descent feedback) "
+                        "to tune bias/load resistors (e.g. RBIAS, RC1/RC2, RG2, RE3/RE4) for higher open-loop gain, "
+                        "lower offset, and lower bias current WITHOUT breaking DC convergence. "
+                        "When called with no arguments, it automatically optimizes the current best DC-convergent subcircuit."
+                    ),
                     "parameters": {
                         "type": "object",
                         "properties": {
                             "netlist": {
                                 "type": "string",
-                                "description": "Standalone SPICE netlist with .param variables, one analysis, and .meas statements."
+                                "description": "Optional SPICE netlist; if omitted, uses the best DC-convergent subcircuit synthesized so far."
                             },
                             "settings": {
                                 "type": "object",
-                                "description": "Sweep settings object containing parameters, goals, objective, method ('feedback'|'grid'|'single'), and max_runs."
+                                "description": "Optional sweep settings object; if omitted, auto-parameterizes key bias/load resistors."
                             },
                             "simulator": {
                                 "type": "string",
                                 "enum": ["ltspice", "ngspice"],
                                 "description": "Simulator backend (default 'ltspice')."
+                            },
+                            "max_runs": {
+                                "type": "integer",
+                                "description": "Maximum SPICE sweep runs (default 16)."
                             }
                         },
-                        "required": ["netlist", "settings"]
+                        "required": []
                     }
                 }
             }
@@ -1121,20 +1130,219 @@ class HermesAnalogTools:
             llm_client=client,
         )
 
+    @staticmethod
+    def _parse_spice_num(raw_val: str) -> float | None:
+        s = str(raw_val or "").strip().lower()
+        m = re.match(r"^([+-]?(?:\d+(?:\.\d*)?|\.\d+)(?:e[+-]?\d+)?)\s*(meg|[kmunpf]|g|t)?", s)
+        if not m:
+            return None
+        num = float(m.group(1))
+        suf = m.group(2) or ""
+        mult = {
+            "t": 1e12, "g": 1e9, "meg": 1e6, "k": 1e3,
+            "m": 1e-3, "u": 1e-6, "n": 1e-9, "p": 1e-12, "f": 1e-15,
+        }.get(suf, 1.0)
+        return num * mult
+
+    @staticmethod
+    def _format_spice_ohm(val: float) -> str:
+        if val >= 1e6:
+            return f"{val / 1e6:.3g}Meg"
+        if val >= 1e3:
+            return f"{val / 1e3:.3g}k"
+        return f"{val:.3g}"
+
+    def _auto_sweep_subcircuit(
+        self,
+        subckt_netlist: str,
+        simulator: str = "ltspice",
+        max_runs: int = 16,
+    ) -> dict[str, Any]:
+        """Automatically parameterizes key bias/load resistors and optimizes Gain/Vos/Ibias in LTspice."""
+        from pathlib import Path
+        from ai_analog_designer.circuit_synthesis.dc_convergence_fixer import (
+            _classify_pin,
+            run_quick_dc_op_check,
+        )
+        from ai_analog_designer.neuro_symbolic_verifier.spice_sweep_engine import (
+            optimize,
+            render_netlist,
+            resolve_simulator,
+        )
+
+        lines = subckt_netlist.splitlines()
+        subckt_hdr_idx = next((i for i, ln in enumerate(lines) if ln.strip().lower().startswith(".subckt")), None)
+        if subckt_hdr_idx is None:
+            return {"status": "SWEEP_SKIPPED", "is_valid": False, "error": "No .subckt header found."}
+        hdr_parts = lines[subckt_hdr_idx].split()
+        sub_name = hdr_parts[1] if len(hdr_parts) > 1 else self.dut_name
+        hdr_pins = hdr_parts[2:]
+
+        # Map pins for testbench instantiation
+        pin_lookup = {
+            (str(p.get("name")) if isinstance(p, dict) else str(p)).upper(): p
+            for p in (self.pins or [])
+        }
+        node_list: list[str] = []
+        has_vpos = has_vneg = has_inp = has_inn = has_out = False
+        ctrl_nodes: list[str] = []
+        for idx, pname in enumerate(hdr_pins):
+            _, kind = _classify_pin(pin_lookup.get(pname.upper(), pname))
+            if kind == "NC":
+                node_list.append(f"NC_{idx}")
+            elif kind == "VPOS":
+                node_list.append("N_VPOS")
+                has_vpos = True
+            elif kind == "VNEG":
+                node_list.append("N_VNEG")
+                has_vneg = True
+            elif kind == "OUT":
+                node_list.append("N_OUT")
+                has_out = True
+            elif kind == "INP" and not has_inp:
+                node_list.append("N_INP")
+                has_inp = True
+            elif kind in ("INN", "INP"):
+                node_list.append("N_INN")
+                has_inn = True
+            else:
+                cn = f"N_CTRL_{idx}"
+                node_list.append(cn)
+                ctrl_nodes.append(cn)
+
+        if not (has_vpos and has_vneg and has_inp and has_inn and has_out):
+            return {"status": "SWEEP_SKIPPED", "is_valid": False, "error": "Subcircuit missing required 5 op-amp ports for auto-sweep."}
+
+        # Collect resistors & group symmetric pairs (e.g., RC1/RC2 -> p_rc, RE3/RE4 -> p_re)
+        param_defs: list[dict[str, float | str]] = []
+        param_lines: list[str] = []
+        param_map: dict[str, str] = {}
+        new_sub_lines: list[str] = []
+        for ln in lines:
+            s = ln.strip()
+            m_r = re.match(r"^(R[A-Za-z0-9_]*)\s+(\S+)\s+(\S+)\s+(\S+)(.*)$", s, re.IGNORECASE)
+            if m_r:
+                rname, n1, n2, rval, rest = m_r.groups()
+                num_val = self._parse_spice_num(rval)
+                if num_val and 100.0 <= num_val <= 1e6 and "OFFSET" not in rname.upper():
+                    group_key = re.sub(r"\d+$", "", rname.upper()) or rname.upper()
+                    pname = f"p_{group_key.lower()}"
+                    if pname not in param_map and len(param_defs) < 5:
+                        p_min = max(200.0, round(num_val * 0.25, 1))
+                        p_max = min(500_000.0, max(num_val * 6.0, p_min * 4.0))
+                        p_step = max(200.0, round((p_max - p_min) / 6.0, 1))
+                        param_map[pname] = pname
+                        param_defs.append({
+                            "name": pname,
+                            "min": p_min,
+                            "max": p_max,
+                            "initial": min(max(num_val, p_min), p_max),
+                            "step": p_step,
+                        })
+                        param_lines.append(f".param {pname}={num_val}")
+                    if pname in param_map:
+                        new_sub_lines.append(f"{rname} {n1} {n2} {{{pname}}}{rest}")
+                        continue
+            new_sub_lines.append(ln)
+
+        if not param_defs:
+            return {"status": "SWEEP_SKIPPED", "is_valid": False, "error": "No tunable resistors found in subcircuit."}
+
+        param_subckt = "\n".join(new_sub_lines)
+        tb_lines = [
+            f"* Auto-Sweep DC Gain/Offset/Bias Optimization for {sub_name}",
+            *param_lines,
+            param_subckt,
+            f"XDUT {' '.join(node_list)} {sub_name}",
+            "V_POS N_VPOS 0 DC 15",
+            "V_NEG N_VNEG 0 DC -15",
+            "V_INP N_INP 0 DC 0",
+            "R_FB N_OUT N_INN 10k",
+            "R_LOAD N_OUT 0 10k",
+            *[f"R_CTRL_{idx} {cn} 0 100k" for idx, cn in enumerate(ctrl_nodes)],
+            ".dc V_INP -1 1 1",
+            ".meas dc v_id_p1 FIND V(N_INP,N_INN) AT 1",
+            ".meas dc v_id_m1 FIND V(N_INP,N_INN) AT -1",
+            ".meas dc v_out_0 FIND abs(V(N_OUT)) AT 0",
+            ".meas dc i_bias_na FIND abs(I(V_INP))*1e9 AT 0",
+            ".meas dc aol_lin PARAM '2.0/max(1e-9,abs(v_id_p1-v_id_m1))'",
+            ".end",
+        ]
+        deck = "\n".join(tb_lines) + "\n"
+        settings = {
+            "method": "feedback",
+            "max_runs": max(4, min(32, int(max_runs))),
+            "timeout_s": 15,
+            "parameters": param_defs,
+            "goals": [
+                {"measure": "v_out_0", "op": "<=", "value": 0.5},
+                {"measure": "i_bias_na", "op": "<=", "value": 500.0},
+                {"measure": "aol_lin", "op": ">=", "value": 3000.0},
+            ],
+            "objective": {"measure": "aol_lin", "sense": "max"},
+        }
+        sweep_dir = Path(self.output_dir) / f"sweep_{len(self.evaluation_history) + 1:02d}"
+        cfg = {"simulator": simulator}
+        resolve_simulator(cfg)
+        res = optimize(deck, settings, cfg, sweep_dir)
+
+        runs = res.get("runs") or []
+        best_it = res.get("best_iteration")
+        best_run = next((r for r in runs if r.get("iteration") == best_it), None)
+        if best_run is None:
+            valid_runs = [r for r in runs if r.get("valid") and isinstance(r.get("metrics", {}).get("aol_lin"), (int, float))]
+            if valid_runs:
+                best_run = max(valid_runs, key=lambda r: float(r["metrics"]["aol_lin"]))
+        if best_run is None:
+            return {"status": "SWEEP_NO_VALID_RUN", "is_valid": False, "error": "No valid sweep run converged."}
+
+        best_params = best_run.get("parameters") or {}
+        tuned_subckt = param_subckt
+        for pname, val in best_params.items():
+            tuned_subckt = tuned_subckt.replace(f"{{{pname}}}", self._format_spice_ohm(float(val)))
+
+        val_res = self.validate_netlist_syntax(tuned_subckt)
+        cleaned = val_res.get("cleaned_netlist", tuned_subckt)
+        dc_check = run_quick_dc_op_check(cleaned, subckt_name=self.dut_name, pins=self.pins, timeout_s=15)
+        if val_res.get("is_valid") and dc_check.get("converged"):
+            self.last_synthesized_netlist = cleaned
+        return {
+            "status": "SWEEP_COMPLETE",
+            "is_valid": bool(val_res.get("is_valid")),
+            "dc_converged": bool(dc_check.get("converged")),
+            "dc_diagnostic": dc_check.get("diagnostic", ""),
+            "best_params": best_params,
+            "best_metrics": best_run.get("metrics", {}),
+            "feasible_count": res.get("feasible_count", 0),
+            "runs_count": len(runs),
+            "cleaned_netlist": cleaned,
+        }
+
     def sweep_parameters_grid(
         self,
-        netlist: str,
-        settings: dict[str, Any],
+        netlist: str = "",
+        settings: dict[str, Any] | None = None,
         simulator: str = "ltspice",
+        max_runs: int = 16,
         **kwargs,
     ) -> dict[str, Any]:
-        """Runs bounded LTspice/ngspice parameter optimization sweep on a standalone SPICE deck."""
+        """Runs bounded LTspice/ngspice parameter optimization sweep on a SPICE deck or auto-tunes the current subcircuit."""
         from pathlib import Path
         from ai_analog_designer.neuro_symbolic_verifier.spice_sweep_engine import optimize
 
-        sweep_dir = Path(self.output_dir) / f"sweep_{len(self.evaluation_history) + 1:02d}"
-        cfg = {"simulator": simulator}
-        return optimize(netlist, settings, cfg, sweep_dir)
+        if settings and netlist and netlist.strip():
+            sweep_dir = Path(self.output_dir) / f"sweep_{len(self.evaluation_history) + 1:02d}"
+            cfg = {"simulator": simulator}
+            return optimize(netlist, settings, cfg, sweep_dir)
+
+        base_subckt = (
+            (netlist or "").strip()
+            or (self.best_evaluation or {}).get("netlist", "").strip()
+            or (self.last_synthesized_netlist or "").strip()
+        )
+        if not base_subckt:
+            return {"status": "SWEEP_SKIPPED", "is_valid": False, "error": "No DC-convergent subcircuit available to sweep."}
+        return self._auto_sweep_subcircuit(base_subckt, simulator=simulator, max_runs=max_runs)
 
     def save_subcircuit_blueprint(
         self,
