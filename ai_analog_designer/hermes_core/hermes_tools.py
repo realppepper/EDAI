@@ -66,6 +66,7 @@ class HermesAnalogTools:
             target_pins=[p.get("name") if isinstance(p, dict) else str(p) for p in (self.pins or [])]
         )
         self.evaluation_history: list[dict[str, Any]] = []
+        self.best_evaluation: dict[str, Any] | None = None
         self.last_synthesized_netlist: str = ""
 
     def get_tool_schemas(self) -> list[dict[str, Any]]:
@@ -411,11 +412,43 @@ class HermesAnalogTools:
             )
 
         prior_feedback = ""
-        if self.evaluation_history:
+        if self.best_evaluation and self.best_evaluation.get("pass_rate_percent", 0.0) > 0:
+            best_ev = self.best_evaluation
+            failed_lines = "\n".join(
+                f"  - {f.get('symbol')}: measured={f.get('measured')}, expected={f.get('expected')} {f.get('unit', '')} ({f.get('reason', '')})"
+                for f in (best_ev.get("failed_specs_summary") or [])[:12]
+            )
+            prior_feedback += (
+                f"\n## BEST WORKING CIRCUIT SO FAR (Pass Rate: {best_ev.get('pass_rate_percent', 0.0):.1f}% — "
+                f"{best_ev.get('passed_specs', 0)}/{best_ev.get('total_specs', 0)} specs PASSED):\n"
+                "CRITICAL: START FROM THIS WORKING DC-CONVERGENT NETLIST and make targeted analog topology/sizing improvements "
+                "to fix the failing specs below WITHOUT breaking DC convergence or previously passing specs.\n"
+                "TUNING PLAYBOOK:\n"
+                "- Low Open-Loop Voltage Gain (e.g. 60dB -> >95dB): replace resistive collector loads (RC1/RC2, RG2) with active PNP/NPN current-mirror loads or higher output impedance stages.\n"
+                "- High Input Offset Voltage (Vos): balance differential pair collector/load currents symmetrically using an active current-mirror load.\n"
+                "- High Input Bias/Offset Current (Ibias/Ios): reduce differential pair tail current (e.g. increase RBIAS/RE3/RE4 so I_tail ~ 20uA-50uA) and/or increase input BJT BF (e.g. BF=250-400).\n"
+                f"### BEST WORKING NETLIST:\n{str(best_ev.get('netlist', ''))[:2400]}\n"
+                f"### REMAINING FAILING SPECS TO FIX:\n{failed_lines or '  (see diagnostic below)'}\n"
+                f"### DIAGNOSTIC:\n{str(best_ev.get('diagnostic_feedback', ''))[:1000]}\n"
+            )
+            if self.evaluation_history and self.evaluation_history[-1] is not best_ev:
+                last_ev = self.evaluation_history[-1]
+                prior_feedback += (
+                    f"\n### LAST ATTEMPT REGRESSED (Pass Rate: {last_ev.get('pass_rate_percent', 0.0):.1f}% — DO NOT REPEAT):\n"
+                    f"Stage: {last_ev.get('stage_status')}, Errors: {last_ev.get('simulation_errors')}\n"
+                    f"Diagnostic: {str(last_ev.get('diagnostic_feedback', ''))[:600]}\n"
+                )
+        elif self.evaluation_history:
             last_ev = self.evaluation_history[-1]
+            failed_lines = "\n".join(
+                f"  - {f.get('symbol')}: measured={f.get('measured')}, expected={f.get('expected')} {f.get('unit', '')}"
+                for f in (last_ev.get("failed_specs_summary") or [])[:10]
+            )
             prior_feedback = (
-                f"\n## PRIOR SIMULATION FEEDBACK (Pass Rate: {last_ev.get('pass_rate_percent', 0.0)}%):\n"
+                f"\n## PRIOR SIMULATION FEEDBACK (Pass Rate: {last_ev.get('pass_rate_percent', 0.0):.1f}%):\n"
+                f"Stage: {last_ev.get('stage_status')}\n"
                 f"Errors: {last_ev.get('errors') or last_ev.get('simulation_errors')}\n"
+                f"Failed Specs:\n{failed_lines}\n"
                 f"Diagnostic: {str(last_ev.get('diagnostic_feedback', ''))[:1500]}\n"
             )
 
@@ -671,27 +704,38 @@ class HermesAnalogTools:
                 label=tag
             )
 
-        self.evaluation_history.append({
+        # Return a structured, compact diagnostic summary
+        failed_items = [
+            {
+                "symbol": e.get("symbol") or e.get("name"),
+                "measured": e.get("measured"),
+                "expected": f"[{e.get('min_target', e.get('min'))}, {e.get('max_target', e.get('max'))}]",
+                "unit": e.get("unit"),
+                "reason": e.get("diagnostic") or e.get("fail_reason") or "Out of bounds"
+            }
+            for e in eval_res.get("spec_evaluations", [])
+            if not e.get("passed") and e.get("status") != "NOT_TESTABLE_ABS_MAX" and e.get("measured") is not None
+        ]
+
+        eval_record = {
             "tag": tag,
             "pass_rate_percent": eval_res.get("pass_rate_percent", 0.0),
             "unique_kind_pass_rate_pct": eval_res.get("unique_kind_pass_rate_pct", 0.0),
             "passed_specs": eval_res.get("passed_specs", 0),
             "failed_specs": eval_res.get("failed_specs", 0),
-            "stage_status": eval_res.get("stage_status", "UNKNOWN"),
-            "simulation_errors": eval_res.get("simulation_errors", [])
-        })
-
-        # Return a structured, compact diagnostic summary
-        failed_items = [
-            {
-                "symbol": e.get("symbol"),
-                "measured": e.get("measured"),
-                "expected": f"[{e.get('min')}, {e.get('max')}]",
-                "unit": e.get("unit"),
-                "reason": e.get("fail_reason", "Out of bounds")
-            }
-            for e in eval_res.get("spec_evaluations", []) if not e.get("passed")
-        ]
+            "total_specs": eval_res.get("total_specs", len(self.specifications)),
+            "stage_status": eval_res.get("pdg_gate_stage") or eval_res.get("stage_status", "UNKNOWN"),
+            "simulation_errors": eval_res.get("simulation_errors", []),
+            "diagnostic_feedback": eval_res.get("diagnostic_feedback", ""),
+            "failed_specs_summary": failed_items[:15],
+            "netlist": cleaned_netlist,
+        }
+        self.evaluation_history.append(eval_record)
+        if (
+            self.best_evaluation is None
+            or eval_record["pass_rate_percent"] > self.best_evaluation.get("pass_rate_percent", -1.0)
+        ):
+            self.best_evaluation = eval_record
 
         return {
             "status": "SIMULATION_COMPLETE",

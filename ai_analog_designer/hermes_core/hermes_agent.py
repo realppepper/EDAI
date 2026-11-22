@@ -516,14 +516,25 @@ You are a PURE ORCHESTRATOR (Supervisor). Delegate ALL circuit authoring, syntax
 
             turn_result.tool_outputs = tool_outputs
             # Append tool outputs to conversation messages for next turn
-            def _format_tool_output(out: Any) -> str:
+            def _format_tool_output(out: Any, tool_name: str = "") -> str:
+                if isinstance(out, dict) and tool_name in ("auto_eval_physical_gate", "verify_circuit_pdg_gate"):
+                    compact = {
+                        "status": out.get("status"),
+                        "pass_rate_percent": out.get("pass_rate_percent"),
+                        "passed_specs": out.get("passed_specs"),
+                        "failed_specs": out.get("failed_specs"),
+                        "stage_status": out.get("stage_status"),
+                        "failed_specs_summary": (out.get("failed_specs_summary") or [])[:12],
+                        "diagnostic_feedback": str(out.get("diagnostic_feedback", ""))[:600],
+                    }
+                    return json.dumps(compact, indent=2)
                 s = json.dumps(out, indent=2) if isinstance(out, (dict, list)) else str(out)
                 if len(s) > 1200:
                     return s[:1200] + "\n... [output truncated for brevity]"
                 return s
 
             tool_feedback = "\n\n".join([
-                f"<tool_output name=\"{o['tool']}\">\n{_format_tool_output(o['output'])}\n</tool_output>"
+                f"<tool_output name=\"{o['tool']}\">\n{_format_tool_output(o['output'], o['tool'])}\n</tool_output>"
                 for o in tool_outputs
             ])
 
