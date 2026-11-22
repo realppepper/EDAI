@@ -174,6 +174,14 @@ Return ONLY valid JSON.
         )
 
         # 2. Dynamic verification for complex specs (THD+N, power, frequency, rDS(on), etc.) not covered by deterministic plan
+        # Strict PDG Causal Gate: NEVER run dynamic testbenches or merge pass rates when PDG compile/DC gate failed!
+        if not det_eval.get("compile_ok", False):
+            det_eval["pass_rate_percent"] = 0.0
+            det_eval["pass_rate_hard_percent"] = 0.0
+            det_eval["passed_specs"] = 0
+            det_eval["all_passed"] = False
+            return det_eval
+
         unsupported_for_dyn = [
             specifications[i] for i, it in enumerate((self.spec_plan or {}).get("items", []))
             if i < len(specifications) and it.get("status") == "UNSUPPORTED_KIND"

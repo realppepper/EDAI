@@ -37,17 +37,37 @@ def _clean_model_name(name: Any, default: str) -> str:
     return s or default
 
 
+def _infer_single_supply(pins: list[dict[str, Any]] | list[str]) -> bool:
+    """Detects single-supply ICs (e.g. VDD/GND or V_P/V(GROUND) without a negative rail VEE/V_N/VS_N)."""
+    has_ground_pin = False
+    has_explicit_neg_rail = False
+    for p in pins or []:
+        if isinstance(p, dict):
+            name = str(p.get("name") or "").upper()
+            role = str(p.get("role") or "").upper()
+            desc = str(p.get("description") or "").lower()
+        else:
+            name = str(p).upper()
+            role = ""
+            desc = ""
+        if name in ("VEE", "V_N", "VN", "VS_N", "VSN", "VNEG", "V_NEG") or "negative supply" in desc:
+            has_explicit_neg_rail = True
+        if role == "GROUND" or name in ("GND", "VSS", "AGND", "DGND", "V"):
+            has_ground_pin = True
+    return has_ground_pin and not has_explicit_neg_rail
+
+
 def _infer_neg_rail(pins: list[dict[str, Any]] | list[str]) -> str | None:
     for p in pins:
         if isinstance(p, dict):
             name = str(p.get("name") or "")
             role = str(p.get("role") or "").upper()
             desc = str(p.get("description") or "").lower()
-            if role == "GROUND" or "neg" in desc or name.upper() in ("VSS", "VEE", "GND", "V_N", "VN", "V"):
+            if role == "GROUND" or "neg" in desc or name.upper() in ("VSS", "VEE", "GND", "V_N", "VN", "VS_N", "VSN", "V"):
                 return name
         else:
             s = str(p)
-            if s.upper() in ("VSS", "VEE", "GND", "V_N", "VN", "V"):
+            if s.upper() in ("VSS", "VEE", "GND", "V_N", "VN", "VS_N", "VSN", "V"):
                 return s
     return None
 
@@ -63,6 +83,7 @@ class CircuitBuilder:
             for p in self.pins
         ] or ["INP", "INN", "VCC", "VEE", "OUT"]
         self.neg_rail = _infer_neg_rail(self.pins)
+        self.is_single_supply = _infer_single_supply(self.pins)
         self.pin_aliases = self._build_pin_aliases(self.pins, self.pin_names)
         self.devices: list[tuple[str, list[str]]] = []  # (spice_line, connected_nodes)
         self.models: dict[str, str] = {}
@@ -75,6 +96,7 @@ class CircuitBuilder:
         """Maps common generic pin names (INP, INN, VCC, VEE, OUT) to actual DUT pin names."""
         aliases: dict[str, str] = {}
         exact_upper = {p.upper(): p for p in pin_names}
+        unmatched_signals: list[str] = []
         for p in pins:
             if not isinstance(p, dict):
                 continue
@@ -82,27 +104,58 @@ class CircuitBuilder:
             up = pname.upper()
             role = str(p.get("role") or "").upper()
             desc = str(p.get("description") or "").lower()
-            if role == "OUTPUT" or "OUT" in up:
-                for k in ("OUT", "VOUT", "OUTPUT"):
+            if role == "OUTPUT" or up in ("OUT", "VOUT", "VO", "OUTPUT", "OUT_A", "OUTPUT_A", "OUT_1") or ("OUT" in up and not up.endswith("_B") and not up.endswith("_2")):
+                for k in ("OUT", "VOUT", "VO", "OUTPUT"):
                     if k not in exact_upper:
                         aliases.setdefault(k, pname)
-            elif role == "GROUND" or "neg" in desc or up in ("V_N", "VN", "VEE", "VSS", "GND", "V"):
-                for k in ("VEE", "VSS", "GND", "V_N", "VN", "VNEG"):
+            elif role == "GROUND" or "neg" in desc or up in ("V_N", "VN", "VS_N", "VSN", "VEE", "VSS", "GND", "V"):
+                for k in ("VEE", "VSS", "GND", "V_N", "VN", "VS_N", "VNEG"):
                     if k not in exact_upper:
                         aliases.setdefault(k, pname)
-            elif role == "POWER" or "pos" in desc or up in ("V_P", "VP", "VCC", "VDD", "VPOS"):
-                for k in ("VCC", "VDD", "V_P", "VP", "VPOS"):
+            elif role == "POWER" or "pos" in desc or up in ("V_P", "VP", "VS_P", "VSP", "VCC", "VDD", "VPOS"):
+                for k in ("VCC", "VDD", "V_P", "VP", "VS_P", "VPOS"):
                     if k not in exact_upper:
                         aliases.setdefault(k, pname)
             elif role == "SIGNAL":
-                if "NON" in up or up in ("INP", "IN_P", "V_INP", "VINP") or "non-inv" in desc or "noninv" in desc:
-                    for k in ("INP", "IN_P", "NONINV", "NONINVERTING_INPUT"):
+                is_aux_ch = bool(re.search(r"_[BCD234]$", up))
+                if is_aux_ch:
+                    continue
+                is_pos_in = (
+                    "NON" in up
+                    or "non-inv" in desc
+                    or "noninv" in desc
+                    or "positive" in desc
+                    or up in ("INP", "IN_P", "V_INP", "VINP", "VIN_P", "PIN", "PIN_A", "PIN_1", "INP_A", "IN_P_A")
+                    or bool(re.search(r"(?:^|_)(?:INP|IN_P|VIN_P|PIN)(?:_A|_1|$)", up))
+                )
+                is_neg_in = (
+                    ("INV" in up and "NON" not in up)
+                    or ("inverting" in desc and "non" not in desc)
+                    or "negative" in desc
+                    or up in ("INN", "IN_N", "V_INN", "VINN", "VIN_N", "NIN", "NIN_A", "NIN_1", "INM", "INN_A", "IN_N_A")
+                    or bool(re.search(r"(?:^|_)(?:INN|IN_N|VIN_N|NIN|INM)(?:_A|_1|$)", up))
+                )
+                if is_pos_in:
+                    for k in ("INP", "IN_P", "PIN", "VIN_P", "NONINV", "NONINVERTING_INPUT"):
                         if k not in exact_upper:
                             aliases.setdefault(k, pname)
-                elif "INV" in up or up in ("INN", "IN_N", "V_INN", "VINN"):
-                    for k in ("INN", "IN_N", "INV", "INVERTING_INPUT"):
+                elif is_neg_in:
+                    for k in ("INN", "IN_N", "NIN", "VIN_N", "INM", "INV", "INVERTING_INPUT"):
                         if k not in exact_upper:
                             aliases.setdefault(k, pname)
+                else:
+                    unmatched_signals.append(pname)
+        # Fallback for positional signal pins if INP/INN still unassigned
+        if "INP" not in aliases and "INP" not in exact_upper and unmatched_signals:
+            pname = unmatched_signals.pop(0)
+            for k in ("INP", "IN_P", "PIN", "VIN_P"):
+                if k not in exact_upper:
+                    aliases.setdefault(k, pname)
+        if "INN" not in aliases and "INN" not in exact_upper and unmatched_signals:
+            pname = unmatched_signals.pop(0)
+            for k in ("INN", "IN_N", "NIN", "VIN_N", "INM"):
+                if k not in exact_upper:
+                    aliases.setdefault(k, pname)
         return aliases
 
     def _map_node(self, node: Any, _neg_rail: str | None = None) -> str:
@@ -203,7 +256,8 @@ class CircuitBuilder:
         if btype == "tail_current_mirror":
             bias_node = self._map_node(block.get("bias_node") or "N_BIAS")
             tail_node = self._map_node(block.get("tail_node") or "N_TAIL")
-            r_bias = str(block.get("r_bias") or "150k").strip()
+            default_rbias = "39k" if self.is_single_supply else "150k"
+            r_bias = str(block.get("r_bias") or default_rbias).strip()
             r_e_ref = str(block.get("r_e_ref") or "2k").strip()
             r_e_tail = str(block.get("r_e_tail") or "2k").strip()
             self.add_device({"kind": "res", "name": "RBIAS", "p": vpos, "n": bias_node, "value": r_bias})
@@ -278,8 +332,90 @@ class CircuitBuilder:
         else:
             self.build_errors.append(f"Unsupported Circuit-SAFE block type '{btype}'.")
 
+    def _ensure_auxiliary_channels(self) -> None:
+        """
+        For multi-channel ICs (e.g. dual/quad op-amps with OUT_A/B, PIN_A/B, NIN_A/B),
+        if the primary channel is wired but auxiliary channels have zero connections,
+        automatically clone the primary channel's physical transistor graph onto each
+        unwired auxiliary channel sharing the same power rails.
+        """
+        if not self.devices:
+            return
+        connected_nodes: set[str] = set()
+        for _, nodes in self.devices:
+            connected_nodes.update(nodes)
+
+        prim_out = self.pin_aliases.get("OUT") or ("OUT" if "OUT" in self.pin_names else None)
+        prim_inp = self.pin_aliases.get("INP") or ("INP" if "INP" in self.pin_names else None)
+        prim_inn = self.pin_aliases.get("INN") or ("INN" if "INN" in self.pin_names else None)
+        if not (prim_out and prim_inp and prim_inn):
+            return
+        if prim_out not in connected_nodes:
+            return
+
+        # Discover auxiliary channels by suffix (_A, _B, _C, _D, _1, _2, _3, _4)
+        channel_groups: dict[str, dict[str, str]] = defaultdict(dict)
+        for p in self.pins:
+            if not isinstance(p, dict):
+                continue
+            pname = str(p.get("name") or "")
+            up = pname.upper()
+            role = str(p.get("role") or "").upper()
+            m = re.search(r"_([A-D]|[1-4])$", up)
+            if not m:
+                continue
+            ch = m.group(1)
+            if role == "OUTPUT" or "OUT" in up:
+                channel_groups[ch]["OUT"] = pname
+            elif role == "SIGNAL":
+                if "NON" in up or any(tok in up for tok in ("PIN_", "INP_", "IN_P_", "VIN_P_")):
+                    channel_groups[ch]["INP"] = pname
+                elif "INV" in up or any(tok in up for tok in ("NIN_", "INN_", "IN_N_", "VIN_N_", "INM_")):
+                    channel_groups[ch]["INN"] = pname
+
+        base_devices = list(self.devices)
+        pin_set = set(self.pin_names)
+        for ch, mapping in sorted(channel_groups.items()):
+            aux_out = mapping.get("OUT")
+            aux_inp = mapping.get("INP")
+            aux_inn = mapping.get("INN")
+            if not (aux_out and aux_inp and aux_inn):
+                continue
+            if aux_out in connected_nodes:
+                continue
+            node_remap = {
+                prim_out: aux_out,
+                prim_inp: aux_inp,
+                prim_inn: aux_inn,
+            }
+            for spice_line, nodes in base_devices:
+                tokens = spice_line.split()
+                if len(tokens) < 4:
+                    continue
+                dev_name = f"{tokens[0]}_CH{ch}"
+                new_tokens = [dev_name]
+                new_nodes: list[str] = []
+                # Determine how many terminal tokens belong to this device
+                prefix = tokens[0][0].upper()
+                n_terms = 4 if prefix == "M" else (3 if prefix in ("Q", "J") else 2)
+                for idx, tok in enumerate(tokens[1:], start=1):
+                    if idx <= n_terms:
+                        if tok in node_remap:
+                            mapped = node_remap[tok]
+                        elif tok in pin_set:
+                            mapped = tok  # shared power/ground rail
+                        else:
+                            mapped = f"{tok}_CH{ch}"
+                        new_tokens.append(mapped)
+                        new_nodes.append(mapped)
+                    else:
+                        new_tokens.append(tok)
+                self.devices.append((" ".join(new_tokens), new_nodes))
+                connected_nodes.update(new_nodes)
+
     def run_erc(self) -> list[str]:
         """Electrical Rules Check: verifies all non-NC ports are connected and signal path reaches output."""
+        self._ensure_auxiliary_channels()
         errors = list(self.build_errors)
         if not self.devices:
             errors.append("ERC_EMPTY_CIRCUIT: No physical devices defined.")
@@ -315,7 +451,7 @@ class CircuitBuilder:
         signal_pins: list[str] = []
         output_pins: list[str] = []
         power_pins: list[str] = []
-        _optional_pin_tokens = ("NC", "OFFSET", "NULL", "BAL", "TRIM", "COMP", "SHDN", "STBY")
+        _optional_pin_tokens = ("NC", "OFFSET", "NULL", "BAL", "TRIM", "COMP", "SHDN", "SHUTDOWN", "STBY", "PD", "THERMAL", "PAD", "DAP", "EP")
         for p in self.pins:
             if isinstance(p, dict):
                 pname = str(p.get("name") or "")

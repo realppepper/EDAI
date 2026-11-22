@@ -628,6 +628,51 @@ You are a PURE ORCHESTRATOR (Supervisor). Delegate ALL circuit authoring, syntax
                 turn_result.passed_specs = eval_out.get("passed_specs", 0)
                 turn_result.total_specs = eval_out.get("total_specs", 0)
                 turn_result.tool_outputs.append({"tool": "auto_verify_circuit_pdg_gate", "output": eval_out})
+        elif not tool_calls:
+            # Stall Recovery (GLASS / AgentDrug): Never allow consecutive empty text-only turns.
+            self._empty_turn_streak = getattr(self, "_empty_turn_streak", 0) + 1
+            pins_line = " ".join([p.get("name", str(p)) if isinstance(p, dict) else str(p) for p in self.tools.pins]) if hasattr(self.tools, "pins") and self.tools.pins else "INP INN VCC VEE OUT"
+            if self._empty_turn_streak >= 2:
+                logger.warning(f"Hermes Stall Recovery triggered on turn {turn_idx}: forcing synthesize_circuit_netlist.")
+                auto_directive = (
+                    f"Stall recovery: synthesize a valid physical transistor-level SPICE subcircuit for "
+                    f"`.subckt {self.tools.dut_name} {pins_line}` using Circuit-SAFE blocks (tail_current_mirror, "
+                    f"diff_pair_active_load, gain_stage_ce, output_class_ab) with proper DC biasing."
+                )
+                synth_out = self.tools.synthesize_circuit_netlist(auto_directive)
+                turn_result.tool_outputs.append({"tool": "stall_recovery_synthesize", "output": synth_out})
+                cand = synth_out.get("cleaned_netlist")
+                if cand and self._is_meaningful_netlist(cand):
+                    turn_result.netlist_extracted = cand
+                    if synth_out.get("is_valid", False) and synth_out.get("dc_converged", True):
+                        eval_out = self.tools.verify_circuit_pdg_gate(cand, tag=f"turn{turn_idx}_recovery")
+                        turn_result.pass_rate = eval_out.get("pass_rate_percent", 0.0)
+                        turn_result.unique_pass_rate = eval_out.get("unique_kind_pass_rate_pct", 0.0)
+                        turn_result.passed_specs = eval_out.get("passed_specs", 0)
+                        turn_result.total_specs = eval_out.get("total_specs", 0)
+                        turn_result.tool_outputs.append({"tool": "auto_eval_physical_gate", "output": eval_out})
+                self._empty_turn_streak = 0
+                self.messages.append({
+                    "role": "user",
+                    "content": (
+                        f"[STALL RECOVERY EXECUTED]: You produced no tool calls for 2 consecutive turns, so the harness "
+                        f"automatically ran `synthesize_circuit_netlist`. Result: is_valid={synth_out.get('is_valid')}, "
+                        f"dc_converged={synth_out.get('dc_converged')}, pass_rate={turn_result.pass_rate:.1f}%.\n"
+                        f"Diagnostic: {str(synth_out.get('dc_diagnostic') or synth_out.get('error') or '')[:400]}\n"
+                        f"You MUST invoke a `<tool_call>` now (e.g. `synthesize_circuit_netlist` or `sweep_parameters_grid`)."
+                    ),
+                })
+            else:
+                self.messages.append({
+                    "role": "user",
+                    "content": (
+                        f"[STALL WARNING]: Your last response contained NO `<tool_call>` and NO `<spice_netlist>`. "
+                        f"Text-only monologues cannot advance design verification. Immediately invoke "
+                        f"`synthesize_circuit_netlist` for `.subckt {self.tools.dut_name} {pins_line}`."
+                    ),
+                })
+        else:
+            self._empty_turn_streak = 0
 
         self.trajectory.append(turn_result)
         from ..tracing.phoenix_tracer import debug_breakpoint
