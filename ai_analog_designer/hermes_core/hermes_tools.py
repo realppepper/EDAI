@@ -433,7 +433,8 @@ class HermesAnalogTools:
             # Query IEEE MCP for peer-reviewed topology techniques targeting the exact failing specs
             if failed_specs and self.ieee_mcp_client.is_mcp_configured():
                 unique_fail_names = list(dict.fromkeys(str(f.get("symbol") or "").strip() for f in failed_specs if f.get("symbol")))
-                ieee_q = f"bipolar operational amplifier active load {' '.join(unique_fail_names[:3])}"
+                raw_ieee_q = f"operational amplifier active load {' '.join(unique_fail_names[:2])}"
+                ieee_q = self.web_searcher.normalize_ieee_query(raw_ieee_q, max_terms=4)
                 if ieee_q not in self._ieee_query_cache:
                     with trace_span(
                         "tool.ieee_mcp.search_papers",
@@ -928,7 +929,8 @@ class HermesAnalogTools:
         target_ic = (ic_name or self.dut_name).strip()
         mcp_res: dict[str, Any] | None = None
         if self.ieee_mcp_client.is_mcp_configured():
-            mcp_res = self.ieee_mcp_client.search_papers(query=f"{target_ic} {query}".strip(), max_results=3)
+            compact_mcp_q = self.web_searcher.normalize_ieee_query(f"{category or 'operational amplifier'} {query}", max_terms=4)
+            mcp_res = self.ieee_mcp_client.search_papers(query=compact_mcp_q, max_results=3)
 
         res = self.web_searcher.search_circuit_reference(
             ic_name=target_ic,
@@ -937,6 +939,11 @@ class HermesAnalogTools:
         )
         if mcp_res and mcp_res.get("papers"):
             res["ieee_mcp_papers"] = mcp_res["papers"]
+            if not res.get("ieee_papers"):
+                res["ieee_papers"] = mcp_res["papers"]
+                res["ieee_ok"] = True
+                res["status"] = "SUCCESS"
+                res["references_count"] = len(res.get("references", [])) + len(mcp_res["papers"])
             summary_lines = [
                 f"  * [{p.get('year', '')}] {p.get('title', '')} ({p.get('venue', 'IEEE')}): {str(p.get('abstract', ''))[:260]}"
                 for p in mcp_res["papers"][:3]

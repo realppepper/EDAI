@@ -56,6 +56,34 @@ class WebCircuitReferenceSearcher:
         self.timeout_s = timeout_s
         self._cache: dict[str, dict[str, Any]] = {}
 
+    @staticmethod
+    def normalize_ieee_query(query: str, max_terms: int = 5) -> str:
+        """
+        Compacts verbose agent queries into 4-5 core IEEE technical keywords.
+        IEEE Xplore & OpenAlex treat all words as a strict boolean AND; long queries
+        or military part suffixes (LM741-MIL, LM741_MIL) cause 0-result failures.
+        """
+        q = re.sub(r"\b[A-Za-z]{2}\d{3,4}[A-Za-z0-9_-]*\b", " ", query)
+        noise = {
+            "mil", "spice", "netlist", "subckt", "internal", "schematic", "model",
+            "circuit", "transistor", "level", "equivalent", "application", "note",
+            "design", "stages", "topology", "range", "adjustment", "large", "signal",
+            "the", "and", "for", "with", "from", "into", "using",
+        }
+        tokens: list[str] = []
+        seen: set[str] = set()
+        for raw_tok in re.findall(r"[A-Za-z]{3,}", q):
+            low = raw_tok.lower()
+            if low in noise or low in seen:
+                continue
+            seen.add(low)
+            tokens.append(low)
+            if len(tokens) >= max_terms:
+                break
+        if not tokens:
+            return "operational amplifier differential pair"
+        return " ".join(tokens)
+
     def search_ieee_academic(
         self,
         query: str,
@@ -67,43 +95,53 @@ class WebCircuitReferenceSearcher:
         reconstructs full technical abstracts, and highlights circuit design rationale.
         Operates completely standalone with 0 external daemon dependencies.
         """
-        clean_q = query.strip()
+        clean_q = self.normalize_ieee_query(query, max_terms=5)
         if not clean_q:
             return {"provider": "ieee_academic", "ok": False, "papers": []}
 
-        encoded_q = urllib.parse.quote(clean_q)
         papers: list[dict[str, Any]] = []
 
-        # 1. Primary Query: Official IEEE Xplore API using IEEE_API_KEY
-        url_ieee_api = (
-            f"{IEEE_XPLORE_API_URL}?apikey={urllib.parse.quote(self.ieee_api_key)}"
-            f"&querytext={encoded_q}&max_records={max_results}"
-        )
-        req_ieee = urllib.request.Request(
-            url_ieee_api,
-            headers={"Accept": "application/json", "User-Agent": "AnalogVerifier/2.0"}
-        )
-        try:
-            with urllib.request.urlopen(req_ieee, timeout=self.timeout_s) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-                for art in (data.get("articles") or [])[:max_results]:
-                    authors_list = [
-                        a.get("full_name", "")
-                        for a in (art.get("authors") or {}).get("authors", [])[:3]
-                        if a.get("full_name")
-                    ]
-                    doi = art.get("doi") or ""
-                    papers.append({
-                        "title": art.get("title") or "Untitled IEEE Paper",
-                        "venue": art.get("publication_title") or "IEEE Xplore",
-                        "year": str(art.get("publication_year") or ""),
-                        "authors": authors_list,
-                        "doi": doi,
-                        "url": art.get("html_url") or (f"https://doi.org/{doi}" if doi else ""),
-                        "abstract": (art.get("abstract") or "").strip()[:1600],
-                    })
-        except Exception as e:
-            logger.warning(f"IEEE Xplore API search error for '{clean_q}': {e}")
+        # 1. Primary Query: Official IEEE Xplore API using IEEE_API_KEY (with progressive 3-term retry)
+        candidate_queries = [clean_q]
+        short_q = self.normalize_ieee_query(query, max_terms=3)
+        if short_q and short_q != clean_q:
+            candidate_queries.append(short_q)
+
+        for q_try in candidate_queries:
+            encoded_try = urllib.parse.quote(q_try)
+            url_ieee_api = (
+                f"{IEEE_XPLORE_API_URL}?apikey={urllib.parse.quote(self.ieee_api_key)}"
+                f"&querytext={encoded_try}&max_records={max_results}"
+            )
+            req_ieee = urllib.request.Request(
+                url_ieee_api,
+                headers={"Accept": "application/json", "User-Agent": "AnalogVerifier/2.0"}
+            )
+            try:
+                with urllib.request.urlopen(req_ieee, timeout=self.timeout_s) as resp:
+                    data = json.loads(resp.read().decode("utf-8"))
+                    for art in (data.get("articles") or [])[:max_results]:
+                        authors_list = [
+                            a.get("full_name", "")
+                            for a in (art.get("authors") or {}).get("authors", [])[:3]
+                            if a.get("full_name")
+                        ]
+                        doi = art.get("doi") or ""
+                        papers.append({
+                            "title": art.get("title") or "Untitled IEEE Paper",
+                            "venue": art.get("publication_title") or "IEEE Xplore",
+                            "year": str(art.get("publication_year") or ""),
+                            "authors": authors_list,
+                            "doi": doi,
+                            "url": art.get("html_url") or (f"https://doi.org/{doi}" if doi else ""),
+                            "abstract": (art.get("abstract") or "").strip()[:1600],
+                        })
+                if papers:
+                    break
+            except Exception as e:
+                logger.warning(f"IEEE Xplore API search error for '{q_try}': {e}")
+
+        encoded_q = urllib.parse.quote(short_q or clean_q)
 
         if papers:
             return {
