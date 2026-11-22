@@ -155,7 +155,7 @@ DEFAULT_C4_TOOL_GUIDANCE = """## TOOL GUIDANCE & SIMULATION ALIGNMENT:
      * Connect EVERY required POWER, GROUND, SIGNAL, and OUTPUT pin in PIN INTERFACE using exact pin names; every internal node must connect to >= 2 device terminals.
      * Ensure a continuous DC bias path between supply rails and differential signal path from inputs to output.
      * Example 0-ERC DC-convergent 2-stage op-amp skeleton:
-       {{"models":[{{"name":"QNPN","type":"NPN","params":"IS=1e-16 BF=200 VAF=100"}},{{"name":"QPNP","type":"PNP","params":"IS=1e-16 BF=80 VAF=80"}}],"devices":[{{"kind":"bjt","name":"Q1","c":"N_C1","b":"INP","e":"N_TAIL","model":"QNPN"}},{{"kind":"bjt","name":"Q2","c":"N_C2","b":"INN","e":"N_TAIL","model":"QNPN"}},{{"kind":"res","name":"RC1","p":"VCC","n":"N_C1","value":"15k"}},{{"kind":"res","name":"RC2","p":"VCC","n":"N_C2","value":"15k"}},{{"kind":"bjt","name":"Q3","c":"N_TAIL","b":"N_BIAS","e":"N_E3","model":"QNPN"}},{{"kind":"res","name":"RE3","p":"N_E3","n":"VEE","value":"1k"}},{{"kind":"bjt","name":"Q4","c":"N_BIAS","b":"N_BIAS","e":"N_E4","model":"QNPN"}},{{"kind":"res","name":"RE4","p":"N_E4","n":"VEE","value":"1k"}},{{"kind":"res","name":"RBIAS","p":"VCC","n":"N_BIAS","value":"30k"}},{{"kind":"bjt","name":"Q5","c":"N_G2","b":"N_C2","e":"VCC","model":"QPNP"}},{{"kind":"res","name":"RG2","p":"N_G2","n":"VEE","value":"10k"}},{{"kind":"cap","name":"CC","p":"N_C2","n":"N_G2","value":"30p"}},{{"kind":"bjt","name":"Q6","c":"VCC","b":"N_G2","e":"OUT","model":"QNPN"}},{{"kind":"res","name":"ROUT","p":"OUT","n":"VEE","value":"5k"}}]}}`
+       {{"models":[{{"name":"QNPN","type":"NPN","params":"IS=1e-16 BF=200 VAF=100"}},{{"name":"QPNP","type":"PNP","params":"IS=1e-16 BF=80 VAF=80"}}],"devices":[{{"kind":"bjt","name":"Q1","c":"N_C1","b":"INN","e":"N_TAIL","model":"QNPN"}},{{"kind":"bjt","name":"Q2","c":"N_C2","b":"INP","e":"N_TAIL","model":"QNPN"}},{{"kind":"res","name":"RC1","p":"VCC","n":"N_C1","value":"15k"}},{{"kind":"res","name":"RC2","p":"VCC","n":"N_C2","value":"15k"}},{{"kind":"bjt","name":"Q3","c":"N_TAIL","b":"N_BIAS","e":"N_E3","model":"QNPN"}},{{"kind":"res","name":"RE3","p":"N_E3","n":"VEE","value":"1k"}},{{"kind":"bjt","name":"Q4","c":"N_BIAS","b":"N_BIAS","e":"N_E4","model":"QNPN"}},{{"kind":"res","name":"RE4","p":"N_E4","n":"VEE","value":"1k"}},{{"kind":"res","name":"RBIAS","p":"VCC","n":"N_BIAS","value":"30k"}},{{"kind":"bjt","name":"Q5","c":"N_G2","b":"N_C2","e":"VCC","model":"QPNP"}},{{"kind":"res","name":"RG2","p":"N_G2","n":"VEE","value":"10k"}},{{"kind":"cap","name":"CC","p":"N_C2","n":"N_G2","value":"30p"}},{{"kind":"bjt","name":"Q6","c":"VCC","b":"N_G2","e":"OUT","model":"QNPN"}},{{"kind":"res","name":"ROUT","p":"OUT","n":"VEE","value":"5k"}}]}}`
 
 """
 
@@ -325,17 +325,11 @@ Detailed technical explanation of the chosen topology, transistor sizing, bias c
 
 
 
-<spice_netlist>
+<circuit_json>
 
-* Complete SPICE subcircuit netlist code here
+{{"models": [...], "devices": [...]}}
 
-.subckt {part_name} ...
-
-...
-
-.ends {part_name}
-
-</spice_netlist>
+</circuit_json>
 
 """
 

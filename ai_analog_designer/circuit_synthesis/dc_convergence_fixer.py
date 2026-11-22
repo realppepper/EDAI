@@ -46,10 +46,12 @@ def _classify_pin(pin: dict[str, Any] | str) -> tuple[str, str]:
         return name, "VPOS"
     if role == "OUTPUT" or "OUT" in up:
         return name, "OUT"
-    if "NON" in up or "INP" in up or "IN_P" in up or up.endswith("_P") or "non-inv" in desc or "noninv" in desc:
+    if "NONINV" in up or "NON_INV" in up or "NON-INV" in up or "non-inv" in desc or "noninv" in desc:
         return name, "INP"
-    if "INV" in up or "INN" in up or "IN_N" in up or up.endswith("_N"):
+    if "INVERT" in up or re.search(r"(?:^|_)INN(?:_|$)|(?:^|_)IN_N(?:_|$)|_N$|^INM$", up):
         return name, "INN"
+    if re.search(r"(?:^|_)INP(?:_|$)|(?:^|_)IN_P(?:_|$)|_P$", up):
+        return name, "INP"
     if role == "SIGNAL":
         return name, "INP"
     return name, "CTRL"
@@ -103,15 +105,20 @@ def build_quick_dc_op_deck(
         f"XDUT {' '.join(node_list)} {subckt_name}",
     ]
     has_inp = "N_INP" in node_list
+    use_dc_sweep = has_inp and has_out
     if has_vpos:
         lines.append("V_POS N_VPOS 0 DC 15")
     if has_vneg:
         lines.append("V_NEG N_VNEG 0 DC -15")
     if has_inp:
-        lines.append("V_INP N_INP 0 DC 0")
+        if use_dc_sweep:
+            # Unity-gain transient step (-1V -> 0V -> +1V) verifies DC bias, signal transfer, AND negative-feedback stability
+            lines.append("V_INP N_INP 0 PWL(0 -1 30u -1 35u 0 65u 0 70u 1 100u 1)")
+        else:
+            lines.append("V_INP N_INP 0 DC 0")
     if "N_INN" in node_list:
         if has_out:
-            # Unity-gain DC feedback prevents open-loop rail saturation during DC sweep
+            # Unity-gain DC feedback prevents open-loop rail saturation during check
             lines.append("R_FB N_OUT N_INN 10k")
         else:
             lines.append("V_INN N_INN 0 DC 0")
@@ -120,15 +127,13 @@ def build_quick_dc_op_deck(
     for idx, cn in enumerate(ctrl_nodes):
         lines.append(f"R_CTRL_{idx} {cn} 0 100k")
 
-    use_dc_sweep = has_inp and has_out
     if use_dc_sweep:
-        # 3-point unity-gain DC sweep (-1V, 0V, +1V) verifies both DC bias AND live signal transfer
-        lines.append(".dc V_INP -1 1 1")
-        lines.append(".meas dc v_out_m1 FIND V(N_OUT) AT -1")
-        lines.append(".meas dc v_out_0 FIND V(N_OUT) AT 0")
-        lines.append(".meas dc v_out_p1 FIND V(N_OUT) AT 1")
+        lines.append(".tran 1u 100u")
+        lines.append(".meas tran v_out_m1 FIND V(N_OUT) AT 25u")
+        lines.append(".meas tran v_out_0 FIND V(N_OUT) AT 60u")
+        lines.append(".meas tran v_out_p1 FIND V(N_OUT) AT 95u")
         if has_vpos:
-            lines.append(".meas dc i_pos FIND I(V_POS) AT 0")
+            lines.append(".meas tran i_pos FIND I(V_POS) AT 60u")
     else:
         lines.append(".op")
         if has_out:
