@@ -150,12 +150,10 @@ DEFAULT_C4_TOOL_GUIDANCE = """## TOOL GUIDANCE & SIMULATION ALIGNMENT:
 
    - Enclose technical rationale in `<architecture_summary>...</architecture_summary>`.
 
-   - Enclose the complete circuit in `<circuit_json>...</circuit_json>` using the CircuitBuilder IR schema:
-     * ONLY physical kinds: bjt, mos, res, cap, ind, diode (NEVER v, i, b, a sources).
-     * Connect EVERY required POWER, GROUND, SIGNAL, and OUTPUT pin in PIN INTERFACE using exact pin names; every internal node must connect to >= 2 device terminals.
-     * Ensure a continuous DC bias path between supply rails and differential signal path from inputs to output.
-     * Example 0-ERC DC-convergent 2-stage op-amp skeleton:
-       {{"models":[{{"name":"QNPN","type":"NPN","params":"IS=1e-16 BF=200 VAF=100"}},{{"name":"QPNP","type":"PNP","params":"IS=1e-16 BF=80 VAF=80"}}],"devices":[{{"kind":"bjt","name":"Q1","c":"N_C1","b":"INN","e":"N_TAIL","model":"QNPN"}},{{"kind":"bjt","name":"Q2","c":"N_C2","b":"INP","e":"N_TAIL","model":"QNPN"}},{{"kind":"res","name":"RC1","p":"VCC","n":"N_C1","value":"15k"}},{{"kind":"res","name":"RC2","p":"VCC","n":"N_C2","value":"15k"}},{{"kind":"bjt","name":"Q3","c":"N_TAIL","b":"N_BIAS","e":"N_E3","model":"QNPN"}},{{"kind":"res","name":"RE3","p":"N_E3","n":"VEE","value":"1k"}},{{"kind":"bjt","name":"Q4","c":"N_BIAS","b":"N_BIAS","e":"N_E4","model":"QNPN"}},{{"kind":"res","name":"RE4","p":"N_E4","n":"VEE","value":"1k"}},{{"kind":"res","name":"RBIAS","p":"VCC","n":"N_BIAS","value":"30k"}},{{"kind":"bjt","name":"Q5","c":"N_G2","b":"N_C2","e":"VCC","model":"QPNP"}},{{"kind":"res","name":"RG2","p":"N_G2","n":"VEE","value":"10k"}},{{"kind":"cap","name":"CC","p":"N_C2","n":"N_G2","value":"30p"}},{{"kind":"bjt","name":"Q6","c":"VCC","b":"N_G2","e":"OUT","model":"QNPN"}},{{"kind":"res","name":"ROUT","p":"OUT","n":"VEE","value":"5k"}}]}}`
+   - Enclose the complete circuit in `<circuit_json>...</circuit_json>` using the Circuit-SAFE block IR (preferred, valid-by-construction) or physical device IR:
+     * ONLY physical blocks (`tail_current_mirror`, `diff_pair_active_load`, `diff_pair_res_load`, `gain_stage_ce`, `output_class_ab`, `output_emitter_follower`) and physical devices (`bjt`, `mos`, `res`, `cap`, `ind`, `diode` — NEVER `v`, `i`, `b`, `a` sources).
+     * Example Circuit-SAFE high-gain active-load Class-AB op-amp:
+       {{"models":[{{"name":"QNPN","type":"NPN","params":"IS=1e-16 BF=250 VAF=120"}},{{"name":"QPNP","type":"PNP","params":"IS=1e-16 BF=100 VAF=100"}},{{"name":"D1N4148","type":"D","params":"IS=1e-14 RS=1"}}],"blocks":[{{"block":"tail_current_mirror","r_bias":"300k","r_e_ref":"2k","r_e_tail":"2k"}},{{"block":"diff_pair_active_load","r_mirror_e":"500"}},{{"block":"gain_stage_ce","load_type":"active_current_source","r_e_src":"1k","c_comp":"30p","r_zero":"1k"}},{{"block":"output_class_ab","r_e_sink":"2k","r_e_out":"25"}}],"devices":[]}}`
 
 """
 

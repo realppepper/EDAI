@@ -132,6 +132,7 @@ def build_quick_dc_op_deck(
         lines.append(".meas tran v_out_m1 FIND V(N_OUT) AT 25u")
         lines.append(".meas tran v_out_0 FIND V(N_OUT) AT 60u")
         lines.append(".meas tran v_out_p1 FIND V(N_OUT) AT 95u")
+        lines.append(".meas tran i_bias_na FIND abs(I(V_INP))*1e9 AT 60u")
         if has_vpos:
             lines.append(".meas tran i_pos FIND I(V_POS) AT 60u")
     else:
@@ -247,14 +248,16 @@ def run_quick_dc_op_check(
                 "log_excerpt": log_text[-400:],
             }
 
+        i_bias_na = meas.get("i_bias_na")
         return {
             "converged": True,
             "diagnostic": (
                 f"DC bias & unity-gain transfer PASSED "
-                f"(V_OUT(0V)={v_out}, dV_OUT={dv_out}, I_POS={i_pos})."
+                f"(V_OUT(0V)={v_out}, dV_OUT={dv_out}, I_POS={i_pos}, I_BIAS_nA={i_bias_na})."
             ),
             "v_out": v_out,
             "dv_out": dv_out,
             "i_pos": i_pos,
+            "i_bias_na": i_bias_na,
             "log_excerpt": "",
         }
