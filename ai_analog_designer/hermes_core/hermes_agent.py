@@ -498,14 +498,28 @@ You are a PURE ORCHESTRATOR (Supervisor). Delegate ALL circuit authoring, syntax
                     candidate_nl = output.get("cleaned_netlist") or (args.get("netlist") if isinstance(args, dict) else None)
                     if candidate_nl and self._is_meaningful_netlist(candidate_nl):
                         turn_result.netlist_extracted = candidate_nl
-                        # Proactively evaluate physical performance if syntax is valid
-                        if name in ("synthesize_circuit_netlist", "validate_netlist_syntax") and output.get("is_valid", False):
+                        # Strict PDG Causal Gating: ONLY run full PDG AC/transient verification
+                        # once syntax/ERC AND Stage-2 DC bias + unity-gain transfer have passed.
+                        dc_ready = output.get("dc_converged", True) if name == "synthesize_circuit_netlist" else True
+                        if name in ("synthesize_circuit_netlist", "validate_netlist_syntax") and output.get("is_valid", False) and dc_ready:
                             eval_out = self.tools.verify_circuit_pdg_gate(candidate_nl, tag=f"turn{turn_idx}")
                             turn_result.pass_rate = eval_out.get("pass_rate_percent", 0.0)
                             turn_result.unique_pass_rate = eval_out.get("unique_kind_pass_rate_pct", 0.0)
                             turn_result.passed_specs = eval_out.get("passed_specs", 0)
                             turn_result.total_specs = eval_out.get("total_specs", 0)
                             tool_outputs.append({"tool": "auto_eval_physical_gate", "output": eval_out})
+                        elif name == "synthesize_circuit_netlist" and output.get("is_valid", False) and not dc_ready:
+                            tool_outputs.append({
+                                "tool": "pdg_dc_gate_blocked",
+                                "output": {
+                                    "status": "DC_BIAS_GATE_FAILED_AC_SKIPPED",
+                                    "dc_diagnostic": output.get("dc_diagnostic", ""),
+                                    "directive": (
+                                        "PDG Causal Rule: Full AC/transient verification SKIPPED because DC bias/signal transfer failed. "
+                                        "Invoke `synthesize_circuit_netlist` with DC-bias-only directives until V_OUT(0V) is near 0V and dV_OUT >= 0.8V."
+                                    ),
+                                },
+                            })
 
                 # Check if simulation was run
                 if name == "verify_circuit_pdg_gate":

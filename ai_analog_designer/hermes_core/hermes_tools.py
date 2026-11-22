@@ -67,6 +67,8 @@ class HermesAnalogTools:
         )
         self.evaluation_history: list[dict[str, Any]] = []
         self.best_evaluation: dict[str, Any] | None = None
+        self.dc_bias_achieved: bool = False
+        self.last_dc_diagnostic: str = ""
         self.last_synthesized_netlist: str = ""
 
     def get_tool_schemas(self) -> list[dict[str, Any]]:
@@ -468,12 +470,34 @@ class HermesAnalogTools:
             "- NEVER spam dummy 100k resistors to silence ERC; design a clean, physically meaningful topology.\n"
             "- PRECEDENCE: If ORCHESTRATOR DESIGN DIRECTIVES conflict with these rules, ALWAYS obey these rules."
         )
+        if self.dc_bias_achieved or (self.best_evaluation and self.best_evaluation.get("pass_rate_percent", 0.0) > 0):
+            stage_objective_section = (
+                f"## CURRENT PDG STAGE: FULL SPEC OPTIMIZATION (DC bias already verified)\n"
+                f"## KEY SPECIFICATIONS:\n{specs_desc}\n\n"
+                f"## ORCHESTRATOR DESIGN DIRECTIVES:\n{design_directives}\n"
+            )
+        else:
+            dc_prev_note = (
+                f"\nPrevious DC bias failure to fix: {self.last_dc_diagnostic}\n"
+                if self.last_dc_diagnostic
+                else ""
+            )
+            stage_objective_section = (
+                "## CURRENT PDG STAGE: STAGE 2 — DC BIAS & UNITY-GAIN SIGNAL TRANSFER ONLY\n"
+                "STRICT PDG CAUSAL RULE: IGNORE AC gain, slew rate, bandwidth, CMRR, and noise specs for now.\n"
+                "Your ONLY goal right now is a clean, DC-convergent 2-stage op-amp where in unity-gain feedback (+/-15V rails):\n"
+                "  1. Quiescent supply current |I(V_POS)| is between 100uA and 10mA (no cutoff, no short).\n"
+                "  2. DC output V_OUT(V_INP=0V) is centered near 0V (|V_OUT(0V)| <= 2.5V, NOT saturated near +/-14V).\n"
+                "  3. Signal transfer is alive with correct negative-feedback polarity: V_OUT(+1V) - V_OUT(-1V) >= 1.5V.\n"
+                "  4. Base terminals of input differential pair Q1/Q2 connect to NONINVERTING_INPUT and INVERTING_INPUT (never swap collector/base).\n"
+                f"{dc_prev_note}"
+            )
+
         user_prompt = (
             f"Synthesize the complete transistor-level circuit for `{self.dut_name}`.\n"
             f"Exact subcircuit pins: `{pins_line}`.\n\n"
             f"## PIN INTERFACE:\n{pins_desc}\n\n"
-            f"## KEY SPECIFICATIONS:\n{specs_desc}\n\n"
-            f"## ORCHESTRATOR DESIGN DIRECTIVES:\n{design_directives}\n"
+            f"{stage_objective_section}"
             f"{bp_context}{prior_feedback}\n"
             "Return ONLY the `<circuit_json>...</circuit_json>` block."
         )
@@ -569,19 +593,21 @@ class HermesAnalogTools:
                         input_data={"dc_check": dc_check, "netlist": val_res.get("cleaned_netlist", netlist)},
                     ) as dc_span:
                         dc_sys = (
-                            "You are the dedicated DC Operating Point (.op) Convergence Fixer Sub-Agent.\n"
-                            "Your ONLY job is to fix DC convergence, cutoff (~0A), short-circuit (>0.5A), or rail saturation "
-                            "in the analog subcircuit while keeping all ports connected and using ONLY physical devices.\n"
-                            "Output ONLY `<circuit_json>...</circuit_json>` using the CircuitBuilder JSON schema "
-                            '(kinds: bjt, mos, res, cap, ind, diode; NEVER v/i/b/a sources).\n'
+                            "You are the dedicated DC Bias & Signal-Transfer Convergence Fixer Sub-Agent (PDG Stage 2).\n"
+                            "Your ONLY job is to fix DC operating point convergence, rail saturation (|V_OUT(0V)| > 2.5V), "
+                            "cutoff (~0A), short-circuit (>0.5A), inverted feedback polarity, or stuck output (dV_OUT < 0.8V).\n"
+                            "IGNORE AC gain/slew/bandwidth specs — ONLY achieve valid DC bias and unity-gain signal transfer.\n"
+                            "Output ONLY `<circuit_json>...</circuit_json>`.\n\n"
+                            f"{schema_guide}\n\n"
                             "DC CONVERGENCE BEST PRACTICES:\n"
-                            "- Ensure a proper DC tail current bias path from positive supply to negative supply (e.g., 100uA-2mA).\n"
-                            "- Avoid floating high-impedance nodes; ensure every BJT/MOSFET stage has realistic bias resistors (1k-100k).\n"
-                            "- Keep unity-gain DC output near 0V (not pegged at +/-15V supply rails)."
+                            "- Ensure a proper DC tail current bias path from positive supply to negative supply (e.g., 100uA-5mA).\n"
+                            "- Wire differential pair bases to NONINVERTING_INPUT and INVERTING_INPUT (never collectors!).\n"
+                            "- If DC_POLARITY_INVERTED is reported, swap which differential pair collector drives the 2nd gain stage (or swap INP/INN bases).\n"
+                            "- Keep unity-gain DC output V_OUT(0V) within +/-2.5V and V_OUT(+1V) - V_OUT(-1V) >= 1.5V."
                         )
                         dc_prompt = (
                             f"Target `.subckt {self.dut_name} {pins_line}`\n\n"
-                            f"## LTSPICE DC .OP FAILURE DIAGNOSTIC:\n{dc_check.get('diagnostic', '')}\n"
+                            f"## LTSPICE DC SWEEP FAILURE DIAGNOSTIC:\n{dc_check.get('diagnostic', '')}\n"
                             f"Log excerpt:\n{dc_check.get('log_excerpt', '')}\n\n"
                             f"## CURRENT NETLIST:\n{val_res.get('cleaned_netlist', netlist)}\n\n"
                             "Return ONLY the DC-convergent `<circuit_json>...</circuit_json>` block."
@@ -589,9 +615,9 @@ class HermesAnalogTools:
                         dc_raw = client.complete(
                             prompt=dc_prompt,
                             system_prompt=dc_sys,
-                            temperature=0.1,
+                            temperature=0.05,
                             max_tokens=4096,
-                            tag="hermes_turn_3",
+                            tag="harness2_synth",
                         )
                         cand_nl, cand_vr = _extract_and_validate(dc_raw)
                         if cand_vr.get("is_valid", False):
@@ -613,12 +639,22 @@ class HermesAnalogTools:
             cleaned_out = val_res.get("cleaned_netlist", netlist)
             if cleaned_out and cleaned_out.strip():
                 self.last_synthesized_netlist = cleaned_out
+            dc_ok = bool(dc_check.get("converged", False))
+            if dc_ok:
+                self.dc_bias_achieved = True
+                self.last_dc_diagnostic = ""
+            else:
+                self.last_dc_diagnostic = str(dc_check.get("diagnostic", ""))
             out = {
-                "status": "SYNTHESIZED" if val_res.get("is_valid") else "SYNTHESIZED_WITH_SYNTAX_ERRORS",
+                "status": (
+                    "SYNTHESIZED_DC_PASSED"
+                    if (val_res.get("is_valid") and dc_ok)
+                    else ("SYNTHESIZED_DC_FAILED" if val_res.get("is_valid") else "SYNTHESIZED_WITH_SYNTAX_ERRORS")
+                ),
                 "subagent_invoked": True,
                 "syntax_repair_attempts": repair_attempts,
                 "dc_repair_attempts": dc_repair_attempts,
-                "dc_converged": bool(dc_check.get("converged", False)),
+                "dc_converged": dc_ok,
                 "dc_diagnostic": dc_check.get("diagnostic", ""),
                 "is_valid": val_res.get("is_valid", False),
                 "errors": val_res.get("errors", []),
@@ -736,6 +772,22 @@ class HermesAnalogTools:
             or eval_record["pass_rate_percent"] > self.best_evaluation.get("pass_rate_percent", -1.0)
         ):
             self.best_evaluation = eval_record
+            if eval_record["pass_rate_percent"] > 0:
+                self.dc_bias_achieved = True
+                try:
+                    self.save_subcircuit_blueprint(
+                        name=f"{self.dut_name.lower()}_verified_dc_seed",
+                        category="opamp",
+                        netlist=cleaned_netlist,
+                        description=(
+                            f"Auto-persisted DC-convergent seed for {self.dut_name} "
+                            f"(PDG pass_rate={eval_record['pass_rate_percent']:.1f}%, "
+                            f"passed={eval_record['passed_specs']}/{eval_record['total_specs']})."
+                        ),
+                        verified_metrics={"pass_rate_percent": eval_record["pass_rate_percent"]},
+                    )
+                except Exception as exc:
+                    logger.debug(f"Auto-save partial seed blueprint skipped: {exc}")
 
         return {
             "status": "SIMULATION_COMPLETE",

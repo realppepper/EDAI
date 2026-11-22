@@ -102,15 +102,16 @@ def build_quick_dc_op_deck(
         ".options gmin=1e-10 abstol=1e-10 reltol=1e-3",
         f"XDUT {' '.join(node_list)} {subckt_name}",
     ]
+    has_inp = "N_INP" in node_list
     if has_vpos:
         lines.append("V_POS N_VPOS 0 DC 15")
     if has_vneg:
         lines.append("V_NEG N_VNEG 0 DC -15")
-    if "N_INP" in node_list:
+    if has_inp:
         lines.append("V_INP N_INP 0 DC 0")
     if "N_INN" in node_list:
         if has_out:
-            # Unity-gain DC feedback prevents open-loop rail saturation during .op
+            # Unity-gain DC feedback prevents open-loop rail saturation during DC sweep
             lines.append("R_FB N_OUT N_INN 10k")
         else:
             lines.append("V_INN N_INN 0 DC 0")
@@ -119,13 +120,23 @@ def build_quick_dc_op_deck(
     for idx, cn in enumerate(ctrl_nodes):
         lines.append(f"R_CTRL_{idx} {cn} 0 100k")
 
-    lines.append(".op")
-    if has_out:
-        lines.append(".meas op v_out FIND V(N_OUT)")
-    if has_vpos:
-        lines.append(".meas op i_pos FIND I(V_POS)")
+    use_dc_sweep = has_inp and has_out
+    if use_dc_sweep:
+        # 3-point unity-gain DC sweep (-1V, 0V, +1V) verifies both DC bias AND live signal transfer
+        lines.append(".dc V_INP -1 1 1")
+        lines.append(".meas dc v_out_m1 FIND V(N_OUT) AT -1")
+        lines.append(".meas dc v_out_0 FIND V(N_OUT) AT 0")
+        lines.append(".meas dc v_out_p1 FIND V(N_OUT) AT 1")
+        if has_vpos:
+            lines.append(".meas dc i_pos FIND I(V_POS) AT 0")
+    else:
+        lines.append(".op")
+        if has_out:
+            lines.append(".meas op v_out_0 FIND V(N_OUT)")
+        if has_vpos:
+            lines.append(".meas op i_pos FIND I(V_POS)")
     lines.append(".end")
-    return "\n".join(lines) + "\n", has_vpos
+    return "\n".join(lines) + "\n", has_vpos, use_dc_sweep
 
 
 def run_quick_dc_op_check(
@@ -146,7 +157,7 @@ def run_quick_dc_op_check(
         log_path = Path(tmpdir) / "dc_op_check.log"
 
         dut_path.write_text(netlist, encoding="utf-8")
-        deck, has_vpos = build_quick_dc_op_deck(netlist, subckt_name, pins, str(dut_path))
+        deck, has_vpos, use_dc_sweep = build_quick_dc_op_deck(netlist, subckt_name, pins, str(dut_path))
         tb_path.write_text(deck, encoding="utf-8")
 
         meas: dict[str, Any] = {}
@@ -185,8 +196,15 @@ def run_quick_dc_op_check(
                 "log_excerpt": log_text[-600:],
             }
 
-        v_out = meas.get("v_out")
+        v_out = meas.get("v_out_0") if meas.get("v_out_0") is not None else meas.get("v_out")
+        v_out_m1 = meas.get("v_out_m1")
+        v_out_p1 = meas.get("v_out_p1")
         i_pos = meas.get("i_pos")
+        dv_out = (
+            float(v_out_p1) - float(v_out_m1)
+            if (v_out_p1 is not None and v_out_m1 is not None)
+            else None
+        )
         issues: list[str] = []
         if has_vpos and i_pos is not None:
             abs_i = abs(float(i_pos))
@@ -194,22 +212,44 @@ def run_quick_dc_op_check(
                 issues.append(f"DC_CUTOFF: Supply current |I(V_POS)|={abs_i:.3e}A (~0A, circuit is dead/disconnected).")
             elif abs_i > 0.5:
                 issues.append(f"DC_SHORT_CIRCUIT: Supply current |I(V_POS)|={abs_i:.3f}A (>0.5A, excessive bias or short).")
-        if v_out is not None and abs(float(v_out)) > 14.5:
-            issues.append(f"DC_RAIL_SATURATION: Unity-gain DC output V(OUT)={float(v_out):.3f}V is pegged at supply rail (+/-15V).")
+        if v_out is not None and abs(float(v_out)) > 2.5:
+            issues.append(
+                f"DC_BIAS_SATURATED: Unity-gain DC output V_OUT(0V)={float(v_out):.3f}V is far from 0V "
+                "(must be within +/-2.5V; fix stage DC biasing/collector loads/output emitter follower)."
+            )
+        if use_dc_sweep:
+            if dv_out is None:
+                issues.append("DC_SWEEP_MISSING: Could not measure V_OUT(-1V)/V_OUT(+1V) in unity-gain DC sweep.")
+            elif dv_out < -0.5:
+                issues.append(
+                    f"DC_POLARITY_INVERTED: V_OUT(-1V)={float(v_out_m1):.3f}V -> V_OUT(+1V)={float(v_out_p1):.3f}V "
+                    f"(dV={dv_out:.3f}V < 0). Non-inverting and inverting feedback polarity is swapped (positive feedback)."
+                )
+            elif dv_out < 0.8:
+                issues.append(
+                    f"DC_NO_SIGNAL_TRANSFER: Output stuck in unity-gain sweep "
+                    f"(V_OUT(-1V)={float(v_out_m1):.3f}V, V_OUT(0V)={float(v_out):.3f}V, V_OUT(+1V)={float(v_out_p1):.3f}V, dV={dv_out:.3f}V < 0.8V). "
+                    "Check differential pair base/collector wiring and gain-stage bias."
+                )
 
         if issues:
             return {
                 "converged": False,
                 "diagnostic": " | ".join(issues),
                 "v_out": v_out,
+                "dv_out": dv_out,
                 "i_pos": i_pos,
                 "log_excerpt": log_text[-400:],
             }
 
         return {
             "converged": True,
-            "diagnostic": f"DC .op converged cleanly (V_OUT={v_out}, I_POS={i_pos}).",
+            "diagnostic": (
+                f"DC bias & unity-gain transfer PASSED "
+                f"(V_OUT(0V)={v_out}, dV_OUT={dv_out}, I_POS={i_pos})."
+            ),
             "v_out": v_out,
+            "dv_out": dv_out,
             "i_pos": i_pos,
             "log_excerpt": "",
         }
