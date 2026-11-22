@@ -11,6 +11,7 @@ import json
 import logging
 import os
 import shlex
+import sys
 import urllib.parse
 import urllib.request
 from typing import Any
@@ -28,12 +29,22 @@ class IEEEMCPClient:
         mcp_command: str | None = None,
         mcp_args: list[str] | None = None,
     ):
-        self.mcp_command = (mcp_command or os.environ.get("IEEE_MCP_COMMAND") or "").strip()
-        if mcp_args is not None:
-            self.mcp_args = list(mcp_args)
+        if mcp_command is not None:
+            self.mcp_command = mcp_command.strip()
+            self.mcp_args = list(mcp_args or [])
         else:
-            raw_args = os.environ.get("IEEE_MCP_ARGS", "").strip()
-            self.mcp_args = shlex.split(raw_args) if raw_args else []
+            env_cmd = (os.environ.get("IEEE_MCP_COMMAND") or "").strip()
+            if env_cmd:
+                self.mcp_command = env_cmd
+                raw_args = os.environ.get("IEEE_MCP_ARGS", "").strip()
+                self.mcp_args = list(mcp_args) if mcp_args is not None else (shlex.split(raw_args) if raw_args else [])
+            elif os.environ.get("IEEE_MCP_ENABLED", "1") == "1" and os.environ.get("IEEE_MCP_SERVER_INTERNAL") != "1":
+                # Auto-wire built-in EDAI FastMCP stdio server so IEEE MCP works out of the box
+                self.mcp_command = sys.executable
+                self.mcp_args = ["-m", "ai_analog_designer.mcp_server"]
+            else:
+                self.mcp_command = ""
+                self.mcp_args = []
 
     def is_mcp_configured(self) -> bool:
         return bool(self.mcp_command)
@@ -42,10 +53,12 @@ class IEEEMCPClient:
         from mcp import ClientSession, StdioServerParameters
         from mcp.client.stdio import stdio_client
 
+        child_env = dict(os.environ)
+        child_env["IEEE_MCP_SERVER_INTERNAL"] = "1"
         server_params = StdioServerParameters(
             command=self.mcp_command,
             args=self.mcp_args,
-            env=dict(os.environ),
+            env=child_env,
         )
         async with stdio_client(server_params) as (read, write):
             async with ClientSession(read, write) as session:

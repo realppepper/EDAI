@@ -70,6 +70,8 @@ class HermesAnalogTools:
         self.dc_bias_achieved: bool = False
         self.last_dc_diagnostic: str = ""
         self.last_synthesized_netlist: str = ""
+        self.ieee_literature_context: str = ""
+        self._ieee_query_cache: dict[str, str] = {}
 
     def get_tool_schemas(self) -> list[dict[str, Any]]:
         """Returns the list of tool JSON schemas in OpenAI / Hermes tool-calling format."""
@@ -414,11 +416,51 @@ class HermesAnalogTools:
             )
 
         prior_feedback = ""
+        is_stagnating = (
+            len(self.evaluation_history) >= 2
+            and self.evaluation_history[-1].get("pass_rate_percent", 0.0)
+            == self.evaluation_history[-2].get("pass_rate_percent", -1.0)
+            and self.evaluation_history[-1].get("pass_rate_percent", 0.0) < 100.0
+        )
+        ieee_spec_context = ""
         if self.best_evaluation and self.best_evaluation.get("pass_rate_percent", 0.0) > 0:
             best_ev = self.best_evaluation
+            failed_specs = best_ev.get("failed_specs_summary") or []
             failed_lines = "\n".join(
                 f"  - {f.get('symbol')}: measured={f.get('measured')}, expected={f.get('expected')} {f.get('unit', '')} ({f.get('reason', '')})"
-                for f in (best_ev.get("failed_specs_summary") or [])[:12]
+                for f in failed_specs[:12]
+            )
+            # Query IEEE MCP for peer-reviewed topology techniques targeting the exact failing specs
+            if failed_specs and self.ieee_mcp_client.is_mcp_configured():
+                unique_fail_names = list(dict.fromkeys(str(f.get("symbol") or "").strip() for f in failed_specs if f.get("symbol")))
+                ieee_q = f"bipolar operational amplifier active load {' '.join(unique_fail_names[:3])}"
+                if ieee_q not in self._ieee_query_cache:
+                    with trace_span(
+                        "tool.ieee_mcp.search_papers",
+                        span_kind="TOOL",
+                        attributes={"query": ieee_q},
+                        input_data={"query": ieee_q, "failed_specs": unique_fail_names[:5]},
+                    ) as ieee_span:
+                        mcp_res = self.ieee_mcp_client.search_papers(query=ieee_q, max_results=3)
+                        papers = mcp_res.get("papers") or []
+                        formatted_papers = "\n".join(
+                            f"  * [{p.get('year', '')}] {p.get('title', '')} ({p.get('venue', 'IEEE')}): {str(p.get('abstract', ''))[:320]}"
+                            for p in papers[:3]
+                        )
+                        self._ieee_query_cache[ieee_q] = formatted_papers
+                        set_span_output(ieee_span, {"provider": mcp_res.get("provider"), "count": len(papers), "titles": [p.get("title") for p in papers[:3]]})
+                if self._ieee_query_cache.get(ieee_q):
+                    ieee_spec_context = (
+                        "\n## IEEE MCP LITERATURE GUIDANCE (Targeted to Failing Specs):\n"
+                        f"{self._ieee_query_cache[ieee_q]}\n"
+                    )
+            stagnation_note = (
+                "\nCRITICAL ANTI-STAGNATION RULE: Your last 2 attempts repeated the EXACT same pass rate without structural change. "
+                "DO NOT copy the previous netlist verbatim! You MUST make a concrete topology upgrade "
+                "(e.g., replace resistive collector loads RC1/RC2 with a PNP current-mirror active load Q_M1/Q_M2, "
+                "and reduce tail current by increasing RBIAS to 300k-500k and RE3/RE4 to 5k-10k) while preserving DC balance.\n"
+                if is_stagnating
+                else ""
             )
             prior_feedback += (
                 f"\n## BEST WORKING CIRCUIT SO FAR (Pass Rate: {best_ev.get('pass_rate_percent', 0.0):.1f}% — "
@@ -429,9 +471,11 @@ class HermesAnalogTools:
                 "- Low Open-Loop Voltage Gain (e.g. 60dB -> >95dB): replace resistive collector loads (RC1/RC2, RG2) with active PNP/NPN current-mirror loads or higher output impedance stages.\n"
                 "- High Input Offset Voltage (Vos): balance differential pair collector/load currents symmetrically using an active current-mirror load.\n"
                 "- High Input Bias/Offset Current (Ibias/Ios): reduce differential pair tail current (e.g. increase RBIAS/RE3/RE4 so I_tail ~ 20uA-50uA) and/or increase input BJT BF (e.g. BF=250-400).\n"
+                f"{stagnation_note}"
                 f"### BEST WORKING NETLIST:\n{str(best_ev.get('netlist', ''))[:2400]}\n"
                 f"### REMAINING FAILING SPECS TO FIX:\n{failed_lines or '  (see diagnostic below)'}\n"
                 f"### DIAGNOSTIC:\n{str(best_ev.get('diagnostic_feedback', ''))[:1000]}\n"
+                f"{ieee_spec_context}"
             )
             if self.evaluation_history and self.evaluation_history[-1] is not best_ev:
                 last_ev = self.evaluation_history[-1]
@@ -498,7 +542,7 @@ class HermesAnalogTools:
             f"Exact subcircuit pins: `{pins_line}`.\n\n"
             f"## PIN INTERFACE:\n{pins_desc}\n\n"
             f"{stage_objective_section}"
-            f"{bp_context}{prior_feedback}\n"
+            f"{bp_context}{self.ieee_literature_context}{prior_feedback}\n"
             "Return ONLY the `<circuit_json>...</circuit_json>` block."
         )
 
@@ -527,7 +571,7 @@ class HermesAnalogTools:
             raw = client.complete(
                 prompt=user_prompt,
                 system_prompt=sys_prompt,
-                temperature=0.15,
+                temperature=0.35 if is_stagnating else 0.15,
                 max_tokens=4096,
                 tag="hermes_turn_3",
             )
@@ -893,6 +937,13 @@ class HermesAnalogTools:
         )
         if mcp_res and mcp_res.get("papers"):
             res["ieee_mcp_papers"] = mcp_res["papers"]
+            summary_lines = [
+                f"  * [{p.get('year', '')}] {p.get('title', '')} ({p.get('venue', 'IEEE')}): {str(p.get('abstract', ''))[:260]}"
+                for p in mcp_res["papers"][:3]
+            ]
+            self.ieee_literature_context = (
+                "\n## RETRIEVED IEEE MCP PAPERS:\n" + "\n".join(summary_lines) + "\n"
+            )
         # Persist retrieved web reference into workspace skills for traceability
         try:
             web_dir = os.path.join(self.skills_dir, "web_references")
