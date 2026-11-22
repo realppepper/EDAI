@@ -512,13 +512,18 @@ Return ONLY valid JSON.
             pass_rate = final_evaluation.get("pass_rate_percent", 0.0)
             best_eval = final_evaluation
 
-            # Post-Hermes Propose -> Probe -> Compose cycle (Harness² contrastive refinement after baseline execution)
-            if pass_rate < 100.0:
+            # Multi-round Post-Hermes Harness² Contrastive Propose -> Probe -> Compose (+ LTspice sweep)
+            max_h2_rounds = int(os.environ.get("ANALOG_HARNESS2_ROUNDS", "3"))
+            stagnant_h2_rounds = 0
+            for h2_round in range(1, max_h2_rounds + 1):
+                if pass_rate >= 100.0:
+                    break
                 logger.info(
-                    f"Post-Hermes Pass Rate ({pass_rate:.1f}%) < 100%. "
-                    "Running Harness² Contrastive Propose -> Probe -> Compose cycle..."
+                    f"Post-Hermes Harness² Round {h2_round}/{max_h2_rounds} (Current Pass Rate: {pass_rate:.1f}% < 100%). "
+                    "Running Contrastive Propose -> Probe -> Compose cycle..."
                 )
                 try:
+                    prev_rate = pass_rate
                     winning_res, winning_eval, composed_tree, _ = self.harness2_architect.execute_contrastive_iteration(
                         ic_info=ic_info,
                         pins=pins,
@@ -529,22 +534,66 @@ Return ONLY valid JSON.
                         measurement_plan=self.spec_plan,
                         user_prompt=user_prompt,
                         base_synth={"spice_netlist": best_netlist_code},
+                        iteration_index=h2_round + 1,
                     )
+                    active_harness_tree = composed_tree
+                    self.harness2_architect.active_tree = composed_tree
                     if winning_eval and winning_eval.get("pass_rate_percent", 0.0) >= pass_rate:
                         final_evaluation = winning_eval
                         best_eval = winning_eval
                         pass_rate = winning_eval.get("pass_rate_percent", 0.0)
-                        active_harness_tree = composed_tree
                         refined_nl = (winning_res or {}).get("spice_netlist") or (winning_res or {}).get("netlist")
                         if refined_nl:
-                            post_path = os.path.join(self.output_dir, f"{safe_part_name}_HARNESS2_REFINED.cir")
+                            post_path = os.path.join(self.output_dir, f"{safe_part_name}_HARNESS2_R{h2_round}.cir")
                             with open(post_path, "w", encoding="utf-8") as f:
                                 f.write(refined_nl)
                             final_netlist_path = post_path
                             best_netlist_path = post_path
                             best_netlist_code = refined_nl
+
+                    # If we have a DC-convergent partial-pass circuit, run fast LTspice parameter sweep
+                    if 0.0 < pass_rate < 100.0 and best_netlist_code:
+                        try:
+                            from ai_analog_designer.hermes_core.hermes_tools import (
+                                HermesAnalogTools,
+                            )
+                            sweep_tools = HermesAnalogTools(
+                                output_dir=self.output_dir,
+                                dut_name=subckt_name,
+                                pins=pins,
+                                specifications=specifications,
+                                pdg_schedule={k: v * 1e-6 for k, v in pdg_schedule.items()},
+                                measurement_plan=self.spec_plan,
+                            )
+                            sw_res = sweep_tools.sweep_parameters_grid(netlist=best_netlist_code, max_runs=16)
+                            if sw_res.get("status") == "SWEEP_COMPLETE" and sw_res.get("dc_converged") and sw_res.get("cleaned_netlist"):
+                                sw_nl = sw_res["cleaned_netlist"]
+                                sw_eval = eval_probe(sw_nl, f"harness2_r{h2_round}_sweep")
+                                sw_rate = sw_eval.get("pass_rate_percent", 0.0)
+                                logger.info(f"Harness² Round {h2_round} LTspice sweep pass rate: {sw_rate:.1f}% (vs {pass_rate:.1f}%)")
+                                if sw_rate > pass_rate:
+                                    final_evaluation = sw_eval
+                                    best_eval = sw_eval
+                                    pass_rate = sw_rate
+                                    post_path = os.path.join(self.output_dir, f"{safe_part_name}_HARNESS2_R{h2_round}_SWEEP.cir")
+                                    with open(post_path, "w", encoding="utf-8") as f:
+                                        f.write(sw_nl)
+                                    final_netlist_path = post_path
+                                    best_netlist_path = post_path
+                                    best_netlist_code = sw_nl
+                        except Exception as swe:
+                            logger.debug(f"Harness² Round {h2_round} sweep skipped: {swe}")
+
+                    if pass_rate > prev_rate:
+                        stagnant_h2_rounds = 0
+                    else:
+                        stagnant_h2_rounds += 1
+                        if stagnant_h2_rounds >= 2:
+                            logger.info(f"Harness² converged after {h2_round} rounds (Pass Rate: {pass_rate:.1f}%).")
+                            break
                 except Exception as he:
-                    logger.warning(f"Post-Hermes Harness² Propose-Probe-Compose skipped: {he}")
+                    logger.warning(f"Post-Hermes Harness² Round {h2_round} skipped: {he}")
+                    break
 
             # Dual-Harness² Verifier Evolution (runs after synthesis execution)
             if os.environ.get("ANALOG_EVOLVE_VERIFIER", "1") == "1":

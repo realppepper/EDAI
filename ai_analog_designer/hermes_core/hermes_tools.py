@@ -622,7 +622,7 @@ class HermesAnalogTools:
                 system_prompt=sys_prompt,
                 temperature=0.35 if is_stagnating else 0.15,
                 max_tokens=4096,
-                tag="hermes_turn_3",
+                tag="harness2_synth",
             )
             netlist, val_res = _extract_and_validate(raw)
             repair_attempts = 0
