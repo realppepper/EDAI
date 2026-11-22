@@ -127,8 +127,11 @@ def main() -> None:
         t0 = time.time()
         err_msg = ""
         try:
-            agent = AutonomousAnalogDesignAgent(output_dir=str(ic_out_dir))
-            agent.run(pdf_path=str(pdf_path), max_iterations=args.iterations)
+            agent = AutonomousAnalogDesignAgent(
+                output_dir=str(ic_out_dir),
+                max_iterations=args.iterations,
+            )
+            agent.run(datasheet_pdf_path=str(pdf_path))
         except Exception as exc:
             err_msg = f"{type(exc).__name__}: {exc}"
             (ic_out_dir / "eval_error.txt").write_text(traceback.format_exc(), encoding="utf-8")
