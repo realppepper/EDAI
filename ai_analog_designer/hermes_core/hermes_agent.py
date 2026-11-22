@@ -173,38 +173,19 @@ CRITICAL: Execute ONLY ONE or TWO tool calls per turn. NEVER simulate future tur
 Available Tools:
 {tools_schema_json}
 
-=== AGENT EXECUTION POLICY ===
-1. FIRST, call `retrieve_subcircuit_blueprint` (or `search_web_circuit_reference`) to check for relevant proven circuit topologies and transistor-level reference designs.
-2. ALWAYS invoke `synthesize_circuit_netlist` to generate or revise the SPICE netlist; NEVER hand-write raw netlists directly into `verify_circuit_pdg_gate`.
-   STRICT LTSPICE SYNTAX GUARDRAILS (MUST OBEY IN ALL DIRECTIVES & NETLISTS):
-   - Use ONLY physical transistors/passives (`Q`, `M`, `J`, `D`, `R`, `C`, `L`) and explicit `.model` cards.
-   - BJT (`Qxxx`): strictly 3 pins + NPN/PNP model; NEVER specify `W=` or `L=` for BJTs.
-   - MOSFET (`Mxxx`): strictly 4 pins + NMOS/PMOS model + `W=`/`L=`.
-   - NEVER use internal independent `V`/`I` voltage/current sources, behavioral `B` sources, digital `A` devices, or direct node `0` inside `.subckt`.
-   - Every declared power/signal pin in `.subckt {self.tools.dut_name} {pins_line}` (except `NC`) MUST be connected to internal devices.
-3. EXECUTE simulation via `verify_circuit_pdg_gate`. Inspect the 4-stage causal gate feedback carefully:
-   - Stage 0 failure: Signal path disconnected or illegal behavioral elements.
+=== ORCHESTRATOR EXECUTION POLICY ===
+You are a PURE ORCHESTRATOR (Supervisor). Delegate ALL circuit authoring, syntax repair, DC convergence, sizing, and simulation to your specialized tools and sub-agents:
+1. FIRST, call `retrieve_subcircuit_blueprint` (or `search_web_circuit_reference`, `generate_topology_candidates`, `auto_size_gm_id`) to gather proven topology & sizing references.
+2. ALWAYS invoke `synthesize_circuit_netlist` with clear high-level topology, biasing, and sizing directives.
+   - NEVER hand-write raw SPICE netlists or `<spice_netlist>` blocks in your response or tool arguments.
+   - `synthesize_circuit_netlist` runs CircuitBuilder IR + ERC + Syntax Repair + DC Operating Point Convergence Fixer automatically.
+3. THEN call `verify_circuit_pdg_gate` (no `netlist` argument needed — it automatically verifies the latest sub-agent netlist). Inspect the 4-stage causal gate feedback:
+   - Stage 0 failure: Signal path disconnected or illegal elements.
    - Stage 1 failure: DC bias current out of range (short circuit or cutoff).
-   - Stage 2 failure: DC transfer gain/switching failed (e.g. parallel mirror resistor trap).
-   - Stage 3 failure: Specific parametric spec failed (slew rate, VOL, PSRR).
-4. IF a failure reveals a new design trap or you need external circuit topology equations, invoke `search_web_circuit_reference` or `manage_memory` with action="add" to record the trap in MEMORY.md.
-5. REVISE and re-verify until 100% pass rate is achieved.
-6. ONCE fully verified, call `save_subcircuit_blueprint` to record your winning topology into skills/!
-7. When you are done or providing your final candidate, output the FULL complete SPICE subcircuit.
-CRITICAL: NEVER use ellipses, placeholders, or undefined X-subcircuit stubs in the netlist. Every single transistor (Q/M), resistor (R), capacitor (C), and `.model` card must be explicitly written out:
-<architecture_summary>
-[Explain your chosen topology, biasing choices, and sizing rationale]
-</architecture_summary>
-<spice_netlist>
-.subckt {self.tools.dut_name} {pins_line}
-* 1. DC Biasing and Current Mirrors (e.g. Q1, Q2, R1...)
-* 2. Core Functional Blocks (e.g. Differential Pair, Gain Stage)
-* 3. Output Stage / Buffer
-* 4. Explicit Device Models
-.model QNPN NPN (IS=1e-16 BF=100)
-.model QPNP PNP (IS=1e-16 BF=50)
-.ends {self.tools.dut_name}
-</spice_netlist>
+   - Stage 2 failure: DC transfer gain/switching failed.
+   - Stage 3 failure: Specific parametric spec failed (slew rate, VOL, PSRR, gain).
+4. IF a failure reveals a new design trap or you need references, invoke `search_web_circuit_reference` or `manage_memory` (`action="add"`), then call `synthesize_circuit_netlist` again with revised directives.
+5. ONCE 100% pass rate is achieved, call `save_subcircuit_blueprint` to record the winning topology into `skills/`.
 """
         return prompt.strip()
 

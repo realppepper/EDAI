@@ -227,6 +227,16 @@ class ToolDecisionRouter:
             if "Repetition trap" in state_decision.get("reason", "") and name == "manage_memory":
                 logger.info("Jev Router intercepted redundant manage_memory call.")
                 continue
+            # Enforce pure-orchestrator rule: redirect direct verify_circuit_pdg_gate without sub-agent synthesis
+            if name == "verify_circuit_pdg_gate" and not has_extracted_netlist:
+                logger.info("Jev Router redirected premature verify_circuit_pdg_gate to synthesize_circuit_netlist.")
+                filtered.append({
+                    "name": "synthesize_circuit_netlist",
+                    "arguments": {
+                        "design_directives": "Synthesize a DC-convergent physical transistor-level circuit matching all DUT pins and specs."
+                    },
+                })
+                continue
             filtered.append(call)
 
         if not filtered and "Repetition trap" in state_decision.get("reason", ""):
