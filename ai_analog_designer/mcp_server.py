@@ -42,40 +42,12 @@ def search_ieee_papers(query: str, max_results: int = 3, publication_title: str 
 
 @mcp.tool()
 def read_ieee_paper(article_number: str, needed_reason: str = "") -> dict[str, Any]:
-    """Retrieve detailed IEEE paper metadata and abstract by IEEE article number or DOI."""
-    import urllib.parse
-    import urllib.request
+    """Read official IEEE article full-text JATS XML body (sections, paragraphs, equations) by article_number."""
+    from ai_analog_designer.hermes_core.ieee_mcp_client import fetch_ieee_article_body
 
-    art = str(article_number or "").strip()
-    if not art:
-        return {"ok": False, "full_text_retrieved": False, "error": "Empty article_number"}
-    api_key = os.environ.get("IEEE_API_KEY", "").strip()
-    if api_key:
-        try:
-            url = (
-                f"https://ieeexploreapi.ieee.org/api/v1/search/articles"
-                f"?apikey={urllib.parse.quote(api_key)}&article_number={urllib.parse.quote(art)}"
-            )
-            req = urllib.request.Request(url, headers={"User-Agent": "AnalogVerifier-EDAI-MCP/1.0"})
-            with urllib.request.urlopen(req, timeout=12.0) as resp:
-                data = json.loads(resp.read().decode("utf-8"))
-            articles = data.get("articles") or []
-            if articles:
-                a = articles[0]
-                return {
-                    "ok": True,
-                    "full_text_retrieved": True,
-                    "article_number": art,
-                    "title": a.get("title", ""),
-                    "venue": a.get("publication_title", ""),
-                    "year": a.get("publication_year", ""),
-                    "doi": a.get("doi", ""),
-                    "abstract": a.get("abstract", ""),
-                    "needed_reason": needed_reason,
-                }
-        except Exception as exc:
-            return {"ok": False, "full_text_retrieved": False, "error": str(exc)}
-    return {"ok": False, "full_text_retrieved": False, "error": "IEEE_API_KEY not configured"}
+    if not str(needed_reason or "").strip():
+        return {"ok": False, "full_text_retrieved": False, "error": "A concrete needed_reason is required"}
+    return fetch_ieee_article_body(str(article_number))
 
 
 @mcp.tool()

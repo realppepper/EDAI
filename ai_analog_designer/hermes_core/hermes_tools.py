@@ -13,7 +13,10 @@ from typing import Any
 
 from ai_analog_designer.circuit_synthesis.netlist_validator import NetlistValidator
 from ai_analog_designer.hermes_core.blueprint_reranker import BlueprintReranker
-from ai_analog_designer.hermes_core.ieee_mcp_client import IEEEMCPClient
+from ai_analog_designer.hermes_core.ieee_mcp_client import (
+    IEEEMCPClient,
+    extract_body_excerpts,
+)
 from ai_analog_designer.hermes_core.web_reference_search import (
     WebCircuitReferenceSearcher,
 )
@@ -430,29 +433,65 @@ class HermesAnalogTools:
                 f"  - {f.get('symbol')}: measured={f.get('measured')}, expected={f.get('expected')} {f.get('unit', '')} ({f.get('reason', '')})"
                 for f in failed_specs[:12]
             )
-            # Query IEEE MCP for peer-reviewed topology techniques targeting the exact failing specs
+            # Query IEEE MCP for peer-reviewed topology techniques + full-text body excerpts targeting failing specs
             if failed_specs and self.ieee_mcp_client.is_mcp_configured():
                 unique_fail_names = list(dict.fromkeys(str(f.get("symbol") or "").strip() for f in failed_specs if f.get("symbol")))
                 raw_ieee_q = f"operational amplifier active load {' '.join(unique_fail_names[:2])}"
                 ieee_q = self.web_searcher.normalize_ieee_query(raw_ieee_q, max_terms=4)
                 if ieee_q not in self._ieee_query_cache:
                     with trace_span(
-                        "tool.ieee_mcp.search_papers",
+                        "tool.ieee_mcp.search_and_read_body",
                         span_kind="TOOL",
                         attributes={"query": ieee_q},
                         input_data={"query": ieee_q, "failed_specs": unique_fail_names[:5]},
                     ) as ieee_span:
-                        mcp_res = self.ieee_mcp_client.search_papers(query=ieee_q, max_results=3)
-                        papers = mcp_res.get("papers") or []
-                        formatted_papers = "\n".join(
-                            f"  * [{p.get('year', '')}] {p.get('title', '')} ({p.get('venue', 'IEEE')}): {str(p.get('abstract', ''))[:320]}"
-                            for p in papers[:3]
+                        mcp_res = self.ieee_mcp_client.search_papers(
+                            query=ieee_q,
+                            max_results=4,
+                            publication_title="IEEE Access",
                         )
-                        self._ieee_query_cache[ieee_q] = formatted_papers
-                        set_span_output(ieee_span, {"provider": mcp_res.get("provider"), "count": len(papers), "titles": [p.get("title") for p in papers[:3]]})
+                        papers = mcp_res.get("papers") or []
+                        body_excerpts_lines: list[str] = []
+                        full_text_count = 0
+                        kw_list = ieee_q.split() + ["gain", "offset", "bias", "mirror", "differential", "compensation"]
+                        for p in papers[:3]:
+                            art_num = str(p.get("article_number") or "").strip()
+                            if not art_num:
+                                continue
+                            body_res = self.ieee_mcp_client.read_paper(
+                                article_number=art_num,
+                                needed_reason=f"Retrieve full-text design equations and stage topology for failing specs: {', '.join(unique_fail_names[:3])}",
+                            )
+                            if body_res.get("full_text_retrieved") and body_res.get("blocks"):
+                                full_text_count += 1
+                                ex_list = extract_body_excerpts(body_res["blocks"], kw_list, budget=2400)
+                                ex_text = "\n".join(
+                                    f"    - [{ex.get('section', 'Body')} | {ex.get('excerpt_id')}] {ex.get('text', '')[:450]}"
+                                    for ex in ex_list[:3]
+                                )
+                                body_excerpts_lines.append(
+                                    f"  * [{p.get('year', '')}] {p.get('title', '')} (article_number={art_num}, full_text_retrieved=True, body_chars={body_res.get('body_characters', 0)}):\n{ex_text}"
+                                )
+                                if full_text_count >= 2:
+                                    break
+                        if not body_excerpts_lines:
+                            body_excerpts_lines = [
+                                f"  * [{p.get('year', '')}] {p.get('title', '')} ({p.get('venue', 'IEEE')}): {str(p.get('abstract', ''))[:320]}"
+                                for p in papers[:3]
+                            ]
+                        self._ieee_query_cache[ieee_q] = "\n".join(body_excerpts_lines)
+                        set_span_output(
+                            ieee_span,
+                            {
+                                "provider": mcp_res.get("provider"),
+                                "papers_found": len(papers),
+                                "full_text_bodies_retrieved": full_text_count,
+                                "titles": [p.get("title") for p in papers[:3]],
+                            },
+                        )
                 if self._ieee_query_cache.get(ieee_q):
                     ieee_spec_context = (
-                        "\n## IEEE MCP LITERATURE GUIDANCE (Targeted to Failing Specs):\n"
+                        "\n## IEEE MCP FULL-TEXT LITERATURE GUIDANCE (Targeted to Failing Specs):\n"
                         f"{self._ieee_query_cache[ieee_q]}\n"
                     )
             stagnation_note = (
@@ -928,9 +967,36 @@ class HermesAnalogTools:
         """
         target_ic = (ic_name or self.dut_name).strip()
         mcp_res: dict[str, Any] | None = None
+        body_excerpts_summary: list[dict[str, Any]] = []
         if self.ieee_mcp_client.is_mcp_configured():
             compact_mcp_q = self.web_searcher.normalize_ieee_query(f"{category or 'operational amplifier'} {query}", max_terms=4)
-            mcp_res = self.ieee_mcp_client.search_papers(query=compact_mcp_q, max_results=3)
+            mcp_res = self.ieee_mcp_client.search_papers(
+                query=compact_mcp_q,
+                max_results=4,
+                publication_title="IEEE Access",
+            )
+            kw_list = compact_mcp_q.split() + ["amplifier", "gain", "bias", "offset", "differential", "compensation"]
+            for p in (mcp_res.get("papers") or [])[:3]:
+                art_num = str(p.get("article_number") or "").strip()
+                if not art_num:
+                    continue
+                body_res = self.ieee_mcp_client.read_paper(
+                    article_number=art_num,
+                    needed_reason=f"Extract circuit stage topology and biasing body excerpts for {target_ic} ({compact_mcp_q})",
+                )
+                p["full_text_retrieved"] = bool(body_res.get("full_text_retrieved"))
+                if body_res.get("full_text_retrieved") and body_res.get("blocks"):
+                    ex_list = extract_body_excerpts(body_res["blocks"], kw_list, budget=2500)
+                    p["body_characters"] = body_res.get("body_characters", 0)
+                    p["body_excerpts"] = ex_list
+                    body_excerpts_summary.append({
+                        "article_number": art_num,
+                        "title": p.get("title", ""),
+                        "body_characters": body_res.get("body_characters", 0),
+                        "excerpts": ex_list,
+                    })
+                    if len(body_excerpts_summary) >= 2:
+                        break
 
         res = self.web_searcher.search_circuit_reference(
             ic_name=target_ic,
@@ -939,18 +1005,34 @@ class HermesAnalogTools:
         )
         if mcp_res and mcp_res.get("papers"):
             res["ieee_mcp_papers"] = mcp_res["papers"]
+            res["ieee_full_text_retrieved"] = len(body_excerpts_summary) > 0
+            res["ieee_body_excerpts"] = body_excerpts_summary
             if not res.get("ieee_papers"):
                 res["ieee_papers"] = mcp_res["papers"]
                 res["ieee_ok"] = True
                 res["status"] = "SUCCESS"
                 res["references_count"] = len(res.get("references", [])) + len(mcp_res["papers"])
-            summary_lines = [
-                f"  * [{p.get('year', '')}] {p.get('title', '')} ({p.get('venue', 'IEEE')}): {str(p.get('abstract', ''))[:260]}"
-                for p in mcp_res["papers"][:3]
-            ]
-            self.ieee_literature_context = (
-                "\n## RETRIEVED IEEE MCP PAPERS:\n" + "\n".join(summary_lines) + "\n"
-            )
+            if body_excerpts_summary:
+                lines = []
+                for b_item in body_excerpts_summary:
+                    ex_str = "\n".join(
+                        f"    - [{ex.get('section', 'Body')} | {ex.get('excerpt_id')}] {ex.get('text', '')[:450]}"
+                        for ex in (b_item.get("excerpts") or [])[:3]
+                    )
+                    lines.append(
+                        f"  * {b_item['title']} (article_number={b_item['article_number']}, full_text_retrieved=True, body_chars={b_item['body_characters']}):\n{ex_str}"
+                    )
+                self.ieee_literature_context = (
+                    "\n## RETRIEVED IEEE MCP FULL-TEXT ARTICLE BODY EXCERPTS:\n" + "\n".join(lines) + "\n"
+                )
+            else:
+                summary_lines = [
+                    f"  * [{p.get('year', '')}] {p.get('title', '')} ({p.get('venue', 'IEEE')}): {str(p.get('abstract', ''))[:260]}"
+                    for p in mcp_res["papers"][:3]
+                ]
+                self.ieee_literature_context = (
+                    "\n## RETRIEVED IEEE MCP PAPERS:\n" + "\n".join(summary_lines) + "\n"
+                )
         # Persist retrieved web reference into workspace skills for traceability
         try:
             web_dir = os.path.join(self.skills_dir, "web_references")
