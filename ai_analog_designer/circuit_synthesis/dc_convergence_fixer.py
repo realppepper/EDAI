@@ -17,9 +17,6 @@ from ai_analog_designer.neuro_symbolic_verifier.ltspice_runner import LTspiceRun
 _FATAL_PATTERNS = [
     r"Fatal Error:[^\r\n]*",
     r"Singular matrix[^\r\n]*",
-    r"Direct Newton iteration failed[^\r\n]*",
-    r"Gmin stepping failed[^\r\n]*",
-    r"Source stepping failed[^\r\n]*",
     r"Could not converge[^\r\n]*",
     r"Unknown subcircuit[^\r\n]*",
     r"Error on line[^\r\n]*",

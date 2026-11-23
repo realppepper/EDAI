@@ -204,10 +204,24 @@ def _build_flan_t5_prompt(specifications: list[dict[str, Any]], prompt_hint: str
     return "; ".join(parts)
 
 
-def _try_flan_t5_generate(sentence: str, num_beams: int = 5, num_samples: int = 5) -> list[dict[str, Any]]:
+_FLAN_T5_CACHE: dict[str, tuple[Any, Any]] = {}
+
+
+def _resolve_flan_t5_model_dir() -> Path | None:
+    """Resolves fine-tuned FLAN-T5 weights from EDAI_MODEL_DIR or default repo models/flan_t5_structure."""
+    env_dir = os.environ.get("EDAI_MODEL_DIR", "").strip()
+    if env_dir and Path(env_dir).is_dir():
+        return Path(env_dir)
+    repo_default = Path(__file__).resolve().parents[2] / "models" / "flan_t5_structure"
+    if repo_default.is_dir() and (repo_default / "config.json").is_file():
+        return repo_default
+    return None
+
+
+def _try_flan_t5_generate(sentence: str, num_beams: int = 5, num_samples: int = 3) -> list[dict[str, Any]]:
     """Attempts candidate generation with fine-tuned FLAN-T5 if weights and torch/transformers exist."""
-    model_dir = os.environ.get("EDAI_MODEL_DIR", "")
-    if not model_dir or not Path(model_dir).is_dir():
+    model_path = _resolve_flan_t5_model_dir()
+    if model_path is None:
         return []
     try:
         import torch
@@ -215,8 +229,13 @@ def _try_flan_t5_generate(sentence: str, num_beams: int = 5, num_samples: int = 
     except ImportError:
         return []
 
-    tokenizer = AutoTokenizer.from_pretrained(model_dir)
-    model = AutoModelForSeq2SeqLM.from_pretrained(model_dir, tie_word_embeddings=False).eval()
+    model_key = str(model_path)
+    if model_key in _FLAN_T5_CACHE:
+        tokenizer, model = _FLAN_T5_CACHE[model_key]
+    else:
+        tokenizer = AutoTokenizer.from_pretrained(model_key)
+        model = AutoModelForSeq2SeqLM.from_pretrained(model_key).eval()
+        _FLAN_T5_CACHE[model_key] = (tokenizer, model)
     encoded = tokenizer([sentence], return_tensors="pt", truncation=True, max_length=256)
     outputs: list[tuple[str, str]] = []
     with torch.no_grad():
@@ -347,4 +366,199 @@ def generate_topology_candidates(
         "total_generated": len(candidates),
         "valid_count": sum(1 for c in valid_first if c.get("ok")),
         "candidates": valid_first,
+    }
+
+
+def adapt_flan_t5_subckt_to_dut(
+    subckt_ltspice: str,
+    dut_name: str,
+    pins: list[dict[str, Any]] | list[str],
+) -> str | None:
+    """
+    Adapts a 5-port FLAN-T5 CMOS subcircuit (INP, INN, OUT, VDD, VSS) to any DUT's
+    actual pin header order/names, and automatically clones auxiliary channels
+    (e.g., _B / _2) for multi-channel ICs sharing the same supply rails.
+    """
+    import re
+    from collections import defaultdict
+    from ai_analog_designer.circuit_synthesis.dc_convergence_fixer import _classify_pin
+
+    if not subckt_ltspice or not pins:
+        return None
+
+    clean_dut = re.sub(r"[^A-Za-z0-9_]", "_", str(dut_name or "DUT")).upper() or "DUT"
+    pin_names = [str(p.get("name")) if isinstance(p, dict) else str(p) for p in pins]
+    classified = [_classify_pin(p) for p in pins]
+
+    prim: dict[str, str] = {}
+    for pname, kind in classified:
+        if kind == "VPOS" and "VDD" not in prim:
+            prim["VDD"] = pname
+        elif kind in ("VNEG", "GND") and "VSS" not in prim:
+            prim["VSS"] = pname
+        elif kind == "OUT" and "OUT" not in prim:
+            prim["OUT"] = pname
+        elif kind == "INP" and "INP" not in prim:
+            prim["INP"] = pname
+        elif kind == "INN" and "INN" not in prim:
+            prim["INN"] = pname
+    # Positional fallback if two INP-like signals exist without explicit INN
+    if "INN" not in prim:
+        for pname, kind in classified:
+            if kind == "INP" and pname != prim.get("INP"):
+                prim["INN"] = pname
+                break
+
+    if not all(k in prim for k in ("VDD", "VSS", "OUT", "INP", "INN")):
+        return None
+
+    # Parse models + body lines from generated subcircuit
+    model_lines: list[str] = []
+    body_lines: list[str] = []
+    in_sub = False
+    for ln in subckt_ltspice.splitlines():
+        s = ln.strip()
+        low = s.lower()
+        if low.startswith(".model"):
+            model_lines.append(s)
+        elif low.startswith(".subckt"):
+            in_sub = True
+        elif low.startswith(".ends"):
+            in_sub = False
+        elif in_sub and s and not s.startswith("*"):
+            body_lines.append(s)
+
+    if not body_lines:
+        return None
+
+    def _remap_device_line(line: str, port_map: dict[str, str], ch_suffix: str = "") -> str:
+        toks = line.split()
+        if len(toks) < 4:
+            return line
+        prefix = toks[0][0].upper()
+        n_terms = 4 if prefix == "M" else (3 if prefix in ("Q", "J") else 2)
+        out_toks = [f"{toks[0]}{ch_suffix}"]
+        for idx, tok in enumerate(toks[1:], start=1):
+            if idx <= n_terms:
+                up = tok.upper()
+                if up in port_map:
+                    out_toks.append(port_map[up])
+                elif ch_suffix:
+                    out_toks.append(f"{tok}{ch_suffix}")
+                else:
+                    out_toks.append(tok)
+            else:
+                out_toks.append(tok)
+        return " ".join(out_toks)
+
+    adapted_body = [_remap_device_line(ln, prim) for ln in body_lines]
+
+    # Detect unwired auxiliary channels (_A/_B/_C/_D or _1/_2/_3/_4)
+    ch_groups: dict[str, dict[str, str]] = defaultdict(dict)
+    ch_extra_sigs: dict[str, list[str]] = defaultdict(list)
+    for pname, kind in classified:
+        m = re.search(r"_([A-D]|[1-4])$", pname.upper())
+        if not m:
+            continue
+        ch = m.group(1)
+        if kind == "OUT":
+            ch_groups[ch]["OUT"] = pname
+        elif kind == "INP":
+            if "INP" not in ch_groups[ch]:
+                ch_groups[ch]["INP"] = pname
+            else:
+                ch_extra_sigs[ch].append(pname)
+        elif kind == "INN":
+            if "INN" not in ch_groups[ch]:
+                ch_groups[ch]["INN"] = pname
+            else:
+                ch_extra_sigs[ch].append(pname)
+    for ch, extras in ch_extra_sigs.items():
+        if "INP" not in ch_groups[ch] and extras:
+            ch_groups[ch]["INP"] = extras.pop(0)
+        if "INN" not in ch_groups[ch] and extras:
+            ch_groups[ch]["INN"] = extras.pop(0)
+
+    wired_outputs = {prim["OUT"]}
+    for ch, grp in sorted(ch_groups.items()):
+        if not all(k in grp for k in ("OUT", "INP", "INN")):
+            continue
+        if grp["OUT"] in wired_outputs:
+            continue
+        aux_map = {
+            "VDD": prim["VDD"],
+            "VSS": prim["VSS"],
+            "OUT": grp["OUT"],
+            "INP": grp["INP"],
+            "INN": grp["INN"],
+        }
+        for ln in body_lines:
+            adapted_body.append(_remap_device_line(ln, aux_map, ch_suffix=f"_CH{ch}"))
+        wired_outputs.add(grp["OUT"])
+
+    out_lines = [
+        f"* FLAN-T5 Fine-Tuned Topology Seed (gm/ID Sized) for {clean_dut}",
+        *model_lines,
+        "",
+        f".subckt {clean_dut} {' '.join(pin_names)}",
+        *adapted_body,
+        f".ends {clean_dut}",
+        "",
+    ]
+    return "\n".join(out_lines)
+
+
+def synthesize_flan_t5_seed(
+    dut_name: str,
+    pins: list[dict[str, Any]] | list[str],
+    specifications: list[dict[str, Any]] | None = None,
+    prompt_hint: str = "",
+    max_try: int = 3,
+) -> dict[str, Any]:
+    """
+    Runs the local fine-tuned FLAN-T5 topology generator, adapts the top valid
+    candidates to the DUT pin interface, and verifies DC operating-point
+    convergence in LTspice.
+    """
+    from ai_analog_designer.circuit_synthesis.dc_convergence_fixer import run_quick_dc_op_check
+
+    res = generate_topology_candidates(
+        specifications=specifications or [],
+        prompt_hint=prompt_hint,
+        include_blocks=False,
+        max_candidates=max(5, max_try),
+        auto_size_preview=True,
+        subckt_name=dut_name,
+        pin_names=["INP", "INN", "OUT", "VDD", "VSS"],
+    )
+    if not res.get("flan_t5_active"):
+        return {"ok": False, "flan_t5_active": False, "reason": "FLAN-T5 model or torch/transformers unavailable."}
+
+    flan_cands = [
+        c for c in (res.get("candidates") or [])
+        if str(c.get("source", "")).startswith("flan_t5") and c.get("ok")
+    ]
+    for cand in flan_cands[:max_try]:
+        sp = (cand.get("sizing_preview") or {}).get("subckt_ltspice")
+        if not sp:
+            continue
+        adapted = adapt_flan_t5_subckt_to_dut(sp, dut_name=dut_name, pins=pins)
+        if not adapted:
+            continue
+        dc = run_quick_dc_op_check(adapted, subckt_name=dut_name, pins=pins, timeout_s=15)
+        if dc.get("converged"):
+            return {
+                "ok": True,
+                "flan_t5_active": True,
+                "candidate_name": cand.get("name"),
+                "source": cand.get("source"),
+                "transistor_count": cand.get("transistor_count"),
+                "netlist": adapted,
+                "dc_diagnostic": dc.get("diagnostic", ""),
+            }
+
+    return {
+        "ok": False,
+        "flan_t5_active": True,
+        "reason": f"Checked {min(len(flan_cands), max_try)} FLAN-T5 candidates; none passed DC convergence for this pin interface.",
     }
