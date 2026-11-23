@@ -1,11 +1,11 @@
 # Experience Record: LM358 (operational_amplifier)
-**Score Delta:** 0.0% -> 25.0% (+25.0%)
+**Score Delta:** 0.0% -> 70.0% (+70.0%)
 
 ## Cue
-Unsatisfied specs on LM358: ['VS', 'VID', 'VI', 'tSC']
+Synthesizing LM358 (Operational Amplifier) with Hermes Autonomous Agent
 
 ## Lesson
-Adopted Domain (Candidate B) topology blueprints and sizing directives.
+Evolved 5 blueprint skills and refined convergence rules in MEMORY.md.
 
 ## Evidence
-Base Pass Rate: 0.0% -> Composed Best Probe: 25.0%.
+Pass rate improved from 0.0% to 70.0%.

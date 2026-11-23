@@ -1,5 +1,5 @@
 {
- "pass_rate_percent": 0.0,
+ "pass_rate_percent": 70.0,
  "part_name": "LM358",
  "iterations_count": 10,
  "iterations": [
@@ -44,7 +44,7 @@
    "pass_rate_percent": 0.0
   }
  ],
- "final_netlist": "\n\n* --- Globally Hoisted Models for Multi-Subcircuit Visibility ---\n.model D1N4148 D(IS=1e-14 RS=1)\n.model QNPN NPN(IS=1e-16 BF=250 VAF=120)\n.model QPNP PNP(IS=1e-16 BF=100 VAF=100)\n\n.subckt LM358 IN1_P IN1_N OUT1 IN2_P IN2_N OUT2 V_P V_N NC1 NC2 NC3\n* Synthesized via CircuitBuilder IR (strict physical SPICE)\nRBIAS IN1_P N_BIAS 300k\nQ_BREF N_BIAS N_BIAS N_EREF QNPN\nRE_BREF N_EREF IN1_N 2k\nQ_TAIL N_TAIL N_BIAS N_ETAIL QNPN\nRE_TAIL N_ETAIL IN1_N 2k\nQ_IN1 N_C1 INN N_TAIL QNPN\nQ_IN2 N_C2 INP N_TAIL QNPN\nQ_ML1 N_C1 N_C1 N_ME1 QPNP\nRM_L1 IN1_P N_ME1 500\nQ_ML2 N_C2 N_C1 N_ME2 QPNP\nRM_L2 IN1_P N_ME2 500\nQ_G2 N_G2 N_C2 IN1_P QPNP\nQ_G2L N_G2 N_BIAS N_EG2L QNPN\nRE_G2L N_EG2L IN1_N 1k\nRZ_COMP N_C2 N_CZ 1k\nCC_COMP N_CZ N_G2 30p\nQ_AB_BUF IN1_P N_G2 N_AB_TOP QNPN\nD_AB1 N_AB_TOP N_AB_MID D1N4148\nD_AB2 N_AB_MID N_AB_BOT D1N4148\nQ_AB_SINK N_AB_BOT N_BIAS N_E_ABSINK QNPN\nRE_ABSINK N_E_ABSINK IN1_N 2k\nQ_OUTN IN1_P N_AB_TOP N_EOUTN QNPN\nRE_OUTN N_EOUTN OUT1 25\nQ_OUTP IN1_N N_AB_BOT N_EOUTP QPNP\nRE_OUTP N_EOUTP OUT1 25\nD_AB1_2 IN1_N IN1_N D1N4148\nD_AB2_2 IN1_N IN1_N D1N4148\nRE_ABSINK_2 IN1_N IN1_N 2k\nRE_OUTN_2 IN1_N IN1_N 25\nRE_OUTP_2 IN1_N IN1_N 25\nD1 IN1_N IN1_N D1N4148\nR1 IN1_N IN1_N 10k\nR2 IN1_N IN1_N 10k\n.ends LM358",
+ "final_netlist": ".include \"gf180_6v_typical.lib\"\n.subckt LM358 IN1_P IN1_N OUT1 IN2_P IN2_N OUT2 V_P V_N NC1 NC2 NC3\nMPM1 OUT1 VB3 V_P V_P pfet_06v0_bsim0 w=98.2u l=2u m=35\nMPM4 N3 VB3 V_P V_P pfet_06v0_bsim0 w=68.7u l=2u\nMPM5 N4 IN1_P N3 V_P pfet_06v0_bsim0 w=43.4u l=1u\nMPM6 N5 IN1_N N3 V_P pfet_06v0_bsim0 w=43.4u l=1u\nMNM3 OUT1 N4 V_N V_N nfet_06v0_bsim0 w=88u l=1u m=7\nMNM5 N4_NM5 N5 V_N V_N nfet_06v0_bsim0 w=6.03u l=1u\nMNM6 N5_NM6 N5 V_N V_N nfet_06v0_bsim0 w=6.03u l=1u\nMNMC1 N4 VBCN N4_NM5 V_N nfet_06v0_bsim0 w=9.32u l=1u\nMNMC2 N5 VBCN N5_NM6 V_N nfet_06v0_bsim0 w=9.32u l=1u\nMPMB1 VB3 VB3 V_P V_P pfet_06v0_bsim0 w=68.7u l=2u\nMNMF1 VB3 REF_NB V_N V_N nfet_06v0_bsim0 w=24u l=2u\nMNMB2 VBCN VBCN VBCN_S1 V_N nfet_06v0_bsim0 w=14.9u l=2u\nRBCVBCN VBCN_S1 V_N 28174.6\nMPMF2 VBCN REF_PB V_P V_P pfet_06v0_bsim0 w=58.6u l=2u m=2\nMREF_MN1 REF_NB REF_NB V_N V_N nfet_06v0_bsim0 w=12u l=2u\nMREF_MN2 REF_PB REF_NB REF_NS V_N nfet_06v0_bsim0 w=48u l=2u\nRREF_S REF_NS V_N 8353.6\nMREF_MP3 REF_PB REF_PB V_P V_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MP4 REF_NB REF_PB V_P V_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MS1 REF_SX V_N V_P V_P pfet_06v0_bsim0 w=0.5u l=20u\nMREF_MS2 REF_PB REF_SX V_N V_N nfet_06v0_bsim0 w=2u l=1u\nMREF_MS3 REF_SX REF_NB V_N V_N nfet_06v0_bsim0 w=5u l=1u\nMPM1_2 OUT2 VB3_2 V_P V_P pfet_06v0_bsim0 w=98.2u l=2u m=35\nMPM4_2 N3_2 VB3_2 V_P V_P pfet_06v0_bsim0 w=68.7u l=2u\nMPM5_2 N4_2 IN2_P N3_2 V_P pfet_06v0_bsim0 w=43.4u l=1u\nMPM6_2 N5_2 IN2_N N3_2 V_P pfet_06v0_bsim0 w=43.4u l=1u\nMNM3_2 OUT2 N4_2 V_N V_N nfet_06v0_bsim0 w=88u l=1u m=7\nMNM5_2 N4_NM5_2 N5_2 V_N V_N nfet_06v0_bsim0 w=6.03u l=1u\nMNM6_2 N5_NM6_2 N5_2 V_N V_N nfet_06v0_bsim0 w=6.03u l=1u\nMNMC1_2 N4_2 VBCN_2 N4_NM5_2 V_N nfet_06v0_bsim0 w=9.32u l=1u\nMNMC2_2 N5_2 VBCN_2 N5_NM6_2 V_N nfet_06v0_bsim0 w=9.32u l=1u\nMPMB1_2 VB3_2 VB3_2 V_P V_P pfet_06v0_bsim0 w=68.7u l=2u\nMNMF1_2 VB3_2 REF_NB_2 V_N V_N nfet_06v0_bsim0 w=24u l=2u\nMNMB2_2 VBCN_2 VBCN_2 VBCN_S1_2 V_N nfet_06v0_bsim0 w=14.9u l=2u\nRBCVBCN_2 VBCN_S1_2 V_N 28174.6\nMPMF2_2 VBCN_2 REF_PB_2 V_P V_P pfet_06v0_bsim0 w=58.6u l=2u m=2\nMREF_MN1_2 REF_NB_2 REF_NB_2 V_N V_N nfet_06v0_bsim0 w=12u l=2u\nMREF_MN2_2 REF_PB_2 REF_NB_2 REF_NS_2 V_N nfet_06v0_bsim0 w=48u l=2u\nRREF_S_2 REF_NS_2 V_N 8353.6\nMREF_MP3_2 REF_PB_2 REF_PB_2 V_P V_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MP4_2 REF_NB_2 REF_PB_2 V_P V_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MS1_2 REF_SX_2 V_N V_P V_P pfet_06v0_bsim0 w=0.5u l=20u\nMREF_MS2_2 REF_PB_2 REF_SX_2 V_N V_N nfet_06v0_bsim0 w=2u l=1u\nMREF_MS3_2 REF_SX_2 REF_NB_2 V_N V_N nfet_06v0_bsim0 w=5u l=1u\n.ends LM358",
  "pin_map": {
   "VDD": "V_P",
   "VSS": "V_N",
@@ -53,5 +53,5 @@
   "OUT": "OUT1"
  },
  "seed": "EDAI_LM358",
- "seconds": 330
+ "seconds": 619
 }

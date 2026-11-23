@@ -1,0 +1,88 @@
+* open-loop AC CM VS=5.0
+.temp 25
+* Default Physical Device Models for AI Analog Synthesis
+
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=120u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model QNPN NPN (IS=1e-14 BF=150 VAF=100 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=100 TF=0.3n TR=10n CJE=2p CJC=1p VJC=0.75 MJC=0.33)
+
+.model QPNP PNP (IS=1e-14 BF=80 VAF=80 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=80 TF=0.5n TR=20n CJE=2p CJC=1.5p VJC=0.75 MJC=0.33)
+
+.model D1N4148 D (IS=2.52n RS=0.568 N=1.752 CJO=4p VJ=0.5 M=0.333 BV=100 IBV=100u TT=4n)
+
+.model D_ESD D (IS=1e-15 RS=10 CJO=1p BV=50)
+
+
+.include /home/jiyun/pdk/gf180mcu_fd_pr/models/ngspice/design.ngspice
+.lib /home/jiyun/pdk/gf180mcu_fd_pr/models/ngspice/sm141064.ngspice typical
+
+.subckt LM358 IN1_P IN1_N OUT1 IN2_P IN2_N OUT2 V_P V_N NC1 NC2 NC3
+XMPM1 OUT1 VB3 V_P V_P pfet_06v0 w=98.2u l=2u m=35
+XMPM4 N3 VB3 V_P V_P pfet_06v0 w=68.7u l=2u
+XMPM5 N4 IN1_P N3 V_P pfet_06v0 w=43.4u l=1u
+XMPM6 N5 IN1_N N3 V_P pfet_06v0 w=43.4u l=1u
+XMNM3 OUT1 N4 V_N V_N nfet_06v0 w=88u l=1u m=7
+XMNM5 N4_NM5 N5 V_N V_N nfet_06v0 w=6.03u l=1u
+XMNM6 N5_NM6 N5 V_N V_N nfet_06v0 w=6.03u l=1u
+XMNMC1 N4 VBCN N4_NM5 V_N nfet_06v0 w=9.32u l=1u
+XMNMC2 N5 VBCN N5_NM6 V_N nfet_06v0 w=9.32u l=1u
+XMPMB1 VB3 VB3 V_P V_P pfet_06v0 w=68.7u l=2u
+XMNMF1 VB3 REF_NB V_N V_N nfet_06v0 w=24u l=2u
+XMNMB2 VBCN VBCN VBCN_S1 V_N nfet_06v0 w=14.9u l=2u
+RBCVBCN VBCN_S1 V_N 28174.6
+XMPMF2 VBCN REF_PB V_P V_P pfet_06v0 w=58.6u l=2u m=2
+XMREF_MN1 REF_NB REF_NB V_N V_N nfet_06v0 w=12u l=2u
+XMREF_MN2 REF_PB REF_NB REF_NS V_N nfet_06v0 w=48u l=2u
+RREF_S REF_NS V_N 8353.6
+XMREF_MP3 REF_PB REF_PB V_P V_P pfet_06v0 w=58.6u l=2u
+XMREF_MP4 REF_NB REF_PB V_P V_P pfet_06v0 w=58.6u l=2u
+XMREF_MS1 REF_SX V_N V_P V_P pfet_06v0 w=0.5u l=20u
+XMREF_MS2 REF_PB REF_SX V_N V_N nfet_06v0 w=2u l=1u
+XMREF_MS3 REF_SX REF_NB V_N V_N nfet_06v0 w=5u l=1u
+XMPM1_2 OUT2 VB3_2 V_P V_P pfet_06v0 w=98.2u l=2u m=35
+XMPM4_2 N3_2 VB3_2 V_P V_P pfet_06v0 w=68.7u l=2u
+XMPM5_2 N4_2 IN2_P N3_2 V_P pfet_06v0 w=43.4u l=1u
+XMPM6_2 N5_2 IN2_N N3_2 V_P pfet_06v0 w=43.4u l=1u
+XMNM3_2 OUT2 N4_2 V_N V_N nfet_06v0 w=88u l=1u m=7
+XMNM5_2 N4_NM5_2 N5_2 V_N V_N nfet_06v0 w=6.03u l=1u
+XMNM6_2 N5_NM6_2 N5_2 V_N V_N nfet_06v0 w=6.03u l=1u
+XMNMC1_2 N4_2 VBCN_2 N4_NM5_2 V_N nfet_06v0 w=9.32u l=1u
+XMNMC2_2 N5_2 VBCN_2 N5_NM6_2 V_N nfet_06v0 w=9.32u l=1u
+XMPMB1_2 VB3_2 VB3_2 V_P V_P pfet_06v0 w=68.7u l=2u
+XMNMF1_2 VB3_2 REF_NB_2 V_N V_N nfet_06v0 w=24u l=2u
+XMNMB2_2 VBCN_2 VBCN_2 VBCN_S1_2 V_N nfet_06v0 w=14.9u l=2u
+RBCVBCN_2 VBCN_S1_2 V_N 28174.6
+XMPMF2_2 VBCN_2 REF_PB_2 V_P V_P pfet_06v0 w=58.6u l=2u m=2
+XMREF_MN1_2 REF_NB_2 REF_NB_2 V_N V_N nfet_06v0 w=12u l=2u
+XMREF_MN2_2 REF_PB_2 REF_NB_2 REF_NS_2 V_N nfet_06v0 w=48u l=2u
+RREF_S_2 REF_NS_2 V_N 8353.6
+XMREF_MP3_2 REF_PB_2 REF_PB_2 V_P V_P pfet_06v0 w=58.6u l=2u
+XMREF_MP4_2 REF_NB_2 REF_PB_2 V_P V_P pfet_06v0 w=58.6u l=2u
+XMREF_MS1_2 REF_SX_2 V_N V_P V_P pfet_06v0 w=0.5u l=20u
+XMREF_MS2_2 REF_PB_2 REF_SX_2 V_N V_N nfet_06v0 w=2u l=1u
+XMREF_MS3_2 REF_SX_2 REF_NB_2 V_N V_N nfet_06v0 w=5u l=1u
+.ends LM358
+
+VPOS vp 0 5
+VMID mid 0 2.5
+VCM cmn mid AC 1
+VIN inp cmn 0
+LFB out inn 1G
+CFB inn cmn 1G
+RL out mid 10000
+CL out mid 2e-11
+Rpark1 park1 mid 100k
+XDUT inp inn out mid park1 park1 vp 0 nc_NC1 nc_NC2 nc_NC3 LM358
+
+.ac dec 20 0.1 1G
+.meas ac m_a0__db find vdb(out) at=0.1
+.meas ac m_a0__ph find vp(out) at=0.1
+.meas ac m_ugf WHEN vm(out)=1 fall=1
+.meas ac m_ph__db find vdb(out) WHEN vm(out)=1 fall=1
+.meas ac m_ph__ph find vp(out) WHEN vm(out)=1 fall=1
+.control
+run
+.endc
+.end

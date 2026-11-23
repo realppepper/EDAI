@@ -1,0 +1,25 @@
+* Advanced Dynamic Testbench for LM358
+.include "LM358_final_hermes_eval.cir"
+XDUT IN1_P IN1_N OUT1 IN2_P IN2_N OUT2 V_P V_N NC1 NC2 NC3 LM358
+
+* Power and Grounding
+V_V_N V_N 0 0
+V_V_P V_P 0 15
+
+* Dynamic Signal Stimulus (Example for IN1)
+VINP IN1_P 0 SINE(2.5 0.1 1k 10u)
+VINN IN1_N 0 DC 2.5
+
+* Load Termination for OUT1
+RL OUT1 0 10k
+
+* Fourier Analysis Setup (Note: Full PSRR/THD requires AC/Bode sweeps, but adhering to .tran only rule)
+.four 1k 9 V(OUT1)
+
+* Measurement Directives (Must use .meas tran)
+.meas tran v_rms RMS V(OUT1) from=15m to=20m
+.meas tran icc AVG -I(V_V_P) from=10m to=20m
+
+* Simulation Control (Only .tran allowed)
+.tran 10u 20m 10m
+.end
