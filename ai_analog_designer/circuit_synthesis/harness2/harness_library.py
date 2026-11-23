@@ -49,7 +49,9 @@ class HarnessLibrary:
         score_before: float,
         score_after: float
     ) -> None:
-        """Stores a successful harness improvement and lesson."""
+        """Stores a successful harness improvement and lesson (blocked in read-only eval mode)."""
+        if os.environ.get("ANALOG_HARNESS2_READONLY", "0").strip().lower() in ("1", "true", "yes"):
+            return
         norm_cat = self._normalize_category(category)
         entry_dir = os.path.join(self.root_dir, norm_cat, re.sub(r'[^a-zA-Z0-9_-]', '_', task_id))
         os.makedirs(entry_dir, exist_ok=True)

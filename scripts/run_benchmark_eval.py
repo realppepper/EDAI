@@ -76,6 +76,9 @@ def main() -> None:
 
     _load_dotenv(REPO_ROOT / ".env")
     os.environ.setdefault("ANALOG_EVOLVE_VERIFIER", "0")  # Keep eval fast & deterministic across batch
+    if args.split in ("val", "test"):
+        # Prevent Val/Test contamination of shared harness2_library across runs
+        os.environ["ANALOG_HARNESS2_READONLY"] = "1"
 
     manifest_path = REPO_ROOT / args.manifest
     manifest = json.loads(manifest_path.read_text(encoding="utf-8"))

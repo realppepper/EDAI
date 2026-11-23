@@ -48,7 +48,7 @@ def _classify_pin(pin: dict[str, Any] | str) -> tuple[str, str]:
         return name, "VPOS"
     if role == "OUTPUT" or "OUT" in up:
         return name, "OUT"
-    if "NONINV" in up or "NON_INV" in up or "NON-INV" in up or "NON_NINV" in up or "non-inv" in desc or "noninv" in desc:
+    if "NONINV" in up or "NON_INV" in up or "NON-INV" in up or "non-inv" in desc or "noninv" in desc:
         return name, "INP"
     if ("INVERT" in up and "NON" not in up) or re.search(r"(?:^|_)(?:INN|IN_N|VIN_N|NIN|INM)(?:_[A-D1-4]|$)", up):
         return name, "INN"

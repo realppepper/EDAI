@@ -217,6 +217,33 @@ def parameterize_subcircuit(
     return "\n".join(new_lines), param_defs
 
 
+def extract_supply_voltage(
+    measurement_plan: dict[str, Any] | None,
+    is_single_supply: bool,
+) -> tuple[float, float, float]:
+    """
+    Reads the nominal total supply voltage `vs` from `measurement_plan` (derived from
+    the datasheet's own electrical conditions) and returns (v_pos, v_neg, v_cm).
+    Eliminates hardcoded +/-15V or +5V assumptions across diverse IC families.
+    """
+    vs_candidates: list[float] = []
+    for it in (measurement_plan or {}).get("items") or []:
+        cond = it.get("conditions") or {}
+        vs = cond.get("vs")
+        if isinstance(vs, (int, float)) and 1.2 <= float(vs) <= 100.0:
+            vs_candidates.append(float(vs))
+    if vs_candidates:
+        vs_candidates.sort()
+        vs_nom = vs_candidates[len(vs_candidates) // 2]  # median datasheet supply
+    else:
+        vs_nom = 5.0 if is_single_supply else 10.0
+
+    if is_single_supply:
+        return vs_nom, 0.0, vs_nom * 0.5
+    half = vs_nom * 0.5
+    return half, -half, 0.0
+
+
 def _build_fast_eval_deck(
     param_subckt: str,
     sub_name: str,
@@ -224,8 +251,9 @@ def _build_fast_eval_deck(
     pins_meta: list[dict[str, Any]] | list[str],
     param_values: dict[str, float],
     param_is_cap: dict[str, bool],
+    measurement_plan: dict[str, Any] | None = None,
 ) -> tuple[str, bool] | tuple[None, bool]:
-    """Builds a single fast DC+AC LTspice deck supporting both dual-supply and single-supply ICs."""
+    """Builds a single fast DC LTspice deck matching the datasheet's own supply rails."""
     pin_lookup = {
         (str(p.get("name")) if isinstance(p, dict) else str(p)).upper(): p
         for p in (pins_meta or [])
@@ -264,9 +292,9 @@ def _build_fast_eval_deck(
     if not (has_vpos and (has_vneg or has_gnd) and has_inp and has_inn and has_out):
         return None, is_single_supply
 
-    v_pos_val = 5.0 if is_single_supply else 15.0
-    v_cm = 2.5 if is_single_supply else 0.0
-    v_step = 0.5 if is_single_supply else 1.0
+    v_pos_val, v_neg_val, v_cm = extract_supply_voltage(measurement_plan, is_single_supply)
+    v_span = v_pos_val - v_neg_val
+    v_step = min(1.0, max(0.2, v_span * 0.1))
     ref_node = "N_VCM" if is_single_supply else "0"
 
     rendered_sub = param_subckt
@@ -276,14 +304,14 @@ def _build_fast_eval_deck(
         )
 
     lines = [
-        f"* Kestrel-style Fast Sizing Eval for {sub_name} ({'single-supply' if is_single_supply else 'dual-supply'})",
+        f"* Kestrel-style Fast Sizing Eval for {sub_name} ({'single-supply' if is_single_supply else 'dual-supply'} Vs={v_span:g}V)",
         ".options gmin=1e-10 abstol=1e-10 reltol=1e-3",
         rendered_sub,
         f"XDUT {' '.join(node_list)} {sub_name}",
         f"V_POS N_VPOS 0 DC {v_pos_val:g}",
     ]
     if has_vneg:
-        lines.append("V_NEG N_VNEG 0 DC -15")
+        lines.append(f"V_NEG N_VNEG 0 DC {v_neg_val:g}")
     if has_gnd:
         lines.append("V_GND N_GND 0 DC 0")
     if is_single_supply:
@@ -362,7 +390,8 @@ def optimize_subcircuit_powell(
             clamped = [min(max(float(v), lo), hi) for v, (lo, hi) in zip(x_vec, bounds)]
             pvals = {p["name"]: 10.0 ** lv for p, lv in zip(param_defs, clamped)}
             deck, single_flag = _build_fast_eval_deck(
-                param_subckt, sub_name, hdr_pins, pins, pvals, param_is_cap
+                param_subckt, sub_name, hdr_pins, pins, pvals, param_is_cap,
+                measurement_plan=measurement_plan,
             )
             is_single_supply = single_flag
             if deck is None:

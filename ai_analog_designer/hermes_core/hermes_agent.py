@@ -636,8 +636,8 @@ You are a PURE ORCHESTRATOR (Supervisor). Delegate ALL circuit authoring, syntax
                 logger.warning(f"Hermes Stall Recovery triggered on turn {turn_idx}: forcing synthesize_circuit_netlist.")
                 auto_directive = (
                     f"Stall recovery: synthesize a valid physical transistor-level SPICE subcircuit for "
-                    f"`.subckt {self.tools.dut_name} {pins_line}` using Circuit-SAFE blocks (tail_current_mirror, "
-                    f"diff_pair_active_load, gain_stage_ce, output_class_ab) with proper DC biasing."
+                    f"`.subckt {self.tools.dut_name} {pins_line}` matching the datasheet device class and supply rails "
+                    f"with valid DC operating-point biasing and causal input-to-output signal transfer."
                 )
                 synth_out = self.tools.synthesize_circuit_netlist(auto_directive)
                 turn_result.tool_outputs.append({"tool": "stall_recovery_synthesize", "output": synth_out})

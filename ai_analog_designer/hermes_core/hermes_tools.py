@@ -505,9 +505,8 @@ class HermesAnalogTools:
                     )
             stagnation_note = (
                 "\nCRITICAL ANTI-STAGNATION RULE: Your last 2 attempts repeated the EXACT same pass rate without structural change. "
-                "DO NOT copy the previous netlist verbatim! You MUST make a concrete topology upgrade "
-                "(e.g., replace resistive collector loads RC1/RC2 with a PNP current-mirror active load Q_M1/Q_M2, "
-                "and reduce tail current by increasing RBIAS to 300k-500k and RE3/RE4 to 5k-10k) while preserving DC balance.\n"
+                "DO NOT copy the previous netlist verbatim! You MUST make a concrete topology or bias-architecture change "
+                "targeted to the failing datasheet specifications while preserving DC operating-point stability.\n"
                 if is_stagnating
                 else ""
             )
@@ -516,10 +515,11 @@ class HermesAnalogTools:
                 f"{best_ev.get('passed_specs', 0)}/{best_ev.get('total_specs', 0)} specs PASSED):\n"
                 "CRITICAL: START FROM THIS WORKING DC-CONVERGENT NETLIST and make targeted analog topology/sizing improvements "
                 "to fix the failing specs below WITHOUT breaking DC convergence or previously passing specs.\n"
-                "TUNING PLAYBOOK:\n"
-                "- Low Open-Loop Voltage Gain (e.g. 60dB -> >95dB): replace resistive collector loads (RC1/RC2, RG2) with active PNP/NPN current-mirror loads or higher output impedance stages.\n"
-                "- High Input Offset Voltage (Vos): balance differential pair collector/load currents symmetrically using an active current-mirror load.\n"
-                "- High Input Bias/Offset Current (Ibias/Ios): reduce differential pair tail current (e.g. increase RBIAS/RE3/RE4 so I_tail ~ 20uA-50uA) and/or increase input BJT BF (e.g. BF=250-400).\n"
+                "GENERAL ANALOG TUNING PRINCIPLES:\n"
+                "- Low voltage gain: increase stage output impedance (active current-mirror loads, cascode, or additional gain stage).\n"
+                "- High input offset: symmetrize differential stage currents and load matching.\n"
+                "- High input bias or quiescent current: scale tail/bias resistors to match the datasheet Ib/Iq budget.\n"
+                "- Bandwidth / slew rate / output current limits: adjust compensation capacitor, tail current, and output-stage emitter/source degeneration.\n"
                 f"{stagnation_note}"
                 f"### BEST WORKING NETLIST:\n{str(best_ev.get('netlist', ''))[:2400]}\n"
                 f"### REMAINING FAILING SPECS TO FIX:\n{failed_lines or '  (see diagnostic below)'}\n"
@@ -575,14 +575,15 @@ class HermesAnalogTools:
                 if self.last_dc_diagnostic
                 else ""
             )
+            dev_cls = (self.measurement_plan or {}).get("device_class", "analog IC")
             stage_objective_section = (
-                "## CURRENT PDG STAGE: STAGE 2 — DC BIAS & UNITY-GAIN SIGNAL TRANSFER ONLY\n"
-                "STRICT PDG CAUSAL RULE: IGNORE AC gain, slew rate, bandwidth, CMRR, and noise specs for now.\n"
-                "Your ONLY goal right now is a clean, DC-convergent 2-stage op-amp where in unity-gain feedback (+/-15V rails):\n"
-                "  1. Quiescent supply current |I(V_POS)| is between 100uA and 10mA (no cutoff, no short).\n"
-                "  2. DC output V_OUT(V_INP=0V) is centered near 0V (|V_OUT(0V)| <= 2.5V, NOT saturated near +/-14V).\n"
-                "  3. Signal transfer is alive with correct negative-feedback polarity: V_OUT(+1V) - V_OUT(-1V) >= 1.5V.\n"
-                "  4. Base terminals of input differential pair Q1/Q2 connect to NONINVERTING_INPUT and INVERTING_INPUT (never swap collector/base).\n"
+                f"## CURRENT PDG STAGE: STAGE 2 — DC OPERATING POINT & CAUSAL SIGNAL TRANSFER ({dev_cls})\n"
+                "STRICT PDG CAUSAL RULE: Prioritize valid DC biasing and causal input-to-output signal transfer first.\n"
+                f"Design a clean, DC-convergent physical transistor-level topology appropriate for `{dev_cls}` matching the datasheet supply rails:\n"
+                "  1. Quiescent supply current is finite and physically reasonable (no open-circuit cutoff, no rail short).\n"
+                "  2. DC output operating point sits inside the active linear/switching window (not stuck at a supply rail).\n"
+                "  3. Causal input-to-output signal transfer is alive with correct polarity across all declared channels.\n"
+                "  4. Every declared SIGNAL/POWER/GROUND/OUTPUT pin is wired cleanly with its exact pin name.\n"
                 f"{dc_prev_note}"
             )
 
@@ -1185,172 +1186,10 @@ class HermesAnalogTools:
                 if opt_res["is_valid"] and opt_res.get("dc_converged"):
                     self.last_synthesized_netlist = cleaned
                 return opt_res
+            return opt_res
         except Exception as exc:
-            logger.warning(f"Kestrel Powell sizer failed ({exc}); falling back to legacy sweep.")
-
-        from pathlib import Path
-        from ai_analog_designer.circuit_synthesis.dc_convergence_fixer import (
-            _classify_pin,
-            run_quick_dc_op_check,
-        )
-        from ai_analog_designer.neuro_symbolic_verifier.spice_sweep_engine import (
-            optimize,
-            render_netlist,
-            resolve_simulator,
-        )
-
-        lines = subckt_netlist.splitlines()
-        subckt_hdr_idx = next((i for i, ln in enumerate(lines) if ln.strip().lower().startswith(".subckt")), None)
-        if subckt_hdr_idx is None:
-            return {"status": "SWEEP_SKIPPED", "is_valid": False, "error": "No .subckt header found."}
-        hdr_parts = lines[subckt_hdr_idx].split()
-        sub_name = hdr_parts[1] if len(hdr_parts) > 1 else self.dut_name
-        hdr_pins = hdr_parts[2:]
-
-        # Map pins for testbench instantiation
-        pin_lookup = {
-            (str(p.get("name")) if isinstance(p, dict) else str(p)).upper(): p
-            for p in (self.pins or [])
-        }
-        node_list: list[str] = []
-        has_vpos = has_vneg = has_inp = has_inn = has_out = False
-        ctrl_nodes: list[str] = []
-        for idx, pname in enumerate(hdr_pins):
-            _, kind = _classify_pin(pin_lookup.get(pname.upper(), pname))
-            if kind == "NC":
-                node_list.append(f"NC_{idx}")
-            elif kind == "VPOS":
-                node_list.append("N_VPOS")
-                has_vpos = True
-            elif kind == "VNEG":
-                node_list.append("N_VNEG")
-                has_vneg = True
-            elif kind == "OUT":
-                node_list.append("N_OUT")
-                has_out = True
-            elif kind == "INP" and not has_inp:
-                node_list.append("N_INP")
-                has_inp = True
-            elif kind in ("INN", "INP"):
-                node_list.append("N_INN")
-                has_inn = True
-            else:
-                cn = f"N_CTRL_{idx}"
-                node_list.append(cn)
-                ctrl_nodes.append(cn)
-
-        if not (has_vpos and has_vneg and has_inp and has_inn and has_out):
-            return {"status": "SWEEP_SKIPPED", "is_valid": False, "error": "Subcircuit missing required 5 op-amp ports for auto-sweep."}
-
-        # Collect resistors & group symmetric pairs (e.g., RC1/RC2 -> p_rc, RE3/RE4 -> p_re)
-        param_defs: list[dict[str, float | str]] = []
-        param_lines: list[str] = []
-        param_map: dict[str, str] = {}
-        new_sub_lines: list[str] = []
-        for ln in lines:
-            s = ln.strip()
-            m_r = re.match(r"^(R[A-Za-z0-9_]*)\s+(\S+)\s+(\S+)\s+(\S+)(.*)$", s, re.IGNORECASE)
-            if m_r:
-                rname, n1, n2, rval, rest = m_r.groups()
-                num_val = self._parse_spice_num(rval)
-                if num_val and 100.0 <= num_val <= 1e6 and "OFFSET" not in rname.upper():
-                    group_key = re.sub(r"\d+$", "", rname.upper()) or rname.upper()
-                    pname = f"p_{group_key.lower()}"
-                    if pname not in param_map and len(param_defs) < 5:
-                        p_min = max(200.0, round(num_val * 0.25, 1))
-                        p_max = min(500_000.0, max(num_val * 6.0, p_min * 4.0))
-                        p_step = max(200.0, round((p_max - p_min) / 6.0, 1))
-                        param_map[pname] = pname
-                        param_defs.append({
-                            "name": pname,
-                            "min": p_min,
-                            "max": p_max,
-                            "initial": min(max(num_val, p_min), p_max),
-                            "step": p_step,
-                        })
-                        param_lines.append(f".param {pname}={num_val}")
-                    if pname in param_map:
-                        new_sub_lines.append(f"{rname} {n1} {n2} {{{pname}}}{rest}")
-                        continue
-            new_sub_lines.append(ln)
-
-        if not param_defs:
-            return {"status": "SWEEP_SKIPPED", "is_valid": False, "error": "No tunable resistors found in subcircuit."}
-
-        param_subckt = "\n".join(new_sub_lines)
-        tb_lines = [
-            f"* Auto-Sweep DC Gain/Offset/Bias Optimization for {sub_name}",
-            *param_lines,
-            param_subckt,
-            f"XDUT {' '.join(node_list)} {sub_name}",
-            "V_POS N_VPOS 0 DC 15",
-            "V_NEG N_VNEG 0 DC -15",
-            "V_INP N_INP 0 DC 0",
-            "R_FB N_OUT N_INN 10k",
-            "R_LOAD N_OUT 0 10k",
-            *[f"R_CTRL_{idx} {cn} 0 100k" for idx, cn in enumerate(ctrl_nodes)],
-            ".dc V_INP -1 1 1",
-            ".meas dc v_id_p1 FIND V(N_INP,N_INN) AT 1",
-            ".meas dc v_id_m1 FIND V(N_INP,N_INN) AT -1",
-            ".meas dc v_out_0 FIND abs(V(N_OUT)) AT 0",
-            ".meas dc i_bias_na FIND abs(I(V_INP))*1e9 AT 0",
-            ".meas dc aol_lin PARAM '2.0/max(1e-9,abs(v_id_p1-v_id_m1))'",
-            # RFChipAgent Sigmoid-Normalized Harmonic Mean multi-objective (A_OL, Vos, I_bias)
-            ".meas dc q_aol PARAM '1.0/(1.0+exp(-(20.0*log10(max(1.0,aol_lin))-94.0)/4.0))'",
-            ".meas dc q_vos PARAM '1.0/(1.0+exp(-(0.005-v_out_0)/0.002))'",
-            ".meas dc q_ib PARAM '1.0/(1.0+exp(-(500.0-i_bias_na)/100.0))'",
-            ".meas dc q_total PARAM '3.0/(1.0/max(1e-4,q_aol)+1.0/max(1e-4,q_vos)+1.0/max(1e-4,q_ib))'",
-            ".end",
-        ]
-        deck = "\n".join(tb_lines) + "\n"
-        settings = {
-            "method": "feedback",
-            "max_runs": max(4, min(32, int(max_runs))),
-            "timeout_s": 15,
-            "parameters": param_defs,
-            "goals": [
-                {"measure": "v_out_0", "op": "<=", "value": 0.5},
-                {"measure": "i_bias_na", "op": "<=", "value": 500.0},
-                {"measure": "aol_lin", "op": ">=", "value": 3000.0},
-            ],
-            "objective": {"measure": "q_total", "sense": "max"},
-        }
-        sweep_dir = Path(self.output_dir) / f"sweep_{len(self.evaluation_history) + 1:02d}"
-        cfg = {"simulator": simulator}
-        resolve_simulator(cfg)
-        res = optimize(deck, settings, cfg, sweep_dir)
-
-        runs = res.get("runs") or []
-        best_it = res.get("best_iteration")
-        best_run = next((r for r in runs if r.get("iteration") == best_it), None)
-        if best_run is None:
-            valid_runs = [r for r in runs if r.get("valid") and isinstance(r.get("metrics", {}).get("aol_lin"), (int, float))]
-            if valid_runs:
-                best_run = max(valid_runs, key=lambda r: float(r["metrics"]["aol_lin"]))
-        if best_run is None:
-            return {"status": "SWEEP_NO_VALID_RUN", "is_valid": False, "error": "No valid sweep run converged."}
-
-        best_params = best_run.get("parameters") or {}
-        tuned_subckt = param_subckt
-        for pname, val in best_params.items():
-            tuned_subckt = tuned_subckt.replace(f"{{{pname}}}", self._format_spice_ohm(float(val)))
-
-        val_res = self.validate_netlist_syntax(tuned_subckt)
-        cleaned = val_res.get("cleaned_netlist", tuned_subckt)
-        dc_check = run_quick_dc_op_check(cleaned, subckt_name=self.dut_name, pins=self.pins, timeout_s=15)
-        if val_res.get("is_valid") and dc_check.get("converged"):
-            self.last_synthesized_netlist = cleaned
-        return {
-            "status": "SWEEP_COMPLETE",
-            "is_valid": bool(val_res.get("is_valid")),
-            "dc_converged": bool(dc_check.get("converged")),
-            "dc_diagnostic": dc_check.get("diagnostic", ""),
-            "best_params": best_params,
-            "best_metrics": best_run.get("metrics", {}),
-            "feasible_count": res.get("feasible_count", 0),
-            "runs_count": len(runs),
-            "cleaned_netlist": cleaned,
-        }
+            logger.warning(f"Kestrel Powell sizer failed: {exc}")
+            return {"status": "SWEEP_SKIPPED", "is_valid": False, "error": str(exc)}
 
     def sweep_parameters_grid(
         self,
