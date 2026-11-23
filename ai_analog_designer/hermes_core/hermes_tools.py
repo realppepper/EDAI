@@ -1156,9 +1156,38 @@ class HermesAnalogTools:
         self,
         subckt_netlist: str,
         simulator: str = "ltspice",
-        max_runs: int = 16,
+        max_runs: int = 24,
     ) -> dict[str, Any]:
-        """Automatically parameterizes key bias/load resistors and optimizes Gain/Vos/Ibias in LTspice."""
+        """
+        Kestrel-inspired log-space continuous numerical sizing over real LTspice
+        using datasheet-driven RFChipAgent Sigmoid-Harmonic objective (supports
+        both dual-supply and single-supply ICs, plus multi-channel grouping).
+        """
+        from ai_analog_designer.circuit_synthesis.numerical_sizer import (
+            optimize_subcircuit_powell,
+        )
+
+        try:
+            opt_res = optimize_subcircuit_powell(
+                subckt_netlist=subckt_netlist,
+                dut_name=self.dut_name,
+                pins=self.pins,
+                measurement_plan=self.measurement_plan,
+                specifications=self.specifications,
+                max_evals=max(12, min(32, int(max_runs))),
+                timeout_s=12,
+            )
+            if opt_res.get("status") == "SWEEP_COMPLETE" and opt_res.get("cleaned_netlist"):
+                val_res = self.validate_netlist_syntax(opt_res["cleaned_netlist"])
+                cleaned = val_res.get("cleaned_netlist", opt_res["cleaned_netlist"])
+                opt_res["is_valid"] = bool(val_res.get("is_valid"))
+                opt_res["cleaned_netlist"] = cleaned
+                if opt_res["is_valid"] and opt_res.get("dc_converged"):
+                    self.last_synthesized_netlist = cleaned
+                return opt_res
+        except Exception as exc:
+            logger.warning(f"Kestrel Powell sizer failed ({exc}); falling back to legacy sweep.")
+
         from pathlib import Path
         from ai_analog_designer.circuit_synthesis.dc_convergence_fixer import (
             _classify_pin,

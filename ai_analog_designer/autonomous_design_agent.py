@@ -573,7 +573,7 @@ Return ONLY valid JSON.
                                 pdg_schedule={k: v * 1e-6 for k, v in pdg_schedule.items()},
                                 measurement_plan=self.spec_plan,
                             )
-                            sw_res = sweep_tools.sweep_parameters_grid(netlist=best_netlist_code, max_runs=16)
+                            sw_res = sweep_tools.sweep_parameters_grid(netlist=best_netlist_code, max_runs=24)
                             if sw_res.get("status") == "SWEEP_COMPLETE" and sw_res.get("dc_converged") and sw_res.get("cleaned_netlist"):
                                 sw_nl = sw_res["cleaned_netlist"]
                                 sw_eval = eval_probe(sw_nl, f"harness2_r{h2_round}_sweep")

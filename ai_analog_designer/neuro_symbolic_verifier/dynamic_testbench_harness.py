@@ -458,10 +458,10 @@ Respond with the exact testbench enclosed in:
         failed_count = 0
 
         for spec in target_specs:
-            sym = spec.get("symbol", "")
-            name = spec.get("name", "")
-            unit = spec.get("unit", "")
-            kind = spec.get("dynamic_kind", "")
+            sym = str(spec.get("symbol") or "")
+            name = str(spec.get("name") or "")
+            unit = str(spec.get("unit") or "")
+            kind = str(spec.get("dynamic_kind") or "")
             min_v = self.oracle_engine.parse_numeric(spec.get("min"))
             typ_v = self.oracle_engine.parse_numeric(spec.get("typ"))
             max_v = self.oracle_engine.parse_numeric(spec.get("max"))
