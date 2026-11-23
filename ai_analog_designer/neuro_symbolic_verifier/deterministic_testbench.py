@@ -20,6 +20,7 @@ import subprocess
 from typing import Any
 
 from .ltspice_runner import LTSPICE_EXE
+from .sim_backend import run_spice   # EDAI: LTspice 또는 ngspice (AV_SIMULATOR)
 from .units import fmt, spec_limits_in
 
 
@@ -1270,7 +1271,7 @@ def pdg_bias_and_transfer_check(netlist: str, plan: dict[str, Any], out_dir: str
     if os.path.exists(log):
         os.remove(log)
     try:
-        subprocess.run([LTSPICE_EXE, "-b", path], capture_output=True, text=True, timeout=45)
+        run_spice(path, timeout=45, ltspice_exe=LTSPICE_EXE)
     except subprocess.TimeoutExpired:
         return {"ok": False, "errors": ["PDG_STAGE1_TIMEOUT: PDG DC Bias & Causal Transfer check timed out after 45s"], "path": path}
     if not os.path.exists(log):
@@ -1365,7 +1366,7 @@ def compile_check(netlist: str, plan: dict[str, Any], out_dir: str, dut_name: st
     if os.path.exists(log):
         os.remove(log)
     try:
-        subprocess.run([LTSPICE_EXE, "-b", path], capture_output=True, text=True, timeout=60)
+        run_spice(path, timeout=60, ltspice_exe=LTSPICE_EXE)
     except subprocess.TimeoutExpired:
         return {"ok": False, "stage": "PDG_STAGE1_OP_CONVERGENCE", "errors": ["compile check timed out after 60 s (operating point does not converge)"], "path": path}
     if not os.path.exists(log):
@@ -1403,7 +1404,7 @@ def run_deck(deck: Deck, netlist: str, out_dir: str, timeout: int | None = None)
     path = os.path.abspath(path)
     log = path[:-4] + ".log"
     try:
-        subprocess.run([LTSPICE_EXE, "-b", path], capture_output=True, text=True, timeout=timeout)
+        run_spice(path, timeout=timeout, ltspice_exe=LTSPICE_EXE)
     except subprocess.TimeoutExpired:
         rec["error"] = f"LTspice timeout after {timeout}s"
         return rec

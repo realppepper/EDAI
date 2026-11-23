@@ -68,8 +68,6 @@ def main() -> None:
 
     sys.path.insert(0, str(AV_DIR))
     os.chdir(AV_DIR)                    # 하네스는 harness2_library 를 현재 폴더 기준으로 찾는다
-    import av_ngspice
-    av_ngspice.install()                # 하네스의 LTspice 호출을 ngspice 로 (박준석 파일은 그대로)
     from ai_analog_designer.autonomous_design_agent import AutonomousAnalogDesignAgent
 
     def progress(phase: int, title: str, message: str) -> None:

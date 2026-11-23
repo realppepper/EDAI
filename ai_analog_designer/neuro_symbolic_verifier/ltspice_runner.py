@@ -16,7 +16,8 @@ LTSPICE_EXE = next((p for p in _CANDIDATES if p and os.path.exists(p)), _CANDIDA
 class LTspiceRunner:
     def __init__(self, simulator_path=None):
         self.simulator_path = simulator_path or LTSPICE_EXE
-        if not os.path.exists(self.simulator_path):
+        from .sim_backend import SIMULATOR
+        if SIMULATOR != "ngspice" and not os.path.exists(self.simulator_path):
             raise FileNotFoundError(f"LTspice not found at {self.simulator_path}")
 
     def run_netlist(self, netlist_path, timeout=60):
@@ -33,11 +34,13 @@ class LTspiceRunner:
                 pass
 
         # Run without -ascii to prevent crash on .noise analyses
-        cmd = [self.simulator_path, "-b", netlist_path]
+        # EDAI: AV_SIMULATOR=ngspice(기본) 면 ngspice + GF180 PDK 로 돌리고 LTspice 형식 .log 를 쓴다 (sim_backend.py)
+        from .sim_backend import run_spice
         try:
-            proc = subprocess.run(cmd, cwd=workdir, capture_output=True, text=True, timeout=timeout)
+            run_spice(netlist_path, timeout=timeout, ltspice_exe=self.simulator_path)
         except subprocess.TimeoutExpired as exc:
-            raise TimeoutError(f"LTspice timed out after {timeout} seconds on {netlist_path}") from exc
+            raise TimeoutError(f"Simulator timed out after {timeout} seconds on {netlist_path}") from exc
+        proc = subprocess.CompletedProcess([], 0, "", "")
 
         if not os.path.exists(log_file):
             candidates = glob.glob(os.path.join(workdir, f"{base_name}*.log"))

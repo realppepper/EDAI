@@ -34,6 +34,8 @@ def load_keys() -> None:
         os.environ.setdefault("AV_NGSPICE", os.path.expanduser("~/ngspice/bin/ngspice"))
         os.environ.setdefault("AV_PDK_DIR", os.path.expanduser("~/pdk/gf180mcu_fd_pr/models/ngspice"))
         os.environ.setdefault("EDAI_NGSPICE", os.path.expanduser("~/ngspice/bin/ngspice"))   # 박준석 ngspice_runner 용
+        # 하네스 시뮬레이터: ngspice (ai_analog_designer/neuro_symbolic_verifier/sim_backend.py). LTspice 로 하려면 ltspice
+        os.environ.setdefault("AV_SIMULATOR", "ngspice")
     env_file = next((f for f in ENV_FILES if f.exists()), None)
     if env_file is None:
         return
@@ -114,8 +116,6 @@ def plan_specs(hkg_file: Path, name: str, log=print) -> Path:
     계획 단계에서 LLM 을 한 번 부른다 (박준석 시스템 spec_planner 의 확률적 보완)."""
     load_keys()
     sys.path.insert(0, str(AV_DIR))
-    import av_ngspice
-    av_ngspice.install()                          # 빈 회로 검사도 LTspice 대신 ngspice 로
     from ai_analog_designer.neuro_symbolic_verifier.verification_flow import plan_for, verify
     import spec_from_hkg
     import spec_from_plan

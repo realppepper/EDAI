@@ -3,9 +3,12 @@
 OP-Amp 데이터시트 PDF 를 넣으면 분석(HKG·PDG) → 구조 후보 → 크기 정하기·측정 → 고치기 → 하네스 → 최종 회로도까지
 한 번에 돌리고, 과정과 결과를 웹 화면으로 보여 준다.
 
-- 데이터시트 분석과 하네스는 이 저장소 루트의 **박준석 시스템(`ai_analog_designer/`)을 그대로 불러 쓴다.** 박준석 파일은 고치지 않는다.
-- 박준석 하네스는 시뮬레이터로 LTspice 를 부르는데, 우리는 WSL 의 ngspice + GF180 PDK 를 쓴다.
-  `av_ngspice.py` 가 실행 중에만 그 호출을 ngspice 로 바꾼다 (`AV_SIMULATOR=ltspice` 면 바꾸지 않음).
+- 데이터시트 분석과 하네스는 이 저장소 루트의 **박준석 시스템(`ai_analog_designer/`)을 불러 쓴다.** 고친 곳은 아래 시뮬레이터 부분뿐이다.
+- 박준석 하네스는 원래 LTspice 로 시뮬레이션한다. 앞 단계(구조·크기)를 ngspice + GF180 PDK 로 만들었으므로
+  하네스도 같은 기준이 되게 이 브랜치에서 박준석 파일 3개를 고쳤다 (`AV_SIMULATOR=ltspice` 면 LTspice 그대로):
+  - `ai_analog_designer/neuro_symbolic_verifier/sim_backend.py` (새 파일): LTspice 문법 회로를 ngspice 로 옮겨 돌리고 LTspice 형식 `.log` 를 씀
+  - `ltspice_runner.py`, `deterministic_testbench.py`: 시뮬레이터 호출을 `sim_backend.run_spice` 로
+  - `hermes_core/hermes_workflow.py`: PDG 관문에서 실격한 회로는 0% 로 봐서 우리 씨앗 회로(설계도) 단계가 돌게
 
 ## 단계
 

@@ -203,6 +203,14 @@ The subcircuit must operate with its negative supply pin tied to 0 V (single sup
         if best_netlist:
             final_eval = tools.verify_circuit_pdg_gate(best_netlist, tag="final_hermes_harness2")
             best_pass_rate = final_eval.get("pass_rate_percent", best_pass_rate)
+            # EDAI: a netlist blocked by the PDG gate is measured on only a handful of specs (e.g. 2/3 = 66.7 %),
+            # which used to skip the blueprint fallback below. Treat a gate failure as 0 % so stored blueprints get evaluated.
+            gate_failed = (not final_eval.get("stage0_passed", True) or not final_eval.get("stage1_passed", True)
+                           or not final_eval.get("stage2_passed", True)
+                           or any("PDG_STAGE" in str(e) for e in final_eval.get("simulation_errors", [])))
+            if gate_failed:
+                logger.info("Best agent netlist failed the PDG gate; treating it as 0% so the blueprint fallback runs.")
+                best_pass_rate = 0.0
 
         if not best_netlist or best_pass_rate < 50.0:
             logger.info(f"Agent direct synthesis score ({best_pass_rate:.1f}%) < 50%. Activating Harness² Blueprint Adaptation...")
