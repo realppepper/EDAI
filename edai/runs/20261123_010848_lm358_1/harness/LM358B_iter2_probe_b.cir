@@ -1,0 +1,247 @@
+
+
+* Default Physical Device Models for AI Analog Synthesis
+
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=120u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model QNPN NPN (IS=1e-14 BF=150 VAF=100 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=100 TF=0.3n TR=10n CJE=2p CJC=1p VJC=0.75 MJC=0.33)
+
+.model QPNP PNP (IS=1e-14 BF=80 VAF=80 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=80 TF=0.5n TR=20n CJE=2p CJC=1.5p VJC=0.75 MJC=0.33)
+
+.model D1N4148 D (IS=2.52n RS=0.568 N=1.752 CJO=4p VJ=0.5 M=0.333 BV=100 IBV=100u TT=4n)
+
+.model D_ESD D (IS=1e-15 RS=10 CJO=1p BV=50)
+
+
+* Default Physical Device Models for AI Analog Synthesis
+
+
+*============================================================================
+* LM358B SPICE Subcircuit - Two-Stage Op-Amp with Rail-to-Rail Output
+* Part Name: LM358B
+* Process: Standard CMOS (nfet_06v0 / pfet_06v0 models)
+* Supply: Single-ended, V_P = V+, V_N = ground (tied to 0 externally)
+*==========================================================================
+
+.include nfet_06v0_bsim0
+.include pfet_06v0_bsim0
+
+
+
+
+* --- Globally Hoisted Models for Multi-Subcircuit Visibility ---
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=120u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+.model QNPN NPN (IS=1e-14 BF=150 VAF=100 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=100 TF=0.3n TR=10n CJE=2p CJC=1p VJC=0.75 MJC=0.33)
+.model QPNP PNP (IS=1e-14 BF=80 VAF=80 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=80 TF=0.5n TR=20n CJE=2p CJC=1.5p VJC=0.75 MJC=0.33)
+.model D1N4148 D (IS=2.52n RS=0.568 N=1.752 CJO=4p VJ=0.5 M=0.333 BV=100 IBV=100u TT=4n)
+.model D_ESD D (IS=1e-15 RS=10 CJO=1p BV=50)
+.model DMOD D (IS=1e-14 RS=1)
+
+.subckt LM358B IN1_P IN1_N IN2_P IN2_N OUT1 OUT2 V_P V_N NC
+
+*------------------------------------------------------------------------
+* PORT DEPENDENCY STARTUP SEQUENCE (PDG)
+* V_P, V_N activate at 0.00us - OK
+* IN1_P, IN1_N, IN2_P, IN2_N activate at 0.00us - OK
+* OUT1, OUT2 activate at 0.00us - OK (outputs are high-Z initially)
+*------------------------------------------------------------------------
+
+*------------------------------------------------------------------------
+* DC POWER SUPPLIES (single supply, V_N tied to 0 externally)
+*------------------------------------------------------------------------
+V_P_PIN V_P 0 5.0V
+V_N_PIN V_N 0 0.0V
+
+*------------------------------------------------------------------------
+* INPUT DIFFERENTIAL PAIR (Channel 1)
+* M1/M2: Matched NMOS differential pair with source degeneration
+* M3/M4: Current mirror load for differential pair
+* M5: Bias current source
+*------------------------------------------------------------------------
+* Differential pair input transistors (NMOS)
+X1_IN1 IN1_P IN1_N V_P V_N M1_DIFF1
+M1 d=DIFF1 g=IN1_P s=SOURCE1 b=V_P m=10 l=0.5u w=20u model=NMOS
+  + c=DIFF1 g=IN1_N s=SOURCE1 b=V_P m=10 l=0.5u w=20u model=NMOS
+
+* Source degeneration resistors for VOS improvement (small values)
+R1_DIFF SOURCE1 0 10.0
+R2_DIFF SOURCE2 0 10.0
+
+* Current mirror load (PMOS)
+* Truncated element removed: M3_DIFF V_P DIFF1 DIFF1b PMOS_LD  * Mirror transistor M3
+M3 d=DIFF1 g=DIFF1b s=V_P b=V_P m=5 l=0.5u w=40u model=PMOS
+* Truncated element removed: M4_DIFF V_P DIFF1b DIFF1 PMOS_LD  * Mirror transistor M4
+M4 d=DIFF1b g=DIFF1 s=V_P b=V_P m=5 l=0.5u w=40u model=PMOS
+
+* Bias current source (NMOS diode-connected)
+M5_BIAS V_P V_P V_N 0 NMOS_BIAS
+M5 d=V_P g=V_P s=V_N b=V_N m=1 l=0.5u w=10u model=NMOS
+
+* Internal differential nodes
+* Removed invalid .node directive: .NODE DIFF1 DIFF1b
+
+*------------------------------------------------------------------------
+* GAIN STAGE (Common-source with active load)
+* M6/M7: Gain transistors with active load
+* Cc: Miller compensation capacitor
+* Rz: Nulling resistor for RHP zero compensation
+*------------------------------------------------------------------------
+* Gain stage NMOS transistor (cross-coupled load)
+M6_GAIN DIFF1 OUT1b V_N 0 NMOS_GAIN
+M6 d=DIFF1 g=OUT1b s=V_N b=V_N m=8 l=0.5u w=30u model=NMOS
+
+M7_GAIN DIFF1b OUT1 V_N 0 NMOS_GAIN
+M7 d=DIFF1b g=OUT1 s=V_N b=V_N m=8 l=0.5u w=30u model=NMOS
+
+* Miller compensation capacitor (between output and differential input)
+Cc_COMP OUT1 DIFF1 22.0pF
+
+* Nulling resistor to cancel RHP zero
+Rz_NULL OUT1 DIFF1 2.0k
+
+*------------------------------------------------------------------------
+* OUTPUT STAGE (Class-AB complementary follower)
+* Q1/Q2: NPN/PNP output transistors with bootstrapping
+* D1/D2: Dead-zone biasing diodes
+* M10/M11: Source followers for low output impedance
+*------------------------------------------------------------------------
+* Output NPN transistor (using BJT model)
+* Truncated BJT removed (missing terminal): Q1_OUT OUT1 V_P QNPN  * NPN pull-up
+  + Q1 c=OUT1 b=V_P e=V_P model=QNPN
+
+* Output PNP transistor (using BJT model)
+* Truncated BJT removed (missing terminal): Q2_OUT OUT1 V_N QPNP  * PNP pull-down
+  + Q2 c=OUT1 b=V_N e=V_N model=QPNP
+
+* Dead-zone biasing diodes (base-emitter of internal transistors)
+D1_BIAS V_P V_N DMOD
+  + D1 a=V_P k=V_N model=DMOD
+
+D2_BIAS V_N V_P DMOD
+  + D2 a=V_N k=V_P model=DMOD
+
+* Source follower buffer (NMOS) for output buffering
+M10_BUF OUT1 OUT1 V_N 0 NMOS_BUF
+  + M10 d=OUT1 g=OUT1 s=V_N b=V_N m=5 l=0.5u w=20u model=NMOS
+
+M11_BUF OUT1b OUT1 V_N 0 NMOS_BUF
+  + M11 d=OUT1b g=OUT1b s=V_N b=V_N m=5 l=0.5u w=20u model=NMOS
+
+* Output load resistors (to set output impedance)
+R_OUT1 OUT1 V_N 500.0  * 500Ω output load resistor
+R_OUT2 OUT1b V_N 500.0
+
+*------------------------------------------------------------------------
+* INPUT DIFFERENTIAL PAIR (Channel 2 - identical to Channel 1)
+*------------------------------------------------------------------------
+* Differential pair input transistors (NMOS) - Channel 2
+X2_IN2 IN2_P IN2_N V_P V_N M2_DIFF1
+M2 d=DIFF2 g=IN2_P s=SOURCE2 b=V_P m=10 l=0.5u w=20u model=NMOS
+  + M2 d=DIFF2 g=IN2_N s=SOURCE2 b=V_P m=10 l=0.5u w=20u model=NMOS
+
+* Source degeneration resistors
+R3_DIFF SOURCE2 0 10.0
+R4_DIFF SOURCE3 0 10.0
+
+* Current mirror load (PMOS) - Channel 2
+* Truncated element removed: M3_DIFF2 V_P DIFF2 DIFF2b PMOS_LD2
+M3_2 d=DIFF2 g=DIFF2b s=V_P b=V_P m=5 l=0.5u w=40u model=PMOS
+* Truncated element removed: M4_DIFF2 V_P DIFF2b DIFF2 PMOS_LD2
+M4_2 d=DIFF2b g=DIFF2 s=V_P b=V_P m=5 l=0.5u w=40u model=PMOS
+
+* Bias current source - Channel 2
+M5_BIAS2 V_P V_P V_N 0 NMOS_BIAS2
+M5_2 d=V_P g=V_P s=V_N b=V_N m=1 l=0.5u w=10u model=NMOS
+
+* Internal differential nodes - Channel 2
+* Removed invalid .node directive: .NODE DIFF2 DIFF2b
+
+* Gain stage - Channel 2
+M6_GAIN2 DIFF2 OUT2b V_N 0 NMOS_GAIN2
+M6_2 d=DIFF2 g=OUT2b s=V_N b=V_N m=8 l=0.5u w=30u model=NMOS
+
+M7_GAIN2 DIFF2b OUT2 V_N 0 NMOS_GAIN2
+M7_2 d=DIFF2b g=OUT2 s=V_N b=V_N m=8 l=0.5u w=30u model=NMOS
+
+Cc_COMP2 OUT2 DIFF2 22.0pF
+Rz_NULL2 OUT2 DIFF2 2.0k
+
+* Output stage - Channel 2
+* Truncated BJT removed (missing terminal): Q1_OUT2 OUT2 V_P QNPN
+  + Q3 c=OUT2 b=V_P e=V_P model=QNPN
+
+* Truncated BJT removed (missing terminal): Q2_OUT2 OUT2 V_N QPNP
+  + Q4 c=OUT2 b=V_N e=V_N model=QPNP
+
+D1_BIAS2 V_P V_N DMOD
+D2_BIAS2 V_N V_P DMOD
+
+M10_BUF2 OUT2 OUT2 V_N 0 NMOS_BUF2
+  + M12 d=OUT2 g=OUT2 s=V_N b=V_N m=5 l=0.5u w=20u model=NMOS
+
+M11_BUF2 OUT2b OUT2 V_N 0 NMOS_BUF2
+  + M13 d=OUT2b g=OUT2b s=V_N b=V_N m=5 l=0.5u w=20u model=NMOS
+
+R_OUT3 OUT2 V_N 500.0
+R_OUT4 OUT2b V_N 500.0
+
+*------------------------------------------------------------------------
+* BANDGAP VOLTAGE REFERENCE (bias generation)
+* Q5/Q6: Bipolar transistors (using BJT models)
+* R1-R4: Resistor network for Vref generation
+*------------------------------------------------------------------------
+* Bandgap reference core (NPN/PNP transistors)
+* Truncated BJT removed (missing terminal): Q5_BG V_P V_N QNPN  * NPN for bandgap
+  + Q5 c=V_P b=V_REF e=V_N model=QNPN
+
+* Truncated BJT removed (missing terminal): Q6_BG V_P V_N QPNP  * PNP for bandgap
+  + Q6 c=V_REF b=V_P e=V_N model=QPNP
+
+* Resistor network for bandgap
+R1_BG V_P V_REF 10.0k
+R2_BG V_REF 0 5.0k
+R3_BG V_REF V_N 5.0k
+R4_BG V_N V_REF 5.0k
+
+* Vref node (internal)
+* Removed invalid .node directive: .NODE V_REF 1.25
+
+* Bias currents from Vref
+* Current mirror to set differential pair current
+* Truncated element removed: M_BIAS_DIFF V_REF DIFF1 0 NMOS_BIAS_CTRL
+M_BIAS d=V_REF g=DIFF1 s=0 b=0 m=2 l=0.5u w=20u model=NMOS
+
+* Truncated element removed: M_BIAS_DIFF2 V_REF DIFF2 0 NMOS_BIAS_CTRL
+M_BIAS2 d=V_REF g=DIFF2 s=0 b=0 m=2 l=0.5u w=20u model=NMOS
+
+*------------------------------------------------------------------------
+* OUTPUT STAGE BIASING (internal nodes)
+*------------------------------------------------------------------------
+* Internal bias nodes
+* Removed invalid .node directive: .NODE BIAS_NODE1 BIAS_NODE2
+
+* Bootstrap capacitors for class-AB
+C_BOOT1 OUT1 BIAS_NODE1 100.0pF
+C_BOOT2 OUT2 BIAS_NODE2 100.0pF
+
+*------------------------------------------------------------------------
+* DIODE MODEL (for dead-zone biasing)
+*------------------------------------------------------------------------
+
+*------------------------------------------------------------------------
+* BJT MODELS (for output stage and bandgap)
+* QNPN: NPN general-purpose transistor
+* QPNP: PNP general-purpose transistor
+*------------------------------------------------------------------------
+
+*------------------------------------------------------------------------
+* MOSFET MODELS (from included .lib files)
+*------------------------------------------------------------------------
+
+*------------------------------------------------------------------------
+* END OF SUBCIRCUIT
+*------------------------------------------------------------------------
+.ends LM358B

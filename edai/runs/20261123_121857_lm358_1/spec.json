@@ -1,0 +1,518 @@
+{
+ "description": "LM358 측정 계획(팀원 spec_planner 결과)에서 판정 항목과 목표값을 가져온 것 (spec_from_plan.py 가 만듦)",
+ "circuit": "opamp",
+ "source": "LM358",
+ "category": "Operational Amplifier",
+ "conditions": "VDD = 5 V 단일 전원 (공통 측정 조건). 계획의 측정 전원(예: 15 V)과 다를 수 있음",
+ "typ_rule": {
+  "min_ratio": 0.8,
+  "max_ratio": 1.2,
+  "note": "데이터시트가 보장하는 값이 아니라 팀이 정한 기준 (2026-10-12)"
+ },
+ "specs": [
+  {
+   "measure": "avd",
+   "label": "대신호 차동 전압이득",
+   "unit": "dB",
+   "plain": "신호를 얼마나 키우나",
+   "headline": true,
+   "min": 87.96,
+   "typ": 100.0,
+   "symbol": "AOL",
+   "condition": "Vs = 15 V; VO = 1 V to 11 V; RL ≥ 2 kΩ",
+   "extracted": {
+    "symbol": "AOL",
+    "name": "Open-loop voltage gain",
+    "min": 25,
+    "typ": 100,
+    "max": null,
+    "unit": "V/mV",
+    "test_conditions": "Vs = 15 V; VO = 1 V to 11 V; RL ≥ 2 kΩ",
+    "page": 10,
+    "evidence": "AOL Open-loop voltage gain Vs = 15 V; VO = 1 V to 11 V; RL ≥ 2 kΩ"
+   },
+   "plan": {
+    "kind": "aol_db",
+    "fixture": "aol_db_1991bd",
+    "row": 102
+   }
+  },
+  {
+   "measure": "cmrr",
+   "label": "공통모드 제거비",
+   "unit": "dB",
+   "plain": "두 입력에 함께 실린 잡음을 얼마나 걸러내나",
+   "min": 65.0,
+   "typ": 80.0,
+   "symbol": "CMRR",
+   "condition": "Vs = 5 V to 30 V; VM = 0 V",
+   "extracted": {
+    "symbol": "CMRR",
+    "name": "Common-mode rejection ratio",
+    "min": 65,
+    "typ": 80,
+    "max": null,
+    "unit": "dB",
+    "test_conditions": "Vs = 5 V to 30 V; VM = 0 V",
+    "page": 10,
+    "evidence": "CMRR Common-mode rejection ratio Vs = 5 V to 30 V; VM = 0 V"
+   },
+   "plan": {
+    "kind": "cmrr_db",
+    "fixture": "cmrr_db_09fd41",
+    "row": 91
+   }
+  },
+  {
+   "measure": "idd",
+   "label": "공급 전류",
+   "unit": "µA",
+   "scale": 1000000.0,
+   "plain": "전기를 얼마나 쓰나",
+   "headline": true,
+   "typ": 500.0,
+   "max": 1000.0,
+   "symbol": "IQ",
+   "condition": "Vs = 30 V; VO = 15 V; IO = 0 A",
+   "extracted": {
+    "symbol": "IQ",
+    "name": "Quiescent current per amplifier",
+    "min": 500,
+    "typ": 1000,
+    "max": null,
+    "unit": "μA",
+    "test_conditions": "Vs = 30 V; VO = 15 V; IO = 0 A",
+    "page": 14,
+    "evidence": "Quiescent current per amplifier Vs = 30 V; VO = 15 V; IO = 0 A"
+   },
+   "plan": {
+    "kind": "iq",
+    "fixture": "iq_365309",
+    "row": 202
+   }
+  },
+  {
+   "measure": "ugbw",
+   "label": "단위이득 대역폭",
+   "unit": "MHz",
+   "scale": 1e-06,
+   "plain": "얼마나 빠른 신호까지 다루나",
+   "headline": true,
+   "min": 0.7,
+   "symbol": "GBW",
+   "condition": "N/A",
+   "extracted": {
+    "symbol": "GBW",
+    "name": "Gain bandwidth product",
+    "min": 0.7,
+    "typ": null,
+    "max": null,
+    "unit": "MHz",
+    "test_conditions": "N/A",
+    "page": 10,
+    "evidence": "GBW Gain bandwidth product"
+   },
+   "plan": {
+    "kind": "gbw",
+    "fixture": "gbw_88eb93",
+    "row": 104
+   }
+  },
+  {
+   "measure": "sr",
+   "label": "슬루율 (단위이득)",
+   "unit": "V/µs",
+   "scale": 1e-06,
+   "plain": "출력이 얼마나 빨리 변하나",
+   "headline": true,
+   "min": 0.3,
+   "symbol": "SR",
+   "condition": "G = +1",
+   "extracted": {
+    "symbol": "SR",
+    "name": "Slew rate",
+    "min": 0.3,
+    "typ": null,
+    "max": null,
+    "unit": "V/μs",
+    "test_conditions": "G = +1",
+    "page": 10,
+    "evidence": "SR Slew rate G = +1"
+   },
+   "plan": {
+    "kind": "sr",
+    "fixture": "sr_ee65cf",
+    "row": 105
+   }
+  },
+  {
+   "measure": "io_source",
+   "label": "출력 전류 (+레일에서 0.5 V)",
+   "unit": "mA",
+   "scale": 1000.0,
+   "plain": "전류를 얼마나 내보낼 수 있나",
+   "headline": true,
+   "min": 20.0,
+   "typ": 30.0,
+   "symbol": "IO",
+   "condition": "Vs = 15 V; VO = 0 V; VD = 1 V, Source",
+   "extracted": {
+    "symbol": "IO",
+    "name": "Output current",
+    "min": -20,
+    "typ": -30,
+    "max": null,
+    "unit": "mA",
+    "test_conditions": "Vs = 15 V; VO = 0 V; VD = 1 V, Source",
+    "page": 10,
+    "evidence": "IO Output current Vs = 15 V; VO = 0 V; VD = 1 V Source"
+   },
+   "plan": {
+    "kind": "iout",
+    "fixture": "iout_cdb15f",
+    "row": 110
+   }
+  },
+  {
+   "measure": "io_sink",
+   "label": "출력 전류 (-레일에서 0.5 V)",
+   "unit": "mA",
+   "scale": 1000.0,
+   "plain": "전류를 얼마나 받아들일 수 있나",
+   "min": 10.0,
+   "typ": 20.0,
+   "symbol": "IO",
+   "condition": "Vs = 15 V; VO = 15 V; VID = −1 V, Sink",
+   "extracted": {
+    "symbol": "IO",
+    "name": "Output current",
+    "min": 10,
+    "typ": 20,
+    "max": null,
+    "unit": "mA",
+    "test_conditions": "Vs = 15 V; VO = 15 V; VID = −1 V, Sink",
+    "page": 10,
+    "evidence": "IO Output current VS = 15 V; VO = 15 V; VID = −1 V Sink"
+   },
+   "plan": {
+    "kind": "iout",
+    "fixture": "iout_523bdb",
+    "row": 113
+   }
+  }
+ ],
+ "extraction": {
+  "total_rows": 203,
+  "electrical_rows": 162,
+  "used_rows": 7,
+  "pins": 11,
+  "file": "ui_20261123_121857_lm358_1_hkg.json"
+ },
+ "plan": {
+  "file": "ui_20261123_121857_lm358_1_SPEC_EVALUATION.json",
+  "planned_rows": 134,
+  "part_rows": [
+   0,
+   203
+  ],
+  "part_planned": 134,
+  "used": 7,
+  "not_measured": [
+   {
+    "kind": "ib",
+    "symbol": "IB",
+    "name": "Input bias current",
+    "condition": "LM358, VO = 1.4 V, VO = 1.4 V",
+    "min": -2e-08,
+    "typ": -2.5000000000000004e-07,
+    "max": null,
+    "unit": "A",
+    "page": 10,
+    "reason": "입력 바이어스 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ios",
+    "symbol": "IOS",
+    "name": "Input offset current",
+    "condition": "LM358, VO = 1.4 V",
+    "min": null,
+    "typ": 2e-09,
+    "max": 5.0000000000000004e-08,
+    "unit": "A",
+    "page": 10,
+    "reason": "입력 오프셋 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Voltage output swing from rail",
+    "condition": "Vs = 30 V; RL ≥ 10 kΩ",
+    "min": 2.0,
+    "typ": 3.0,
+    "max": null,
+    "unit": "V",
+    "page": 10,
+    "reason": "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Voltage output swing from rail",
+    "condition": "Vs = 5 V; RL ≥ 2 kΩ",
+    "min": null,
+    "typ": null,
+    "max": 1.5,
+    "unit": "V",
+    "page": 10,
+    "reason": "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
+   },
+   {
+    "kind": "iout",
+    "symbol": "IO",
+    "name": "Output current",
+    "condition": "VID = −1 V; VO = 200 mV",
+    "min": 1.2e-05,
+    "typ": 2.9999999999999997e-05,
+    "max": null,
+    "unit": "A",
+    "page": 10,
+    "reason": "출력 전류 (출력 200 mV): 우리 측정 조건과 다름"
+   },
+   {
+    "kind": "isc",
+    "symbol": "ISC",
+    "name": "Short-circuit current",
+    "condition": "Vs = 10 V; VO = VS / 2",
+    "min": -0.04,
+    "typ": -0.06,
+    "max": 0.04,
+    "unit": "A",
+    "page": 10,
+    "reason": "단락 전류: 출력 단락 측정을 아직 만들지 않음 (LM358B 는 ±10 V 조건이라 6 V 소자로 잴 수도 없음)"
+   },
+   {
+    "kind": "vos",
+    "symbol": "VOS",
+    "name": "Input offset voltage",
+    "condition": "Vs = 5 V to maximum; VC M = 0 V; VO = 1.4 V, Non-A suffix devices, TA = 25°C",
+    "min": null,
+    "typ": 0.003,
+    "max": 0.007,
+    "unit": "V",
+    "page": 11,
+    "reason": "입력 오프셋 전압: 소자 편차 통계 해석이 필요해 아직 재지 않음"
+   },
+   {
+    "kind": "ib",
+    "symbol": "IB",
+    "name": "Input bias current",
+    "condition": "Vo = 1.4 V",
+    "min": -2e-08,
+    "typ": null,
+    "max": -2.5000000000000004e-07,
+    "unit": "A",
+    "page": 11,
+    "reason": "입력 바이어스 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ios",
+    "symbol": "IOS",
+    "name": "Input offset current",
+    "condition": "Vo = 1.4 V, Non-V suffix device",
+    "min": null,
+    "typ": 2e-09,
+    "max": 5.0000000000000004e-08,
+    "unit": "A",
+    "page": 11,
+    "reason": "입력 오프셋 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ios",
+    "symbol": "IOS",
+    "name": "Input offset current",
+    "condition": "Vo = 1.4 V, V-suffix device",
+    "min": null,
+    "typ": 2e-09,
+    "max": 5.0000000000000004e-08,
+    "unit": "A",
+    "page": 11,
+    "reason": "입력 오프셋 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Voltage output swing from rail",
+    "condition": "Positive rail, Non-V suffix device, Vs = maximum; RL ≥ 10 kΩ",
+    "min": 2.0,
+    "typ": 3.0,
+    "max": null,
+    "unit": "V",
+    "page": 11,
+    "reason": "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Voltage output swing from rail",
+    "condition": "Positive rail, V-suffix device, Vs = maximum; RL = 2 kΩ",
+    "min": 6.0,
+    "typ": 4.0,
+    "max": null,
+    "unit": "V",
+    "page": 11,
+    "reason": "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Voltage output swing from rail",
+    "condition": "Positive rail, V-suffix device, Vs = maximum; RL ≥ 10 kΩ",
+    "min": 4.0,
+    "typ": 5.0,
+    "max": null,
+    "unit": "V",
+    "page": 11,
+    "reason": "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
+   },
+   {
+    "kind": "iout",
+    "symbol": "IO",
+    "name": "Output current",
+    "condition": "VID = -1 V; VO = 200 mV, Non-V suffix device",
+    "min": 2.9999999999999997e-05,
+    "typ": null,
+    "max": null,
+    "unit": "A",
+    "page": 11,
+    "reason": "출력 전류 (출력 200 mV): 우리 측정 조건과 다름"
+   },
+   {
+    "kind": "iout",
+    "symbol": "IO",
+    "name": "Output current",
+    "condition": "Vid = -1 V; VO = 200 mV",
+    "min": 1.2e-05,
+    "typ": 2.9999999999999997e-05,
+    "max": null,
+    "unit": "A",
+    "page": 12,
+    "reason": "출력 전류 (출력 200 mV): 우리 측정 조건과 다름"
+   },
+   {
+    "kind": "vos",
+    "symbol": "VOS Input offset voltage",
+    "name": "VOS Input offset voltage",
+    "condition": "Vs = 5 V to 30 V; VC M = 0 V; VO = 1.4 V",
+    "min": null,
+    "typ": 0.003,
+    "max": 0.005,
+    "unit": "V",
+    "page": 14,
+    "reason": "입력 오프셋 전압: 소자 편차 통계 해석이 필요해 아직 재지 않음"
+   },
+   {
+    "kind": "vos",
+    "symbol": "VOS Input offset voltage",
+    "name": "VOS Input offset voltage",
+    "condition": "Vs = 5 V to 30 V; VC M = 0 V; VO = 1.4 V",
+    "min": null,
+    "typ": 0.002,
+    "max": 0.003,
+    "unit": "V",
+    "page": 14,
+    "reason": "입력 오프셋 전압: 소자 편차 통계 해석이 필요해 아직 재지 않음"
+   },
+   {
+    "kind": "ib",
+    "symbol": "IB",
+    "name": "Input bias current",
+    "condition": "VO = 1.4 V",
+    "min": -2e-08,
+    "typ": -1.5000000000000002e-07,
+    "max": null,
+    "unit": "A",
+    "page": 14,
+    "reason": "입력 바이어스 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ib",
+    "symbol": "IB",
+    "name": "Input bias current",
+    "condition": "VO = 1.4 V",
+    "min": -1.5000000000000002e-08,
+    "typ": -8e-08,
+    "max": null,
+    "unit": "A",
+    "page": 14,
+    "reason": "입력 바이어스 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ios",
+    "symbol": "IOS",
+    "name": "Input offset current",
+    "condition": "VO = 1.4 V",
+    "min": null,
+    "typ": 2e-09,
+    "max": 3.0000000000000004e-08,
+    "unit": "A",
+    "page": 14,
+    "reason": "입력 오프셋 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ios",
+    "symbol": "IOS",
+    "name": "Input offset current",
+    "condition": "VO = 1.4 V",
+    "min": null,
+    "typ": 2e-09,
+    "max": 1.5000000000000002e-08,
+    "unit": "A",
+    "page": 14,
+    "reason": "입력 오프셋 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Voltage output swing from rail",
+    "condition": "Vs = 30 V; RL ≥ 10 kΩ",
+    "min": null,
+    "typ": null,
+    "max": 2.0,
+    "unit": "V",
+    "page": 14,
+    "reason": "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
+   },
+   {
+    "kind": "isc",
+    "symbol": "I_SC Short-circuit current",
+    "name": "I_SC Short-circuit current",
+    "condition": "Vs = 10 V; VO = Vs / 2",
+    "min": -0.04,
+    "typ": -0.06,
+    "max": null,
+    "unit": "A",
+    "page": 14,
+    "reason": "단락 전류: 출력 단락 측정을 아직 만들지 않음 (LM358B 는 ±10 V 조건이라 6 V 소자로 잴 수도 없음)"
+   }
+  ],
+  "corrections": null,
+  "not_planned": [
+   {
+    "measure": "ts",
+    "label": "정착시간 (0.1%)",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   },
+   {
+    "measure": "gm",
+    "label": "이득여유",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   },
+   {
+    "measure": "vol_5ma",
+    "label": "Low 출력 전압 (IOL = 5 mA)",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   }
+  ]
+ },
+ "unused": []
+}

@@ -1,0 +1,117 @@
+{
+ "title": "TLV271 (시험: 기존 1~3단계 결과 재사용)",
+ "name": "cmp_tlv271",
+ "started": "2026-11-22 21:30:00",
+ "steps": [
+  {
+   "key": "extract",
+   "title": "1. 데이터시트 분석",
+   "state": "done",
+   "summary": {
+    "part": "TLV271",
+    "rows": 109,
+    "pins": 6,
+    "judged": 5,
+    "model_input": "op-amp spec: avd 106 dB; cmrr 80 dB; idd 550 uA; ugbw 3 MHz; sr 2.4 V/us"
+   },
+   "seconds": null
+  },
+  {
+   "key": "candidates",
+   "title": "2. 모델 구조 후보",
+   "state": "done",
+   "summary": {
+    "total": 32,
+    "rule_ok": 25,
+    "new": 23
+   },
+   "seconds": null
+  },
+  {
+   "key": "select",
+   "title": "3. 바이어스 채우기·크기 정하기·측정",
+   "state": "done",
+   "summary": {
+    "evaluated": 32,
+    "working": 2,
+    "best_passed": "3/5"
+   },
+   "seconds": null
+  },
+  {
+   "key": "rank",
+   "title": "4. 구조 고르기",
+   "state": "done",
+   "summary": {
+    "rule": "v4",
+    "top": [
+     {
+      "index": 10,
+      "passed": 3,
+      "judged": 5,
+      "scale": 50.0,
+      "gain_nodes": 2,
+      "input_ok": true,
+      "avd": 79.2196438083395,
+      "shortfall": 3.9747194207108287
+     },
+     {
+      "index": 2,
+      "passed": 3,
+      "judged": 5,
+      "scale": 50.0,
+      "gain_nodes": 1,
+      "input_ok": true,
+      "avd": 32.186370548841715,
+      "shortfall": 3.2894529676124913
+     }
+    ]
+   },
+   "seconds": 0,
+   "error": null,
+   "started": "21:29:31"
+  },
+  {
+   "key": "rules",
+   "title": "5. 규칙 적용",
+   "state": "done",
+   "summary": {
+    "chosen": "상보 뒤집기 + 캐스코드",
+    "passed": "4/5",
+    "tried": 5
+   },
+   "seconds": 73,
+   "error": null,
+   "started": "21:29:32"
+  },
+  {
+   "key": "harness",
+   "title": "6. 하네스",
+   "state": "done",
+   "summary": {
+    "pass_rate": 70.4,
+    "iterations": 15,
+    "has_netlist": true
+   },
+   "seconds": 813,
+   "error": null,
+   "started": "21:30:45"
+  },
+  {
+   "key": "schematic",
+   "title": "7. 최종 회로도",
+   "state": "done",
+   "summary": {
+    "made": [
+     "before_harness",
+     "after_harness"
+    ]
+   },
+   "seconds": 3,
+   "error": null,
+   "started": "21:44:45"
+  }
+ ],
+ "state": "done",
+ "finished": "2026-11-22 21:44:49"
+}

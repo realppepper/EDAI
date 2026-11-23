@@ -1,0 +1,139 @@
+{
+ "title": "MCP6441",
+ "name": "cmp_mcp6441",
+ "steps": [
+  {
+   "key": "extract",
+   "title": "1. 데이터시트 분석",
+   "state": "done",
+   "summary": {
+    "part": "MCP6441",
+    "rows": 45,
+    "pins": 6,
+    "judged": 7,
+    "model_input": "op-amp spec: avd 110 dB; cmrr 76 dB; psrr 86 dB; idd 0.45 uA; ugbw 0.009 MHz; sr 0.003 V/us; pm 65 deg"
+   },
+   "seconds": null
+  },
+  {
+   "key": "candidates",
+   "title": "2. 모델 구조 후보",
+   "state": "done",
+   "summary": {
+    "total": 35,
+    "rule_ok": 30,
+    "new": 23
+   },
+   "seconds": null
+  },
+  {
+   "key": "select",
+   "title": "3. 바이어스 채우기·크기 정하기·측정",
+   "state": "done",
+   "summary": {
+    "evaluated": 35,
+    "working": 5,
+    "best_passed": "5/7"
+   },
+   "seconds": null
+  },
+  {
+   "key": "rank",
+   "title": "4. 구조 고르기",
+   "state": "done",
+   "summary": {
+    "rule": "v1",
+    "top": [
+     {
+      "index": 11,
+      "passed": 5,
+      "judged": 7,
+      "scale": 1.0,
+      "gain_nodes": 2,
+      "input_ok": false,
+      "avd": 6.951398548489081,
+      "shortfall": 5.152430072575546
+     },
+     {
+      "index": 5,
+      "passed": 5,
+      "judged": 7,
+      "scale": 1.0,
+      "gain_nodes": 2,
+      "input_ok": false,
+      "avd": 71.19903926952587,
+      "shortfall": 1.4847315721722825
+     },
+     {
+      "index": 25,
+      "passed": 5,
+      "judged": 7,
+      "scale": 1.0,
+      "gain_nodes": 2,
+      "input_ok": false,
+      "avd": 73.57452710249132,
+      "shortfall": 1.821273644875434
+     },
+     {
+      "index": 13,
+      "passed": 5,
+      "judged": 7,
+      "scale": 1.0,
+      "gain_nodes": 1,
+      "input_ok": false,
+      "avd": 25.062801759940434,
+      "shortfall": 3.7147534894133596
+     },
+     {
+      "index": 33,
+      "passed": 4,
+      "judged": 7,
+      "scale": 1.0,
+      "gain_nodes": 2,
+      "input_ok": false,
+      "avd": 6.951398548489081,
+      "shortfall": 5.728606603633605
+     }
+    ]
+   },
+   "seconds": null
+  },
+  {
+   "key": "rules",
+   "title": "5. 규칙 적용",
+   "state": "done",
+   "summary": {
+    "chosen": "모델 구조 그대로 (그때는 규칙 단계가 없었음)",
+    "passed": "5/7",
+    "tried": 1
+   },
+   "seconds": null
+  },
+  {
+   "key": "harness",
+   "title": "6. 하네스",
+   "state": "done",
+   "summary": {
+    "pass_rate": 46.7,
+    "iterations": 15,
+    "has_netlist": true
+   },
+   "seconds": null
+  },
+  {
+   "key": "schematic",
+   "title": "7. 최종 회로도",
+   "state": "done",
+   "summary": {
+    "made": [
+     "before_harness",
+     "after_harness"
+    ]
+   },
+   "seconds": null
+  }
+ ],
+ "started": "2026-11-22 16:09:24",
+ "note": "2026-11-22 비교 실험 결과를 불러옴. 고르기: 통과 항목 수 -> 공급 전류 순으로 고름 (규칙 v1)",
+ "state": "done"
+}

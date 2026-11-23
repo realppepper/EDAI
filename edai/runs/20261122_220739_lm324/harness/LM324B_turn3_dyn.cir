@@ -1,0 +1,26 @@
+* Advanced Dynamic Testbench for LM324B
+.include "LM324B_turn3.cir"
+
+* Power Supply Setup (VCC_P=15V, VCC_N=0V)
+V_VCC_P VCC_P 0 15
+V_VCC_N VCC_N 0 0
+
+* DUT Instantiation
+XDUT 1IN_P 1IN_N 1OUT 2IN_P 2IN_N 2OUT 3IN_P 3IN_N 3OUT 4IN_P 4IN_N 4OUT VCC_P VCC_N NC LM324B
+
+* Dynamic Signal Stimulus (Example for Channel 1)
+VINP 1IN_P 0 SINE(2.5 0.1 1k 10u)
+VINN 1IN_N 0 DC 2.5
+
+* Load Termination (Example for Channel 1)
+RL 1OUT 0 10k
+
+* Simulation Control
+.tran 10u 20m 10m
+
+* Measurement Directives (Example based on requirements)
+.four 1k 9 V(1OUT)
+.meas tran v_rms RMS V(1OUT) from=15m to=20m
+.meas tran icc AVG -I(V_VCC_P) from=10m to=20m
+
+.end

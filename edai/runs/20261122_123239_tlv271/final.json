@@ -1,0 +1,195 @@
+{
+ "label": "모델 구조 그대로 (그때는 규칙 단계가 없었음)",
+ "rules": [],
+ "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=VB1 G=N2 S=VDD B=VDD ; PM3 D=VB2 G=N2 S=VDD B=VDD ; PM4 D=N1 G=N1 S=VDD B=VDD ; PM5 D=N3 G=IN2 S=N4 B=VDD ; PM6 D=N5 G=IN1 S=N4 B=VDD ; PM7 D=N4 G=N6 S=VDD B=VDD ; PM8 D=N6 G=N6 S=VDD B=VDD ; PM9 D=N2 G=N2 S=VDD B=VDD ; NM1 D=VB1 G=VB1 S=VSS B=VSS ; NM2 D=OUT G=N3 S=VSS B=VSS ; NM3 D=N6 G=VB1 S=VSS B=VSS ; NM4 D=N1 G=N5 S=VSS B=VSS ; NM5 D=N3 G=N3 S=VSS B=VSS ; NM6 D=N5 G=N5 S=VSS B=VSS ; NM7 D=N2 G=VB2 S=N7 B=VSS ; R1 P=N7 N=VSS ; C1 P=OUT N=N3",
+ "output_scale": 20.0,
+ "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT N1 VDD VDD pfet_06v0 w=97.2u l=2u m=6\nXPM2 VB1 N2 VDD VDD pfet_06v0 w=36.7u l=2u\nXPM3 VB2 N2 VDD VDD pfet_06v0 w=36.3u l=2u\nXPM4 N1 N1 VDD VDD pfet_06v0 w=25u l=2u\nXPM5 N3 INP N4 VDD pfet_06v0 w=28.8u l=1u\nXPM6 N5 INN N4 VDD pfet_06v0 w=17u l=1u\nXPM7 N4 N6 VDD VDD pfet_06v0 w=39.3u l=2u\nXPM8 N6 N6 VDD VDD pfet_06v0 w=40.1u l=2u\nXPM9 N2 N2 VDD VDD pfet_06v0 w=27.2u l=2u\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT N3 VSS VSS nfet_06v0 w=63.3u l=2u m=2\nXNM3 N6 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM4 N1 N5 VSS VSS nfet_06v0 w=5.43u l=2u\nXNM5 N3 N3 VSS VSS nfet_06v0 w=5.38u l=2u\nXNM6 N5 N5 VSS VSS nfet_06v0 w=3.18u l=2u\nXNM7 N2 VB2 N7 VSS nfet_06v0 w=6.78u l=1u\nR1 N7 VSS 10k\nC1 OUT N3 1p\nXNMB1 VB2 VB2 VSS VSS nfet_06v0 w=7.9u l=2u\n* startup (bias_convert.py)\nXSU_MS1 SU_SX VSS VDD VDD pfet_06v0 w=0.5u l=20u\nXSU_MS2 N2 SU_SX VSS VSS nfet_06v0 w=2u l=1u\nXSU_MS3 SU_SX N3 VSS VSS nfet_06v0 w=5u l=1u\n.ends opamp\n",
+ "sizes": {
+  "PM1": {
+   "w": "97.2u",
+   "l": "2u",
+   "m": "6"
+  },
+  "PM4": {
+   "w": "25u",
+   "l": "2u"
+  },
+  "PM2": {
+   "w": "36.7u",
+   "l": "2u"
+  },
+  "PM3": {
+   "w": "36.3u",
+   "l": "2u"
+  },
+  "PM9": {
+   "w": "27.2u",
+   "l": "2u"
+  },
+  "PM5": {
+   "w": "28.8u",
+   "l": "1u"
+  },
+  "PM6": {
+   "w": "17u",
+   "l": "1u"
+  },
+  "PM7": {
+   "w": "39.3u",
+   "l": "2u"
+  },
+  "PM8": {
+   "w": "40.1u",
+   "l": "2u"
+  },
+  "NM1": {
+   "w": "15u",
+   "l": "2u"
+  },
+  "NM3": {
+   "w": "15u",
+   "l": "2u"
+  },
+  "NM2": {
+   "w": "63.3u",
+   "l": "2u",
+   "m": "2"
+  },
+  "NM5": {
+   "w": "5.38u",
+   "l": "2u"
+  },
+  "NM4": {
+   "w": "5.43u",
+   "l": "2u"
+  },
+  "NM6": {
+   "w": "3.18u",
+   "l": "2u"
+  },
+  "NM7": {
+   "w": "6.78u",
+   "l": "1u"
+  },
+  "NMB1": {
+   "w": "7.9u",
+   "l": "2u"
+  }
+ },
+ "bias": {
+  "nodes": {
+   "VB1": {
+    "kind": "self",
+    "why": "이미 NM1 가 전압을 만듦"
+   },
+   "VB2": {
+    "kind": "complete",
+    "diode": "nmos",
+    "why": "PM3 가 전류를 넣는데 받아 줄 다이오드가 없음"
+   }
+  },
+  "added": [
+   "NMB1"
+  ],
+  "fixed": {},
+  "reference": false,
+  "free_loops": [],
+  "unresolved": []
+ },
+ "spec": [
+  {
+   "measure": "avd",
+   "label": "대신호 차동 전압이득",
+   "unit": "dB",
+   "value": 24.712814012018818,
+   "target": "≥ 97 dB",
+   "status": "FAIL"
+  },
+  {
+   "measure": "cmrr",
+   "label": "공통모드 제거비",
+   "unit": "dB",
+   "value": 69.05417834876606,
+   "target": "≥ 65 dB",
+   "status": "PASS"
+  },
+  {
+   "measure": "idd",
+   "label": "공급 전류",
+   "unit": "µA",
+   "value": 186.93284483702337,
+   "target": "≥ 440 µA",
+   "status": "FAIL"
+  },
+  {
+   "measure": "ugbw",
+   "label": "단위이득 대역폭",
+   "unit": "MHz",
+   "value": 4.862739619589769,
+   "target": "≥ 2.4 MHz",
+   "status": "PASS"
+  },
+  {
+   "measure": "sr",
+   "label": "슬루율 (단위이득)",
+   "unit": "V/µs",
+   "value": 2.0982285418265962,
+   "target": "≥ 1.92 V/µs",
+   "status": "PASS"
+  }
+ ],
+ "passed": 3,
+ "judged": 5,
+ "tried": [
+  {
+   "label": "모델 구조 그대로 (그때는 규칙 단계가 없었음)",
+   "scale": 20.0,
+   "valid": true,
+   "reason": "",
+   "passed": 3,
+   "judged": 5,
+   "spec": [
+    {
+     "measure": "avd",
+     "label": "대신호 차동 전압이득",
+     "unit": "dB",
+     "value": 24.712814012018818,
+     "target": "≥ 97 dB",
+     "status": "FAIL"
+    },
+    {
+     "measure": "cmrr",
+     "label": "공통모드 제거비",
+     "unit": "dB",
+     "value": 69.05417834876606,
+     "target": "≥ 65 dB",
+     "status": "PASS"
+    },
+    {
+     "measure": "idd",
+     "label": "공급 전류",
+     "unit": "µA",
+     "value": 186.93284483702337,
+     "target": "≥ 440 µA",
+     "status": "FAIL"
+    },
+    {
+     "measure": "ugbw",
+     "label": "단위이득 대역폭",
+     "unit": "MHz",
+     "value": 4.862739619589769,
+     "target": "≥ 2.4 MHz",
+     "status": "PASS"
+    },
+    {
+     "measure": "sr",
+     "label": "슬루율 (단위이득)",
+     "unit": "V/µs",
+     "value": 2.0982285418265962,
+     "target": "≥ 1.92 V/µs",
+     "status": "PASS"
+    }
+   ]
+  }
+ ]
+}

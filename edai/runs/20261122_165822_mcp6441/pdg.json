@@ -1,0 +1,147 @@
+{
+ "nodes": [
+  {
+   "name": "VDD",
+   "role": "POWER"
+  },
+  {
+   "name": "VSS",
+   "role": "GROUND"
+  },
+  {
+   "name": "VIN_P",
+   "role": "SIGNAL"
+  },
+  {
+   "name": "VIN_N",
+   "role": "SIGNAL"
+  },
+  {
+   "name": "VOUT",
+   "role": "OUTPUT"
+  },
+  {
+   "name": "NC",
+   "role": "NC"
+  }
+ ],
+ "edges": [
+  {
+   "from": "VDD",
+   "to": "VOUT",
+   "weight": 0.0006676666666666666,
+   "delay_us": 667.6666666666666,
+   "dependency_type": "POWER_FEED",
+   "condition": "VDD = 1.4V to 6.0V",
+   "origin": "datasheet",
+   "delay_source": "SR",
+   "kind": "causal"
+  },
+  {
+   "from": "VDD",
+   "to": "VIN_P",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "VDD",
+   "to": "VIN_N",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "VSS",
+   "to": "VOUT",
+   "weight": 0.0006676666666666666,
+   "delay_us": 667.6666666666666,
+   "dependency_type": "POWER_FEED",
+   "condition": "VSS = GND",
+   "origin": "datasheet",
+   "delay_source": "SR",
+   "kind": "causal"
+  },
+  {
+   "from": "VSS",
+   "to": "VIN_P",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "VSS",
+   "to": "VIN_N",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "VIN_P",
+   "to": "VOUT",
+   "weight": 0.0006676666666666666,
+   "delay_us": 667.6666666666666,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Own channel only",
+   "origin": "datasheet",
+   "delay_source": "SR",
+   "kind": "causal"
+  },
+  {
+   "from": "VIN_N",
+   "to": "VOUT",
+   "weight": 0.0006676666666666666,
+   "delay_us": 667.6666666666666,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Own channel only",
+   "origin": "datasheet",
+   "delay_source": "SR",
+   "kind": "causal"
+  }
+ ],
+ "schedule_us": {
+  "VDD": 0.0,
+  "VSS": 0.0,
+  "NC": 0.0,
+  "VIN_P": 2e-06,
+  "VIN_N": 2e-06,
+  "VOUT": 0.0006696666666666666
+ },
+ "levels": [
+  [
+   "VDD",
+   "VSS",
+   "NC"
+  ],
+  [
+   "VIN_P",
+   "VIN_N"
+  ],
+  [
+   "VOUT"
+  ]
+ ],
+ "audit": {
+  "mode": "groundtruth_free_provenance",
+  "benchmark_framework": "ParseBench (https://github.com/run-llama/ParseBench.git)",
+  "fidelity_score_pct": 79.2,
+  "status": "ACCEPTABLE"
+ },
+ "audit_with_pages": true
+}

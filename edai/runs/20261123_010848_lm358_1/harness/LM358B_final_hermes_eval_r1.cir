@@ -1,0 +1,57 @@
+
+
+* Default Physical Device Models for AI Analog Synthesis
+
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=120u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model QNPN NPN (IS=1e-14 BF=150 VAF=100 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=100 TF=0.3n TR=10n CJE=2p CJC=1p VJC=0.75 MJC=0.33)
+
+.model QPNP PNP (IS=1e-14 BF=80 VAF=80 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=80 TF=0.5n TR=20n CJE=2p CJC=1.5p VJC=0.75 MJC=0.33)
+
+.model D1N4148 D (IS=2.52n RS=0.568 N=1.752 CJO=4p VJ=0.5 M=0.333 BV=100 IBV=100u TT=4n)
+
+.model D_ESD D (IS=1e-15 RS=10 CJO=1p BV=50)
+
+
+
+
+* --- Globally Hoisted Models for Multi-Subcircuit Visibility ---
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.5 PHI=0.8 LAMBDA=0.01)
+.model QNPN NPN (IS=1e-16 BF=100)
+.model QPNP PNP (IS=1e-16 BF=50)
+.model nfet_06v0_bsim0 NMOS (VTO=0.7 KP=100u LAMBDA=0.02)
+.model pfet_06v0_bsim0 PMOS (VTO=-0.7 KP=40u LAMBDA=0.02)
+.model D1 D (IS=1e-14 RS=1)
+.model D2 D (IS=1e-14 RS=1)
+
+.subckt LM358B IN1_P IN1_N IN2_P IN2_N OUT1 OUT2 V_P V_N NC
+* 1. DC Biasing and Current Mirrors
+M1 IN1_P OUT1 V_P V_N nfet_06v0_bsim0 W=100u L=0.5u
+M2 IN1_N OUT1 V_P V_N pfet_06v0_bsim0 W=100u L=0.5u
+M3 IN2_P OUT2 V_P V_N nfet_06v0_bsim0 W=100u L=0.5u
+M4 IN2_N OUT2 V_P V_N pfet_06v0_bsim0 W=100u L=0.5u
+R1 OUT1 V_P {IN1_P} 100k
+R2 OUT2 V_P {IN2_P} 100k
+R3 OUT1 V_N {IN1_N} 100k
+R4 OUT2 V_N {IN2_N} 100k
+* 2. Differential Pair (Q1, Q2)
+Q1 IN1_P IN1_N V_P V_N QNPN
+Q2 IN2_P IN2_N V_P V_N QNPN
+* 3. Active Load (Q3, Q4)
+Q3 OUT1 V_P V_N QNPN
+Q4 OUT2 V_P V_N V_N QNPN
+* 4. Output Buffer (PMOS)
+* PM1 OUT1 V_P V_N V_N pfet_06v0_bsim0 W=200u L=0.5u
+* PM2 OUT2 V_P V_N V_N pfet_06v0_bsim0 W=200u L=0.5u
+* 5. Input Bias Current Generator (R5, R6)
+R5 V_P IN1_P {IN1_N} 1M
+R6 V_P IN2_P {IN2_N} 1M
+* 6. Miller Compensation (C1)
+C1 OUT1 V_N 10p
+* 7. Dead-Zone Biasing (D1, D2)
+D1 OUT1 IN1_P D1
+D2 OUT2 IN2_P D2
+* 8. Explicit Device Models
+.ends LM358B

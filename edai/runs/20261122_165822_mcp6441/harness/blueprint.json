@@ -1,0 +1,29 @@
+{
+  "task_id": "EDAI_C3_MCP6441",
+  "category": "operational_amplifier",
+  "cue": "Initial transistor-level topology for MCP6441 proposed by EDAI (FLAN-T5)",
+  "lesson": "Start from blueprint 'EDAI_C3_MCP6441': GF180MCU 6V transistor-level op-amp sized by gm/ID (ngspice pre-check 5/7 specs). Keep the .include model line; devices use nfet_06v0_bsim0 / pfet_06v0_bsim0.",
+  "evidence": {
+    "selection": "selection_cmp_mcp6441_v3.json",
+    "table": "PM1 D=VB2 G=VB2 S=VDD B=VDD ; PM2 D=OUT G=N1 S=VDD B=VDD ; PM3 D=VB1 G=N1 S=VDD B=VDD ; PM4 D=N2 G=VB2 S=VDD B=VDD ; PM5 D=N3 G=N1 S=VDD B=VDD ; PM6 D=N4 G=IN2 S=N3 B=VDD ; PM7 D=N5 G=IN1 S=N3 B=VDD ; PM8 D=N1 G=N1 S=VDD B=VDD ; NM1 D=VB1 G=VB1 S=VSS B=VSS ; NM2 D=OUT G=N4 S=VSS B=VSS ; NM3 D=N4 G=N5 S=VSS B=VSS ; NM4 D=N5 G=N5 S=VSS B=VSS ; NM5 D=N1 G=N6 S=VSS B=VSS ; NM6 D=VB2 G=N2 S=N6 B=VSS ; NM7 D=N2 G=N6 S=VSS B=VSS ; R1 P=N6 N=VSS ; C1 P=OUT N=N4",
+    "pin_map": {
+      "VDD": "VDD",
+      "VSS": "VSS",
+      "INP": "VIN_P",
+      "INN": "VIN_N",
+      "OUT": "VOUT"
+    },
+    "output_scale": 1.0
+  },
+  "score_before": 0.0,
+  "score_after": 0.0,
+  "delta_score": 0.0,
+  "harness_tree": {
+    "c5_skills": {
+      "EDAI_C3_MCP6441": {
+        "description": "EDAI FLAN-T5 initial op-amp core for MCP6441 (GF180 6V, LTspice models)",
+        "subckt_code": ".include \"D:\\analogverifier\\edai_compare\\gf180_6v_typical.lib\"\n.subckt MCP6441 VDD VSS VIN_P VIN_N VOUT NC\nMPM1 VB2 VB2 VDD VDD pfet_06v0_bsim0 w=68.7u l=2u\nMPM2 VOUT N1 VDD VDD pfet_06v0_bsim0 w=95.7u l=2u m=7\nMPM3 VB1 N1 VDD VDD pfet_06v0_bsim0 w=92.2u l=2u m=8\nMPM4 N2 VB2 VDD VDD pfet_06v0_bsim0 w=68.7u l=2u\nMPM5 N3 N1 VDD VDD pfet_06v0_bsim0 w=91.5u l=2u m=5\nMPM6 N4 VIN_P N3 VDD pfet_06v0_bsim0 w=88.2u l=1u m=3\nMPM7 N5 VIN_N N3 VDD pfet_06v0_bsim0 w=89.7u l=1u m=3\nMPM8 N1 N1 VDD VDD pfet_06v0_bsim0 w=96.7u l=2u m=6\nMNM1 VB1 VB1 VSS VSS nfet_06v0_bsim0 w=15u l=2u\nMNM2 VOUT N4 VSS VSS nfet_06v0_bsim0 w=54.2u l=1u m=2\nMNM3 N4 N5 VSS VSS nfet_06v0_bsim0 w=49.4u l=2u\nMNM4 N5 N5 VSS VSS nfet_06v0_bsim0 w=50.2u l=2u\nMNM5 N1 N6 VSS VSS nfet_06v0_bsim0 w=93.6u l=1u\nMNM6 VB2 N2 N6 VSS nfet_06v0_bsim0 w=49.3u l=1u\nMNM7 N2 N6 VSS VSS nfet_06v0_bsim0 w=50.3u l=1u\nR1 N6 VSS 10k\nC1 VOUT N4 1p\n.ends MCP6441\n"
+      }
+    }
+  }
+}

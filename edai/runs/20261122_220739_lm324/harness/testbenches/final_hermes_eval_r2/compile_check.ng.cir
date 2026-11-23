@@ -1,0 +1,82 @@
+* compile check for LM324B
+.temp 25
+.options gmin=1e-10 abstol=1e-10 reltol=0.005 itl1=500
+* --- Globally Hoisted Models for Multi-Subcircuit Visibility ---
+.model QNPN NPN (IS=1e-16 BF=100)
+.model QPNP PNP (IS=1e-16 BF=50)
+.model NMOS NMOS (VTO=0.7 KP=100u LAMBDA=0.02)
+.model PMOS PMOS (VTO=-0.7 KP=40u LAMBDA=0.02)
+.model DMOD D (IS=1e-14 RS=1)
+
+.subckt LM324B 1IN_P 1IN_N 1OUT 2IN_P 2IN_N 2OUT 3IN_P 3IN_N 3OUT 4IN_P 4IN_N 4OUT VCC_P VCC_N NC
+* 1. DC Biasing and Current Mirrors (e.g. Q1, Q2, R1...)
+* 2. Core Functional Blocks (e.g. Differential Pair, Gain Stage)
+* 3. Output Stage / Buffer
+* 4. Explicit Device Models
+* Differential Pair (Flipped Pair for Rail-to-Rail)
+M1 1IN_P 1IN_N VCC_P VCC_P PMOS W=10u L=0.5u
+M2 1IN_N 1IN_P VCC_P VCC_P PMOS W=10u L=0.5u
+M3 1OUT 1IN_P VCC_P VCC_P NMOS W=10u L=0.5u
+M4 1OUT 1IN_N VCC_P VCC_P NMOS W=10u L=0.5u
+M5 2IN_P 2IN_N VCC_P VCC_P PMOS W=10u L=0.5u
+M6 2IN_N 2IN_P VCC_P VCC_P PMOS W=10u L=0.5u
+M7 2OUT 2IN_P VCC_P VCC_P NMOS W=10u L=0.5u
+M8 2OUT 2IN_N VCC_P VCC_P NMOS W=10u L=0.5u
+M9 3IN_P 3IN_N VCC_P VCC_P PMOS W=10u L=0.5u
+M10 3IN_N 3IN_P VCC_P VCC_P PMOS W=10u L=0.5u
+M11 3OUT 3IN_P VCC_P VCC_P NMOS W=10u L=0.5u
+M12 3OUT 3IN_N VCC_P VCC_P NMOS W=10u L=0.5u
+M13 4IN_P 4IN_N VCC_P VCC_P PMOS W=10u L=0.5u
+M14 4IN_N 4IN_P VCC_P VCC_P PMOS W=10u L=0.5u
+M15 4OUT 4IN_P VCC_P VCC_P NMOS W=10u L=0.5u
+M16 4OUT 4IN_N VCC_P VCC_P NMOS W=10u L=0.5u
+* Active Load (Current Mirror)
+M17 VCC_P VCC_P VCC_P VCC_P PMOS W=100u L=0.5u
+M18 1OUT 1OUT VCC_P VCC_P PMOS W=100u L=0.5u
+M19 2OUT 2OUT VCC_P VCC_P PMOS W=100u L=0.5u
+M20 3OUT 3OUT VCC_P VCC_P PMOS W=100u L=0.5u
+M21 4OUT 4OUT VCC_P VCC_P PMOS W=100u L=0.5u
+* Biasing Resistors (Set 15mA per channel)
+R1 1IN_P VCC_P 100k
+R2 1IN_N VCC_P 100k
+R3 2IN_P VCC_P 100k
+R4 2IN_N VCC_P 100k
+R5 3IN_P VCC_P 100k
+R6 3IN_N VCC_P 100k
+R7 4IN_P VCC_P 100k
+R8 4IN_N VCC_P 100k
+* Miller Compensation (Cc) and Nulling Resistor (Rz)
+Cc 1OUT 2OUT 10p
+Rz 2OUT 3OUT 2k
+* Output Buffer (Current Mirror)
+M22 1OUT 1OUT VCC_P VCC_P PMOS W=10u L=0.5u
+M23 2OUT 2OUT VCC_P VCC_P PMOS W=10u L=0.5u
+M24 3OUT 3OUT VCC_P VCC_P PMOS W=10u L=0.5u
+M25 4OUT 4OUT VCC_P VCC_P PMOS W=10u L=0.5u
+* Ground Connections (Internal only, no direct node 0)
+* (All grounds referenced to VCC_N pin, which is tied to external 0V)
+.ends LM324B
+
+R_1_n_1IN_P n_1IN_P 0 1G
+R_2_n_1IN_N n_1IN_N 0 1G
+R_3_n_1OUT n_1OUT 0 1G
+R_4_n_2IN_P n_2IN_P 0 1G
+R_5_n_2IN_N n_2IN_N 0 1G
+R_6_n_2OUT n_2OUT 0 1G
+R_7_n_3IN_P n_3IN_P 0 1G
+R_8_n_3IN_N n_3IN_N 0 1G
+R_9_n_3OUT n_3OUT 0 1G
+R_10_n_4IN_P n_4IN_P 0 1G
+R_11_n_4IN_N n_4IN_N 0 1G
+R_12_n_4OUT n_4OUT 0 1G
+R_13_n_VCC_P n_VCC_P 0 1G
+R_14_n_VCC_N n_VCC_N 0 1G
+R_15_n_NC n_NC 0 1G
+VPOS n_VCC_P 0 15
+VNEG n_VCC_N 0 0
+XDUT n_1IN_P n_1IN_N n_1OUT n_2IN_P n_2IN_N n_2OUT n_3IN_P n_3IN_N n_3OUT n_4IN_P n_4IN_N n_4OUT n_VCC_P n_VCC_N n_NC LM324B
+.op
+.control
+run
+.endc
+.end

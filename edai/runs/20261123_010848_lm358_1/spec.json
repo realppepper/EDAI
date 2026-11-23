@@ -1,0 +1,559 @@
+{
+ "description": "LM358B 측정 계획(팀원 spec_planner 결과)에서 판정 항목과 목표값을 가져온 것 (spec_from_plan.py 가 만듦)",
+ "circuit": "opamp",
+ "source": "LM358B",
+ "category": "Operational Amplifier",
+ "conditions": "VDD = 5 V 단일 전원 (공통 측정 조건). 계획의 측정 전원(예: 15 V)과 다를 수 있음",
+ "typ_rule": {
+  "min_ratio": 0.8,
+  "max_ratio": 1.2,
+  "note": "데이터시트가 보장하는 값이 아니라 팀이 정한 기준 (2026-10-12)"
+ },
+ "specs": [
+  {
+   "measure": "cmrr",
+   "label": "공통모드 제거비",
+   "unit": "dB",
+   "plain": "두 입력에 함께 실린 잡음을 얼마나 걸러내나",
+   "typ": 80.0,
+   "typ_rule": "higher",
+   "symbol": "CMRR",
+   "condition": "(V-) ≤ VCM ≤ (V+) - 1.5 V, VS = 3 V to 36 V",
+   "extracted": {
+    "symbol": "CMRR",
+    "name": "Common-mode rejection ratio",
+    "min": 20,
+    "typ": 100,
+    "max": null,
+    "unit": "µV/V",
+    "test_conditions": "(V-) ≤ VCM ≤ (V+) - 1.5 V, VS = 3 V to 36 V",
+    "page": 6,
+    "evidence": "Common-mode rejection ratio 20 100 µV/V"
+   },
+   "plan": {
+    "kind": "cmrr_db",
+    "fixture": "cmrr_db_7033c9",
+    "row": 7
+   }
+  },
+  {
+   "measure": "psrr",
+   "label": "전원 제거비",
+   "unit": "dB",
+   "plain": "전원이 흔들려도 얼마나 버티나",
+   "typ": 96.48,
+   "typ_rule": "higher",
+   "symbol": "PSRR",
+   "condition": "VS = 3 V to 36 V",
+   "extracted": {
+    "symbol": "PSRR",
+    "name": "Power supply rejection ratio",
+    "min": 2,
+    "typ": 15,
+    "max": null,
+    "unit": "µV/V",
+    "test_conditions": "VS = 3 V to 36 V",
+    "page": 6,
+    "evidence": "Power supply rejection ratio ±2 15 µV/V"
+   },
+   "plan": {
+    "kind": "psrr_db",
+    "fixture": "psrr_db_434002",
+    "row": 6
+   }
+  },
+  {
+   "measure": "idd",
+   "label": "공급 전류",
+   "unit": "µA",
+   "scale": 1000000.0,
+   "plain": "전기를 얼마나 쓰나",
+   "headline": true,
+   "min": 800.0,
+   "symbol": "IQ",
+   "condition": "VS = 36 V; IO = 0 A, LM358, LM358A, LM358B, LM358BA",
+   "extracted": {
+    "symbol": "IQ",
+    "name": "Quiescent current per amplifier",
+    "min": 800,
+    "typ": null,
+    "max": null,
+    "unit": "µA",
+    "test_conditions": "VS = 36 V; IO = 0 A, LM358, LM358A, LM358B, LM358BA",
+    "page": 7,
+    "evidence": "Quiescent current per amplifier VS = 36 V; IO = 0 A"
+   },
+   "plan": {
+    "kind": "iq",
+    "fixture": "iq_0fe276",
+    "row": 35
+   }
+  },
+  {
+   "measure": "ugbw",
+   "label": "단위이득 대역폭",
+   "unit": "MHz",
+   "scale": 1e-06,
+   "plain": "얼마나 빠른 신호까지 다루나",
+   "headline": true,
+   "min": 1.2,
+   "symbol": "GBW",
+   "condition": null,
+   "extracted": {
+    "symbol": "GBW",
+    "name": "Gain bandwidth product",
+    "min": 1.2,
+    "typ": null,
+    "max": null,
+    "unit": "MHz",
+    "test_conditions": null,
+    "page": 6,
+    "evidence": "Gain bandwidth product 1.2 MHz"
+   },
+   "plan": {
+    "kind": "gbw",
+    "fixture": "gbw_88eb93",
+    "row": 17
+   }
+  },
+  {
+   "measure": "sr",
+   "label": "슬루율 (단위이득)",
+   "unit": "V/µs",
+   "scale": 1e-06,
+   "plain": "출력이 얼마나 빨리 변하나",
+   "headline": true,
+   "min": 0.5,
+   "symbol": "SR",
+   "condition": "G = + 1",
+   "extracted": {
+    "symbol": "SR",
+    "name": "Slew rate",
+    "min": 0.5,
+    "typ": null,
+    "max": null,
+    "unit": "V/µs",
+    "test_conditions": "G = + 1",
+    "page": 6,
+    "evidence": "Slew rate 0.5 V/µs"
+   },
+   "plan": {
+    "kind": "sr",
+    "fixture": "sr_ee65cf",
+    "row": 18
+   }
+  },
+  {
+   "measure": "pm",
+   "label": "위상여유",
+   "unit": "°",
+   "plain": "얼마나 안정적으로 동작하나",
+   "min": 56.0,
+   "symbol": "Θm",
+   "condition": "G = + 1, RL = 10kΩ, CL = 20 pF",
+   "extracted": {
+    "symbol": "Θm",
+    "name": "Phase margin",
+    "min": 56,
+    "typ": null,
+    "max": null,
+    "unit": "°",
+    "test_conditions": "G = + 1, RL = 10kΩ, CL = 20 pF",
+    "page": 6,
+    "evidence": "Phase margin 56 °"
+   },
+   "plan": {
+    "kind": "pm",
+    "fixture": "pm_9f89c1",
+    "row": 19
+   }
+  },
+  {
+   "measure": "voh_1ma",
+   "label": "High 출력 전압 (IOH = -1 mA)",
+   "unit": "V",
+   "plain": "가벼운 부하에서 출력을 얼마나 높이 올리나",
+   "typ": 3.52,
+   "max": 3.6,
+   "symbol": "VO",
+   "condition": "Positive Rail (V+), IOUT = 1 mA",
+   "extracted": {
+    "symbol": "VO",
+    "name": "Voltage output swing from rail",
+    "min": 1.4,
+    "typ": 1.48,
+    "max": null,
+    "unit": "V",
+    "test_conditions": "Positive Rail (V+), IOUT = 1 mA",
+    "page": 8,
+    "evidence": "Positive Rail (V+) 1.4 1.48 V"
+   },
+   "plan": {
+    "kind": "vswing",
+    "fixture": "vswing_f0662b",
+    "row": 47
+   }
+  },
+  {
+   "measure": "voh_5ma",
+   "label": "High 출력 전압 (IOH = -5 mA)",
+   "unit": "V",
+   "plain": "무거운 부하에서 출력을 얼마나 높이 올리나",
+   "typ": 3.39,
+   "max": 3.5,
+   "symbol": "VO",
+   "condition": "Positive Rail (V+), IOUT = 5 mA(1)",
+   "extracted": {
+    "symbol": "VO",
+    "name": "Voltage output swing from rail",
+    "min": 1.5,
+    "typ": 1.61,
+    "max": null,
+    "unit": "V",
+    "test_conditions": "Positive Rail (V+), IOUT = 5 mA(1)",
+    "page": 8,
+    "evidence": "Positive Rail (V+) 1.5 1.61 V"
+   },
+   "plan": {
+    "kind": "vswing",
+    "fixture": "vswing_7d03f5",
+    "row": 48
+   }
+  },
+  {
+   "measure": "vol_1ma",
+   "label": "Low 출력 전압 (IOL = 1 mA)",
+   "unit": "V",
+   "plain": "가벼운 부하에서 출력을 얼마나 낮게 내리나",
+   "min": 0.75,
+   "typ": 1.0,
+   "symbol": "VO",
+   "condition": "Negative Rail (V-), IOUT = 1 mA",
+   "extracted": {
+    "symbol": "VO",
+    "name": "Voltage output swing from rail",
+    "min": 0.75,
+    "typ": 1,
+    "max": null,
+    "unit": "V",
+    "test_conditions": "Negative Rail (V-), IOUT = 1 mA",
+    "page": 8,
+    "evidence": "Negative Rail (V-) 0.75 1 V"
+   },
+   "plan": {
+    "kind": "vswing",
+    "fixture": "vswing_637f26",
+    "row": 50
+   }
+  },
+  {
+   "measure": "io_source",
+   "label": "출력 전류 (+레일에서 0.5 V)",
+   "unit": "mA",
+   "scale": 1000.0,
+   "plain": "전류를 얼마나 내보낼 수 있나",
+   "headline": true,
+   "min": 20.0,
+   "typ": 30.0,
+   "symbol": "IO",
+   "condition": "VS = 15 V; VO = V-; VID = 1 V, Source(1)",
+   "extracted": {
+    "symbol": "IO",
+    "name": "Output current",
+    "min": -20,
+    "typ": -30,
+    "max": null,
+    "unit": "mA",
+    "test_conditions": "VS = 15 V; VO = V-; VID = 1 V, Source(1)",
+    "page": 8,
+    "evidence": "Output current -20 -30 mA"
+   },
+   "plan": {
+    "kind": "iout",
+    "fixture": "iout_9bf5b1",
+    "row": 51
+   }
+  },
+  {
+   "measure": "io_sink",
+   "label": "출력 전류 (-레일에서 0.5 V)",
+   "unit": "mA",
+   "scale": 1000.0,
+   "plain": "전류를 얼마나 받아들일 수 있나",
+   "min": 10.0,
+   "typ": 20.0,
+   "symbol": "IO",
+   "condition": "VS = 15 V; VO = V+; VID = -1 V, Sink(1)",
+   "extracted": {
+    "symbol": "IO",
+    "name": "Output current",
+    "min": -10,
+    "typ": -20,
+    "max": null,
+    "unit": "mA",
+    "test_conditions": "VS = 15 V; VO = V+; VID = -1 V, Sink(1)",
+    "page": 8,
+    "evidence": "Output current -10 -20 mA"
+   },
+   "plan": {
+    "kind": "iout",
+    "fixture": "iout_f94061",
+    "row": 52
+   }
+  }
+ ],
+ "extraction": {
+  "total_rows": 155,
+  "electrical_rows": 147,
+  "used_rows": 11,
+  "pins": 9,
+  "file": "ui_20261123_010848_lm358_1_hkg.json"
+ },
+ "plan": {
+  "file": "ui_20261123_010848_lm358_1_SPEC_EVALUATION.json",
+  "planned_rows": 119,
+  "part_rows": [
+   0,
+   155
+  ],
+  "part_planned": 119,
+  "used": 11,
+  "not_measured": [
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Voltage output swing from rail",
+    "condition": "IOUT = 50 µA",
+    "min": 1.35,
+    "typ": 1.42,
+    "max": null,
+    "unit": "V",
+    "page": 6,
+    "reason": "출력 스윙 (IOUT = 50 µA): 우리는 1 mA, 5 mA 부하만 잼"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Voltage output swing from rail",
+    "condition": "IOUT = 1 mA",
+    "min": 1.4,
+    "typ": 1.48,
+    "max": null,
+    "unit": "V",
+    "page": 6,
+    "reason": "출력 스윙 (IOUT = 1 mA): 우리는 1 mA, 5 mA 부하만 잼"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Voltage output swing from rail",
+    "condition": "IOUT = 5 mA(1)",
+    "min": 1.5,
+    "typ": 1.61,
+    "max": null,
+    "unit": "V",
+    "page": 6,
+    "reason": "출력 스윙 (IOUT = 5 mA): 우리는 1 mA, 5 mA 부하만 잼"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Voltage output swing from rail",
+    "condition": "IOUT = 50 µA",
+    "min": 0.1,
+    "typ": 0.15,
+    "max": null,
+    "unit": "V",
+    "page": 6,
+    "reason": "출력 스윙 (IOUT = 50 µA): 우리는 1 mA, 5 mA 부하만 잼"
+   },
+   {
+    "kind": "iout",
+    "symbol": "IO",
+    "name": "Output current",
+    "condition": "VS = 15 V; VO = V–; VID = 1 V",
+    "min": -0.02,
+    "typ": -0.03,
+    "max": null,
+    "unit": "A",
+    "page": 6,
+    "reason": "출력 전류 (출력 200 mV): 우리 측정 조건과 다름"
+   },
+   {
+    "kind": "iout",
+    "symbol": "IO",
+    "name": "Output current",
+    "condition": "VS = 15 V; VO = V+; VID = -1 V",
+    "min": -0.01,
+    "typ": -0.02,
+    "max": null,
+    "unit": "A",
+    "page": 6,
+    "reason": "출력 전류 (출력 200 mV): 우리 측정 조건과 다름"
+   },
+   {
+    "kind": "iout",
+    "symbol": "IO",
+    "name": "Output current",
+    "condition": "VID = -1 V; VO = (V–) + 200 mV",
+    "min": 5.9999999999999995e-05,
+    "typ": 9.999999999999999e-05,
+    "max": null,
+    "unit": "A",
+    "page": 6,
+    "reason": "출력 전류 (출력 200 mV): 우리 측정 조건과 다름"
+   },
+   {
+    "kind": "isc",
+    "symbol": "ISC",
+    "name": "Short-circuit current",
+    "condition": "VS = 20 V, (V+) = 10 V, (V–) = -10 V, VO = 0 V",
+    "min": -0.04,
+    "typ": -0.06,
+    "max": null,
+    "unit": "A",
+    "page": 6,
+    "reason": "단락 전류: 출력 단락 측정을 아직 만들지 않음 (LM358B 는 ±10 V 조건이라 6 V 소자로 잴 수도 없음)"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Voltage output swing from rail",
+    "condition": "Positive Rail (V+), IOUT = 50 µA",
+    "min": 1.35,
+    "typ": 1.42,
+    "max": null,
+    "unit": "V",
+    "page": 8,
+    "reason": "출력 스윙 (IOUT = 50 µA): 우리는 1 mA, 5 mA 부하만 잼"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Voltage output swing from rail",
+    "condition": "Negative Rail (V-), IOUT = 50 µA",
+    "min": 0.1,
+    "typ": 0.15,
+    "max": null,
+    "unit": "V",
+    "page": 8,
+    "reason": "출력 스윙 (IOUT = 50 µA): 우리는 1 mA, 5 mA 부하만 잼"
+   },
+   {
+    "kind": "isc",
+    "symbol": "ISC",
+    "name": "Short-circuit current",
+    "condition": "VID = -1 V; VO = (V-) + 200 mV",
+    "min": 5.9999999999999995e-05,
+    "typ": 9.999999999999999e-05,
+    "max": null,
+    "unit": "A",
+    "page": 8,
+    "reason": "단락 전류: 출력 단락 측정을 아직 만들지 않음 (LM358B 는 ±10 V 조건이라 6 V 소자로 잴 수도 없음)"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Voltage output swing from rail",
+    "condition": "VS = 30 V; RL ≥ 10 kΩ",
+    "min": 2.0,
+    "typ": 3.0,
+    "max": null,
+    "unit": "V",
+    "page": 10,
+    "reason": "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Voltage output swing from rail",
+    "condition": "VS = 5 V; RL ≥ 2 kΩ",
+    "min": 1.5,
+    "typ": null,
+    "max": null,
+    "unit": "V",
+    "page": 10,
+    "reason": "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
+   },
+   {
+    "kind": "isc",
+    "symbol": "ISC",
+    "name": "Short-circuit current",
+    "condition": "VS = 10 V; VO = VS / 2",
+    "min": 0.04,
+    "typ": null,
+    "max": 0.06,
+    "unit": "A",
+    "page": 10,
+    "reason": "단락 전류: 출력 단락 측정을 아직 만들지 않음 (LM358B 는 ±10 V 조건이라 6 V 소자로 잴 수도 없음)"
+   },
+   {
+    "kind": "vos",
+    "symbol": "VOS",
+    "name": "Input offset voltage",
+    "condition": "VS = 5 V to maximum; VC M = 0 V; VO = 1.4 V; Non-A suffix devices",
+    "min": 0.003,
+    "typ": 0.007,
+    "max": null,
+    "unit": "V",
+    "page": 11,
+    "reason": "입력 오프셋 전압: 소자 편차 통계 해석이 필요해 아직 재지 않음"
+   },
+   {
+    "kind": "iout",
+    "symbol": "IO",
+    "name": "Output current (Sink)",
+    "condition": "VID = –1 V; VO = 200 mV",
+    "min": 4.9999999999999996e-06,
+    "typ": null,
+    "max": null,
+    "unit": "A",
+    "page": 12,
+    "reason": "출력 전류 (출력 200 mV): 우리 측정 조건과 다름"
+   },
+   {
+    "kind": "isc",
+    "symbol": "ISC",
+    "name": "Short-circuit current",
+    "condition": "VS = 10 V; VO = VS / 2, LM158, LM158A, LM258, LM258A, LM2904, LM2904B, LM2904BA, LM2904V, LM358, LM358A, LM358B, LM358BA",
+    "min": -0.04,
+    "typ": -0.06,
+    "max": null,
+    "unit": "A",
+    "page": 12,
+    "reason": "단락 전류: 출력 단락 측정을 아직 만들지 않음 (LM358B 는 ±10 V 조건이라 6 V 소자로 잴 수도 없음)"
+   },
+   {
+    "kind": "isc",
+    "symbol": "ISC",
+    "name": "Short-circuit current",
+    "condition": "VS = 10 V; VO = VS / 2, TA = 25°C",
+    "min": -0.04,
+    "typ": null,
+    "max": -0.06,
+    "unit": "A",
+    "page": 14,
+    "reason": "단락 전류: 출력 단락 측정을 아직 만들지 않음 (LM358B 는 ±10 V 조건이라 6 V 소자로 잴 수도 없음)"
+   }
+  ],
+  "corrections": null,
+  "not_planned": [
+   {
+    "measure": "ts",
+    "label": "정착시간 (0.1%)",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   },
+   {
+    "measure": "gm",
+    "label": "이득여유",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   },
+   {
+    "measure": "vol_5ma",
+    "label": "Low 출력 전압 (IOL = 5 mA)",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   }
+  ]
+ },
+ "unused": []
+}

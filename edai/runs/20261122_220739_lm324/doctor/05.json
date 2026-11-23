@@ -1,0 +1,20 @@
+{
+ "candidate": 6,
+ "purpose": "write_rule",
+ "model": "nvidia/nemotron-3-ultra-550b-a55b",
+ "system": "You write concise, general analog design rules. Answer JSON only.",
+ "prompt": "A structural fix just made a failing op-amp work. Turn it into a reusable rule for OTHER chips.\nPick only the features that explain WHY the fix was needed (a rule with too many conditions never matches again,\na rule with too few conditions fires where it does not help). Use the exact feature values given.\n\nFEATURES OF THE FAILING STRUCTURE:\n{\n \"failure\": \"포화 영역\",\n \"input_pair\": \"nmos\",\n \"input_covers_range\": false,\n \"input_stage\": \"symmetric\",\n \"output_stage\": \"none\",\n \"gain_nodes\": 1,\n \"has_compensation\": true,\n \"own_bias\": true,\n \"failed_blocks\": [\n  \"bias\"\n ]\n}\n\nFEATURE MEANINGS:\n  failure: failure kind\n  input_pair: input pair type (nmos / pmos / both)\n  input_covers_range: whether the input pair type covers the datasheet common-mode range\n  input_stage: input stage type (five_transistor / folded_cascode / telescopic / symmetric / rail_to_rail / other)\n  output_stage: output stage type (none / common_source_nmos / common_source_pmos / push_pull / other)\n  gain_nodes: number of high-impedance gain nodes from input to OUT\n  has_compensation: whether a compensation capacitor exists\n  own_bias: whether the model drew its own bias network\n  failed_blocks: blocks that contain OFF/TRIODE devices (rule matches if all listed blocks are among them)\n\nTHE FIX THAT WORKED (in order):\n  rebuild {\"input_stage\": \"folded_cascode\", \"input_pair\": \"nmos\", \"output_stage\": \"common_source_pmos\", \"compensation\": \"miller\"}\n\nDIAGNOSIS AT THE TIME: CMRR 시뮬레이션 중 RAW 파일 오류로 측정 실패. DC 동작점은 정상이나(V(OUT)=2.5V, 모든 소자 포화), 폴디드 캐스코드 입력단의 출력 노드 N1(3.97V)이 PMOS 출력단(common_source_pmos)에 부적절함. N1이 VDD 근처가 아니어 PM5 게이트 드라이브 부족.\n\nAnswer JSON: {\"if\": {\"<feature>\": <value>, ...}, \"text\": \"<one Korean sentence: when this happens, do this, because ...>\"}",
+ "answer": {
+  "if": {
+   "input_stage": "symmetric",
+   "output_stage": "none",
+   "input_pair": "nmos",
+   "own_bias": true,
+   "has_compensation": true,
+   "gain_nodes": 1
+  },
+  "text": "대칭형 입력단에 출력단이 없고 자체 바이어스를 사용하는 구조에서 출력 노드 전압이 VDD 근처가 아니어 PMOS 출력단을 구동할 수 없을 때, 폴디드 캐스코드 입력단과 PMOS 공통소스 출력단을 추가하고 밀러 보상을 적용하여 출력 스윙과 게이트 드라이브를 확보하세요."
+ },
+ "error": null,
+ "seconds": 7.3
+}

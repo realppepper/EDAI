@@ -1,0 +1,45 @@
+{
+ "task_id": "EDAI_LM324B",
+ "category": "operational_amplifier",
+ "cue": "Initial transistor-level topology for LM324B proposed by EDAI (FLAN-T5 + rules: none)",
+ "lesson": "Start from blueprint 'EDAI_LM324B': GF180MCU 6V transistor-level op-amp sized by gm/ID (ngspice pre-check 6/8 specs). Keep the .include model line; devices use nfet_06v0_bsim0 / pfet_06v0_bsim0.",
+ "evidence": {
+  "table": "PM1 D=OUT G=VB1 S=VDD B=VDD ; PM6 D=N5 G=VB1 S=VDD B=VDD ; PM7 D=N6 G=N7 S=VDD B=VDD ; PM8 D=N8 G=N7 S=VDD B=VDD ; PM9 D=N9 G=IN2 S=N5 B=N5 ; PM10 D=N10 G=IN1 S=N5 B=N5 ; PM11 D=N7 G=VB4 S=N6 B=VDD ; PM12 D=N11 G=VB4 S=N8 B=VDD ; NM1 D=OUT G=N11 S=VSS B=VSS ; NM7 D=N9 G=VB2 S=VSS B=VSS ; NM8 D=N10 G=VB2 S=VSS B=VSS ; NM10 D=N7 G=VB3 S=N9 B=VSS ; NM11 D=N11 G=VB3 S=N10 B=VSS ; C1 P=N11 N=OUT",
+  "pin_map": {
+   "VDD": "VCC_P",
+   "VSS": "VCC_N",
+   "INP": "1IN_P",
+   "INN": "1IN_N",
+   "OUT": "1OUT",
+   "channels": {
+    "2": {
+     "INP": "2IN_P",
+     "INN": "2IN_N",
+     "OUT": "2OUT"
+    },
+    "3": {
+     "INP": "3IN_P",
+     "INN": "3IN_N",
+     "OUT": "3OUT"
+    },
+    "4": {
+     "INP": "4IN_P",
+     "INN": "4IN_N",
+     "OUT": "4OUT"
+    }
+   }
+  },
+  "output_scale": 20.0
+ },
+ "score_before": 0.0,
+ "score_after": 0.0,
+ "delta_score": 0.0,
+ "harness_tree": {
+  "c5_skills": {
+   "EDAI_LM324B": {
+    "description": "EDAI FLAN-T5 initial op-amp core for LM324B (GF180 6V)",
+    "subckt_code": ".include \"gf180_6v_typical.lib\"\n.subckt LM324B 1IN_P 1IN_N 1OUT 2IN_P 2IN_N 2OUT 3IN_P 3IN_N 3OUT 4IN_P 4IN_N 4OUT VCC_P VCC_N NC\nMPM1 1OUT VB1 VCC_P VCC_P pfet_06v0_bsim0 w=98.2u l=2u m=14\nMPM6 N5 VB1 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u\nMPM7 N6 N7 VCC_P VCC_P pfet_06v0_bsim0 w=21.9u l=1u\nMPM8 N8 N7 VCC_P VCC_P pfet_06v0_bsim0 w=21.9u l=1u\nMPM9 N9 1IN_N N5 N5 pfet_06v0_bsim0 w=43.8u l=1u\nMPM10 N10 1IN_P N5 N5 pfet_06v0_bsim0 w=43.7u l=1u\nMPM11 N7 VB4 N6 VCC_P pfet_06v0_bsim0 w=35.5u l=1u\nMPM12 N11 VB4 N8 VCC_P pfet_06v0_bsim0 w=35.5u l=1u\nMNM1 1OUT N11 VCC_N VCC_N nfet_06v0_bsim0 w=82.1u l=1u m=3\nMNM7 N9 VB2 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u\nMNM8 N10 VB2 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u\nMNM10 N7 VB3 N9 VCC_N nfet_06v0_bsim0 w=7.62u l=1u\nMNM11 N11 VB3 N10 VCC_N nfet_06v0_bsim0 w=7.63u l=1u\nC1 N11 1OUT 1p\nMPMB1 VB1 VB1 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u\nMNMF1 VB1 REF_NB VCC_N VCC_N nfet_06v0_bsim0 w=24u l=2u\nMNMB2 VB2 VB2 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u\nMPMF2 VB2 REF_PB VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u m=2\nMNMB3 VB3 VB3 VB3_S1 VCC_N nfet_06v0_bsim0 w=14.9u l=2u\nRBCVB3 VB3_S1 VCC_N 28174.6\nMPMF3 VB3 REF_PB VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u m=2\nMPMB4 VB4 VB4 VB4_S1 VCC_P pfet_06v0_bsim0 w=72.9u l=2u\nRBCVB4 VB4_S1 VCC_P 26473.2\nMNMF4 VB4 REF_NB VCC_N VCC_N nfet_06v0_bsim0 w=24u l=2u\nMREF_MN1 REF_NB REF_NB VCC_N VCC_N nfet_06v0_bsim0 w=12u l=2u\nMREF_MN2 REF_PB REF_NB REF_NS VCC_N nfet_06v0_bsim0 w=48u l=2u\nRREF_S REF_NS VCC_N 8353.6\nMREF_MP3 REF_PB REF_PB VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MP4 REF_NB REF_PB VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MS1 REF_SX VCC_N VCC_P VCC_P pfet_06v0_bsim0 w=0.5u l=20u\nMREF_MS2 REF_PB REF_SX VCC_N VCC_N nfet_06v0_bsim0 w=2u l=1u\nMREF_MS3 REF_SX REF_NB VCC_N VCC_N nfet_06v0_bsim0 w=5u l=1u\nMPM1_2 2OUT VB1_2 VCC_P VCC_P pfet_06v0_bsim0 w=98.2u l=2u m=14\nMPM6_2 N5_2 VB1_2 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u\nMPM7_2 N6_2 N7_2 VCC_P VCC_P pfet_06v0_bsim0 w=21.9u l=1u\nMPM8_2 N8_2 N7_2 VCC_P VCC_P pfet_06v0_bsim0 w=21.9u l=1u\nMPM9_2 N9_2 2IN_N N5_2 N5_2 pfet_06v0_bsim0 w=43.8u l=1u\nMPM10_2 N10_2 2IN_P N5_2 N5_2 pfet_06v0_bsim0 w=43.7u l=1u\nMPM11_2 N7_2 VB4_2 N6_2 VCC_P pfet_06v0_bsim0 w=35.5u l=1u\nMPM12_2 N11_2 VB4_2 N8_2 VCC_P pfet_06v0_bsim0 w=35.5u l=1u\nMNM1_2 2OUT N11_2 VCC_N VCC_N nfet_06v0_bsim0 w=82.1u l=1u m=3\nMNM7_2 N9_2 VB2_2 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u\nMNM8_2 N10_2 VB2_2 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u\nMNM10_2 N7_2 VB3_2 N9_2 VCC_N nfet_06v0_bsim0 w=7.62u l=1u\nMNM11_2 N11_2 VB3_2 N10_2 VCC_N nfet_06v0_bsim0 w=7.63u l=1u\nC1_2 N11_2 2OUT 1p\nMPMB1_2 VB1_2 VB1_2 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u\nMNMF1_2 VB1_2 REF_NB_2 VCC_N VCC_N nfet_06v0_bsim0 w=24u l=2u\nMNMB2_2 VB2_2 VB2_2 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u\nMPMF2_2 VB2_2 REF_PB_2 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u m=2\nMNMB3_2 VB3_2 VB3_2 VB3_S1_2 VCC_N nfet_06v0_bsim0 w=14.9u l=2u\nRBCVB3_2 VB3_S1_2 VCC_N 28174.6\nMPMF3_2 VB3_2 REF_PB_2 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u m=2\nMPMB4_2 VB4_2 VB4_2 VB4_S1_2 VCC_P pfet_06v0_bsim0 w=72.9u l=2u\nRBCVB4_2 VB4_S1_2 VCC_P 26473.2\nMNMF4_2 VB4_2 REF_NB_2 VCC_N VCC_N nfet_06v0_bsim0 w=24u l=2u\nMREF_MN1_2 REF_NB_2 REF_NB_2 VCC_N VCC_N nfet_06v0_bsim0 w=12u l=2u\nMREF_MN2_2 REF_PB_2 REF_NB_2 REF_NS_2 VCC_N nfet_06v0_bsim0 w=48u l=2u\nRREF_S_2 REF_NS_2 VCC_N 8353.6\nMREF_MP3_2 REF_PB_2 REF_PB_2 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MP4_2 REF_NB_2 REF_PB_2 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MS1_2 REF_SX_2 VCC_N VCC_P VCC_P pfet_06v0_bsim0 w=0.5u l=20u\nMREF_MS2_2 REF_PB_2 REF_SX_2 VCC_N VCC_N nfet_06v0_bsim0 w=2u l=1u\nMREF_MS3_2 REF_SX_2 REF_NB_2 VCC_N VCC_N nfet_06v0_bsim0 w=5u l=1u\nMPM1_3 3OUT VB1_3 VCC_P VCC_P pfet_06v0_bsim0 w=98.2u l=2u m=14\nMPM6_3 N5_3 VB1_3 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u\nMPM7_3 N6_3 N7_3 VCC_P VCC_P pfet_06v0_bsim0 w=21.9u l=1u\nMPM8_3 N8_3 N7_3 VCC_P VCC_P pfet_06v0_bsim0 w=21.9u l=1u\nMPM9_3 N9_3 3IN_N N5_3 N5_3 pfet_06v0_bsim0 w=43.8u l=1u\nMPM10_3 N10_3 3IN_P N5_3 N5_3 pfet_06v0_bsim0 w=43.7u l=1u\nMPM11_3 N7_3 VB4_3 N6_3 VCC_P pfet_06v0_bsim0 w=35.5u l=1u\nMPM12_3 N11_3 VB4_3 N8_3 VCC_P pfet_06v0_bsim0 w=35.5u l=1u\nMNM1_3 3OUT N11_3 VCC_N VCC_N nfet_06v0_bsim0 w=82.1u l=1u m=3\nMNM7_3 N9_3 VB2_3 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u\nMNM8_3 N10_3 VB2_3 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u\nMNM10_3 N7_3 VB3_3 N9_3 VCC_N nfet_06v0_bsim0 w=7.62u l=1u\nMNM11_3 N11_3 VB3_3 N10_3 VCC_N nfet_06v0_bsim0 w=7.63u l=1u\nC1_3 N11_3 3OUT 1p\nMPMB1_3 VB1_3 VB1_3 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u\nMNMF1_3 VB1_3 REF_NB_3 VCC_N VCC_N nfet_06v0_bsim0 w=24u l=2u\nMNMB2_3 VB2_3 VB2_3 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u\nMPMF2_3 VB2_3 REF_PB_3 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u m=2\nMNMB3_3 VB3_3 VB3_3 VB3_S1_3 VCC_N nfet_06v0_bsim0 w=14.9u l=2u\nRBCVB3_3 VB3_S1_3 VCC_N 28174.6\nMPMF3_3 VB3_3 REF_PB_3 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u m=2\nMPMB4_3 VB4_3 VB4_3 VB4_S1_3 VCC_P pfet_06v0_bsim0 w=72.9u l=2u\nRBCVB4_3 VB4_S1_3 VCC_P 26473.2\nMNMF4_3 VB4_3 REF_NB_3 VCC_N VCC_N nfet_06v0_bsim0 w=24u l=2u\nMREF_MN1_3 REF_NB_3 REF_NB_3 VCC_N VCC_N nfet_06v0_bsim0 w=12u l=2u\nMREF_MN2_3 REF_PB_3 REF_NB_3 REF_NS_3 VCC_N nfet_06v0_bsim0 w=48u l=2u\nRREF_S_3 REF_NS_3 VCC_N 8353.6\nMREF_MP3_3 REF_PB_3 REF_PB_3 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MP4_3 REF_NB_3 REF_PB_3 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MS1_3 REF_SX_3 VCC_N VCC_P VCC_P pfet_06v0_bsim0 w=0.5u l=20u\nMREF_MS2_3 REF_PB_3 REF_SX_3 VCC_N VCC_N nfet_06v0_bsim0 w=2u l=1u\nMREF_MS3_3 REF_SX_3 REF_NB_3 VCC_N VCC_N nfet_06v0_bsim0 w=5u l=1u\nMPM1_4 4OUT VB1_4 VCC_P VCC_P pfet_06v0_bsim0 w=98.2u l=2u m=14\nMPM6_4 N5_4 VB1_4 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u\nMPM7_4 N6_4 N7_4 VCC_P VCC_P pfet_06v0_bsim0 w=21.9u l=1u\nMPM8_4 N8_4 N7_4 VCC_P VCC_P pfet_06v0_bsim0 w=21.9u l=1u\nMPM9_4 N9_4 4IN_N N5_4 N5_4 pfet_06v0_bsim0 w=43.8u l=1u\nMPM10_4 N10_4 4IN_P N5_4 N5_4 pfet_06v0_bsim0 w=43.7u l=1u\nMPM11_4 N7_4 VB4_4 N6_4 VCC_P pfet_06v0_bsim0 w=35.5u l=1u\nMPM12_4 N11_4 VB4_4 N8_4 VCC_P pfet_06v0_bsim0 w=35.5u l=1u\nMNM1_4 4OUT N11_4 VCC_N VCC_N nfet_06v0_bsim0 w=82.1u l=1u m=3\nMNM7_4 N9_4 VB2_4 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u\nMNM8_4 N10_4 VB2_4 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u\nMNM10_4 N7_4 VB3_4 N9_4 VCC_N nfet_06v0_bsim0 w=7.62u l=1u\nMNM11_4 N11_4 VB3_4 N10_4 VCC_N nfet_06v0_bsim0 w=7.63u l=1u\nC1_4 N11_4 4OUT 1p\nMPMB1_4 VB1_4 VB1_4 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u\nMNMF1_4 VB1_4 REF_NB_4 VCC_N VCC_N nfet_06v0_bsim0 w=24u l=2u\nMNMB2_4 VB2_4 VB2_4 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u\nMPMF2_4 VB2_4 REF_PB_4 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u m=2\nMNMB3_4 VB3_4 VB3_4 VB3_S1_4 VCC_N nfet_06v0_bsim0 w=14.9u l=2u\nRBCVB3_4 VB3_S1_4 VCC_N 28174.6\nMPMF3_4 VB3_4 REF_PB_4 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u m=2\nMPMB4_4 VB4_4 VB4_4 VB4_S1_4 VCC_P pfet_06v0_bsim0 w=72.9u l=2u\nRBCVB4_4 VB4_S1_4 VCC_P 26473.2\nMNMF4_4 VB4_4 REF_NB_4 VCC_N VCC_N nfet_06v0_bsim0 w=24u l=2u\nMREF_MN1_4 REF_NB_4 REF_NB_4 VCC_N VCC_N nfet_06v0_bsim0 w=12u l=2u\nMREF_MN2_4 REF_PB_4 REF_NB_4 REF_NS_4 VCC_N nfet_06v0_bsim0 w=48u l=2u\nRREF_S_4 REF_NS_4 VCC_N 8353.6\nMREF_MP3_4 REF_PB_4 REF_PB_4 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MP4_4 REF_NB_4 REF_PB_4 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MS1_4 REF_SX_4 VCC_N VCC_P VCC_P pfet_06v0_bsim0 w=0.5u l=20u\nMREF_MS2_4 REF_PB_4 REF_SX_4 VCC_N VCC_N nfet_06v0_bsim0 w=2u l=1u\nMREF_MS3_4 REF_SX_4 REF_NB_4 VCC_N VCC_N nfet_06v0_bsim0 w=5u l=1u\n.ends LM324B\n"
+   }
+  }
+ }
+}

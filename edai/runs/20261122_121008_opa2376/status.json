@@ -1,0 +1,119 @@
+{
+ "title": "OPA2376",
+ "name": "cmp_opa376",
+ "steps": [
+  {
+   "key": "extract",
+   "title": "1. 데이터시트 분석",
+   "state": "done",
+   "summary": {
+    "part": "OPA376",
+    "rows": 60,
+    "pins": 6,
+    "judged": 5,
+    "model_input": "op-amp spec: avd 120 dB; cmrr 76 dB; idd 760 uA; ugbw 5.5 MHz; sr 2 V/us"
+   },
+   "seconds": null
+  },
+  {
+   "key": "candidates",
+   "title": "2. 모델 구조 후보",
+   "state": "done",
+   "summary": {
+    "total": 30,
+    "rule_ok": 21,
+    "new": 19
+   },
+   "seconds": null
+  },
+  {
+   "key": "select",
+   "title": "3. 바이어스 채우기·크기 정하기·측정",
+   "state": "done",
+   "summary": {
+    "evaluated": 30,
+    "working": 3,
+    "best_passed": "3/5"
+   },
+   "seconds": null
+  },
+  {
+   "key": "rank",
+   "title": "4. 구조 고르기",
+   "state": "done",
+   "summary": {
+    "rule": "v1",
+    "top": [
+     {
+      "index": 22,
+      "passed": 3,
+      "judged": 5,
+      "scale": 1.0,
+      "gain_nodes": 1,
+      "input_ok": true,
+      "avd": 32.419390110465976,
+      "shortfall": 5.015695712191163
+     },
+     {
+      "index": 9,
+      "passed": 2,
+      "judged": 5,
+      "scale": 20.0,
+      "gain_nodes": 1,
+      "input_ok": true,
+      "avd": 26.133729517199615,
+      "shortfall": 5.551148746887919
+     },
+     {
+      "index": 11,
+      "passed": 2,
+      "judged": 5,
+      "scale": 20.0,
+      "gain_nodes": 2,
+      "input_ok": true,
+      "avd": 73.99087838997475,
+      "shortfall": 6.137752416205623
+     }
+    ]
+   },
+   "seconds": null
+  },
+  {
+   "key": "rules",
+   "title": "5. 규칙 적용",
+   "state": "done",
+   "summary": {
+    "chosen": "모델 구조 그대로 (그때는 규칙 단계가 없었음)",
+    "passed": "3/5",
+    "tried": 1
+   },
+   "seconds": null
+  },
+  {
+   "key": "harness",
+   "title": "6. 하네스",
+   "state": "done",
+   "summary": {
+    "pass_rate": 66.7,
+    "iterations": 6,
+    "has_netlist": true
+   },
+   "seconds": null
+  },
+  {
+   "key": "schematic",
+   "title": "7. 최종 회로도",
+   "state": "done",
+   "summary": {
+    "made": [
+     "before_harness",
+     "after_harness"
+    ]
+   },
+   "seconds": null
+  }
+ ],
+ "started": "2026-11-22 12:10:08",
+ "note": "2026-11-22 비교 실험 결과를 불러옴. 고르기: 통과 항목 수 -> 공급 전류 순으로 고름 (규칙 v1)",
+ "state": "done"
+}

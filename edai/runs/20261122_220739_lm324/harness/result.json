@@ -1,0 +1,77 @@
+{
+ "pass_rate_percent": 25.0,
+ "part_name": "LM324B",
+ "iterations_count": 15,
+ "iterations": [
+  {
+   "iteration": 1,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 2,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 3,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 4,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 5,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 6,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 7,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 8,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 9,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 10,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 11,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 12,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 13,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 14,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 15,
+   "pass_rate_percent": 0.0
+  }
+ ],
+ "final_netlist": ".subckt LM324B 1IN_P 1IN_N 1OUT 2IN_P 2IN_N 2OUT 3IN_P 3IN_N 3OUT 4IN_P 4IN_N 4OUT VCC_P VCC_N NC\n* 1. DC Biasing and Current Mirrors (e.g. Q1, Q2, R1...)\n* 2. Core Functional Blocks (e.g. Differential Pair, Gain Stage)\n* 3. Output Stage / Buffer\n* 4. Explicit Device Models\n.model QNPN NPN (IS=1e-16 BF=100)\n.model QPNP PNP (IS=1e-16 BF=50)\n.model NMOS NMOS (VTO=0.7 KP=100u LAMBDA=0.02)\n.model PMOS PMOS (VTO=-0.7 KP=40u LAMBDA=0.02)\n.model DMOD D (IS=1e-14 RS=1)\n* Differential Pair (Flipped Pair for Rail-to-Rail)\nM1 1IN_P 1IN_N VCC_P VCC_P PMOS W=10u L=0.5u\nM2 1IN_N 1IN_P VCC_P VCC_P PMOS W=10u L=0.5u\nM3 1OUT 1IN_P VCC_P VCC_P NMOS W=10u L=0.5u\nM4 1OUT 1IN_N VCC_P VCC_P NMOS W=10u L=0.5u\nM5 2IN_P 2IN_N VCC_P VCC_P PMOS W=10u L=0.5u\nM6 2IN_N 2IN_P VCC_P VCC_P PMOS W=10u L=0.5u\nM7 2OUT 2IN_P VCC_P VCC_P NMOS W=10u L=0.5u\nM8 2OUT 2IN_N VCC_P VCC_P NMOS W=10u L=0.5u\nM9 3IN_P 3IN_N VCC_P VCC_P PMOS W=10u L=0.5u\nM10 3IN_N 3IN_P VCC_P VCC_P PMOS W=10u L=0.5u\nM11 3OUT 3IN_P VCC_P VCC_P NMOS W=10u L=0.5u\nM12 3OUT 3IN_N VCC_P VCC_P NMOS W=10u L=0.5u\nM13 4IN_P 4IN_N VCC_P VCC_P PMOS W=10u L=0.5u\nM14 4IN_N 4IN_P VCC_P VCC_P PMOS W=10u L=0.5u\nM15 4OUT 4IN_P VCC_P VCC_P NMOS W=10u L=0.5u\nM16 4OUT 4IN_N VCC_P VCC_P NMOS W=10u L=0.5u\n* Active Load (Current Mirror)\nM17 VCC_P VCC_P VCC_P VCC_P PMOS W=100u L=0.5u\nM18 1OUT 1OUT VCC_P VCC_P PMOS W=100u L=0.5u\nM19 2OUT 2OUT VCC_P VCC_P PMOS W=100u L=0.5u\nM20 3OUT 3OUT VCC_P VCC_P PMOS W=100u L=0.5u\nM21 4OUT 4OUT VCC_P VCC_P PMOS W=100u L=0.5u\n* Biasing Resistors (Set 15mA per channel)\nR1 1IN_P VCC_P 100k\nR2 1IN_N VCC_P 100k\nR3 2IN_P VCC_P 100k\nR4 2IN_N VCC_P 100k\nR5 3IN_P VCC_P 100k\nR6 3IN_N VCC_P 100k\nR7 4IN_P VCC_P 100k\nR8 4IN_N VCC_P 100k\n* Miller Compensation (Cc) and Nulling Resistor (Rz)\nCc 1OUT 2OUT 10p\nRz 2OUT 3OUT 2k\n* Output Buffer (Current Mirror)\nM22 1OUT 1OUT VCC_P VCC_P PMOS W=10u L=0.5u\nM23 2OUT 2OUT VCC_P VCC_P PMOS W=10u L=0.5u\nM24 3OUT 3OUT VCC_P VCC_P PMOS W=10u L=0.5u\nM25 4OUT 4OUT VCC_P VCC_P PMOS W=10u L=0.5u\n* Ground Connections (Internal only, no direct node 0)\n* (All grounds referenced to VCC_N pin, which is tied to external 0V)\n.ends LM324B",
+ "pin_map": {
+  "VDD": "VCC_P",
+  "VSS": "VCC_N",
+  "INP": "1IN_P",
+  "INN": "1IN_N",
+  "OUT": "1OUT"
+ },
+ "seed": "EDAI_LM324B",
+ "seconds": 315
+}

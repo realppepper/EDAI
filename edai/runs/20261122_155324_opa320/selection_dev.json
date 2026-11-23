@@ -1,0 +1,5353 @@
+{
+ "source": "cmp_opa320_candidates.json",
+ "model": "google/flan-t5-base",
+ "input": "op-amp spec: avd 132 dB; cmrr 114 dB; idd 0.5 uA; ugbw 20 MHz; sr 10 V/us; pm 47 deg",
+ "model_eval": {
+  "형식 통과": 24,
+  "검사 모두 통과": 22,
+  "정답과 같음": 0,
+  "학습 데이터에 있는 구조": 17
+ },
+ "entries": [
+  {
+   "how": "beam",
+   "in_train": false,
+   "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=VB1 G=N2 S=VDD B=VDD ; PM3 D=N1 G=N1 S=VDD B=VDD ; PM4 D=N3 G=IN2 S=N4 B=VDD ; PM5 D=N5 G=IN1 S=N4 B=VDD ; PM6 D=N4 G=N6 S=VDD B=VDD ; PM7 D=N6 G=N6 S=VDD B=VDD ; PM8 D=N2 G=N2 S=VDD B=VDD ; NM1 D=VB1 G=VB1 S=VSS B=VSS ; NM2 D=OUT G=N3 S=VSS B=VSS ; NM3 D=N6 G=VB1 S=VSS B=VSS ; NM4 D=N1 G=N5 S=VSS B=VSS ; NM5 D=N3 G=N3 S=VSS B=VSS ; NM6 D=N5 G=N5 S=VSS B=VSS ; R1 P=VDD N=N5",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 14
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM2",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM5"
+     ],
+     "triode": [
+      "PM1"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.8
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM2",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM5"
+     ],
+     "triode": [
+      "PM1"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.0
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM2",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM5"
+     ],
+     "triode": [
+      "PM1"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.0
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM2",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM5"
+     ],
+     "triode": [
+      "PM1"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.0
+    }
+   ]
+  },
+  {
+   "how": "beam",
+   "in_train": false,
+   "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=VB1 G=N2 S=VDD B=VDD ; PM3 D=N1 G=N1 S=VDD B=VDD ; PM4 D=N3 G=IN2 S=N4 B=VDD ; PM5 D=N5 G=IN1 S=N4 B=VDD ; PM6 D=N4 G=N6 S=VDD B=VDD ; PM7 D=N6 G=N6 S=VDD B=VDD ; PM8 D=N2 G=N2 S=VDD B=VDD ; NM1 D=VB1 G=VB1 S=VSS B=VSS ; NM2 D=OUT G=N3 S=VSS B=VSS ; NM3 D=N6 G=VB1 S=VSS B=VSS ; NM4 D=N1 G=N5 S=VSS B=VSS ; NM5 D=N3 G=N3 S=VSS B=VSS ; NM6 D=N5 G=N5 S=VSS B=VSS ; R1 P=VB1 N=N7",
+   "steps": {
+    "rules": {
+     "ok": false,
+     "problems": [
+      "한 곳에만 붙은 노드: N7"
+     ],
+     "transistors": 14
+    }
+   },
+   "variants": []
+  },
+  {
+   "how": "beam",
+   "in_train": false,
+   "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=VB1 G=N2 S=VDD B=VDD ; PM3 D=N1 G=N1 S=VDD B=VDD ; PM4 D=N3 G=IN2 S=N4 B=VDD ; PM5 D=N5 G=IN1 S=N4 B=VDD ; PM6 D=N4 G=N6 S=VDD B=VDD ; PM7 D=N6 G=N6 S=VDD B=VDD ; PM8 D=N2 G=N2 S=VDD B=VDD ; NM1 D=VB1 G=VB1 S=VSS B=VSS ; NM2 D=OUT G=N3 S=VSS B=VSS ; NM3 D=N6 G=VB1 S=VSS B=VSS ; NM4 D=N1 G=N5 S=VSS B=VSS ; NM5 D=N3 G=N3 S=VSS B=VSS ; NM6 D=N5 G=N5 S=VSS B=VSS ; R1 P=VDD N=N5 ; R2 P=VDD N=N6 ; R3 P=N5 N=N6",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 14
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "출력이 VCM 에서 벗어남",
+      "꺼진 소자 PM2, PM8, NM1, NM3",
+      "꺼진 소자 PM2, PM8, NM1, NM3",
+      "꺼진 소자 PM2, PM8, NM1, NM3"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM2",
+      "PM5",
+      "PM8",
+      "NM1",
+      "NM3"
+     ],
+     "triode": [
+      "PM1"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.0
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM2, PM8, NM1, NM3",
+     "off": [
+      "PM2",
+      "PM8",
+      "NM1",
+      "NM3"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.0
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM2, PM8, NM1, NM3",
+     "off": [
+      "PM2",
+      "PM8",
+      "NM1",
+      "NM3"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.9
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM2, PM8, NM1, NM3",
+     "off": [
+      "PM2",
+      "PM8",
+      "NM1",
+      "NM3"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.1
+    }
+   ]
+  },
+  {
+   "how": "beam",
+   "in_train": false,
+   "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=VB1 G=N2 S=VDD B=VDD ; PM3 D=N1 G=N1 S=VDD B=VDD ; PM4 D=N3 G=IN2 S=N4 B=VDD ; PM5 D=N5 G=IN1 S=N4 B=VDD ; PM6 D=N4 G=N6 S=VDD B=VDD ; PM7 D=N6 G=N6 S=VDD B=VDD ; PM8 D=N2 G=N2 S=N7 B=VDD ; NM1 D=VB1 G=VB1 S=VSS B=VSS ; NM2 D=OUT G=N3 S=VSS B=VSS ; NM3 D=N6 G=VB1 S=VSS B=VSS ; NM4 D=N1 G=N5 S=VSS B=VSS ; NM5 D=N3 G=N3 S=VSS B=VSS ; NM6 D=N5 G=N5 S=VSS B=VSS ; R1 P=VB1 N=N7",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 14
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6",
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6",
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6",
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5",
+      "NM6"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1, R1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.3
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5",
+      "NM6"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1, R1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.3
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5",
+      "NM6"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1, R1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.4
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5",
+      "NM6"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1, R1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.4
+    }
+   ]
+  },
+  {
+   "how": "beam",
+   "in_train": false,
+   "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=VB1 G=N2 S=VDD B=VDD ; PM3 D=N1 G=N1 S=VDD B=VDD ; PM4 D=N3 G=IN2 S=N4 B=VDD ; PM5 D=N5 G=IN1 S=N4 B=VDD ; PM6 D=N4 G=N6 S=VDD B=VDD ; PM7 D=N6 G=N6 S=VDD B=VDD ; PM8 D=N2 G=N2 S=VDD B=VDD ; NM1 D=VB1 G=VB1 S=VSS B=VSS ; NM2 D=OUT G=N3 S=VSS B=VSS ; NM3 D=N6 G=VB1 S=VSS B=VSS ; NM4 D=N1 G=N5 S=VSS B=VSS ; NM5 D=N3 G=N3 S=VSS B=VSS ; NM6 D=N5 G=N5 S=VSS B=VSS ; R1 P=VB1 N=N7 ; C1 P=OUT N=N3",
+   "steps": {
+    "rules": {
+     "ok": false,
+     "problems": [
+      "한 곳에만 붙은 노드: N7"
+     ],
+     "transistors": 14
+    }
+   },
+   "variants": []
+  },
+  {
+   "how": "beam",
+   "in_train": true,
+   "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD ; PM2 D=OUT G=N1 S=VDD B=VDD ; PM3 D=N2 G=VB1 S=VDD B=VDD ; PM4 D=N1 G=N1 S=VDD B=VDD ; PM5 D=N3 G=IN2 S=N4 B=VDD ; PM6 D=N5 G=IN1 S=N4 B=VDD ; PM7 D=N4 G=N6 S=VDD B=VDD ; PM8 D=N6 G=N6 S=VDD B=VDD ; NM1 D=OUT G=N3 S=VSS B=VSS ; NM2 D=VB1 G=N2 S=VSS B=VSS ; NM3 D=N1 G=N5 S=VSS B=VSS ; NM4 D=N3 G=N3 S=VSS B=VSS ; NM5 D=N5 G=N5 S=VSS B=VSS ; NM6 D=N6 G=N2 S=VSS B=VSS ; NM7 D=N7 G=N2 S=VSS B=VSS ; R1 P=N2 N=N7",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 15
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "포화 영역 밖 소자 PM3, PM7, NM2, NM6, NM7",
+      "포화 영역 밖 소자 PM3, PM7, NM2, NM6, NM7",
+      "포화 영역 밖 소자 PM3, PM7, NM2, NM6, NM7",
+      "포화 영역 밖 소자 PM3, PM7, NM2, NM6, NM7"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "포화 영역 밖 소자 PM3, PM7, NM2, NM6, NM7",
+     "off": [],
+     "triode": [
+      "PM3",
+      "PM7",
+      "NM2",
+      "NM6",
+      "NM7"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.6
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "포화 영역 밖 소자 PM3, PM7, NM2, NM6, NM7",
+     "off": [],
+     "triode": [
+      "PM3",
+      "PM7",
+      "NM2",
+      "NM6",
+      "NM7"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.7
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "포화 영역 밖 소자 PM3, PM7, NM2, NM6, NM7",
+     "off": [],
+     "triode": [
+      "PM3",
+      "PM7",
+      "NM2",
+      "NM6",
+      "NM7"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.7
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "포화 영역 밖 소자 PM3, PM7, NM2, NM6, NM7",
+     "off": [],
+     "triode": [
+      "PM3",
+      "PM7",
+      "NM2",
+      "NM6",
+      "NM7"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.8
+    }
+   ]
+  },
+  {
+   "how": "beam",
+   "in_train": true,
+   "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=VB1 G=N2 S=VDD B=VDD ; PM3 D=N1 G=N1 S=VDD B=VDD ; PM4 D=N3 G=IN2 S=N4 B=VDD ; PM5 D=N5 G=IN1 S=N4 B=VDD ; PM6 D=N4 G=N6 S=VDD B=VDD ; PM7 D=N6 G=N6 S=VDD B=VDD ; PM8 D=N2 G=N2 S=VDD B=VDD ; NM1 D=VB1 G=VB1 S=VSS B=VSS ; NM2 D=OUT G=N3 S=VSS B=VSS ; NM3 D=N6 G=VB1 S=VSS B=VSS ; NM4 D=N1 G=N5 S=VSS B=VSS ; NM5 D=N3 G=N3 S=VSS B=VSS ; NM6 D=N5 G=N5 S=VSS B=VSS ; NM7 D=N2 G=N7 S=VSS B=VSS ; NM8 D=N8 G=N7 S=VSS B=VSS ; NM9 D=N7 G=N7 S=VSS B=VSS ; R1 P=VDD N=N8 ; R2 P=VDD N=N7 ; R3 P=N7 N=N8",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 17
+    },
+    "sizing": {
+     "ok": true,
+     "reasons": []
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": true,
+     "valid": true,
+     "reason": "",
+     "off": [],
+     "triode": [],
+     "startup": [],
+     "sizes": {
+      "PM1": {
+       "w": "96.7u",
+       "l": "2u",
+       "m": "11"
+      },
+      "PM3": {
+       "w": "91.9u",
+       "l": "2u",
+       "m": "10"
+      },
+      "PM2": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "PM8": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "PM4": {
+       "w": "93.1u",
+       "l": "1u",
+       "m": "10"
+      },
+      "PM5": {
+       "w": "94.7u",
+       "l": "1u",
+       "m": "7"
+      },
+      "PM6": {
+       "w": "97.6u",
+       "l": "2u",
+       "m": "14"
+      },
+      "PM7": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "NM1": {
+       "w": "15u",
+       "l": "2u"
+      },
+      "NM3": {
+       "w": "15u",
+       "l": "2u"
+      },
+      "NM2": {
+       "w": "77.1u",
+       "l": "2u",
+       "m": "3"
+      },
+      "NM5": {
+       "w": "86.9u",
+       "l": "2u",
+       "m": "2"
+      },
+      "NM4": {
+       "w": "99.7u",
+       "l": "2u",
+       "m": "2"
+      },
+      "NM6": {
+       "w": "61.8u",
+       "l": "2u",
+       "m": "2"
+      },
+      "NM7": {
+       "w": "96u",
+       "l": "2u",
+       "m": "5"
+      },
+      "NM8": {
+       "w": "76.1u",
+       "l": "2u",
+       "m": "4"
+      },
+      "NM9": {
+       "w": "76.1u",
+       "l": "2u",
+       "m": "4"
+      }
+     },
+     "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT N1 VDD VDD pfet_06v0 w=96.7u l=2u m=11\nXPM2 VB1 N2 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM3 N1 N1 VDD VDD pfet_06v0 w=91.9u l=2u m=10\nXPM4 N3 INP N4 VDD pfet_06v0 w=93.1u l=1u m=10\nXPM5 N5 INN N4 VDD pfet_06v0 w=94.7u l=1u m=7\nXPM6 N4 N6 VDD VDD pfet_06v0 w=97.6u l=2u m=14\nXPM7 N6 N6 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM8 N2 N2 VDD VDD pfet_06v0 w=100u l=2u m=20\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT N3 VSS VSS nfet_06v0 w=77.1u l=2u m=3\nXNM3 N6 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM4 N1 N5 VSS VSS nfet_06v0 w=99.7u l=2u m=2\nXNM5 N3 N3 VSS VSS nfet_06v0 w=86.9u l=2u m=2\nXNM6 N5 N5 VSS VSS nfet_06v0 w=61.8u l=2u m=2\nXNM7 N2 N7 VSS VSS nfet_06v0 w=96u l=2u m=5\nXNM8 N8 N7 VSS VSS nfet_06v0 w=76.1u l=2u m=4\nXNM9 N7 N7 VSS VSS nfet_06v0 w=76.1u l=2u m=4\nR1 VDD N8 10k\nR2 VDD N7 10k\nR3 N7 N8 10k\n.ends opamp\n",
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": {
+      "ok": true,
+      "vout_op": 2.504043,
+      "vout_on": 2.504043,
+      "idd_op": 0.00414566,
+      "idd_on": 0.00414566
+     },
+     "startup_added": null,
+     "seconds": 14.2,
+     "measured": {
+      "avd": 32.065944650960255,
+      "gain_dc": 18.822091873422295,
+      "ugbw": 49549281.49719909,
+      "pm": 61.571068088840235,
+      "gm": 28.33019136776026,
+      "idd": 0.00414521778814168,
+      "sr": 12388858.7760285,
+      "ts": 1.2734520699973214e-07,
+      "cmrr": 88.94195429664617,
+      "psrr": 55.760805909351845,
+      "voh_1ma": -0.11479155211826253,
+      "voh_5ma": -0.6632472435956578,
+      "vol_1ma": 5.322477216709258,
+      "vol_5ma": 5.774576568497153,
+      "io_source": 0.0009266743173462801,
+      "io_sink": 0.0006362872298803579,
+      "gain_unloaded": 51.0100867331575
+     },
+     "spec": [
+      {
+       "measure": "avd",
+       "label": "대신호 차동 전압이득",
+       "unit": "dB",
+       "value": 32.065944650960255,
+       "target": "≥ 114 dB",
+       "status": "FAIL"
+      },
+      {
+       "measure": "cmrr",
+       "label": "공통모드 제거비",
+       "unit": "dB",
+       "value": 88.94195429664617,
+       "target": "≥ 100 dB",
+       "status": "FAIL"
+      },
+      {
+       "measure": "idd",
+       "label": "공급 전류",
+       "unit": "µA",
+       "value": 4145.21778814168,
+       "target": "≥ 0.1 µA",
+       "status": "PASS"
+      },
+      {
+       "measure": "ugbw",
+       "label": "단위이득 대역폭",
+       "unit": "MHz",
+       "value": 49.54928149719909,
+       "target": "≥ 20 MHz",
+       "status": "PASS"
+      },
+      {
+       "measure": "sr",
+       "label": "슬루율 (단위이득)",
+       "unit": "V/µs",
+       "value": 12.388858776028501,
+       "target": "≥ 8 V/µs",
+       "status": "PASS"
+      },
+      {
+       "measure": "pm",
+       "label": "위상여유",
+       "unit": "°",
+       "value": 61.571068088840235,
+       "target": "≥ 47 °",
+       "status": "PASS"
+      }
+     ],
+     "passed": 4,
+     "judged": 6
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": true,
+     "valid": true,
+     "reason": "",
+     "off": [],
+     "triode": [],
+     "startup": [],
+     "sizes": {
+      "PM1": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "PM3": {
+       "w": "96.4u",
+       "l": "2u",
+       "m": "16"
+      },
+      "PM2": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "PM8": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "PM4": {
+       "w": "93.6u",
+       "l": "1u",
+       "m": "5"
+      },
+      "PM5": {
+       "w": "94u",
+       "l": "1u",
+       "m": "12"
+      },
+      "PM6": {
+       "w": "97.7u",
+       "l": "2u",
+       "m": "14"
+      },
+      "PM7": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "NM1": {
+       "w": "15u",
+       "l": "2u"
+      },
+      "NM3": {
+       "w": "15u",
+       "l": "2u"
+      },
+      "NM2": {
+       "w": "97.4u",
+       "l": "2u",
+       "m": "6"
+      },
+      "NM5": {
+       "w": "87.4u",
+       "l": "2u"
+      },
+      "NM4": {
+       "w": "83.7u",
+       "l": "2u",
+       "m": "4"
+      },
+      "NM6": {
+       "w": "70.2u",
+       "l": "2u",
+       "m": "3"
+      },
+      "NM7": {
+       "w": "96u",
+       "l": "2u",
+       "m": "5"
+      },
+      "NM8": {
+       "w": "76.1u",
+       "l": "2u",
+       "m": "4"
+      },
+      "NM9": {
+       "w": "76.1u",
+       "l": "2u",
+       "m": "4"
+      }
+     },
+     "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT N1 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM2 VB1 N2 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM3 N1 N1 VDD VDD pfet_06v0 w=96.4u l=2u m=16\nXPM4 N3 INP N4 VDD pfet_06v0 w=93.6u l=1u m=5\nXPM5 N5 INN N4 VDD pfet_06v0 w=94u l=1u m=12\nXPM6 N4 N6 VDD VDD pfet_06v0 w=97.7u l=2u m=14\nXPM7 N6 N6 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM8 N2 N2 VDD VDD pfet_06v0 w=100u l=2u m=20\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT N3 VSS VSS nfet_06v0 w=97.4u l=2u m=6\nXNM3 N6 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM4 N1 N5 VSS VSS nfet_06v0 w=83.7u l=2u m=4\nXNM5 N3 N3 VSS VSS nfet_06v0 w=87.4u l=2u\nXNM6 N5 N5 VSS VSS nfet_06v0 w=70.2u l=2u m=3\nXNM7 N2 N7 VSS VSS nfet_06v0 w=96u l=2u m=5\nXNM8 N8 N7 VSS VSS nfet_06v0 w=76.1u l=2u m=4\nXNM9 N7 N7 VSS VSS nfet_06v0 w=76.1u l=2u m=4\nR1 VDD N8 10k\nR2 VDD N7 10k\nR3 N7 N8 10k\n.ends opamp\n",
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": {
+      "ok": true,
+      "vout_op": 2.478498,
+      "vout_on": 2.478498,
+      "idd_op": 0.00485533,
+      "idd_on": 0.004855332
+     },
+     "startup_added": null,
+     "seconds": 13.4,
+     "measured": {
+      "avd": 37.57378714337661,
+      "gain_dc": 25.294325655279437,
+      "ugbw": 79640033.81474869,
+      "pm": 37.771909962596794,
+      "gm": 16.496873713482596,
+      "idd": 0.004856247176959676,
+      "sr": 20072493.674622543,
+      "ts": 1.3749999999999868e-07,
+      "cmrr": 69.32730612885244,
+      "psrr": 59.143244440237844,
+      "voh_1ma": 4.74817245022286,
+      "voh_5ma": -0.5464603357899425,
+      "vol_1ma": 0.06834697522659965,
+      "vol_5ma": 5.353432735177909,
+      "io_source": 0.0010419562807328434,
+      "io_sink": 0.0031670205291274246,
+      "gain_unloaded": 51.031506793650365
+     },
+     "spec": [
+      {
+       "measure": "avd",
+       "label": "대신호 차동 전압이득",
+       "unit": "dB",
+       "value": 37.57378714337661,
+       "target": "≥ 114 dB",
+       "status": "FAIL"
+      },
+      {
+       "measure": "cmrr",
+       "label": "공통모드 제거비",
+       "unit": "dB",
+       "value": 69.32730612885244,
+       "target": "≥ 100 dB",
+       "status": "FAIL"
+      },
+      {
+       "measure": "idd",
+       "label": "공급 전류",
+       "unit": "µA",
+       "value": 4856.247176959676,
+       "target": "≥ 0.1 µA",
+       "status": "PASS"
+      },
+      {
+       "measure": "ugbw",
+       "label": "단위이득 대역폭",
+       "unit": "MHz",
+       "value": 79.64003381474869,
+       "target": "≥ 20 MHz",
+       "status": "PASS"
+      },
+      {
+       "measure": "sr",
+       "label": "슬루율 (단위이득)",
+       "unit": "V/µs",
+       "value": 20.072493674622542,
+       "target": "≥ 8 V/µs",
+       "status": "PASS"
+      },
+      {
+       "measure": "pm",
+       "label": "위상여유",
+       "unit": "°",
+       "value": 37.771909962596794,
+       "target": "≥ 47 °",
+       "status": "FAIL"
+      }
+     ],
+     "passed": 3,
+     "judged": 6
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": true,
+     "valid": true,
+     "reason": "",
+     "off": [],
+     "triode": [],
+     "startup": [],
+     "sizes": {
+      "PM1": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "PM3": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "PM2": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "PM8": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "PM4": {
+       "w": "55u",
+       "l": "1u",
+       "m": "2"
+      },
+      "PM5": {
+       "w": "99.1u",
+       "l": "1u",
+       "m": "15"
+      },
+      "PM6": {
+       "w": "97.8u",
+       "l": "2u",
+       "m": "14"
+      },
+      "PM7": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "NM1": {
+       "w": "15u",
+       "l": "2u"
+      },
+      "NM3": {
+       "w": "15u",
+       "l": "2u"
+      },
+      "NM2": {
+       "w": "91.5u",
+       "l": "2u",
+       "m": "6"
+      },
+      "NM5": {
+       "w": "20.5u",
+       "l": "2u"
+      },
+      "NM4": {
+       "w": "87.4u",
+       "l": "2u",
+       "m": "5"
+      },
+      "NM6": {
+       "w": "92.5u",
+       "l": "2u",
+       "m": "3"
+      },
+      "NM7": {
+       "w": "96u",
+       "l": "2u",
+       "m": "5"
+      },
+      "NM8": {
+       "w": "76.1u",
+       "l": "2u",
+       "m": "4"
+      },
+      "NM9": {
+       "w": "76.1u",
+       "l": "2u",
+       "m": "4"
+      }
+     },
+     "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT N1 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM2 VB1 N2 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM3 N1 N1 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM4 N3 INP N4 VDD pfet_06v0 w=55u l=1u m=2\nXPM5 N5 INN N4 VDD pfet_06v0 w=99.1u l=1u m=15\nXPM6 N4 N6 VDD VDD pfet_06v0 w=97.8u l=2u m=14\nXPM7 N6 N6 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM8 N2 N2 VDD VDD pfet_06v0 w=100u l=2u m=20\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT N3 VSS VSS nfet_06v0 w=91.5u l=2u m=6\nXNM3 N6 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM4 N1 N5 VSS VSS nfet_06v0 w=87.4u l=2u m=5\nXNM5 N3 N3 VSS VSS nfet_06v0 w=20.5u l=2u\nXNM6 N5 N5 VSS VSS nfet_06v0 w=92.5u l=2u m=3\nXNM7 N2 N7 VSS VSS nfet_06v0 w=96u l=2u m=5\nXNM8 N8 N7 VSS VSS nfet_06v0 w=76.1u l=2u m=4\nXNM9 N7 N7 VSS VSS nfet_06v0 w=76.1u l=2u m=4\nR1 VDD N8 10k\nR2 VDD N7 10k\nR3 N7 N8 10k\n.ends opamp\n",
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": {
+      "ok": true,
+      "vout_op": 2.484528,
+      "vout_on": 2.484528,
+      "idd_op": 0.0049663,
+      "idd_on": 0.004966297
+     },
+     "startup_added": null,
+     "seconds": 15.1,
+     "measured": {
+      "avd": 37.40098443616199,
+      "gain_dc": 25.073260648162403,
+      "ugbw": 48107564.84694654,
+      "pm": 34.81685481474639,
+      "gm": 19.274164934142377,
+      "idd": 0.0049664784953787205,
+      "sr": 14616511.965604326,
+      "ts": 2.1749999999999792e-07,
+      "cmrr": 68.86019584329334,
+      "psrr": 64.23743567816503,
+      "voh_1ma": -0.2631180373189146,
+      "voh_5ma": -0.5844364561759996,
+      "vol_1ma": 0.0440213536764833,
+      "vol_5ma": 0.2215517847613252,
+      "io_source": 0.0008040691943900918,
+      "io_sink": 0.008645370075988257,
+      "gain_unloaded": 51.21772343417816
+     },
+     "spec": [
+      {
+       "measure": "avd",
+       "label": "대신호 차동 전압이득",
+       "unit": "dB",
+       "value": 37.40098443616199,
+       "target": "≥ 114 dB",
+       "status": "FAIL"
+      },
+      {
+       "measure": "cmrr",
+       "label": "공통모드 제거비",
+       "unit": "dB",
+       "value": 68.86019584329334,
+       "target": "≥ 100 dB",
+       "status": "FAIL"
+      },
+      {
+       "measure": "idd",
+       "label": "공급 전류",
+       "unit": "µA",
+       "value": 4966.47849537872,
+       "target": "≥ 0.1 µA",
+       "status": "PASS"
+      },
+      {
+       "measure": "ugbw",
+       "label": "단위이득 대역폭",
+       "unit": "MHz",
+       "value": 48.10756484694654,
+       "target": "≥ 20 MHz",
+       "status": "PASS"
+      },
+      {
+       "measure": "sr",
+       "label": "슬루율 (단위이득)",
+       "unit": "V/µs",
+       "value": 14.616511965604325,
+       "target": "≥ 8 V/µs",
+       "status": "PASS"
+      },
+      {
+       "measure": "pm",
+       "label": "위상여유",
+       "unit": "°",
+       "value": 34.81685481474639,
+       "target": "≥ 47 °",
+       "status": "FAIL"
+      }
+     ],
+     "passed": 3,
+     "judged": 6
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": true,
+     "valid": true,
+     "reason": "",
+     "off": [],
+     "triode": [],
+     "startup": [],
+     "sizes": {
+      "PM1": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "PM3": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "PM2": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "PM8": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "PM4": {
+       "w": "61.4u",
+       "l": "1u"
+      },
+      "PM5": {
+       "w": "96u",
+       "l": "1u",
+       "m": "16"
+      },
+      "PM6": {
+       "w": "97.8u",
+       "l": "2u",
+       "m": "14"
+      },
+      "PM7": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "NM1": {
+       "w": "15u",
+       "l": "2u"
+      },
+      "NM3": {
+       "w": "15u",
+       "l": "2u"
+      },
+      "NM2": {
+       "w": "91u",
+       "l": "2u",
+       "m": "6"
+      },
+      "NM5": {
+       "w": "11.5u",
+       "l": "2u"
+      },
+      "NM4": {
+       "w": "90.1u",
+       "l": "2u",
+       "m": "5"
+      },
+      "NM6": {
+       "w": "95.6u",
+       "l": "2u",
+       "m": "3"
+      },
+      "NM7": {
+       "w": "96u",
+       "l": "2u",
+       "m": "5"
+      },
+      "NM8": {
+       "w": "76.1u",
+       "l": "2u",
+       "m": "4"
+      },
+      "NM9": {
+       "w": "76.1u",
+       "l": "2u",
+       "m": "4"
+      }
+     },
+     "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT N1 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM2 VB1 N2 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM3 N1 N1 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM4 N3 INP N4 VDD pfet_06v0 w=61.4u l=1u\nXPM5 N5 INN N4 VDD pfet_06v0 w=96u l=1u m=16\nXPM6 N4 N6 VDD VDD pfet_06v0 w=97.8u l=2u m=14\nXPM7 N6 N6 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM8 N2 N2 VDD VDD pfet_06v0 w=100u l=2u m=20\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT N3 VSS VSS nfet_06v0 w=91u l=2u m=6\nXNM3 N6 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM4 N1 N5 VSS VSS nfet_06v0 w=90.1u l=2u m=5\nXNM5 N3 N3 VSS VSS nfet_06v0 w=11.5u l=2u\nXNM6 N5 N5 VSS VSS nfet_06v0 w=95.6u l=2u m=3\nXNM7 N2 N7 VSS VSS nfet_06v0 w=96u l=2u m=5\nXNM8 N8 N7 VSS VSS nfet_06v0 w=76.1u l=2u m=4\nXNM9 N7 N7 VSS VSS nfet_06v0 w=76.1u l=2u m=4\nR1 VDD N8 10k\nR2 VDD N7 10k\nR3 N7 N8 10k\n.ends opamp\n",
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": {
+      "ok": true,
+      "vout_op": 2.488303,
+      "vout_on": 2.488303,
+      "idd_op": 0.00500281,
+      "idd_on": 0.00500281
+     },
+     "startup_added": null,
+     "seconds": 12.7,
+     "measured": {
+      "avd": 37.49086491945265,
+      "gain_dc": 25.182371788765852,
+      "ugbw": 36857294.54435588,
+      "pm": 36.08176619379205,
+      "gm": 21.843107378530085,
+      "idd": 0.00500289098856395,
+      "sr": 13633221.853991864,
+      "ts": 2.9749999999999715e-07,
+      "cmrr": 70.97164051447277,
+      "psrr": 69.13298494656311,
+      "voh_1ma": -0.2663339055474996,
+      "voh_5ma": -0.587346988059164,
+      "vol_1ma": 0.048833335951569024,
+      "vol_5ma": 0.2101930348700194,
+      "io_source": 0.0008026968194833305,
+      "io_sink": 0.00947417223277897,
+      "gain_unloaded": 51.196095636663046
+     },
+     "spec": [
+      {
+       "measure": "avd",
+       "label": "대신호 차동 전압이득",
+       "unit": "dB",
+       "value": 37.49086491945265,
+       "target": "≥ 114 dB",
+       "status": "FAIL"
+      },
+      {
+       "measure": "cmrr",
+       "label": "공통모드 제거비",
+       "unit": "dB",
+       "value": 70.97164051447277,
+       "target": "≥ 100 dB",
+       "status": "FAIL"
+      },
+      {
+       "measure": "idd",
+       "label": "공급 전류",
+       "unit": "µA",
+       "value": 5002.89098856395,
+       "target": "≥ 0.1 µA",
+       "status": "PASS"
+      },
+      {
+       "measure": "ugbw",
+       "label": "단위이득 대역폭",
+       "unit": "MHz",
+       "value": 36.857294544355874,
+       "target": "≥ 20 MHz",
+       "status": "PASS"
+      },
+      {
+       "measure": "sr",
+       "label": "슬루율 (단위이득)",
+       "unit": "V/µs",
+       "value": 13.633221853991863,
+       "target": "≥ 8 V/µs",
+       "status": "PASS"
+      },
+      {
+       "measure": "pm",
+       "label": "위상여유",
+       "unit": "°",
+       "value": 36.08176619379205,
+       "target": "≥ 47 °",
+       "status": "FAIL"
+      }
+     ],
+     "passed": 3,
+     "judged": 6
+    }
+   ],
+   "best": {
+    "output_scale": 1.0,
+    "passed": 4,
+    "judged": 6,
+    "idd": 0.00414521778814168
+   }
+  },
+  {
+   "how": "beam",
+   "in_train": false,
+   "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=VB1 G=N2 S=VDD B=VDD ; PM3 D=N1 G=N1 S=VDD B=VDD ; PM4 D=N3 G=IN2 S=N4 B=VDD ; PM5 D=N5 G=IN1 S=N4 B=VDD ; PM6 D=N4 G=N6 S=VDD B=VDD ; PM7 D=N6 G=N6 S=VDD B=VDD ; PM8 D=N2 G=N2 S=VDD B=VDD ; NM1 D=VB1 G=VB1 S=VSS B=VSS ; NM2 D=OUT G=N3 S=VSS B=VSS ; NM3 D=N6 G=VB1 S=VSS B=VSS ; NM4 D=N1 G=N5 S=VSS B=VSS ; NM5 D=N3 G=N3 S=VSS B=VSS ; NM6 D=N5 G=N5 S=VSS B=VSS ; R1 P=VDD N=N5 ; C1 P=OUT N=N3",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 14
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM2",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM5"
+     ],
+     "triode": [
+      "PM1"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.6
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM2",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM5"
+     ],
+     "triode": [
+      "PM1"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.4
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM2",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM5"
+     ],
+     "triode": [
+      "PM1"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.1
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM2",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM5"
+     ],
+     "triode": [
+      "PM1"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.6
+    }
+   ]
+  },
+  {
+   "how": "beam",
+   "in_train": false,
+   "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=VB1 G=N2 S=VDD B=VDD ; PM3 D=VB2 G=N2 S=VDD B=VDD ; PM4 D=N3 G=N1 S=VDD B=VDD ; PM5 D=N4 G=IN2 S=N3 B=VDD ; PM6 D=N5 G=IN1 S=N3 B=VDD ; PM7 D=N1 G=N1 S=VDD B=VDD ; PM8 D=N6 G=N2 S=VDD B=VDD ; PM9 D=N2 G=N2 S=VDD B=VDD ; NM1 D=VB1 G=VB1 S=VSS B=VSS ; NM2 D=VB2 G=VB2 S=VSS B=VSS ; NM3 D=OUT G=N4 S=VSS B=VSS ; NM4 D=N1 G=VB1 S=VSS B=VSS ; NM5 D=N4 G=N5 S=VSS B=VSS ; NM6 D=N5 G=N5 S=VSS B=VSS ; NM7 D=N2 G=VB2 S=N7 B=VSS ; R1 P=N7 N=VSS ; C1 P=OUT N=N4",
+   "steps": {
+    "rules": {
+     "ok": false,
+     "problems": [
+      "한 곳에만 붙은 노드: N6"
+     ],
+     "transistors": 16
+    }
+   },
+   "variants": []
+  },
+  {
+   "how": "beam",
+   "in_train": false,
+   "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=VB1 G=N2 S=VDD B=VDD ; PM3 D=N3 G=N1 S=VDD B=VDD ; PM4 D=N4 G=IN2 S=N3 B=VDD ; PM5 D=N5 G=IN1 S=N3 B=VDD ; PM6 D=N1 G=N1 S=VDD B=VDD ; PM7 D=N2 G=N2 S=VDD B=VDD ; NM1 D=VB1 G=VB1 S=VSS B=VSS ; NM2 D=OUT G=N4 S=VSS B=VSS ; NM3 D=N1 G=VB1 S=VSS B=VSS ; NM4 D=N4 G=N5 S=VSS B=VSS ; NM5 D=N5 G=N5 S=VSS B=VSS ; R1 P=VDD N=N6 ; R2 P=N2 N=VSS ; C1 P=OUT N=N4",
+   "steps": {
+    "rules": {
+     "ok": false,
+     "problems": [
+      "한 곳에만 붙은 노드: N6"
+     ],
+     "transistors": 12
+    }
+   },
+   "variants": []
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=N2 G=N2 S=VDD B=VDD ; PM3 D=N1 G=N2 S=VDD B=VDD ; PM4 D=N3 G=N4 S=VDD B=VDD ; PM5 D=N4 G=N4 S=VDD B=VDD ; NM1 D=OUT G=VB1 S=N5 B=VSS ; NM2 D=N2 G=VB1 S=VSS B=VSS ; NM3 D=N6 G=VB1 S=VSS B=VSS ; NM4 D=N1 G=IN1 S=N7 B=VSS ; NM5 D=N4 G=IN2 S=N7 B=VSS ; NM6 D=N7 G=N5 S=VSS B=VSS ; NM7 D=N5 G=N5 S=VSS B=VSS ; R1 P=VDD N=N6 ; R2 P=VDD N=N5 ; R3 P=N5 N=N6",
+   "steps": {
+    "rules": {
+     "ok": false,
+     "problems": [
+      "한 곳에만 붙은 노드: N3"
+     ],
+     "transistors": 12
+    }
+   },
+   "variants": []
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD ; PM2 D=OUT G=N1 S=VDD B=VDD ; PM3 D=N2 G=VB1 S=VDD B=VDD ; PM4 D=N3 G=N4 S=VDD B=VDD ; PM5 D=N1 G=N1 S=VDD B=VDD ; PM6 D=N4 G=N4 S=VDD B=VDD ; PM7 D=N5 G=N3 S=VDD B=VDD ; PM8 D=N3 G=N3 S=VDD B=VDD ; NM1 D=OUT G=N2 S=VSS B=VSS ; NM2 D=VB1 G=N5 S=VSS B=VSS ; NM3 D=N2 G=N2 S=VSS B=VSS ; NM4 D=N1 G=IN1 S=N6 B=VSS ; NM5 D=N4 G=IN2 S=N6 B=VSS ; NM6 D=N6 G=N5 S=VSS B=VSS ; NM7 D=N5 G=N5 S=VSS B=VSS ; NM8 D=N2 G=N2 S=VSS B=VSS ; NM9 D=N7 G=N2 S=VSS B=VSS ; R1 P=VDD N=N7",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 17
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6, NM7, NM8, NM9",
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6, NM7, NM8, NM9",
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6, NM7, NM8, NM9",
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6, NM7, NM8, NM9"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6, NM7, NM8, NM9",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5",
+      "NM6",
+      "NM7",
+      "NM8",
+      "NM9"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": -4.2
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6, NM7, NM8, NM9",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5",
+      "NM6",
+      "NM7",
+      "NM8",
+      "NM9"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 5.7
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6, NM7, NM8, NM9",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5",
+      "NM6",
+      "NM7",
+      "NM8",
+      "NM9"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.5
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6, NM7, NM8, NM9",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5",
+      "NM6",
+      "NM7",
+      "NM8",
+      "NM9"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.4
+    }
+   ]
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD ; PM2 D=OUT G=N1 S=VDD B=VDD ; PM3 D=N2 G=VB1 S=VDD B=VDD ; PM4 D=VB2 G=N2 S=VDD B=VDD ; PM5 D=N3 G=N4 S=VDD B=VDD ; PM6 D=N1 G=N1 S=VDD B=VDD ; PM7 D=N4 G=N4 S=VDD B=VDD ; PM8 D=N5 G=N3 S=VDD B=VDD ; PM9 D=N3 G=N3 S=VDD B=VDD ; NM1 D=OUT G=N3 S=VSS B=VSS ; NM2 D=VB1 G=N5 S=VSS B=VSS ; NM3 D=N2 G=N6 S=VSS B=VSS ; NM4 D=N7 G=N6 S=VSS B=VSS ; NM5 D=N6 G=N6 S=VSS B=VSS ; NM6 D=N7 G=N6 S=VSS B=VSS ; R1 P=VDD N=N7 ; R2 P=VDD N=N6 ; R3 P=N6 N=N7",
+   "steps": {
+    "rules": {
+     "ok": false,
+     "problems": [
+      "IN1 단자가 없음",
+      "IN2 단자가 없음",
+      "IN1 가 트랜지스터 게이트에 붙지 않음",
+      "IN2 가 트랜지스터 게이트에 붙지 않음"
+     ],
+     "transistors": 15
+    }
+   },
+   "variants": []
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD ; PM2 D=OUT G=N1 S=VDD B=VDD ; PM3 D=N2 G=VB1 S=VDD B=VDD ; PM4 D=N1 G=N1 S=VDD B=VDD ; PM5 D=N3 G=IN2 S=N4 B=VDD ; PM6 D=N5 G=IN1 S=N4 B=VDD ; PM7 D=N4 G=N6 S=VDD B=VDD ; PM8 D=N6 G=N6 S=VDD B=VDD ; NM1 D=OUT G=N3 S=VSS B=VSS ; NM2 D=N1 G=N5 S=VSS B=VSS ; NM3 D=N3 G=N3 S=VSS B=VSS ; NM4 D=N5 G=N5 S=VSS B=VSS ; NM5 D=N6 G=N2 S=VSS B=VSS ; NM6 D=N2 G=N2 S=VSS B=VSS ; R1 P=VDD N=N5",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 14
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM1",
+      "PM3",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM3",
+      "NM5",
+      "NM6"
+     ],
+     "triode": [
+      "PM2"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.1
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM1",
+      "PM3",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM3",
+      "NM5",
+      "NM6"
+     ],
+     "triode": [
+      "PM2"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.1
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM1",
+      "PM3",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM3",
+      "NM5",
+      "NM6"
+     ],
+     "triode": [
+      "PM2"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.2
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM1",
+      "PM3",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM3",
+      "NM5",
+      "NM6"
+     ],
+     "triode": [
+      "PM2"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.5
+    }
+   ]
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD ; PM2 D=OUT G=N1 S=VDD B=VDD ; PM3 D=N2 G=VB1 S=VDD B=VDD ; PM4 D=N1 G=N1 S=VDD B=VDD ; PM5 D=N3 G=IN2 S=N4 B=VDD ; PM6 D=N5 G=IN1 S=N4 B=VDD ; PM7 D=N4 G=N6 S=VDD B=VDD ; PM8 D=N6 G=N6 S=VDD B=VDD ; NM1 D=OUT G=N3 S=VSS B=VSS ; NM2 D=VB1 G=N2 S=VSS B=VSS ; NM3 D=N1 G=N5 S=VSS B=VSS ; NM4 D=N3 G=N3 S=VSS B=VSS ; NM5 D=N5 G=N5 S=VSS B=VSS ; NM6 D=N6 G=N2 S=VSS B=VSS ; NM7 D=N7 G=N2 S=VSS B=VSS ; R1 P=N2 N=N7 ; C1 P=OUT N=N3",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 15
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "포화 영역 밖 소자 PM3, PM7, NM2, NM6, NM7",
+      "포화 영역 밖 소자 PM3, PM7, NM2, NM6, NM7",
+      "포화 영역 밖 소자 PM3, PM7, NM2, NM6, NM7",
+      "포화 영역 밖 소자 PM3, PM7, NM2, NM6, NM7"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "포화 영역 밖 소자 PM3, PM7, NM2, NM6, NM7",
+     "off": [],
+     "triode": [
+      "PM3",
+      "PM7",
+      "NM2",
+      "NM6",
+      "NM7"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.7
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "포화 영역 밖 소자 PM3, PM7, NM2, NM6, NM7",
+     "off": [],
+     "triode": [
+      "PM3",
+      "PM7",
+      "NM2",
+      "NM6",
+      "NM7"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.7
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "포화 영역 밖 소자 PM3, PM7, NM2, NM6, NM7",
+     "off": [],
+     "triode": [
+      "PM3",
+      "PM7",
+      "NM2",
+      "NM6",
+      "NM7"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.9
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "포화 영역 밖 소자 PM3, PM7, NM2, NM6, NM7",
+     "off": [],
+     "triode": [
+      "PM3",
+      "PM7",
+      "NM2",
+      "NM6",
+      "NM7"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.9
+    }
+   ]
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=OUT G=VB1 S=VDD B=VDD ; PM2 D=VB1 G=VB1 S=VDD B=VDD ; PM3 D=N1 G=VB1 S=VDD B=VDD ; PM4 D=N2 G=IN2 S=N1 B=VDD ; PM5 D=N3 G=IN1 S=N1 B=VDD ; PM6 D=N1 G=N4 S=VDD B=VDD ; PM7 D=N4 G=N4 S=VDD B=VDD ; NM1 D=OUT G=N2 S=VSS B=VSS ; NM2 D=N2 G=N2 S=VSS B=VSS ; NM3 D=N6 G=N2 S=VSS B=VSS ; NM4 D=N3 G=N3 S=VSS B=VSS ; NM5 D=N4 G=N3 S=VSS B=VSS ; NM6 D=VB1 G=N2 S=N5 B=VSS ; R1 P=N5 N=VSS",
+   "steps": {
+    "rules": {
+     "ok": false,
+     "problems": [
+      "한 곳에만 붙은 노드: N6"
+     ],
+     "transistors": 13
+    }
+   },
+   "variants": []
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=VB1 G=N2 S=VDD B=VDD ; PM3 D=N3 G=N1 S=VDD B=VDD ; PM4 D=N4 G=IN2 S=N3 B=VDD ; PM5 D=N5 G=IN1 S=N3 B=VDD ; PM6 D=N1 G=N1 S=VDD B=VDD ; PM7 D=N2 G=N2 S=VDD B=VDD ; NM1 D=VB1 G=VB1 S=VSS B=VSS ; NM2 D=OUT G=N4 S=VSS B=VSS ; NM3 D=N1 G=VB1 S=VSS B=VSS ; NM4 D=N4 G=N5 S=VSS B=VSS ; NM5 D=N5 G=N5 S=VSS B=VSS ; R1 P=VDD N=N5",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 12
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, NM1, NM2, NM3, NM4",
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, NM1, NM2, NM3, NM4",
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, NM1, NM2, NM3, NM4",
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, NM1, NM2, NM3, NM4"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, NM1, NM2, NM3, NM4",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.7
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, NM1, NM2, NM3, NM4",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.9
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, NM1, NM2, NM3, NM4",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.9
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, NM1, NM2, NM3, NM4",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.8
+    }
+   ]
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=N2 G=N2 S=VDD B=VDD ; PM3 D=N3 G=N2 S=VDD B=VDD ; PM4 D=N4 G=N4 S=VDD B=VDD ; PM5 D=N1 G=N4 S=VDD B=VDD ; NM1 D=OUT G=N3 S=VSS B=VSS ; NM2 D=N3 G=N3 S=VSS B=VSS ; NM3 D=N2 G=N5 S=VSS B=VSS ; NM4 D=N6 G=N5 S=VSS B=VSS ; NM5 D=N5 G=N5 S=VSS B=VSS ; R1 P=VDD N=N6 ; R2 P=VDD N=N5 ; R3 P=N5 N=N6",
+   "steps": {
+    "rules": {
+     "ok": false,
+     "problems": [
+      "IN1 단자가 없음",
+      "IN2 단자가 없음",
+      "IN1 가 트랜지스터 게이트에 붙지 않음",
+      "IN2 가 트랜지스터 게이트에 붙지 않음"
+     ],
+     "transistors": 10
+    }
+   },
+   "variants": []
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD ; PM2 D=OUT G=N1 S=VDD B=VDD ; PM3 D=N2 G=VB1 S=VDD B=VDD ; PM4 D=VB2 G=N3 S=VDD B=VDD ; PM5 D=N4 G=N5 S=VDD B=VDD ; PM6 D=N1 G=N1 S=VDD B=VDD ; PM7 D=N5 G=N5 S=VDD B=VDD ; PM8 D=N6 G=N3 S=VDD B=VDD ; PM9 D=N3 G=N3 S=VDD B=VDD ; NM1 D=OUT G=N4 S=VSS B=VSS ; NM2 D=VB1 G=N6 S=VSS B=VSS ; NM3 D=N1 G=IN1 S=N7 B=VSS ; NM4 D=N5 G=IN2 S=N7 B=VSS ; NM5 D=N7 G=N2 S=VSS B=VSS ; NM6 D=N2 G=N2 S=VSS B=VSS ; NM7 D=N6 G=N6 S=VSS B=VSS ; NM8 D=N6 G=N6 S=VSS B=VSS ; R1 P=VDD N=N6",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 17
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM4",
+      "PM5",
+      "PM7",
+      "PM8",
+      "PM9",
+      "NM4",
+      "NMB1"
+     ],
+     "triode": [
+      "NM1"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM4 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.7
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM4",
+      "PM5",
+      "PM7",
+      "PM8",
+      "PM9",
+      "NM4",
+      "NMB1"
+     ],
+     "triode": [
+      "NM1"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM4 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.7
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM4",
+      "PM5",
+      "PM7",
+      "PM8",
+      "PM9",
+      "NM4",
+      "NMB1"
+     ],
+     "triode": [
+      "NM1"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM4 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.7
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM4",
+      "PM5",
+      "PM7",
+      "PM8",
+      "PM9",
+      "NM4",
+      "NMB1"
+     ],
+     "triode": [
+      "NM1"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM4 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.5
+    }
+   ]
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=VB1 G=N2 S=VDD B=VDD ; PM3 D=N3 G=N1 S=VDD B=VDD ; PM4 D=N4 G=IN2 S=N3 B=VDD ; PM5 D=N5 G=IN1 S=N3 B=VDD ; PM6 D=N1 G=N1 S=VDD B=VDD ; PM7 D=N2 G=N2 S=VDD B=VDD ; NM1 D=VB1 G=VB1 S=VSS B=VSS ; NM2 D=OUT G=N4 S=VSS B=VSS ; NM3 D=N1 G=VB1 S=VSS B=VSS ; NM4 D=N6 G=VB1 S=VSS B=VSS ; NM5 D=N4 G=N5 S=VSS B=VSS ; NM6 D=N5 G=N5 S=VSS B=VSS ; R1 P=VDD N=N6 ; R2 P=VDD N=N5 ; R3 P=N5 N=N6",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 13
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, NM1, NM2, NM3, NM4, NM5",
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, NM1, NM2, NM3, NM4, NM5",
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, NM1, NM2, NM3, NM4, NM5",
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, NM1, NM2, NM3, NM4, NM5"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, NM1, NM2, NM3, NM4, NM5",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.8
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, NM1, NM2, NM3, NM4, NM5",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.6
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, NM1, NM2, NM3, NM4, NM5",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.6
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, NM1, NM2, NM3, NM4, NM5",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.6
+    }
+   ]
+  },
+  {
+   "how": "sample",
+   "in_train": true,
+   "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD ; PM2 D=OUT G=N1 S=VDD B=VDD ; PM3 D=N2 G=VB1 S=VDD B=VDD ; PM4 D=VB2 G=N3 S=VDD B=VDD ; PM5 D=N4 G=N5 S=VDD B=VDD ; PM6 D=N1 G=N1 S=VDD B=VDD ; PM7 D=N5 G=N5 S=VDD B=VDD ; PM8 D=N6 G=N3 S=VDD B=VDD ; PM9 D=N3 G=N3 S=VDD B=VDD ; NM1 D=OUT G=N4 S=VSS B=VSS ; NM2 D=VB1 G=N6 S=VSS B=VSS ; NM3 D=N3 G=VB2 S=VSS B=VSS ; NM4 D=N7 G=VB2 S=VSS B=VSS ; NM5 D=N4 G=N4 S=VSS B=VSS ; NM6 D=N1 G=IN1 S=N8 B=VSS ; NM7 D=N5 G=IN2 S=N8 B=VSS ; NM8 D=N8 G=N2 S=VSS B=VSS ; NM9 D=N2 G=N2 S=VSS B=VSS ; NM10 D=N6 G=N6 S=VSS B=VSS ; R1 P=VB2 N=N7",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 19
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "포화 영역 밖 소자 PM4, NM2, NM4, NM8",
+      "포화 영역 밖 소자 PM4, NM2, NM4, NM8",
+      "포화 영역 밖 소자 PM4, NM2, NM4, NM8",
+      "포화 영역 밖 소자 PM4, NM2, NM4, NM8"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "포화 영역 밖 소자 PM4, NM2, NM4, NM8",
+     "off": [],
+     "triode": [
+      "PM4",
+      "NM2",
+      "NM4",
+      "NM8"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "self",
+        "why": "이미 R1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.5
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "포화 영역 밖 소자 PM4, NM2, NM4, NM8",
+     "off": [],
+     "triode": [
+      "PM4",
+      "NM2",
+      "NM4",
+      "NM8"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "self",
+        "why": "이미 R1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.5
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "포화 영역 밖 소자 PM4, NM2, NM4, NM8",
+     "off": [],
+     "triode": [
+      "PM4",
+      "NM2",
+      "NM4",
+      "NM8"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "self",
+        "why": "이미 R1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.3
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "포화 영역 밖 소자 PM4, NM2, NM4, NM8",
+     "off": [],
+     "triode": [
+      "PM4",
+      "NM2",
+      "NM4",
+      "NM8"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "self",
+        "why": "이미 R1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.7
+    }
+   ]
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=VB1 G=N2 S=VDD B=VDD ; PM3 D=VB2 G=N2 S=VDD B=VDD ; PM4 D=N3 G=N1 S=VDD B=VDD ; PM5 D=N4 G=IN2 S=N3 B=VDD ; PM6 D=N5 G=IN1 S=N3 B=VDD ; PM7 D=N1 G=N1 S=VDD B=VDD ; PM8 D=N6 G=N2 S=VDD B=VDD ; PM9 D=N2 G=N2 S=VDD B=VDD ; NM1 D=VB1 G=VB1 S=VSS B=VSS ; NM2 D=OUT G=N4 S=VSS B=VSS ; NM3 D=N1 G=VB1 S=VSS B=VSS ; NM4 D=N4 G=N5 S=VSS B=VSS ; NM5 D=N5 G=N5 S=VSS B=VSS ; NM6 D=N1 G=N6 S=VSS B=VSS ; NM7 D=N6 G=N6 S=VSS B=VSS ; R1 P=VB2 N=N7",
+   "steps": {
+    "rules": {
+     "ok": false,
+     "problems": [
+      "한 곳에만 붙은 노드: N7"
+     ],
+     "transistors": 16
+    }
+   },
+   "variants": []
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD ; PM2 D=OUT G=N1 S=VDD B=VDD ; PM3 D=N2 G=VB1 S=VDD B=VDD ; PM4 D=VB2 G=N2 S=VDD B=VDD ; PM5 D=N3 G=N1 S=VDD B=VDD ; PM6 D=N4 G=IN2 S=N3 B=VDD ; PM7 D=N5 G=IN1 S=N3 B=VDD ; PM8 D=N1 G=N1 S=VDD B=VDD ; NM1 D=OUT G=N4 S=VSS B=VSS ; NM2 D=VB1 G=N2 S=VSS B=VSS ; NM3 D=N4 G=N5 S=VSS B=VSS ; NM4 D=N5 G=N5 S=VSS B=VSS ; NM5 D=N1 G=N2 S=VSS B=VSS ; NM6 D=N6 G=N2 S=VSS B=VSS ; R1 P=N2 N=N6 ; C1 P=OUT N=N4",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 14
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "꺼진 소자 PM4, NMB1",
+      "꺼진 소자 PM4, NMB1",
+      "꺼진 소자 PM4, NMB1",
+      "꺼진 소자 PM4, NMB1"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM4, NMB1",
+     "off": [
+      "PM4",
+      "NMB1"
+     ],
+     "triode": [
+      "PM2",
+      "PM3",
+      "PM5",
+      "NM2",
+      "NM5",
+      "NM6"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM4 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.9
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM4, NMB1",
+     "off": [
+      "PM4",
+      "NMB1"
+     ],
+     "triode": [
+      "PM2",
+      "PM3",
+      "PM5",
+      "NM2",
+      "NM5",
+      "NM6"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM4 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.1
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM4, NMB1",
+     "off": [
+      "PM4",
+      "NMB1"
+     ],
+     "triode": [
+      "PM2",
+      "PM3",
+      "PM5",
+      "NM2",
+      "NM5",
+      "NM6"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM4 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.0
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM4, NMB1",
+     "off": [
+      "PM4",
+      "NMB1"
+     ],
+     "triode": [
+      "PM2",
+      "PM3",
+      "PM5",
+      "NM2",
+      "NM5",
+      "NM6"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM4 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.0
+    }
+   ]
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD ; PM2 D=OUT G=N1 S=VDD B=VDD ; PM3 D=N2 G=VB1 S=VDD B=VDD ; PM4 D=N1 G=N1 S=VDD B=VDD ; PM5 D=N3 G=IN2 S=N4 B=VDD ; PM6 D=N5 G=IN1 S=N4 B=VDD ; PM7 D=N4 G=N6 S=VDD B=VDD ; PM8 D=N6 G=N6 S=VDD B=VDD ; NM1 D=OUT G=N3 S=VSS B=VSS ; NM2 D=N1 G=N5 S=VSS B=VSS ; NM3 D=N3 G=N3 S=VSS B=VSS ; NM4 D=N5 G=N5 S=VSS B=VSS ; NM5 D=N6 G=N2 S=VSS B=VSS ; NM6 D=N2 G=N2 S=VSS B=VSS ; R1 P=VDD N=N6",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 14
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6",
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6",
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6",
+      "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5",
+      "NM6"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.6
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5",
+      "NM6"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.5
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5",
+      "NM6"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.4
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, PM8, NM1, NM2, NM3, NM4, NM5, NM6",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "PM7",
+      "PM8",
+      "NM1",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5",
+      "NM6"
+     ],
+     "triode": [],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.5
+    }
+   ]
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=VB1 G=N2 S=VDD B=VDD ; PM3 D=N3 G=N1 S=VDD B=VDD ; PM4 D=N4 G=IN2 S=N3 B=VDD ; PM5 D=N5 G=IN1 S=N3 B=VDD ; PM6 D=N1 G=N1 S=VDD B=VDD ; PM7 D=N2 G=N2 S=VDD B=VDD ; NM1 D=VB1 G=VB1 S=VSS B=VSS ; NM2 D=OUT G=N4 S=VSS B=VSS ; NM3 D=N2 G=VB1 S=VSS B=VSS ; NM4 D=N7 G=VB1 S=VSS B=VSS ; NM5 D=N4 G=N5 S=VSS B=VSS ; NM6 D=N5 G=N5 S=VSS B=VSS ; R1 P=VDD N=N7 ; R2 P=VDD N=N5 ; R3 P=N5 N=N7",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 13
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "바이어스 미해결: 전류를 정하는 소자가 없는 고리 (N2-VB1)",
+      "바이어스 미해결: 전류를 정하는 소자가 없는 고리 (N2-VB1)",
+      "바이어스 미해결: 전류를 정하는 소자가 없는 고리 (N2-VB1)",
+      "바이어스 미해결: 전류를 정하는 소자가 없는 고리 (N2-VB1)"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "바이어스 미해결: 전류를 정하는 소자가 없는 고리 (N2-VB1)",
+     "off": null,
+     "triode": null,
+     "startup": null,
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [
+       [
+        "N2",
+        "VB1"
+       ]
+      ],
+      "unresolved": [
+       "전류를 정하는 소자가 없는 고리 (N2-VB1)"
+      ]
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.0
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "바이어스 미해결: 전류를 정하는 소자가 없는 고리 (N2-VB1)",
+     "off": null,
+     "triode": null,
+     "startup": null,
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [
+       [
+        "N2",
+        "VB1"
+       ]
+      ],
+      "unresolved": [
+       "전류를 정하는 소자가 없는 고리 (N2-VB1)"
+      ]
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.0
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "바이어스 미해결: 전류를 정하는 소자가 없는 고리 (N2-VB1)",
+     "off": null,
+     "triode": null,
+     "startup": null,
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [
+       [
+        "N2",
+        "VB1"
+       ]
+      ],
+      "unresolved": [
+       "전류를 정하는 소자가 없는 고리 (N2-VB1)"
+      ]
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.0
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "바이어스 미해결: 전류를 정하는 소자가 없는 고리 (N2-VB1)",
+     "off": null,
+     "triode": null,
+     "startup": null,
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [
+       [
+        "N2",
+        "VB1"
+       ]
+      ],
+      "unresolved": [
+       "전류를 정하는 소자가 없는 고리 (N2-VB1)"
+      ]
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.0
+    }
+   ]
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=VB1 G=N2 S=VDD B=VDD ; PM3 D=VB2 G=N2 S=VDD B=VDD ; PM4 D=N3 G=N1 S=VDD B=VDD ; PM5 D=N4 G=IN2 S=N3 B=VDD ; PM6 D=N5 G=IN1 S=N3 B=VDD ; PM7 D=N1 G=N1 S=VDD B=VDD ; PM8 D=N2 G=N2 S=VDD B=VDD ; NM1 D=VB1 G=VB1 S=VSS B=VSS ; NM2 D=OUT G=N4 S=VSS B=VSS ; NM3 D=N1 G=VB1 S=VSS B=VSS ; NM4 D=N4 G=N5 S=VSS B=VSS ; NM5 D=N5 G=N5 S=VSS B=VSS ; NM6 D=N1 G=N2 S=VSS B=VSS ; NM7 D=N2 G=N2 S=VSS B=VSS ; R1 P=VDD N=N6 ; R2 P=VDD N=N5 ; R3 P=N5 N=N6",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 15
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM5",
+      "NM2",
+      "NM4"
+     ],
+     "triode": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "NM3"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM3 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.7
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM5",
+      "NM2",
+      "NM4"
+     ],
+     "triode": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "NM3"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM3 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.7
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM5",
+      "NM2",
+      "NM4"
+     ],
+     "triode": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "NM3"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM3 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.8
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM5",
+      "NM2",
+      "NM4"
+     ],
+     "triode": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "NM3"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM3 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.8
+    }
+   ]
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=OUT G=VB2 S=N1 B=VDD ; PM2 D=N2 G=VB2 S=N3 B=VDD ; PM3 D=VB1 G=N2 S=VDD B=VDD ; PM4 D=N4 G=VB2 S=N5 B=VDD ; PM5 D=N1 G=N4 S=VDD B=VDD ; PM6 D=N5 G=N4 S=VDD B=VDD ; PM7 D=N6 G=N3 S=VDD B=VDD ; PM8 D=N3 G=N3 S=VDD B=VDD ; NM1 D=OUT G=IN1 S=N7 B=VSS ; NM2 D=N4 G=IN2 S=N7 B=VSS ; NM3 D=N7 G=N2 S=VSS B=VSS ; NM4 D=N2 G=N2 S=VSS B=VSS ; NM5 D=N6 G=N6 S=VSS B=VSS ; NM6 D=N4 G=N6 S=VSS B=VSS ; R1 P=VDD N=N6",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 14
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "NM2"
+     ],
+     "triode": [
+      "PM1",
+      "PM3",
+      "PM4",
+      "PM5"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM3 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       },
+       "VB2": {
+        "kind": "gate_only",
+        "why": "게이트에만 붙음"
+       }
+      },
+      "added": [
+       "NMB1",
+       "PMB1",
+       "PMB2",
+       "NMF2"
+      ],
+      "fixed": {
+       "NMF2": {
+        "w": "24u",
+        "l": "2u"
+       }
+      },
+      "reference": true,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.8
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "NM2"
+     ],
+     "triode": [
+      "PM1",
+      "PM3",
+      "PM4",
+      "PM5"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM3 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       },
+       "VB2": {
+        "kind": "gate_only",
+        "why": "게이트에만 붙음"
+       }
+      },
+      "added": [
+       "NMB1",
+       "PMB1",
+       "PMB2",
+       "NMF2"
+      ],
+      "fixed": {
+       "NMF2": {
+        "w": "24u",
+        "l": "2u"
+       }
+      },
+      "reference": true,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 2.0
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "NM1"
+     ],
+     "triode": [
+      "PM1",
+      "PM3",
+      "PM4",
+      "PM5"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM3 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       },
+       "VB2": {
+        "kind": "gate_only",
+        "why": "게이트에만 붙음"
+       }
+      },
+      "added": [
+       "NMB1",
+       "PMB1",
+       "PMB2",
+       "NMF2"
+      ],
+      "fixed": {
+       "NMF2": {
+        "w": "24u",
+        "l": "2u"
+       }
+      },
+      "reference": true,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 2.3
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "NM1"
+     ],
+     "triode": [
+      "PM1",
+      "PM3",
+      "PM4",
+      "PM5"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM3 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       },
+       "VB2": {
+        "kind": "gate_only",
+        "why": "게이트에만 붙음"
+       }
+      },
+      "added": [
+       "NMB1",
+       "PMB1",
+       "PMB2",
+       "NMF2"
+      ],
+      "fixed": {
+       "NMF2": {
+        "w": "24u",
+        "l": "2u"
+       }
+      },
+      "reference": true,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 2.5
+    }
+   ]
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=VB1 G=N1 S=VDD B=VDD ; PM3 D=N2 G=N1 S=VDD B=VDD ; PM4 D=N1 G=N1 S=VDD B=VDD ; PM5 D=N3 G=IN2 S=N4 B=VDD ; PM6 D=N5 G=IN1 S=N4 B=VDD ; PM7 D=N4 G=N6 S=VDD B=VDD ; PM8 D=N6 G=N6 S=VDD B=VDD ; NM1 D=OUT G=N3 S=VSS B=VSS ; NM2 D=N2 G=N3 S=VSS B=VSS ; NM3 D=N1 G=N5 S=VSS B=VSS ; NM4 D=N3 G=N3 S=VSS B=VSS ; NM5 D=N5 G=N5 S=VSS B=VSS ; R1 P=VDD N=N5 ; R2 P=VDD N=N5 ; R3 P=N5 N=N6",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 13
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "출력이 VCM 에서 벗어남",
+      "포화 영역 밖 소자 PM3",
+      "포화 영역 밖 소자 PM3",
+      "포화 영역 밖 소자 PM3"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM6"
+     ],
+     "triode": [
+      "PM1",
+      "PM3"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM2 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.5
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "포화 영역 밖 소자 PM3",
+     "off": [],
+     "triode": [
+      "PM3"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM2 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 2.9
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "포화 영역 밖 소자 PM3",
+     "off": [],
+     "triode": [
+      "PM3"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM2 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 2.1
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "포화 영역 밖 소자 PM3",
+     "off": [],
+     "triode": [
+      "PM3"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM2 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.9
+    }
+   ]
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=N2 G=N1 S=VDD B=VDD ; PM3 D=N3 G=IN2 S=N2 B=VDD ; PM4 D=N4 G=IN1 S=N2 B=VDD ; PM5 D=N1 G=N1 S=VDD B=VDD ; NM1 D=OUT G=N3 S=VSS B=VSS ; NM2 D=N3 G=N4 S=VSS B=VSS ; NM3 D=N4 G=N4 S=VSS B=VSS ; NM4 D=N1 G=N5 S=VSS B=VSS ; NM5 D=N5 G=N5 S=VSS B=VSS ; R1 P=VDD N=N5 ; R2 P=VDD N=N5 ; R3 P=N5 N=N6 ; C1 P=OUT N=N3",
+   "steps": {
+    "rules": {
+     "ok": false,
+     "problems": [
+      "한 곳에만 붙은 노드: N6"
+     ],
+     "transistors": 10
+    }
+   },
+   "variants": []
+  },
+  {
+   "how": "sample",
+   "in_train": true,
+   "table": "PM1 D=VB2 G=VB2 S=VDD B=VDD ; PM2 D=OUT G=N1 S=VDD B=VDD ; PM3 D=VB1 G=N2 S=VDD B=VDD ; PM4 D=N3 G=VB2 S=VDD B=VDD ; PM5 D=N4 G=N1 S=VDD B=VDD ; PM6 D=N5 G=IN2 S=N4 B=VDD ; PM7 D=N6 G=IN1 S=N4 B=VDD ; PM8 D=N1 G=N1 S=VDD B=VDD ; PM9 D=N2 G=N2 S=VDD B=VDD ; NM1 D=VB1 G=VB1 S=VSS B=VSS ; NM2 D=OUT G=N5 S=VSS B=VSS ; NM3 D=N1 G=VB1 S=VSS B=VSS ; NM4 D=N5 G=N6 S=VSS B=VSS ; NM5 D=N6 G=N6 S=VSS B=VSS ; NM6 D=N2 G=N7 S=VSS B=VSS ; NM7 D=VB2 G=N3 S=N7 B=VSS ; NM8 D=N3 G=N7 S=VSS B=VSS ; R1 P=N7 N=VSS ; C1 P=OUT N=N5",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 17
+    },
+    "sizing": {
+     "ok": true,
+     "reasons": [
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": true,
+     "valid": true,
+     "reason": "",
+     "off": [],
+     "triode": [],
+     "startup": [],
+     "sizes": {
+      "PM1": {
+       "w": "68.7u",
+       "l": "2u"
+      },
+      "PM4": {
+       "w": "68.7u",
+       "l": "2u"
+      },
+      "PM2": {
+       "w": "97u",
+       "l": "2u",
+       "m": "9"
+      },
+      "PM5": {
+       "w": "98u",
+       "l": "2u",
+       "m": "6"
+      },
+      "PM8": {
+       "w": "94.7u",
+       "l": "2u",
+       "m": "8"
+      },
+      "PM3": {
+       "w": "92.2u",
+       "l": "2u",
+       "m": "8"
+      },
+      "PM9": {
+       "w": "96.7u",
+       "l": "2u",
+       "m": "6"
+      },
+      "PM6": {
+       "w": "85.3u",
+       "l": "1u",
+       "m": "4"
+      },
+      "PM7": {
+       "w": "86.2u",
+       "l": "1u",
+       "m": "4"
+      },
+      "NM1": {
+       "w": "15u",
+       "l": "2u"
+      },
+      "NM3": {
+       "w": "15u",
+       "l": "2u"
+      },
+      "NM2": {
+       "w": "70.7u",
+       "l": "1u",
+       "m": "2"
+      },
+      "NM4": {
+       "w": "63.7u",
+       "l": "2u"
+      },
+      "NM5": {
+       "w": "64.4u",
+       "l": "2u"
+      },
+      "NM6": {
+       "w": "93.6u",
+       "l": "1u"
+      },
+      "NM8": {
+       "w": "50.3u",
+       "l": "1u"
+      },
+      "NM7": {
+       "w": "49.3u",
+       "l": "1u"
+      }
+     },
+     "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB2 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 OUT N1 VDD VDD pfet_06v0 w=97u l=2u m=9\nXPM3 VB1 N2 VDD VDD pfet_06v0 w=92.2u l=2u m=8\nXPM4 N3 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM5 N4 N1 VDD VDD pfet_06v0 w=98u l=2u m=6\nXPM6 N5 INP N4 VDD pfet_06v0 w=85.3u l=1u m=4\nXPM7 N6 INN N4 VDD pfet_06v0 w=86.2u l=1u m=4\nXPM8 N1 N1 VDD VDD pfet_06v0 w=94.7u l=2u m=8\nXPM9 N2 N2 VDD VDD pfet_06v0 w=96.7u l=2u m=6\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT N5 VSS VSS nfet_06v0 w=70.7u l=1u m=2\nXNM3 N1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM4 N5 N6 VSS VSS nfet_06v0 w=63.7u l=2u\nXNM5 N6 N6 VSS VSS nfet_06v0 w=64.4u l=2u\nXNM6 N2 N7 VSS VSS nfet_06v0 w=93.6u l=1u\nXNM7 VB2 N3 N7 VSS nfet_06v0 w=49.3u l=1u\nXNM8 N3 N7 VSS VSS nfet_06v0 w=50.3u l=1u\nR1 N7 VSS 10k\nC1 OUT N5 1p\n.ends opamp\n",
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": {
+      "ok": true,
+      "vout_op": 2.499741,
+      "vout_on": 2.499741,
+      "idd_op": 0.00133636,
+      "idd_on": 0.001336364
+     },
+     "startup_added": null,
+     "seconds": 21.0,
+     "measured": {
+      "avd": 73.57452706057957,
+      "gain_dc": 61.172623541570005,
+      "ugbw": 66627450.02214068,
+      "pm": 11.19998832944816,
+      "gm": 4.152041798774531,
+      "idd": 0.0013363640816552694,
+      "sr": 5887712.117594108,
+      "ts": 1.7999999999999997e-05,
+      "cmrr": 87.04343071089968,
+      "psrr": 91.97058572982641,
+      "voh_1ma": -0.6249922588664538,
+      "voh_5ma": -0.7069230320709384,
+      "vol_1ma": 0.033681440340242084,
+      "vol_5ma": 0.14330911688411302,
+      "io_source": 0.0002809580965202981,
+      "io_sink": 0.015748033832626428,
+      "gain_unloaded": 90.17663623697092
+     },
+     "spec": [
+      {
+       "measure": "avd",
+       "label": "대신호 차동 전압이득",
+       "unit": "dB",
+       "value": 73.57452706057957,
+       "target": "≥ 114 dB",
+       "status": "FAIL"
+      },
+      {
+       "measure": "cmrr",
+       "label": "공통모드 제거비",
+       "unit": "dB",
+       "value": 87.04343071089968,
+       "target": "≥ 100 dB",
+       "status": "FAIL"
+      },
+      {
+       "measure": "idd",
+       "label": "공급 전류",
+       "unit": "µA",
+       "value": 1336.3640816552695,
+       "target": "≥ 0.1 µA",
+       "status": "PASS"
+      },
+      {
+       "measure": "ugbw",
+       "label": "단위이득 대역폭",
+       "unit": "MHz",
+       "value": 66.62745002214068,
+       "target": "≥ 20 MHz",
+       "status": "PASS"
+      },
+      {
+       "measure": "sr",
+       "label": "슬루율 (단위이득)",
+       "unit": "V/µs",
+       "value": 5.887712117594107,
+       "target": "≥ 8 V/µs",
+       "status": "FAIL"
+      },
+      {
+       "measure": "pm",
+       "label": "위상여유",
+       "unit": "°",
+       "value": 11.19998832944816,
+       "target": "≥ 47 °",
+       "status": "FAIL"
+      }
+     ],
+     "passed": 2,
+     "judged": 6
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM6",
+      "NM2",
+      "NM4"
+     ],
+     "triode": [
+      "PM2"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 2.2
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM6",
+      "NM2",
+      "NM4"
+     ],
+     "triode": [
+      "PM2"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 2.1
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM6",
+      "NM2",
+      "NM4"
+     ],
+     "triode": [
+      "PM2"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 2.4
+    }
+   ],
+   "best": {
+    "output_scale": 1.0,
+    "passed": 2,
+    "judged": 6,
+    "idd": 0.0013363640816552694
+   }
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=OUT G=VB1 S=VDD B=VDD ; PM2 D=VB1 G=VB1 S=VDD B=VDD ; PM3 D=VB2 G=N1 S=VDD B=VDD ; PM4 D=N2 G=N1 S=VDD B=VDD ; PM5 D=N3 G=IN2 S=N4 B=VDD ; PM6 D=N5 G=IN1 S=N4 B=VDD ; PM7 D=N4 G=N6 S=VDD B=VDD ; PM8 D=N6 G=N6 S=VDD B=VDD ; NM1 D=OUT G=N3 S=VSS B=VSS ; NM2 D=VB1 G=N2 S=VSS B=VSS ; NM3 D=N1 G=N5 S=VSS B=VSS ; NM4 D=N3 G=N3 S=VSS B=VSS ; NM5 D=N5 G=N5 S=VSS B=VSS ; NM6 D=N6 G=N2 S=VSS B=VSS ; NM7 D=N7 G=N2 S=VSS B=VSS ; R1 P=N2 N=N7 ; C1 P=OUT N=N3",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 15
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "출력이 VCM 에서 벗어남",
+      "꺼진 소자 NM3",
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "NM3"
+     ],
+     "triode": [
+      "PM3",
+      "PM4",
+      "PM7",
+      "NM2",
+      "NM6",
+      "NM7"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM2 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM3 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.4
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": true,
+     "valid": false,
+     "reason": "꺼진 소자 NM3",
+     "off": [
+      "NM3"
+     ],
+     "triode": [
+      "PM1",
+      "PM3",
+      "PM4",
+      "PM7",
+      "NM2",
+      "NM6",
+      "NM7"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM2 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM3 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 2.9
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM6",
+      "NM3",
+      "NM5"
+     ],
+     "triode": [
+      "PM1",
+      "PM3",
+      "PM4",
+      "PM7",
+      "NM2",
+      "NM6",
+      "NM7"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM2 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM3 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 7.4
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM6",
+      "NM3",
+      "NM5"
+     ],
+     "triode": [
+      "PM1",
+      "PM3",
+      "PM4",
+      "PM7",
+      "NM2",
+      "NM6",
+      "NM7"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM2 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "complete",
+        "diode": "nmos",
+        "why": "PM3 가 전류를 넣는데 받아 줄 다이오드가 없음"
+       }
+      },
+      "added": [
+       "NMB1"
+      ],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.6
+    }
+   ]
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD ; PM2 D=OUT G=N1 S=VDD B=VDD ; PM3 D=N2 G=VB1 S=VDD B=VDD ; PM4 D=N3 G=N4 S=VDD B=VDD ; PM5 D=N1 G=N1 S=VDD B=VDD ; PM6 D=N4 G=N4 S=VDD B=VDD ; NM1 D=OUT G=N3 S=VSS B=VSS ; NM2 D=VB1 G=N5 S=VSS B=VSS ; NM3 D=N1 G=IN1 S=N6 B=VSS ; NM4 D=N4 G=IN2 S=N6 B=VSS ; NM5 D=N6 G=N2 S=VSS B=VSS ; NM6 D=N2 G=N2 S=VSS B=VSS ; NM7 D=N5 G=N5 S=VSS B=VSS ; C1 P=OUT N=N3",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 13
+    },
+    "sizing": {
+     "ok": false,
+     "reasons": [
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5",
+      "NM6",
+      "NM7"
+     ],
+     "triode": [
+      "NM1"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.8
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5",
+      "NM6",
+      "NM7"
+     ],
+     "triode": [
+      "NM1"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.9
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5",
+      "NM6",
+      "NM7"
+     ],
+     "triode": [
+      "NM1"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 1.0
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM1",
+      "PM2",
+      "PM3",
+      "PM4",
+      "PM5",
+      "PM6",
+      "NM2",
+      "NM3",
+      "NM4",
+      "NM5",
+      "NM6",
+      "NM7"
+     ],
+     "triode": [
+      "NM1"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 0.7
+    }
+   ]
+  },
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=OUT G=N1 S=VDD B=VDD ; PM2 D=VB1 G=N1 S=VDD B=VDD ; PM3 D=N2 G=N1 S=VDD B=VDD ; PM4 D=N3 G=IN2 S=N2 B=VDD ; PM5 D=N4 G=IN1 S=N2 B=VDD ; PM6 D=N1 G=N1 S=VDD B=VDD ; NM1 D=VB1 G=VB1 S=VSS B=VSS ; NM2 D=OUT G=N3 S=VSS B=VSS ; NM3 D=N3 G=N4 S=VSS B=VSS ; NM4 D=N4 G=N4 S=VSS B=VSS ; NM5 D=N1 G=N5 S=VSS B=VSS ; NM6 D=N5 G=N5 S=VSS B=VSS ; R1 P=VDD N=N5",
+   "steps": {
+    "rules": {
+     "ok": true,
+     "problems": [],
+     "transistors": 12
+    },
+    "sizing": {
+     "ok": true,
+     "reasons": [
+      "출력이 VCM 에서 벗어남",
+      "출력이 VCM 에서 벗어남"
+     ]
+    }
+   },
+   "variants": [
+    {
+     "output_scale": 1.0,
+     "op_ok": true,
+     "valid": true,
+     "reason": "",
+     "off": [],
+     "triode": [],
+     "startup": [],
+     "sizes": {
+      "PM1": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "PM2": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "PM3": {
+       "w": "99.5u",
+       "l": "2u",
+       "m": "11"
+      },
+      "PM6": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "PM4": {
+       "w": "90.8u",
+       "l": "1u",
+       "m": "7"
+      },
+      "PM5": {
+       "w": "91.5u",
+       "l": "1u",
+       "m": "7"
+      },
+      "NM1": {
+       "w": "15u",
+       "l": "2u"
+      },
+      "NM2": {
+       "w": "91.4u",
+       "l": "1u",
+       "m": "4"
+      },
+      "NM3": {
+       "w": "59.3u",
+       "l": "2u",
+       "m": "2"
+      },
+      "NM4": {
+       "w": "59.8u",
+       "l": "2u",
+       "m": "2"
+      },
+      "NM5": {
+       "w": "96u",
+       "l": "2u",
+       "m": "5"
+      },
+      "NM6": {
+       "w": "76.1u",
+       "l": "2u",
+       "m": "4"
+      }
+     },
+     "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT N1 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM2 VB1 N1 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM3 N2 N1 VDD VDD pfet_06v0 w=99.5u l=2u m=11\nXPM4 N3 INP N2 VDD pfet_06v0 w=90.8u l=1u m=7\nXPM5 N4 INN N2 VDD pfet_06v0 w=91.5u l=1u m=7\nXPM6 N1 N1 VDD VDD pfet_06v0 w=100u l=2u m=20\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT N3 VSS VSS nfet_06v0 w=91.4u l=1u m=4\nXNM3 N3 N4 VSS VSS nfet_06v0 w=59.3u l=2u m=2\nXNM4 N4 N4 VSS VSS nfet_06v0 w=59.8u l=2u m=2\nXNM5 N1 N5 VSS VSS nfet_06v0 w=96u l=2u m=5\nXNM6 N5 N5 VSS VSS nfet_06v0 w=76.1u l=2u m=4\nR1 VDD N5 10k\n* startup (bias_convert.py)\nXSU_MS1 SU_SX VSS VDD VDD pfet_06v0 w=0.5u l=20u\nXSU_MS2 N1 SU_SX VSS VSS nfet_06v0 w=2u l=1u\nXSU_MS3 SU_SX N5 VSS VSS nfet_06v0 w=5u l=1u\n.ends opamp\n",
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": {
+      "ok": true,
+      "vout_op": 2.499647,
+      "vout_on": 2.527458,
+      "idd_op": 0.00288208,
+      "idd_on": 0.00288295
+     },
+     "startup_added": {
+      "p": "N1",
+      "q": "N5"
+     },
+     "seconds": 1366.4,
+     "measured": {
+      "avd": 79.76885860087356,
+      "gain_dc": 68.51583012728368,
+      "ugbw": 174055342.70589492,
+      "pm": -15.247216003873575,
+      "gm": -13.793500446435331,
+      "idd": 0.0028820827814575872,
+      "sr": 13971967.1637815,
+      "ts": 1.7999999999999997e-05,
+      "cmrr": 85.21917728183755,
+      "psrr": 83.62423321254992,
+      "voh_1ma": -0.5237109401844906,
+      "voh_5ma": -0.6735456658885448,
+      "vol_1ma": 0.017154930058364132,
+      "vol_5ma": 0.05785992509752312,
+      "io_source": 0.0006775621307161193,
+      "io_sink": 0.04079466805056189,
+      "gain_unloaded": 90.15733527591163
+     },
+     "spec": [
+      {
+       "measure": "avd",
+       "label": "대신호 차동 전압이득",
+       "unit": "dB",
+       "value": 79.76885860087356,
+       "target": "≥ 114 dB",
+       "status": "FAIL"
+      },
+      {
+       "measure": "cmrr",
+       "label": "공통모드 제거비",
+       "unit": "dB",
+       "value": 85.21917728183755,
+       "target": "≥ 100 dB",
+       "status": "FAIL"
+      },
+      {
+       "measure": "idd",
+       "label": "공급 전류",
+       "unit": "µA",
+       "value": 2882.0827814575873,
+       "target": "≥ 0.1 µA",
+       "status": "PASS"
+      },
+      {
+       "measure": "ugbw",
+       "label": "단위이득 대역폭",
+       "unit": "MHz",
+       "value": 174.0553427058949,
+       "target": "≥ 20 MHz",
+       "status": "PASS"
+      },
+      {
+       "measure": "sr",
+       "label": "슬루율 (단위이득)",
+       "unit": "V/µs",
+       "value": 13.9719671637815,
+       "target": "≥ 8 V/µs",
+       "status": "PASS"
+      },
+      {
+       "measure": "pm",
+       "label": "위상여유",
+       "unit": "°",
+       "value": -15.247216003873575,
+       "target": "≥ 47 °",
+       "status": "FAIL"
+      }
+     ],
+     "passed": 3,
+     "judged": 6
+    },
+    {
+     "output_scale": 5.0,
+     "op_ok": true,
+     "valid": true,
+     "reason": "",
+     "off": [],
+     "triode": [],
+     "startup": [],
+     "sizes": {
+      "PM1": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "PM2": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "PM3": {
+       "w": "99.5u",
+       "l": "2u",
+       "m": "11"
+      },
+      "PM6": {
+       "w": "100u",
+       "l": "2u",
+       "m": "20"
+      },
+      "PM4": {
+       "w": "90.6u",
+       "l": "1u",
+       "m": "7"
+      },
+      "PM5": {
+       "w": "91.7u",
+       "l": "1u",
+       "m": "7"
+      },
+      "NM1": {
+       "w": "15u",
+       "l": "2u"
+      },
+      "NM2": {
+       "w": "91.4u",
+       "l": "1u",
+       "m": "4"
+      },
+      "NM3": {
+       "w": "59.2u",
+       "l": "2u",
+       "m": "2"
+      },
+      "NM4": {
+       "w": "59.9u",
+       "l": "2u",
+       "m": "2"
+      },
+      "NM5": {
+       "w": "96u",
+       "l": "2u",
+       "m": "5"
+      },
+      "NM6": {
+       "w": "76.1u",
+       "l": "2u",
+       "m": "4"
+      }
+     },
+     "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT N1 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM2 VB1 N1 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM3 N2 N1 VDD VDD pfet_06v0 w=99.5u l=2u m=11\nXPM4 N3 INP N2 VDD pfet_06v0 w=90.6u l=1u m=7\nXPM5 N4 INN N2 VDD pfet_06v0 w=91.7u l=1u m=7\nXPM6 N1 N1 VDD VDD pfet_06v0 w=100u l=2u m=20\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 OUT N3 VSS VSS nfet_06v0 w=91.4u l=1u m=4\nXNM3 N3 N4 VSS VSS nfet_06v0 w=59.2u l=2u m=2\nXNM4 N4 N4 VSS VSS nfet_06v0 w=59.9u l=2u m=2\nXNM5 N1 N5 VSS VSS nfet_06v0 w=96u l=2u m=5\nXNM6 N5 N5 VSS VSS nfet_06v0 w=76.1u l=2u m=4\nR1 VDD N5 10k\n* startup (bias_convert.py)\nXSU_MS1 SU_SX VSS VDD VDD pfet_06v0 w=0.5u l=20u\nXSU_MS2 N1 SU_SX VSS VSS nfet_06v0 w=2u l=1u\nXSU_MS3 SU_SX N5 VSS VSS nfet_06v0 w=5u l=1u\n.ends opamp\n",
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": {
+      "ok": true,
+      "vout_op": 2.499735,
+      "vout_on": 2.5069,
+      "idd_op": 0.00288208,
+      "idd_on": 0.002883305
+     },
+     "startup_added": {
+      "p": "N1",
+      "q": "N5"
+     },
+     "seconds": 790.0,
+     "measured": {
+      "avd": 79.75821757651676,
+      "gain_dc": 68.51509807250858,
+      "ugbw": 174014613.87133205,
+      "pm": -15.201143776561025,
+      "gm": -13.76252166779856,
+      "idd": 0.0028820818089951095,
+      "sr": 13971648.898964586,
+      "ts": 1.7999999999999997e-05,
+      "cmrr": 85.31148110086917,
+      "psrr": 84.7904261159738,
+      "voh_1ma": -0.5237109711919431,
+      "voh_5ma": -0.6735456720093108,
+      "vol_1ma": 0.017155069649751206,
+      "vol_5ma": 0.05786041204883349,
+      "io_source": 0.0006775621307161182,
+      "io_sink": 0.04079425635943669,
+      "gain_unloaded": 90.15697507406205
+     },
+     "spec": [
+      {
+       "measure": "avd",
+       "label": "대신호 차동 전압이득",
+       "unit": "dB",
+       "value": 79.75821757651676,
+       "target": "≥ 114 dB",
+       "status": "FAIL"
+      },
+      {
+       "measure": "cmrr",
+       "label": "공통모드 제거비",
+       "unit": "dB",
+       "value": 85.31148110086917,
+       "target": "≥ 100 dB",
+       "status": "FAIL"
+      },
+      {
+       "measure": "idd",
+       "label": "공급 전류",
+       "unit": "µA",
+       "value": 2882.0818089951094,
+       "target": "≥ 0.1 µA",
+       "status": "PASS"
+      },
+      {
+       "measure": "ugbw",
+       "label": "단위이득 대역폭",
+       "unit": "MHz",
+       "value": 174.01461387133205,
+       "target": "≥ 20 MHz",
+       "status": "PASS"
+      },
+      {
+       "measure": "sr",
+       "label": "슬루율 (단위이득)",
+       "unit": "V/µs",
+       "value": 13.971648898964585,
+       "target": "≥ 8 V/µs",
+       "status": "PASS"
+      },
+      {
+       "measure": "pm",
+       "label": "위상여유",
+       "unit": "°",
+       "value": -15.201143776561025,
+       "target": "≥ 47 °",
+       "status": "FAIL"
+      }
+     ],
+     "passed": 3,
+     "judged": 6
+    },
+    {
+     "output_scale": 20.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM4",
+      "NM2",
+      "NM3"
+     ],
+     "triode": [
+      "PM1"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 2.3
+    },
+    {
+     "output_scale": 50.0,
+     "op_ok": false,
+     "valid": false,
+     "reason": "출력이 VCM 에서 벗어남",
+     "off": [
+      "PM4",
+      "NM2",
+      "NM3"
+     ],
+     "triode": [
+      "PM1"
+     ],
+     "startup": [],
+     "sizes": null,
+     "subckt": null,
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 NM1 가 전압을 만듦"
+       }
+      },
+      "added": [],
+      "fixed": {},
+      "reference": false,
+      "free_loops": [],
+      "unresolved": []
+     },
+     "powerup": null,
+     "startup_added": null,
+     "seconds": 2.4
+    }
+   ],
+   "best": {
+    "output_scale": 5.0,
+    "passed": 3,
+    "judged": 6,
+    "idd": 0.0028820818089951095
+   }
+  }
+ ],
+ "summary": {
+  "candidates": 33,
+  "rules_ok": 23,
+  "working": 3,
+  "new_working": 1,
+  "ranking": [
+   6,
+   32,
+   29
+  ],
+  "selected": 6
+ }
+}

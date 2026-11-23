@@ -1,0 +1,26 @@
+* Advanced Dynamic Testbench for LM324B
+.include "LM324B_iter2_probe_a.cir"
+
+* Power Supply Setup (VCC = 15V)
+V_VCC_P VCC_P 0 15
+V_VCC_N VCC_N 0 0
+
+* DUT Instantiation
+XDUT 1IN_P 1IN_N 1OUT 2IN_P 2IN_N 2OUT 3IN_P 3IN_N 3OUT 4IN_P 4IN_N 4OUT VCC_P VCC_N NC LM324B
+
+* Input Stimulus for Channel 1 (Example based on provided constraints)
+VINP 1IN_P 0 SINE(2.5 0.1 1k 10u)
+VINN 1IN_N 0 DC 2.5
+
+* Load Termination for Channel 1
+RL 1OUT 0 10k
+
+* Simulation Control (Must only use .tran)
+.tran 10u 20m 10m
+
+* Measurement Directives (Must use .meas tran)
+.four 1k 9 V(1OUT)
+.meas tran v_rms RMS V(1OUT) from=15m to=20m
+.meas tran icc AVG -I(V_VCC_P) from=10m to=20m
+
+.end

@@ -1,0 +1,359 @@
+{
+  "mode": "groundtruth_free_provenance",
+  "benchmark_framework": "ParseBench (https://github.com/run-llama/ParseBench.git)",
+  "fidelity_score_pct": 54.7,
+  "status": "UNRELIABLE",
+  "pin_provenance": {
+    "pins": 9,
+    "grounded": 1,
+    "grounded_pct": 11.1,
+    "ungrounded": [
+      {
+        "pin": "IN1_P",
+        "page": 4,
+        "name_on_page": false,
+        "evidence_overlap": 0.4,
+        "grounded": false
+      },
+      {
+        "pin": "IN1_N",
+        "page": 4,
+        "name_on_page": false,
+        "evidence_overlap": 0.6,
+        "grounded": false
+      },
+      {
+        "pin": "IN2_P",
+        "page": 4,
+        "name_on_page": false,
+        "evidence_overlap": 0.4,
+        "grounded": false
+      },
+      {
+        "pin": "IN2_N",
+        "page": 4,
+        "name_on_page": false,
+        "evidence_overlap": 0.25,
+        "grounded": false
+      },
+      {
+        "pin": "OUT1",
+        "page": 4,
+        "name_on_page": false,
+        "evidence_overlap": 0.75,
+        "grounded": false
+      },
+      {
+        "pin": "OUT2",
+        "page": 4,
+        "name_on_page": false,
+        "evidence_overlap": 0.25,
+        "grounded": false
+      },
+      {
+        "pin": "V_P",
+        "page": 4,
+        "name_on_page": true,
+        "evidence_overlap": 0.5,
+        "grounded": false
+      },
+      {
+        "pin": "NC",
+        "page": 4,
+        "name_on_page": true,
+        "evidence_overlap": 0.0,
+        "grounded": false
+      }
+    ]
+  },
+  "spec_provenance": {
+    "specs": 155,
+    "grounded": 117,
+    "grounded_pct": 75.5,
+    "by_category": {
+      "RECOMMENDED": 1,
+      "ELECTRICAL": 154
+    },
+    "ungrounded_examples": [
+      {
+        "symbol": "VOS",
+        "category": "ELECTRICAL",
+        "page": 6,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VOS",
+        "category": "ELECTRICAL",
+        "page": 6,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VCM",
+        "category": "ELECTRICAL",
+        "page": 10,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VCM",
+        "category": "ELECTRICAL",
+        "page": 10,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VCM",
+        "category": "ELECTRICAL",
+        "page": 11,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VCM",
+        "category": "ELECTRICAL",
+        "page": 11,
+        "numbers_on_page": false,
+        "evidence_overlap": 0.82,
+        "grounded": false
+      },
+      {
+        "symbol": "VO",
+        "category": "ELECTRICAL",
+        "page": 11,
+        "numbers_on_page": false,
+        "evidence_overlap": 0.92,
+        "grounded": false
+      },
+      {
+        "symbol": "ISC",
+        "category": "ELECTRICAL",
+        "page": 11,
+        "numbers_on_page": true,
+        "evidence_overlap": 0.0,
+        "grounded": false
+      },
+      {
+        "symbol": "IQ",
+        "grounded": false,
+        "reason": "no/invalid page citation"
+      },
+      {
+        "symbol": "IQ",
+        "grounded": false,
+        "reason": "no/invalid page citation"
+      },
+      {
+        "symbol": "VOS",
+        "grounded": false,
+        "reason": "no/invalid page citation"
+      },
+      {
+        "symbol": "VOS",
+        "grounded": false,
+        "reason": "no/invalid page citation"
+      },
+      {
+        "symbol": "dVOS/dT",
+        "grounded": false,
+        "reason": "no/invalid page citation"
+      },
+      {
+        "symbol": "dVOS/dT",
+        "grounded": false,
+        "reason": "no/invalid page citation"
+      },
+      {
+        "symbol": "PSRR",
+        "grounded": false,
+        "reason": "no/invalid page citation"
+      }
+    ]
+  },
+  "topological_validity": {
+    "is_dag": true,
+    "unreachable_outputs": [],
+    "isolated_pins": []
+  },
+  "edge_origin": {
+    "edges": 16,
+    "datasheet_derived": 8,
+    "rule_injected": 8,
+    "datasheet_pct": 50.0
+  },
+  "timing_grounding": {
+    "delay_grounded_edges": 8,
+    "grounded_pct": 50.0,
+    "timing_specs_used": {
+      "turnon_settling_us": 4.0,
+      "propagation_delay_us": null,
+      "slew_rate_v_us": 0.3,
+      "bandwidth_mhz": 0.7,
+      "sources": {
+        "bandwidth_mhz": "GBW",
+        "slew_rate_v_us": "SR",
+        "turnon_settling_us": "ts"
+      }
+    }
+  },
+  "edge_details": [
+    {
+      "from": "IN1_P",
+      "to": "OUT1",
+      "delay_us": 4.0,
+      "type": "SIGNAL_PATH",
+      "origin": "datasheet",
+      "delay_source": "ts",
+      "condition": "VS = 3 V to 36 V"
+    },
+    {
+      "from": "IN1_N",
+      "to": "OUT1",
+      "delay_us": 4.0,
+      "type": "SIGNAL_PATH",
+      "origin": "datasheet",
+      "delay_source": "ts",
+      "condition": "VS = 3 V to 36 V"
+    },
+    {
+      "from": "IN2_P",
+      "to": "OUT2",
+      "delay_us": 4.0,
+      "type": "SIGNAL_PATH",
+      "origin": "datasheet",
+      "delay_source": "ts",
+      "condition": "VS = 3 V to 36 V"
+    },
+    {
+      "from": "IN2_N",
+      "to": "OUT2",
+      "delay_us": 4.0,
+      "type": "SIGNAL_PATH",
+      "origin": "datasheet",
+      "delay_source": "ts",
+      "condition": "VS = 3 V to 36 V"
+    },
+    {
+      "from": "V_P",
+      "to": "OUT1",
+      "delay_us": 4.0,
+      "type": "POWER_FEED",
+      "origin": "datasheet",
+      "delay_source": "ts",
+      "condition": "VS = (V+) \u2013 (V\u2013) = 5 V \u2013 36 V"
+    },
+    {
+      "from": "V_P",
+      "to": "OUT2",
+      "delay_us": 4.0,
+      "type": "POWER_FEED",
+      "origin": "datasheet",
+      "delay_source": "ts",
+      "condition": "VS = (V+) \u2013 (V\u2013) = 5 V \u2013 36 V"
+    },
+    {
+      "from": "V_P",
+      "to": "IN1_P",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "V_P",
+      "to": "IN1_N",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "V_P",
+      "to": "IN2_P",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "V_P",
+      "to": "IN2_N",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "V_N",
+      "to": "OUT1",
+      "delay_us": 4.0,
+      "type": "POWER_FEED",
+      "origin": "datasheet",
+      "delay_source": "ts",
+      "condition": "VS = (V+) \u2013 (V\u2013) = 5 V \u2013 36 V"
+    },
+    {
+      "from": "V_N",
+      "to": "OUT2",
+      "delay_us": 4.0,
+      "type": "POWER_FEED",
+      "origin": "datasheet",
+      "delay_source": "ts",
+      "condition": "VS = (V+) \u2013 (V\u2013) = 5 V \u2013 36 V"
+    },
+    {
+      "from": "V_N",
+      "to": "IN1_P",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "V_N",
+      "to": "IN1_N",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "V_N",
+      "to": "IN2_P",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "V_N",
+      "to": "IN2_N",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    }
+  ],
+  "pin_coverage": {
+    "coverage_pct": 11.1
+  },
+  "parsebench_audit": {
+    "engine": "ParseBench Content Faithfulness",
+    "grounded_ratio": 0.433,
+    "is_dag": true
+  }
+}

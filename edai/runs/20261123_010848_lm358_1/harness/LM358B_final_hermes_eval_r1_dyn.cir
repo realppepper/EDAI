@@ -1,0 +1,29 @@
+* Advanced Dynamic Testbench for LM358B
+.include "LM358B_final_hermes_eval_r1.cir"
+XDUT IN1_P IN1_N IN2_P IN2_N OUT1 OUT2 V_P V_N NC LM358B
+
+* Power and Grounding
+V_V_N V_N 0 0
+V_V_P V_P 0 15
+
+* Input Stimulus (Channel 1)
+VINP IN1_P 0 SINE(2.5 0.1 1k 10u)
+VINN IN1_N 0 DC 2.5
+
+* Load Termination (Channel 1)
+RL OUT1 0 100k
+
+* Note: Crosstalk measurement requires driving IN2_P/IN2_N, but the prompt only specified stimulus for IN1.
+* For completeness based on provided stimulus, we leave IN2 floating/DC unless specified.
+VIN2P IN2_P 0 DC 0
+VIN2N IN2_N 0 DC 0
+
+* Simulation Control
+.tran 10u 20m 10m
+
+* Measurements (Adhering to strict format)
+.four 1k 9 V(OUT1)
+.meas tran v_rms RMS V(OUT1) from=15m to=20m
+.meas tran icc AVG -I(V_V_P) from=10m to=20m
+
+.end

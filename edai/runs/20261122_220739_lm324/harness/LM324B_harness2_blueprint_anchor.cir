@@ -1,0 +1,77 @@
+
+
+* Default Physical Device Models for AI Analog Synthesis
+
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=120u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model QNPN NPN (IS=1e-14 BF=150 VAF=100 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=100 TF=0.3n TR=10n CJE=2p CJC=1p VJC=0.75 MJC=0.33)
+
+.model QPNP PNP (IS=1e-14 BF=80 VAF=80 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=80 TF=0.5n TR=20n CJE=2p CJC=1.5p VJC=0.75 MJC=0.33)
+
+.model D1N4148 D (IS=2.52n RS=0.568 N=1.752 CJO=4p VJ=0.5 M=0.333 BV=100 IBV=100u TT=4n)
+
+.model D_ESD D (IS=1e-15 RS=10 CJO=1p BV=50)
+
+
+* Default Physical Device Models for AI Analog Synthesis
+
+
+* Adapted Multi-Channel Architecture for LM324B
+
+
+
+
+* --- Globally Hoisted Models for Multi-Subcircuit Visibility ---
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=120u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+.model QNPN NPN (IS=1e-14 BF=150 VAF=100 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=100 TF=0.3n TR=10n CJE=2p CJC=1p VJC=0.75 MJC=0.33)
+.model QPNP PNP (IS=1e-14 BF=80 VAF=80 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=80 TF=0.5n TR=20n CJE=2p CJC=1.5p VJC=0.75 MJC=0.33)
+.model D1N4148 D (IS=2.52n RS=0.568 N=1.752 CJO=4p VJ=0.5 M=0.333 BV=100 IBV=100u TT=4n)
+.model D_ESD D (IS=1e-15 RS=10 CJO=1p BV=50)
+
+.subckt LM324B 1IN_P 1IN_N 1OUT 2IN_P 2IN_N 2OUT 3IN_P 3IN_N 3OUT 4IN_P 4IN_N 4OUT VCC_P VCC_N NC
+
+* Channel 1 Instantiation
+XU1 1IN_P 1IN_N 1OUT VCC_P VCC_N LM324B_CORE
+* Channel 2 Instantiation
+XU2 2IN_P 2IN_N 2OUT VCC_P VCC_N LM324B_CORE
+.ends LM324B
+
+.subckt LM324B_CORE INP INM OUT VCC GND
+MNM1 VB1 VB1 GND GND nfet_06v0_bsim0 w=15u l=2u
+MNM2 VB2 VB2 GND GND nfet_06v0_bsim0 w=15u l=2u
+MNM3 OUT N1 GND GND nfet_06v0_bsim0 w=90.5u l=1u m=4
+MNM4 N2 VB2 GND GND nfet_06v0_bsim0 w=15u l=2u
+MNM5 N1_NM5 N3 GND GND nfet_06v0_bsim0 w=5.46u l=1u
+MNM6 N3_NM6 N3 GND GND nfet_06v0_bsim0 w=5.46u l=1u
+MNM7 N4 N5 GND GND nfet_06v0_bsim0 w=14.9u l=2u
+MNM8 N5 N5 GND GND nfet_06v0_bsim0 w=8.75u l=2u
+MPM1 OUT N4 VDD VDD pfet_06v0_bsim0 w=100u l=2u m=20
+MPM2 VB1 N4 VDD VDD pfet_06v0_bsim0 w=91.3u l=2u
+MPM3 N1 IN_P N6 VDD pfet_06v0_bsim0 w=39.3u l=1u
+MPM4 N3 IN_N N6 VDD pfet_06v0_bsim0 w=39.3u l=1u
+MPM5 N6 N4 VDD VDD pfet_06v0_bsim0 w=67.5u l=2u
+MPM6 N4 N4 VDD VDD pfet_06v0_bsim0 w=68.6u l=2u
+MPM7 N5 N2 VDD VDD pfet_06v0_bsim0 w=40.2u l=2u
+MPM8 N2 N2 VDD VDD pfet_06v0_bsim0 w=30.1u l=2u
+MPM9 VB2 N2 N7 VDD pfet_06v0_bsim0 w=31.8u l=1u
+R1 N7 VDD 10k
+MNMC1 N1 VBCN N1_NM5 GND nfet_06v0_bsim0 w=8.45u l=1u
+MNMC2 N3 VBCN N3_NM6 GND nfet_06v0_bsim0 w=8.45u l=1u
+MNMB1 VBCN VBCN VBCN_S1 GND nfet_06v0_bsim0 w=14.9u l=2u
+RBCVBCN VBCN_S1 GND 28174.6
+MPMF1 VBCN REF_PB VDD VDD pfet_06v0_bsim0 w=58.6u l=2u m=2
+MREF_MN1 REF_NB REF_NB GND GND nfet_06v0_bsim0 w=12u l=2u
+MREF_MN2 REF_PB REF_NB REF_NS GND nfet_06v0_bsim0 w=48u l=2u
+RREF_S REF_NS GND 8353.6
+MREF_MP3 REF_PB REF_PB VDD VDD pfet_06v0_bsim0 w=58.6u l=2u
+MREF_MP4 REF_NB REF_PB VDD VDD pfet_06v0_bsim0 w=58.6u l=2u
+MREF_MS1 REF_SX GND VDD VDD pfet_06v0_bsim0 w=0.5u l=20u
+MREF_MS2 REF_PB REF_SX GND GND nfet_06v0_bsim0 w=2u l=1u
+MREF_MS3 REF_SX REF_NB GND GND nfet_06v0_bsim0 w=5u l=1u
+MSU_MS1 SU_SX GND VDD VDD pfet_06v0_bsim0 w=0.5u l=20u
+MSU_MS2 N2 SU_SX GND GND nfet_06v0_bsim0 w=2u l=1u
+MSU_MS3 SU_SX N5 GND GND nfet_06v0_bsim0 w=5u l=1u
+.ends LM324B_CORE

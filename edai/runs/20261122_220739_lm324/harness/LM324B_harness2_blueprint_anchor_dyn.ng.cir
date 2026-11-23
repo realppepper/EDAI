@@ -1,0 +1,29 @@
+* Advanced Dynamic Testbench
+.include LM324B_harness2_blueprint_anchor.cir
+XDUT 1IN_P 1IN_N 1OUT 2IN_P 2IN_N 2OUT 3IN_P 3IN_N 3OUT 4IN_P 4IN_N 4OUT VCC_P VCC_N NC LM324B
+
+* Power and Grounding
+V_VCC_N VCC_N 0 0
+V_VCC_P VCC_P 0 15
+
+* Dynamic Signal Stimulus (Example for Channel 1)
+VINP 1IN_P 0 SINE(2.5 0.1 1k 10u)
+VINN 1IN_N 0 DC 2.5
+
+* Load Termination (Example for Channel 1)
+RL 1OUT 0 10k
+
+* Fourier Analysis Setup (For THD/Distortion)
+.four 1k 9 V(1OUT)
+
+* Measurement Directives (Must use .meas tran)
+.meas tran v_rms RMS V(1OUT) from=15m to=20m
+.meas tran icc AVG -I(V_VCC_P) from=10m to=20m
+
+* Simulation Control (Only .tran allowed)
+.tran 10u 20m 10m
+
+.control
+run
+.endc
+.end

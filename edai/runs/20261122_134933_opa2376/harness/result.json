@@ -1,0 +1,78 @@
+{
+ "pass_rate_percent": 66.7,
+ "part_name": "OPA376",
+ "iterations_count": 15,
+ "iterations": [
+  {
+   "iteration": 1,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 2,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 3,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 4,
+   "pass_rate_percent": 66.7
+  },
+  {
+   "iteration": 5,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 6,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 7,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 8,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 9,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 10,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 11,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 12,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 13,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 14,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 15,
+   "pass_rate_percent": 0.0
+  }
+ ],
+ "final_netlist": ".subckt OPA376 V_P V_N IN_P IN_N OUT NC\n* 1. DC Biasing and Current Mirrors\nIbias V_P V_N 0.2p\nM1 V_P V_P V_P V_P pfet_06v0_bsim0 w=68.7u l=2u\nM2 V_P V_P V_P V_P pfet_06v0_bsim0 w=68.7u l=2u\nM3 OUT N1 V_P V_P pfet_06v0_bsim0 w=100u l=1u m=20\nM4 N2 VB2 V_P V_P pfet_06v0_bsim0 w=68.7u l=2u\nM5 N1 N3 V_P V_P pfet_06v0_bsim0 w=32.6u l=2u\nM6 N3 N3 V_P V_P pfet_06v0_bsim0 w=32.8u l=2u\nM7 N4 N5 V_P V_P pfet_06v0_bsim0 w=60.6u l=2u\nM8 N5 N5 V_P V_P pfet_06v0_bsim0 w=45.6u l=2u\nM9 OUT N4 V_N V_N nfet_06v0_bsim0 w=93u l=2u m=9\nM10 VB1 N4 V_N V_N nfet_06v0_bsim0 w=22.7u l=2u\nM11 N6 IN_P N6 V_N nfet_06v0_bsim0 w=8.17u l=1u\nM12 N3 IN_N N6 V_N nfet_06v0_bsim0 w=8.22u l=1u\nM13 N6 N4 V_N V_N nfet_06v0_bsim0 w=8.17u l=1u\n* 2. Differential Pair (Q1, Q2)\nQ1 N_COL N_BASE N_EMIT QNPN\nQ2 N_COL N_BASE N_EMIT QNPN\n* 3. Active Load (Current Mirror)\nM14 N1 N1 V_P V_P pfet_06v0_bsim0 w=32.6u l=2u\nM15 N3 N3 V_P V_P pfet_06v0_bsim0 w=32.8u l=2u\n* 4. Output Buffer (Common Source)\nM16 OUT OUT V_P V_P pfet_06v0_bsim0 w=100u l=1u m=20\nM17 OUT OUT V_N V_N nfet_06v0_bsim0 w=93u l=2u m=9\n* 5. Miller Compensation (Cc, Rz)\nCc OUT N1 10p\nRz N1 OUT 2k\n* 6. E-trim Network (Vbe multiplier)\nM18 V_P V_P V_P V_P pfet_06v0_bsim0 w=68.7u l=2u\nM19 N1 N1 V_P V_P pfet_06v0_bsim0 w=68.7u l=2u\nM20 N1 N1 V_N V_N nfet_06v0_bsim0 w=8.17u l=1u\n* 7. Explicit Device Models\n.model QNPN NPN (IS=1e-16 BF=100)\n.model QPNP PNP (IS=1e-16 BF=50)\n.model pfet_06v0_bsim0 PMOS (VTO=-0.7 KP=40u LAMBDA=0.02)\n.model nfet_06v0_bsim0 NMOS (VTO=0.7 KP=100u LAMBDA=0.02)\n.ends OPA376",
+ "pin_map": {
+  "VDD": "V_P",
+  "VSS": "V_N",
+  "INP": "IN_P",
+  "INN": "IN_N",
+  "OUT": "OUT"
+ },
+ "seconds": 2161,
+ "note": "2026-11-22 비교 실험 때 결과 (시뮬레이터 LTspice판, 반복 5번). 지금 UI 의 하네스는 ngspice판.",
+ "task_id": "task_1795322973_036d22"
+}

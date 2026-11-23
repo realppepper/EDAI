@@ -1,0 +1,55 @@
+
+
+* Default Physical Device Models for AI Analog Synthesis
+
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=120u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model QNPN NPN (IS=1e-14 BF=150 VAF=100 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=100 TF=0.3n TR=10n CJE=2p CJC=1p VJC=0.75 MJC=0.33)
+
+.model QPNP PNP (IS=1e-14 BF=80 VAF=80 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=80 TF=0.5n TR=20n CJE=2p CJC=1.5p VJC=0.75 MJC=0.33)
+
+.model D1N4148 D (IS=2.52n RS=0.568 N=1.752 CJO=4p VJ=0.5 M=0.333 BV=100 IBV=100u TT=4n)
+
+.model D_ESD D (IS=1e-15 RS=10 CJO=1p BV=50)
+
+
+
+
+* --- Globally Hoisted Models for Multi-Subcircuit Visibility ---
+.model QNPN NPN (IS=1e-16 BF=100)
+.model QPNP PNP (IS=1e-16 BF=50)
+.model PMOS PMOS (VTO=-0.7 KP=40u LAMBDA=0.02)
+.model NMOS NMOS (VTO=0.7 KP=100u LAMBDA=0.02)
+
+.subckt TLV271 IN_P IN_N OUT GND VDD NC
+* 1. Bias Current Source (550 µA/channel)
+Q3 GND VDD N_BIAS QNPN (QNPN_MODEL)
+R1 N_BIAS GND 10k (R1_MODEL)
+
+* 2. Differential Pair (NPN Transistors)
+Q1 IN_P N_BIAS OUT GND QNPN (QNPN_MODEL)
+Q2 IN_N N_BIAS OUT GND QNPN (QNPN_MODEL)
+
+* 3. Active Load (PMOS Current Mirror)
+M1 OUT VDD OUT GND PMOS PMOS_MODEL W=100u L=0.5u
+M2 OUT VDD OUT GND PMOS PMOS_MODEL W=100u L=0.5u
+
+* 4. Output Buffer (PMOS Source Follower)
+M3 OUT VDD OUT GND PMOS PMOS_MODEL W=200u L=0.5u
+
+* 5. Input Protection/Differential Balancing (Optional Resistors)
+R2 IN_P OUT 1k (R2_MODEL)
+R3 IN_N OUT 1k (R3_MODEL)
+
+* 6. Input Offset Compensation (Resistor Network)
+R4 IN_P GND 100k (R4_MODEL)
+R5 IN_N GND 100k (R5_MODEL)
+
+* 7. Miller Compensation Capacitor (Cc)
+Cc OUT_1 OUT_2 10p (Cc_MODEL)
+
+* 8. Explicit Device Models
+
+.ends TLV271

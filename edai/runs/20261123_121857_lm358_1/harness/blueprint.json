@@ -1,0 +1,35 @@
+{
+ "task_id": "EDAI_LM358",
+ "category": "operational_amplifier",
+ "cue": "Initial transistor-level topology for LM358 proposed by EDAI (FLAN-T5 + rules: ['캐스코드'])",
+ "lesson": "Start from blueprint 'EDAI_LM358': GF180MCU 6V transistor-level op-amp sized by gm/ID (ngspice pre-check 5/7 specs). Keep the .include model line; devices use nfet_06v0_bsim0 / pfet_06v0_bsim0.",
+ "evidence": {
+  "table": "PM1 D=OUT G=VB3 S=VDD B=VDD ; PM4 D=N3 G=VB3 S=VDD B=VDD ; PM5 D=N4 G=IN2 S=N3 B=VDD ; PM6 D=N5 G=IN1 S=N3 B=VDD ; NM3 D=OUT G=N4 S=VSS B=VSS ; NM5 D=N4_NM5 G=N5 S=VSS B=VSS ; NM6 D=N5_NM6 G=N5 S=VSS B=VSS ; NMC1 D=N4 G=VBCN S=N4_NM5 B=VSS ; NMC2 D=N5 G=VBCN S=N5_NM6 B=VSS",
+  "pin_map": {
+   "VDD": "V_P",
+   "VSS": "V_N",
+   "INP": "IN1_P",
+   "INN": "IN1_N",
+   "OUT": "OUT1",
+   "channels": {
+    "2": {
+     "INP": "IN2_P",
+     "INN": "IN2_N",
+     "OUT": "OUT2"
+    }
+   }
+  },
+  "output_scale": 50.0
+ },
+ "score_before": 0.0,
+ "score_after": 0.0,
+ "delta_score": 0.0,
+ "harness_tree": {
+  "c5_skills": {
+   "EDAI_LM358": {
+    "description": "EDAI FLAN-T5 initial op-amp core for LM358 (GF180 6V)",
+    "subckt_code": ".include \"gf180_6v_typical.lib\"\n.subckt LM358 IN1_P IN1_N OUT1 IN2_P IN2_N OUT2 V_P V_N NC1 NC2 NC3\nMPM1 OUT1 VB3 V_P V_P pfet_06v0_bsim0 w=98.2u l=2u m=35\nMPM4 N3 VB3 V_P V_P pfet_06v0_bsim0 w=68.7u l=2u\nMPM5 N4 IN1_P N3 V_P pfet_06v0_bsim0 w=43.4u l=1u\nMPM6 N5 IN1_N N3 V_P pfet_06v0_bsim0 w=43.4u l=1u\nMNM3 OUT1 N4 V_N V_N nfet_06v0_bsim0 w=88u l=1u m=7\nMNM5 N4_NM5 N5 V_N V_N nfet_06v0_bsim0 w=6.03u l=1u\nMNM6 N5_NM6 N5 V_N V_N nfet_06v0_bsim0 w=6.03u l=1u\nMNMC1 N4 VBCN N4_NM5 V_N nfet_06v0_bsim0 w=9.32u l=1u\nMNMC2 N5 VBCN N5_NM6 V_N nfet_06v0_bsim0 w=9.32u l=1u\nMPMB1 VB3 VB3 V_P V_P pfet_06v0_bsim0 w=68.7u l=2u\nMNMF1 VB3 REF_NB V_N V_N nfet_06v0_bsim0 w=24u l=2u\nMNMB2 VBCN VBCN VBCN_S1 V_N nfet_06v0_bsim0 w=14.9u l=2u\nRBCVBCN VBCN_S1 V_N 28174.6\nMPMF2 VBCN REF_PB V_P V_P pfet_06v0_bsim0 w=58.6u l=2u m=2\nMREF_MN1 REF_NB REF_NB V_N V_N nfet_06v0_bsim0 w=12u l=2u\nMREF_MN2 REF_PB REF_NB REF_NS V_N nfet_06v0_bsim0 w=48u l=2u\nRREF_S REF_NS V_N 8353.6\nMREF_MP3 REF_PB REF_PB V_P V_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MP4 REF_NB REF_PB V_P V_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MS1 REF_SX V_N V_P V_P pfet_06v0_bsim0 w=0.5u l=20u\nMREF_MS2 REF_PB REF_SX V_N V_N nfet_06v0_bsim0 w=2u l=1u\nMREF_MS3 REF_SX REF_NB V_N V_N nfet_06v0_bsim0 w=5u l=1u\nMPM1_2 OUT2 VB3_2 V_P V_P pfet_06v0_bsim0 w=98.2u l=2u m=35\nMPM4_2 N3_2 VB3_2 V_P V_P pfet_06v0_bsim0 w=68.7u l=2u\nMPM5_2 N4_2 IN2_P N3_2 V_P pfet_06v0_bsim0 w=43.4u l=1u\nMPM6_2 N5_2 IN2_N N3_2 V_P pfet_06v0_bsim0 w=43.4u l=1u\nMNM3_2 OUT2 N4_2 V_N V_N nfet_06v0_bsim0 w=88u l=1u m=7\nMNM5_2 N4_NM5_2 N5_2 V_N V_N nfet_06v0_bsim0 w=6.03u l=1u\nMNM6_2 N5_NM6_2 N5_2 V_N V_N nfet_06v0_bsim0 w=6.03u l=1u\nMNMC1_2 N4_2 VBCN_2 N4_NM5_2 V_N nfet_06v0_bsim0 w=9.32u l=1u\nMNMC2_2 N5_2 VBCN_2 N5_NM6_2 V_N nfet_06v0_bsim0 w=9.32u l=1u\nMPMB1_2 VB3_2 VB3_2 V_P V_P pfet_06v0_bsim0 w=68.7u l=2u\nMNMF1_2 VB3_2 REF_NB_2 V_N V_N nfet_06v0_bsim0 w=24u l=2u\nMNMB2_2 VBCN_2 VBCN_2 VBCN_S1_2 V_N nfet_06v0_bsim0 w=14.9u l=2u\nRBCVBCN_2 VBCN_S1_2 V_N 28174.6\nMPMF2_2 VBCN_2 REF_PB_2 V_P V_P pfet_06v0_bsim0 w=58.6u l=2u m=2\nMREF_MN1_2 REF_NB_2 REF_NB_2 V_N V_N nfet_06v0_bsim0 w=12u l=2u\nMREF_MN2_2 REF_PB_2 REF_NB_2 REF_NS_2 V_N nfet_06v0_bsim0 w=48u l=2u\nRREF_S_2 REF_NS_2 V_N 8353.6\nMREF_MP3_2 REF_PB_2 REF_PB_2 V_P V_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MP4_2 REF_NB_2 REF_PB_2 V_P V_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MS1_2 REF_SX_2 V_N V_P V_P pfet_06v0_bsim0 w=0.5u l=20u\nMREF_MS2_2 REF_PB_2 REF_SX_2 V_N V_N nfet_06v0_bsim0 w=2u l=1u\nMREF_MS3_2 REF_SX_2 REF_NB_2 V_N V_N nfet_06v0_bsim0 w=5u l=1u\n.ends LM358\n"
+   }
+  }
+ }
+}

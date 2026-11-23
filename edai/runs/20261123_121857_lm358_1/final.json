@@ -1,0 +1,366 @@
+{
+ "label": "캐스코드",
+ "rules": [
+  "캐스코드"
+ ],
+ "table": "PM1 D=OUT G=VB3 S=VDD B=VDD ; PM4 D=N3 G=VB3 S=VDD B=VDD ; PM5 D=N4 G=IN2 S=N3 B=VDD ; PM6 D=N5 G=IN1 S=N3 B=VDD ; NM3 D=OUT G=N4 S=VSS B=VSS ; NM5 D=N4_NM5 G=N5 S=VSS B=VSS ; NM6 D=N5_NM6 G=N5 S=VSS B=VSS ; NMC1 D=N4 G=VBCN S=N4_NM5 B=VSS ; NMC2 D=N5 G=VBCN S=N5_NM6 B=VSS",
+ "output_scale": 50.0,
+ "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT VB3 VDD VDD pfet_06v0 w=98.2u l=2u m=35\nXPM4 N3 VB3 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM5 N4 INP N3 VDD pfet_06v0 w=43.4u l=1u\nXPM6 N5 INN N3 VDD pfet_06v0 w=43.4u l=1u\nXNM3 OUT N4 VSS VSS nfet_06v0 w=88u l=1u m=7\nXNM5 N4_NM5 N5 VSS VSS nfet_06v0 w=6.03u l=1u\nXNM6 N5_NM6 N5 VSS VSS nfet_06v0 w=6.03u l=1u\nXNMC1 N4 VBCN N4_NM5 VSS nfet_06v0 w=9.32u l=1u\nXNMC2 N5 VBCN N5_NM6 VSS nfet_06v0 w=9.32u l=1u\nXPMB1 VB3 VB3 VDD VDD pfet_06v0 w=68.7u l=2u\nXNMF1 VB3 REF_NB VSS VSS nfet_06v0 w=24u l=2u\nXNMB2 VBCN VBCN VBCN_S1 VSS nfet_06v0 w=14.9u l=2u\nRBCVBCN VBCN_S1 VSS 28174.6\nXPMF2 VBCN REF_PB VDD VDD pfet_06v0 w=58.6u l=2u m=2\n* 기준 전류 10 uA: beta-multiplier + startup (bias_reference.py)\nXREF_MN1 REF_NB REF_NB VSS VSS nfet_06v0 w=12u l=2u\nXREF_MN2 REF_PB REF_NB REF_NS VSS nfet_06v0 w=48u l=2u\nRREF_S REF_NS VSS 8353.6\nXREF_MP3 REF_PB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MP4 REF_NB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MS1 REF_SX VSS VDD VDD pfet_06v0 w=0.5u l=20u\nXREF_MS2 REF_PB REF_SX VSS VSS nfet_06v0 w=2u l=1u\nXREF_MS3 REF_SX REF_NB VSS VSS nfet_06v0 w=5u l=1u\n.ends opamp\n",
+ "sizes": {
+  "PM1": {
+   "w": "98.2u",
+   "l": "2u",
+   "m": "35"
+  },
+  "PM4": {
+   "w": "68.7u",
+   "l": "2u"
+  },
+  "PMB1": {
+   "w": "68.7u",
+   "l": "2u"
+  },
+  "PM5": {
+   "w": "43.4u",
+   "l": "1u"
+  },
+  "PM6": {
+   "w": "43.4u",
+   "l": "1u"
+  },
+  "NM3": {
+   "w": "88u",
+   "l": "1u",
+   "m": "7"
+  },
+  "NM5": {
+   "w": "6.03u",
+   "l": "1u"
+  },
+  "NM6": {
+   "w": "6.03u",
+   "l": "1u"
+  },
+  "NMC1": {
+   "w": "9.32u",
+   "l": "1u"
+  },
+  "NMC2": {
+   "w": "9.32u",
+   "l": "1u"
+  },
+  "NMF1": {
+   "w": "24u",
+   "l": "2u"
+  },
+  "NMB2": {
+   "w": "14.9u",
+   "l": "2u"
+  },
+  "PMF2": {
+   "w": "58.6u",
+   "l": "2u",
+   "m": "2"
+  },
+  "RBCVBCN": {
+   "value": "28174.6"
+  }
+ },
+ "bias": {
+  "nodes": {
+   "VB3": {
+    "kind": "gate_only",
+    "why": "게이트에만 붙음"
+   },
+   "VBCN": {
+    "kind": "gate_only",
+    "why": "게이트에만 붙음"
+   }
+  },
+  "added": [
+   "PMB1",
+   "NMF1",
+   "NMB2",
+   "RBCVBCN",
+   "PMF2"
+  ],
+  "fixed": {
+   "NMF1": {
+    "w": "24u",
+    "l": "2u"
+   },
+   "RBCVBCN": {
+    "value": "28174.6"
+   },
+   "PMF2": {
+    "w": "58.6u",
+    "l": "2u",
+    "m": "2"
+   }
+  },
+  "reference": true,
+  "free_loops": [],
+  "completed_loops": [],
+  "unresolved": []
+ },
+ "spec": [
+  {
+   "measure": "avd",
+   "label": "대신호 차동 전압이득",
+   "unit": "dB",
+   "value": 90.83944588319481,
+   "target": "≥ 87.96 dB",
+   "status": "PASS"
+  },
+  {
+   "measure": "cmrr",
+   "label": "공통모드 제거비",
+   "unit": "dB",
+   "value": 99.26104374470742,
+   "target": "≥ 65 dB",
+   "status": "PASS"
+  },
+  {
+   "measure": "idd",
+   "label": "공급 전류",
+   "unit": "µA",
+   "value": 1192.7909554691141,
+   "target": "≤ 1000 µA",
+   "status": "FAIL"
+  },
+  {
+   "measure": "ugbw",
+   "label": "단위이득 대역폭",
+   "unit": "MHz",
+   "value": 49.252780625844025,
+   "target": "≥ 0.7 MHz",
+   "status": "PASS"
+  },
+  {
+   "measure": "sr",
+   "label": "슬루율 (단위이득)",
+   "unit": "V/µs",
+   "value": 16.2651689897374,
+   "target": "≥ 0.3 V/µs",
+   "status": "PASS"
+  },
+  {
+   "measure": "io_source",
+   "label": "출력 전류 (+레일에서 0.5 V)",
+   "unit": "mA",
+   "value": 1.0675495901647156,
+   "target": "≥ 20 mA",
+   "status": "FAIL"
+  },
+  {
+   "measure": "io_sink",
+   "label": "출력 전류 (-레일에서 0.5 V)",
+   "unit": "mA",
+   "value": 68.72243557837007,
+   "target": "≥ 10 mA",
+   "status": "PASS"
+  }
+ ],
+ "passed": 5,
+ "judged": 7,
+ "tried": [
+  {
+   "label": "모델 구조 그대로",
+   "scale": 20.0,
+   "valid": true,
+   "reason": "",
+   "passed": 5,
+   "judged": 7,
+   "spec": [
+    {
+     "measure": "avd",
+     "label": "대신호 차동 전압이득",
+     "unit": "dB",
+     "value": 77.32783263573971,
+     "target": "≥ 87.96 dB",
+     "status": "FAIL"
+    },
+    {
+     "measure": "cmrr",
+     "label": "공통모드 제거비",
+     "unit": "dB",
+     "value": 88.49667259170694,
+     "target": "≥ 65 dB",
+     "status": "PASS"
+    },
+    {
+     "measure": "idd",
+     "label": "공급 전류",
+     "unit": "µA",
+     "value": 508.7396936030035,
+     "target": "≤ 1000 µA",
+     "status": "PASS"
+    },
+    {
+     "measure": "ugbw",
+     "label": "단위이득 대역폭",
+     "unit": "MHz",
+     "value": 52.90967407780088,
+     "target": "≥ 0.7 MHz",
+     "status": "PASS"
+    },
+    {
+     "measure": "sr",
+     "label": "슬루율 (단위이득)",
+     "unit": "V/µs",
+     "value": 8.324650671345374,
+     "target": "≥ 0.3 V/µs",
+     "status": "PASS"
+    },
+    {
+     "measure": "io_source",
+     "label": "출력 전류 (+레일에서 0.5 V)",
+     "unit": "mA",
+     "value": 0.4270198352300889,
+     "target": "≥ 20 mA",
+     "status": "FAIL"
+    },
+    {
+     "measure": "io_sink",
+     "label": "출력 전류 (-레일에서 0.5 V)",
+     "unit": "mA",
+     "value": 27.4583444599403,
+     "target": "≥ 10 mA",
+     "status": "PASS"
+    }
+   ]
+  },
+  {
+   "label": "캐스코드",
+   "scale": 20.0,
+   "valid": true,
+   "reason": "",
+   "passed": 5,
+   "judged": 7,
+   "spec": [
+    {
+     "measure": "avd",
+     "label": "대신호 차동 전압이득",
+     "unit": "dB",
+     "value": 85.3756529749327,
+     "target": "≥ 87.96 dB",
+     "status": "FAIL"
+    },
+    {
+     "measure": "cmrr",
+     "label": "공통모드 제거비",
+     "unit": "dB",
+     "value": 99.27408883496467,
+     "target": "≥ 65 dB",
+     "status": "PASS"
+    },
+    {
+     "measure": "idd",
+     "label": "공급 전류",
+     "unit": "µA",
+     "value": 528.6090356972362,
+     "target": "≤ 1000 µA",
+     "status": "PASS"
+    },
+    {
+     "measure": "ugbw",
+     "label": "단위이득 대역폭",
+     "unit": "MHz",
+     "value": 53.64014174531547,
+     "target": "≥ 0.7 MHz",
+     "status": "PASS"
+    },
+    {
+     "measure": "sr",
+     "label": "슬루율 (단위이득)",
+     "unit": "V/µs",
+     "value": 8.324028216805234,
+     "target": "≥ 0.3 V/µs",
+     "status": "PASS"
+    },
+    {
+     "measure": "io_source",
+     "label": "출력 전류 (+레일에서 0.5 V)",
+     "unit": "mA",
+     "value": 0.42701983516401154,
+     "target": "≥ 20 mA",
+     "status": "FAIL"
+    },
+    {
+     "measure": "io_sink",
+     "label": "출력 전류 (-레일에서 0.5 V)",
+     "unit": "mA",
+     "value": 27.477564775407867,
+     "target": "≥ 10 mA",
+     "status": "PASS"
+    }
+   ]
+  },
+  {
+   "label": "캐스코드",
+   "scale": 50.0,
+   "valid": true,
+   "reason": "",
+   "passed": 5,
+   "judged": 7,
+   "spec": [
+    {
+     "measure": "avd",
+     "label": "대신호 차동 전압이득",
+     "unit": "dB",
+     "value": 90.83944588319481,
+     "target": "≥ 87.96 dB",
+     "status": "PASS"
+    },
+    {
+     "measure": "cmrr",
+     "label": "공통모드 제거비",
+     "unit": "dB",
+     "value": 99.26104374470742,
+     "target": "≥ 65 dB",
+     "status": "PASS"
+    },
+    {
+     "measure": "idd",
+     "label": "공급 전류",
+     "unit": "µA",
+     "value": 1192.7909554691141,
+     "target": "≤ 1000 µA",
+     "status": "FAIL"
+    },
+    {
+     "measure": "ugbw",
+     "label": "단위이득 대역폭",
+     "unit": "MHz",
+     "value": 49.252780625844025,
+     "target": "≥ 0.7 MHz",
+     "status": "PASS"
+    },
+    {
+     "measure": "sr",
+     "label": "슬루율 (단위이득)",
+     "unit": "V/µs",
+     "value": 16.2651689897374,
+     "target": "≥ 0.3 V/µs",
+     "status": "PASS"
+    },
+    {
+     "measure": "io_source",
+     "label": "출력 전류 (+레일에서 0.5 V)",
+     "unit": "mA",
+     "value": 1.0675495901647156,
+     "target": "≥ 20 mA",
+     "status": "FAIL"
+    },
+    {
+     "measure": "io_sink",
+     "label": "출력 전류 (-레일에서 0.5 V)",
+     "unit": "mA",
+     "value": 68.72243557837007,
+     "target": "≥ 10 mA",
+     "status": "PASS"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,25 @@
+{
+ "candidate": 12,
+ "purpose": "write_rule",
+ "model": "nvidia/nemotron-3-ultra-550b-a55b",
+ "system": "You write concise, general analog design rules. Answer JSON only.",
+ "prompt": "A structural fix just made a failing op-amp work. Turn it into a reusable rule for OTHER chips.\nPick only the features that explain WHY the fix was needed (a rule with too many conditions never matches again,\na rule with too few conditions fires where it does not help). Use the exact feature values given.\n\nFEATURES OF THE FAILING STRUCTURE:\n{\n \"failure\": \"포화 영역\",\n \"input_pair\": \"nmos\",\n \"input_covers_range\": false,\n \"input_stage\": \"symmetric\",\n \"output_stage\": \"none\",\n \"gain_nodes\": 1,\n \"has_compensation\": false,\n \"own_bias\": true,\n \"failed_blocks\": [\n  \"bias\"\n ]\n}\n\nFEATURE MEANINGS:\n  failure: failure kind\n  input_pair: input pair type (nmos / pmos / both)\n  input_covers_range: whether the input pair type covers the datasheet common-mode range\n  input_stage: input stage type (five_transistor / folded_cascode / telescopic / symmetric / rail_to_rail / other)\n  output_stage: output stage type (none / common_source_nmos / common_source_pmos / push_pull / other)\n  gain_nodes: number of high-impedance gain nodes from input to OUT\n  has_compensation: whether a compensation capacitor exists\n  own_bias: whether the model drew its own bias network\n  failed_blocks: blocks that contain OFF/TRIODE devices (rule matches if all listed blocks are among them)\n\nTHE FIX THAT WORKED (in order):\n  replace_bias {}\n\nDIAGNOSIS AT THE TIME: 출력 스테이지(PM5, NM7)가 공통 소스 구조로 게이트 바이어스(VB4, N1)가 고정되어 있어 큰 신호 스윙 시 NM7이 트라이오드 영역에 진입하거나 전류 미러링 불일치로 슬루 레이트 시뮬레이션이 수렴하지 못함\n\nAnswer JSON: {\"if\": {\"<feature>\": <value>, ...}, \"text\": \"<one Korean sentence: when this happens, do this, because ...>\"}",
+ "answer": {
+  "if": {
+   "failure": "포화 영역",
+   "input_pair": "nmos",
+   "input_covers_range": false,
+   "input_stage": "symmetric",
+   "output_stage": "none",
+   "gain_nodes": 1,
+   "has_compensation": false,
+   "own_bias": true,
+   "failed_blocks": [
+    "bias"
+   ]
+  },
+  "text": "자체 바이어스 회로를 가진 대칭 입력 단일 게인 노드 증폭기에서 바이어스 블록 실패로 포화 영역 문제가 발생하면 바이어스 회로를 교체하여 출력 스테이지 트랜지스터의 트라이오드 영역 진입과 전류 미러링 불일치를 방지하십시오."
+ },
+ "error": null,
+ "seconds": 3.2
+}

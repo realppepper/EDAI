@@ -1,0 +1,309 @@
+{
+ "label": "모델 구조 그대로",
+ "rules": [],
+ "table": "PM1 D=OUT G=VB1 S=VDD B=VDD ; PM6 D=N5 G=VB1 S=VDD B=VDD ; PM7 D=N6 G=N7 S=VDD B=VDD ; PM8 D=N8 G=N7 S=VDD B=VDD ; PM9 D=N9 G=IN2 S=N5 B=N5 ; PM10 D=N10 G=IN1 S=N5 B=N5 ; PM11 D=N7 G=VB4 S=N6 B=VDD ; PM12 D=N11 G=VB4 S=N8 B=VDD ; NM1 D=OUT G=N11 S=VSS B=VSS ; NM7 D=N9 G=VB2 S=VSS B=VSS ; NM8 D=N10 G=VB2 S=VSS B=VSS ; NM10 D=N7 G=VB3 S=N9 B=VSS ; NM11 D=N11 G=VB3 S=N10 B=VSS ; C1 P=N11 N=OUT",
+ "output_scale": 20.0,
+ "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 OUT VB1 VDD VDD pfet_06v0 w=98.2u l=2u m=14\nXPM6 N5 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM7 N6 N7 VDD VDD pfet_06v0 w=21.9u l=1u\nXPM8 N8 N7 VDD VDD pfet_06v0 w=21.9u l=1u\nXPM9 N9 INN N5 N5 pfet_06v0 w=43.8u l=1u\nXPM10 N10 INP N5 N5 pfet_06v0 w=43.7u l=1u\nXPM11 N7 VB4 N6 VDD pfet_06v0 w=35.5u l=1u\nXPM12 N11 VB4 N8 VDD pfet_06v0 w=35.5u l=1u\nXNM1 OUT N11 VSS VSS nfet_06v0 w=82.1u l=1u m=3\nXNM7 N9 VB2 VSS VSS nfet_06v0 w=15u l=2u\nXNM8 N10 VB2 VSS VSS nfet_06v0 w=15u l=2u\nXNM10 N7 VB3 N9 VSS nfet_06v0 w=7.62u l=1u\nXNM11 N11 VB3 N10 VSS nfet_06v0 w=7.63u l=1u\nC1 N11 OUT 1p\nXPMB1 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXNMF1 VB1 REF_NB VSS VSS nfet_06v0 w=24u l=2u\nXNMB2 VB2 VB2 VSS VSS nfet_06v0 w=15u l=2u\nXPMF2 VB2 REF_PB VDD VDD pfet_06v0 w=58.6u l=2u m=2\nXNMB3 VB3 VB3 VB3_S1 VSS nfet_06v0 w=14.9u l=2u\nRBCVB3 VB3_S1 VSS 28174.6\nXPMF3 VB3 REF_PB VDD VDD pfet_06v0 w=58.6u l=2u m=2\nXPMB4 VB4 VB4 VB4_S1 VDD pfet_06v0 w=72.9u l=2u\nRBCVB4 VB4_S1 VDD 26473.2\nXNMF4 VB4 REF_NB VSS VSS nfet_06v0 w=24u l=2u\n* 기준 전류 10 uA: beta-multiplier + startup (bias_reference.py)\nXREF_MN1 REF_NB REF_NB VSS VSS nfet_06v0 w=12u l=2u\nXREF_MN2 REF_PB REF_NB REF_NS VSS nfet_06v0 w=48u l=2u\nRREF_S REF_NS VSS 8353.6\nXREF_MP3 REF_PB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MP4 REF_NB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MS1 REF_SX VSS VDD VDD pfet_06v0 w=0.5u l=20u\nXREF_MS2 REF_PB REF_SX VSS VSS nfet_06v0 w=2u l=1u\nXREF_MS3 REF_SX REF_NB VSS VSS nfet_06v0 w=5u l=1u\n.ends opamp\n",
+ "sizes": {
+  "PM1": {
+   "w": "98.2u",
+   "l": "2u",
+   "m": "14"
+  },
+  "PM6": {
+   "w": "68.7u",
+   "l": "2u"
+  },
+  "PMB1": {
+   "w": "68.7u",
+   "l": "2u"
+  },
+  "PM7": {
+   "w": "21.9u",
+   "l": "1u"
+  },
+  "PM8": {
+   "w": "21.9u",
+   "l": "1u"
+  },
+  "PM9": {
+   "w": "43.8u",
+   "l": "1u"
+  },
+  "PM10": {
+   "w": "43.7u",
+   "l": "1u"
+  },
+  "PM11": {
+   "w": "35.5u",
+   "l": "1u"
+  },
+  "PM12": {
+   "w": "35.5u",
+   "l": "1u"
+  },
+  "NM1": {
+   "w": "82.1u",
+   "l": "1u",
+   "m": "3"
+  },
+  "NM7": {
+   "w": "15u",
+   "l": "2u"
+  },
+  "NM8": {
+   "w": "15u",
+   "l": "2u"
+  },
+  "NMB2": {
+   "w": "15u",
+   "l": "2u"
+  },
+  "NM10": {
+   "w": "7.62u",
+   "l": "1u"
+  },
+  "NM11": {
+   "w": "7.63u",
+   "l": "1u"
+  },
+  "NMF1": {
+   "w": "24u",
+   "l": "2u"
+  },
+  "NMF4": {
+   "w": "24u",
+   "l": "2u"
+  },
+  "PMF2": {
+   "w": "58.6u",
+   "l": "2u",
+   "m": "2"
+  },
+  "PMF3": {
+   "w": "58.6u",
+   "l": "2u",
+   "m": "2"
+  },
+  "NMB3": {
+   "w": "14.9u",
+   "l": "2u"
+  },
+  "PMB4": {
+   "w": "72.9u",
+   "l": "2u"
+  },
+  "RBCVB3": {
+   "value": "28174.6"
+  },
+  "RBCVB4": {
+   "value": "26473.2"
+  }
+ },
+ "bias": {
+  "nodes": {
+   "VB1": {
+    "kind": "gate_only",
+    "why": "게이트에만 붙음"
+   },
+   "VB2": {
+    "kind": "gate_only",
+    "why": "게이트에만 붙음"
+   },
+   "VB3": {
+    "kind": "gate_only",
+    "why": "게이트에만 붙음"
+   },
+   "VB4": {
+    "kind": "gate_only",
+    "why": "게이트에만 붙음"
+   }
+  },
+  "added": [
+   "PMB1",
+   "NMF1",
+   "NMB2",
+   "PMF2",
+   "NMB3",
+   "RBCVB3",
+   "PMF3",
+   "PMB4",
+   "RBCVB4",
+   "NMF4"
+  ],
+  "fixed": {
+   "NMF1": {
+    "w": "24u",
+    "l": "2u"
+   },
+   "PMF2": {
+    "w": "58.6u",
+    "l": "2u",
+    "m": "2"
+   },
+   "RBCVB3": {
+    "value": "28174.6"
+   },
+   "PMF3": {
+    "w": "58.6u",
+    "l": "2u",
+    "m": "2"
+   },
+   "RBCVB4": {
+    "value": "26473.2"
+   },
+   "NMF4": {
+    "w": "24u",
+    "l": "2u"
+   }
+  },
+  "reference": true,
+  "free_loops": [],
+  "completed_loops": [],
+  "unresolved": []
+ },
+ "spec": [
+  {
+   "measure": "avd",
+   "label": "대신호 차동 전압이득",
+   "unit": "dB",
+   "value": 104.66697491346895,
+   "target": "≥ 93.98 dB",
+   "status": "PASS"
+  },
+  {
+   "measure": "cmrr",
+   "label": "공통모드 제거비",
+   "unit": "dB",
+   "value": 92.39891909202088,
+   "target": "≥ 70 dB",
+   "status": "PASS"
+  },
+  {
+   "measure": "psrr",
+   "label": "전원 제거비",
+   "unit": "dB",
+   "value": 78.5954142524578,
+   "target": "≥ 65, ≤ 100 dB",
+   "status": "PASS"
+  },
+  {
+   "measure": "ugbw",
+   "label": "단위이득 대역폭",
+   "unit": "MHz",
+   "value": 15.983295107652056,
+   "target": "≥ 1.2 MHz",
+   "status": "PASS"
+  },
+  {
+   "measure": "sr",
+   "label": "슬루율 (단위이득)",
+   "unit": "V/µs",
+   "value": 8.126172571190997,
+   "target": "≥ 0.5 V/µs",
+   "status": "PASS"
+  },
+  {
+   "measure": "pm",
+   "label": "위상여유",
+   "unit": "°",
+   "value": 66.96524039070414,
+   "target": "≥ 56 °",
+   "status": "PASS"
+  },
+  {
+   "measure": "io_source",
+   "label": "출력 전류 (+레일에서 0.5 V)",
+   "unit": "mA",
+   "value": 0.4270198351812627,
+   "target": "≥ 20, ≤ 30 mA",
+   "status": "FAIL"
+  },
+  {
+   "measure": "io_sink",
+   "label": "출력 전류 (-레일에서 0.5 V)",
+   "unit": "mA",
+   "value": 33.763020930323385,
+   "target": "≥ 10, ≤ 20 mA",
+   "status": "FAIL"
+  }
+ ],
+ "passed": 6,
+ "judged": 8,
+ "tried": [
+  {
+   "label": "모델 구조 그대로",
+   "scale": 20.0,
+   "valid": true,
+   "reason": "",
+   "passed": 6,
+   "judged": 8,
+   "spec": [
+    {
+     "measure": "avd",
+     "label": "대신호 차동 전압이득",
+     "unit": "dB",
+     "value": 104.66697491346895,
+     "target": "≥ 93.98 dB",
+     "status": "PASS"
+    },
+    {
+     "measure": "cmrr",
+     "label": "공통모드 제거비",
+     "unit": "dB",
+     "value": 92.39891909202088,
+     "target": "≥ 70 dB",
+     "status": "PASS"
+    },
+    {
+     "measure": "psrr",
+     "label": "전원 제거비",
+     "unit": "dB",
+     "value": 78.5954142524578,
+     "target": "≥ 65, ≤ 100 dB",
+     "status": "PASS"
+    },
+    {
+     "measure": "ugbw",
+     "label": "단위이득 대역폭",
+     "unit": "MHz",
+     "value": 15.983295107652056,
+     "target": "≥ 1.2 MHz",
+     "status": "PASS"
+    },
+    {
+     "measure": "sr",
+     "label": "슬루율 (단위이득)",
+     "unit": "V/µs",
+     "value": 8.126172571190997,
+     "target": "≥ 0.5 V/µs",
+     "status": "PASS"
+    },
+    {
+     "measure": "pm",
+     "label": "위상여유",
+     "unit": "°",
+     "value": 66.96524039070414,
+     "target": "≥ 56 °",
+     "status": "PASS"
+    },
+    {
+     "measure": "io_source",
+     "label": "출력 전류 (+레일에서 0.5 V)",
+     "unit": "mA",
+     "value": 0.4270198351812627,
+     "target": "≥ 20, ≤ 30 mA",
+     "status": "FAIL"
+    },
+    {
+     "measure": "io_sink",
+     "label": "출력 전류 (-레일에서 0.5 V)",
+     "unit": "mA",
+     "value": 33.763020930323385,
+     "target": "≥ 10, ≤ 20 mA",
+     "status": "FAIL"
+    }
+   ]
+  }
+ ]
+}

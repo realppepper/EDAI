@@ -1,0 +1,147 @@
+{
+ "nodes": [
+  {
+   "name": "IN_P",
+   "role": "SIGNAL"
+  },
+  {
+   "name": "IN_N",
+   "role": "SIGNAL"
+  },
+  {
+   "name": "OUT",
+   "role": "OUTPUT"
+  },
+  {
+   "name": "GND",
+   "role": "GROUND"
+  },
+  {
+   "name": "VDD",
+   "role": "POWER"
+  },
+  {
+   "name": "NC",
+   "role": "NC"
+  }
+ ],
+ "edges": [
+  {
+   "from": "IN_P",
+   "to": "OUT",
+   "weight": 1.8333333333333335e-06,
+   "delay_us": 1.8333333333333335,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Own channel only",
+   "origin": "datasheet",
+   "delay_source": "SR",
+   "kind": "causal"
+  },
+  {
+   "from": "IN_N",
+   "to": "OUT",
+   "weight": 1.8333333333333335e-06,
+   "delay_us": 1.8333333333333335,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Own channel only",
+   "origin": "datasheet",
+   "delay_source": "SR",
+   "kind": "causal"
+  },
+  {
+   "from": "GND",
+   "to": "OUT",
+   "weight": 1.8333333333333335e-06,
+   "delay_us": 1.8333333333333335,
+   "dependency_type": "POWER_FEED",
+   "condition": "All conditions",
+   "origin": "datasheet",
+   "delay_source": "SR",
+   "kind": "causal"
+  },
+  {
+   "from": "GND",
+   "to": "IN_P",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "GND",
+   "to": "IN_N",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "VDD",
+   "to": "OUT",
+   "weight": 1.8333333333333335e-06,
+   "delay_us": 1.8333333333333335,
+   "dependency_type": "POWER_FEED",
+   "condition": "All conditions",
+   "origin": "datasheet",
+   "delay_source": "SR",
+   "kind": "causal"
+  },
+  {
+   "from": "VDD",
+   "to": "IN_P",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "VDD",
+   "to": "IN_N",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  }
+ ],
+ "schedule_us": {
+  "GND": 0.0,
+  "VDD": 0.0,
+  "NC": 0.0,
+  "IN_P": 2e-06,
+  "IN_N": 2e-06,
+  "OUT": 3.833333333333334e-06
+ },
+ "levels": [
+  [
+   "GND",
+   "VDD",
+   "NC"
+  ],
+  [
+   "IN_P",
+   "IN_N"
+  ],
+  [
+   "OUT"
+  ]
+ ],
+ "audit": {
+  "mode": "groundtruth_free_provenance",
+  "benchmark_framework": "ParseBench (https://github.com/run-llama/ParseBench.git)",
+  "fidelity_score_pct": 83.1,
+  "status": "ACCEPTABLE"
+ },
+ "audit_with_pages": true
+}

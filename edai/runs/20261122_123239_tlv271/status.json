@@ -1,0 +1,109 @@
+{
+ "title": "TLV271",
+ "name": "cmp_tlv271",
+ "steps": [
+  {
+   "key": "extract",
+   "title": "1. 데이터시트 분석",
+   "state": "done",
+   "summary": {
+    "part": "TLV271",
+    "rows": 109,
+    "pins": 6,
+    "judged": 5,
+    "model_input": "op-amp spec: avd 106 dB; cmrr 80 dB; idd 550 uA; ugbw 3 MHz; sr 2.4 V/us"
+   },
+   "seconds": null
+  },
+  {
+   "key": "candidates",
+   "title": "2. 모델 구조 후보",
+   "state": "done",
+   "summary": {
+    "total": 32,
+    "rule_ok": 25,
+    "new": 23
+   },
+   "seconds": null
+  },
+  {
+   "key": "select",
+   "title": "3. 바이어스 채우기·크기 정하기·측정",
+   "state": "done",
+   "summary": {
+    "evaluated": 32,
+    "working": 2,
+    "best_passed": "3/5"
+   },
+   "seconds": null
+  },
+  {
+   "key": "rank",
+   "title": "4. 구조 고르기",
+   "state": "done",
+   "summary": {
+    "rule": "v1",
+    "top": [
+     {
+      "index": 2,
+      "passed": 3,
+      "judged": 5,
+      "scale": 20.0,
+      "gain_nodes": 1,
+      "input_ok": true,
+      "avd": 24.712814012018818,
+      "shortfall": 3.9861263605510633
+     },
+     {
+      "index": 10,
+      "passed": 3,
+      "judged": 5,
+      "scale": 20.0,
+      "gain_nodes": 2,
+      "input_ok": true,
+      "avd": 73.99087838997475,
+      "shortfall": 4.236203755591589
+     }
+    ]
+   },
+   "seconds": null
+  },
+  {
+   "key": "rules",
+   "title": "5. 규칙 적용",
+   "state": "done",
+   "summary": {
+    "chosen": "모델 구조 그대로 (그때는 규칙 단계가 없었음)",
+    "passed": "3/5",
+    "tried": 1
+   },
+   "seconds": null
+  },
+  {
+   "key": "harness",
+   "title": "6. 하네스",
+   "state": "done",
+   "summary": {
+    "pass_rate": 58.8,
+    "iterations": 9,
+    "has_netlist": true
+   },
+   "seconds": null
+  },
+  {
+   "key": "schematic",
+   "title": "7. 최종 회로도",
+   "state": "done",
+   "summary": {
+    "made": [
+     "before_harness",
+     "after_harness"
+    ]
+   },
+   "seconds": null
+  }
+ ],
+ "started": "2026-11-22 12:32:39",
+ "note": "2026-11-22 비교 실험 결과를 불러옴. 고르기: 통과 항목 수 -> 공급 전류 순으로 고름 (규칙 v1)",
+ "state": "done"
+}

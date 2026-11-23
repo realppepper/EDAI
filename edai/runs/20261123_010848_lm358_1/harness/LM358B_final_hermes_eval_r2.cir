@@ -1,0 +1,48 @@
+
+
+* Default Physical Device Models for AI Analog Synthesis
+
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=120u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model QNPN NPN (IS=1e-14 BF=150 VAF=100 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=100 TF=0.3n TR=10n CJE=2p CJC=1p VJC=0.75 MJC=0.33)
+
+.model QPNP PNP (IS=1e-14 BF=80 VAF=80 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=80 TF=0.5n TR=20n CJE=2p CJC=1.5p VJC=0.75 MJC=0.33)
+
+.model D1N4148 D (IS=2.52n RS=0.568 N=1.752 CJO=4p VJ=0.5 M=0.333 BV=100 IBV=100u TT=4n)
+
+.model D_ESD D (IS=1e-15 RS=10 CJO=1p BV=50)
+
+
+
+
+* --- Globally Hoisted Models for Multi-Subcircuit Visibility ---
+.model nfet_06v0_bsim0 NMOS (VTO=0.7 KP=100u LAMBDA=0.02)
+.model pfet_06v0_bsim0 PMOS (VTO=-0.7 KP=40u LAMBDA=0.02)
+
+.subckt LM358B IN1_P IN1_N IN2_P IN2_N OUT1 OUT2 V_P V_N NC
+* Differential Pair Stage 1
+M1 IN1_P IN1_N V_P V_N nfet_06v0_bsim0 W=10u L=0.5u
+M2 IN1_P IN1_N V_P V_N pfet_06v0_bsim0 W=10u L=0.5u
+M3 IN2_P IN2_N V_P V_N nfet_06v0_bsim0 W=10u L=0.5u
+M4 IN2_P IN2_N V_P V_N pfet_06v0_bsim0 W=10u L=0.5u
+* Active Load Stage 1
+MNM1 V_P OUT1 V_P NMN NMN nfet_06v0_bsim0 W=20u L=0.5u
+MNM2 V_P OUT1 V_N NMN NMN pfet_06v0_bsim0 W=20u L=0.5u
+* Differential Pair Stage 2
+M5 IN1_P IN2_P V_P V_N nfet_06v0_bsim0 W=10u L=0.5u
+M6 IN1_N IN2_N V_P V_N pfet_06v0_bsim0 W=10u L=0.5u
+* Two-Stage Gain with Miller Compensation
+M7 OUT1 V_P V_N V_P NMN NMN nfet_06v0_bsim0 W=10u L=0.5u
+Cc OUT1 OUT2 10p
+Rz OUT1 OUT2 2k
+M7b OUT2 V_P V_N V_N NMN NMN pfet_06v0_bsim0 W=20u L=0.5u
+* Output Buffer Stage 1
+MPM1 OUT1 V_P V_N OUT1 V_P MPM MPM nfet_06v0_bsim0 W=10u L=0.5u
+MPM2 OUT1 V_P V_N OUT1 V_N MPM MPM pfet_06v0_bsim0 W=10u L=0.5u
+* Output Buffer Stage 2
+MPM3 OUT2 V_P V_N OUT2 V_P MPM MPM nfet_06v0_bsim0 W=10u L=0.5u
+MPM4 OUT2 V_P V_N OUT2 V_N MPM MPM pfet_06v0_bsim0 W=10u L=0.5u
+* Explicit Device Models
+.ends LM358B

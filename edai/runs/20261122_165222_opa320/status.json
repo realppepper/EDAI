@@ -1,0 +1,115 @@
+{
+ "title": "OPA320",
+ "name": "cmp_opa320",
+ "steps": [
+  {
+   "key": "extract",
+   "title": "1. 데이터시트 분석",
+   "state": "done",
+   "summary": {
+    "part": "OPA320",
+    "rows": 114,
+    "pins": 15,
+    "judged": 6,
+    "model_input": "op-amp spec: avd 132 dB; cmrr 114 dB; idd 0.5 uA; ugbw 20 MHz; sr 10 V/us; pm 47 deg"
+   },
+   "seconds": null
+  },
+  {
+   "key": "candidates",
+   "title": "2. 모델 구조 후보",
+   "state": "done",
+   "summary": {
+    "total": 33,
+    "rule_ok": 23,
+    "new": 19
+   },
+   "seconds": null
+  },
+  {
+   "key": "select",
+   "title": "3. 바이어스 채우기·크기 정하기·측정",
+   "state": "done",
+   "summary": {
+    "evaluated": 33,
+    "working": 3,
+    "best_passed": "4/6"
+   },
+   "seconds": null
+  },
+  {
+   "key": "rank",
+   "title": "4. 구조 고르기",
+   "state": "done",
+   "summary": {
+    "rule": "v3",
+    "top": [
+     {
+      "index": 32,
+      "passed": 3,
+      "judged": 6,
+      "scale": 5.0,
+      "gain_nodes": 2,
+      "input_ok": false,
+      "avd": 79.75821757651676,
+      "shortfall": 3.4465150661307034
+     },
+     {
+      "index": 29,
+      "passed": 2,
+      "judged": 6,
+      "scale": 1.0,
+      "gain_nodes": 2,
+      "input_ok": false,
+      "avd": 73.57452706057957,
+      "shortfall": 3.425125819405385
+     },
+     {
+      "index": 6,
+      "passed": 4,
+      "judged": 6,
+      "scale": 1.0,
+      "gain_nodes": 1,
+      "input_ok": false,
+      "avd": 32.065944650960255,
+      "shortfall": 4.649605052619679
+     }
+    ]
+   },
+   "seconds": null
+  },
+  {
+   "key": "rules",
+   "title": "5. 규칙 적용",
+   "state": "done",
+   "summary": {
+    "chosen": "모델 구조 그대로 (그때는 규칙 단계가 없었음)",
+    "passed": "3/6",
+    "tried": 1
+   },
+   "seconds": null
+  },
+  {
+   "key": "harness",
+   "title": "6. 하네스",
+   "state": "fail",
+   "summary": null,
+   "seconds": null,
+   "error": "원래 시스템 오류로 중단: HKG 에 숫자 기호가 있어 .lower() 에서 멈춤 (ngspice판에서 고침)"
+  },
+  {
+   "key": "schematic",
+   "title": "7. 최종 회로도",
+   "state": "done",
+   "summary": {
+    "made": [
+     "before_harness"
+    ]
+   },
+   "seconds": null
+  }
+ ],
+ "started": "2026-11-22 16:52:22",
+ "note": "2026-11-22 비교 실험 결과를 불러옴. 고르기: 목표 이득이 높으면 이득 노드 2개 이상인 구조 먼저 (규칙 v3)",
+ "state": "done"
+}

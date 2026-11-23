@@ -1,0 +1,84 @@
+{
+  "target_name": "TLV271",
+  "total_duration_ms": 809371.8,
+  "status": "COMPLETED",
+  "span_count": 3,
+  "spans": [
+    {
+      "phase": 1,
+      "name": "Phase 1: Knowledge Ingestion & HKG Construction",
+      "start_time": 1795350648.8897653,
+      "end_time": 1795350662.7975888,
+      "duration_ms": 13907.82,
+      "status": "SUCCESS",
+      "inputs": {
+        "datasheet_pdf_path": "/mnt/d/\uc608\ucea1/runs/20261122_test_tlv271/datasheet.pdf",
+        "user_prompt": null,
+        "max_pages": 12
+      },
+      "outputs": {
+        "part_name": "TLV271",
+        "pins_count": 6,
+        "specifications_count": 109,
+        "pins": [
+          "IN_P",
+          "IN_N",
+          "OUT",
+          "GND",
+          "VDD",
+          "NC"
+        ]
+      },
+      "events": [],
+      "error": null
+    },
+    {
+      "phase": 2,
+      "name": "Phase 2: Port Dependency Graph (PDG) & Timing Schedule",
+      "start_time": 1795350662.7978103,
+      "end_time": 1795350662.930254,
+      "duration_ms": 132.44,
+      "status": "SUCCESS",
+      "inputs": {
+        "pins_count": 6
+      },
+      "outputs": {
+        "pin_schedule_us": {
+          "GND": 0.0,
+          "VDD": 0.0,
+          "NC": 0.0,
+          "IN_P": 2.0,
+          "IN_N": 2.0,
+          "OUT": 3.83
+        },
+        "levels_count": 3,
+        "fidelity_score_pct": 83.1,
+        "fidelity_status": "ACCEPTABLE"
+      },
+      "events": [],
+      "error": null
+    },
+    {
+      "phase": 3,
+      "name": "Phase 3: Hermes Autonomous Synthesis & Verification",
+      "start_time": 1795350662.9775863,
+      "end_time": 1795351458.189674,
+      "duration_ms": 795212.09,
+      "status": "SUCCESS",
+      "inputs": {
+        "subckt_name": "TLV271",
+        "category": "Operational Amplifier",
+        "user_prompt": null,
+        "turns_budget": 5
+      },
+      "outputs": {
+        "pass_rate_percent": 70.4,
+        "passed_specs": 19,
+        "turns_executed": 15,
+        "final_netlist_path": "/mnt/d/\uc608\ucea1/runs/20261122_test_tlv271/harness/TLV271_FINAL_HERMES_HARNESS2.cir"
+      },
+      "events": [],
+      "error": null
+    }
+  ]
+}

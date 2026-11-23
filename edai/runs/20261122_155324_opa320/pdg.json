@@ -1,0 +1,610 @@
+{
+ "nodes": [
+  {
+   "name": "V_P",
+   "role": "POWER"
+  },
+  {
+   "name": "V",
+   "role": "GROUND"
+  },
+  {
+   "name": "PIN",
+   "role": "SIGNAL"
+  },
+  {
+   "name": "IN",
+   "role": "SIGNAL"
+  },
+  {
+   "name": "OUT",
+   "role": "OUTPUT"
+  },
+  {
+   "name": "SHDN",
+   "role": "CONTROL"
+  },
+  {
+   "name": "NC",
+   "role": "NC"
+  },
+  {
+   "name": "VOUT_B",
+   "role": "OUTPUT"
+  },
+  {
+   "name": "IN_B",
+   "role": "SIGNAL"
+  },
+  {
+   "name": "PIN_B",
+   "role": "SIGNAL"
+  },
+  {
+   "name": "VOUT_A",
+   "role": "OUTPUT"
+  },
+  {
+   "name": "IN_A",
+   "role": "SIGNAL"
+  },
+  {
+   "name": "PIN_A",
+   "role": "SIGNAL"
+  },
+  {
+   "name": "SHDN_A",
+   "role": "CONTROL"
+  },
+  {
+   "name": "SHDN_B",
+   "role": "CONTROL"
+  }
+ ],
+ "edges": [
+  {
+   "from": "V_P",
+   "to": "OUT",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "POWER_FEED",
+   "condition": "OPA2320 channel A and B",
+   "origin": "datasheet",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "V_P",
+   "to": "SHDN",
+   "weight": 4.9999999999999996e-06,
+   "delay_us": 5.0,
+   "dependency_type": "TO_CONTROL",
+   "condition": "Control threshold settling",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "V_P",
+   "to": "SHDN_A",
+   "weight": 4.9999999999999996e-06,
+   "delay_us": 5.0,
+   "dependency_type": "TO_CONTROL",
+   "condition": "Control threshold settling",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "V_P",
+   "to": "SHDN_B",
+   "weight": 4.9999999999999996e-06,
+   "delay_us": 5.0,
+   "dependency_type": "TO_CONTROL",
+   "condition": "Control threshold settling",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "V_P",
+   "to": "VOUT_B",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "POWER_FEED",
+   "condition": "Turn-on settling (0.5us)",
+   "origin": "rule",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "V_P",
+   "to": "VOUT_A",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "POWER_FEED",
+   "condition": "Turn-on settling (0.5us)",
+   "origin": "rule",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "V",
+   "to": "OUT",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "POWER_FEED",
+   "condition": "OPA2320 channel A and B",
+   "origin": "datasheet",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "V",
+   "to": "SHDN",
+   "weight": 4.9999999999999996e-06,
+   "delay_us": 5.0,
+   "dependency_type": "TO_CONTROL",
+   "condition": "Control threshold settling",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "V",
+   "to": "SHDN_A",
+   "weight": 4.9999999999999996e-06,
+   "delay_us": 5.0,
+   "dependency_type": "TO_CONTROL",
+   "condition": "Control threshold settling",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "V",
+   "to": "SHDN_B",
+   "weight": 4.9999999999999996e-06,
+   "delay_us": 5.0,
+   "dependency_type": "TO_CONTROL",
+   "condition": "Control threshold settling",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "V",
+   "to": "VOUT_B",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "POWER_FEED",
+   "condition": "Turn-on settling (0.5us)",
+   "origin": "rule",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "V",
+   "to": "VOUT_A",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "POWER_FEED",
+   "condition": "Turn-on settling (0.5us)",
+   "origin": "rule",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "PIN",
+   "to": "OUT",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "channel A only",
+   "origin": "datasheet",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "PIN",
+   "to": "VOUT_B",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Turn-on settling (0.5us)",
+   "origin": "rule",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "PIN",
+   "to": "VOUT_A",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Turn-on settling (0.5us)",
+   "origin": "rule",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "IN",
+   "to": "OUT",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "channel A only",
+   "origin": "datasheet",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "IN",
+   "to": "VOUT_B",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Turn-on settling (0.5us)",
+   "origin": "rule",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "IN",
+   "to": "VOUT_A",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Turn-on settling (0.5us)",
+   "origin": "rule",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "SHDN",
+   "to": "OUT",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "CONTROL_GATE",
+   "condition": "active low",
+   "origin": "datasheet",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "SHDN",
+   "to": "PIN",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "SHDN",
+   "to": "IN",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "SHDN",
+   "to": "IN_B",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "SHDN",
+   "to": "PIN_B",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "SHDN",
+   "to": "IN_A",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "SHDN",
+   "to": "PIN_A",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "IN_B",
+   "to": "VOUT_B",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Turn-on settling (0.5us)",
+   "origin": "rule",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "IN_B",
+   "to": "VOUT_A",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Turn-on settling (0.5us)",
+   "origin": "rule",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "PIN_B",
+   "to": "VOUT_B",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Turn-on settling (0.5us)",
+   "origin": "rule",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "PIN_B",
+   "to": "VOUT_A",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Turn-on settling (0.5us)",
+   "origin": "rule",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "IN_A",
+   "to": "VOUT_B",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Turn-on settling (0.5us)",
+   "origin": "rule",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "IN_A",
+   "to": "VOUT_A",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Turn-on settling (0.5us)",
+   "origin": "rule",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "PIN_A",
+   "to": "VOUT_B",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Turn-on settling (0.5us)",
+   "origin": "rule",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "PIN_A",
+   "to": "VOUT_A",
+   "weight": 5e-07,
+   "delay_us": 0.5,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Turn-on settling (0.5us)",
+   "origin": "rule",
+   "delay_source": 0.5,
+   "kind": "causal"
+  },
+  {
+   "from": "SHDN_A",
+   "to": "PIN",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "SHDN_A",
+   "to": "IN",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "SHDN_A",
+   "to": "IN_B",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "SHDN_A",
+   "to": "PIN_B",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "SHDN_A",
+   "to": "IN_A",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "SHDN_A",
+   "to": "PIN_A",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "SHDN_B",
+   "to": "PIN",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "SHDN_B",
+   "to": "IN",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "SHDN_B",
+   "to": "IN_B",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "SHDN_B",
+   "to": "PIN_B",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "SHDN_B",
+   "to": "IN_A",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "SHDN_B",
+   "to": "PIN_A",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  }
+ ],
+ "schedule_us": {
+  "V_P": 0.0,
+  "V": 0.0,
+  "NC": 0.0,
+  "SHDN": 4.9999999999999996e-06,
+  "SHDN_A": 4.9999999999999996e-06,
+  "SHDN_B": 4.9999999999999996e-06,
+  "PIN": 6.999999999999999e-06,
+  "IN": 6.999999999999999e-06,
+  "IN_B": 6.999999999999999e-06,
+  "PIN_B": 6.999999999999999e-06,
+  "IN_A": 6.999999999999999e-06,
+  "PIN_A": 6.999999999999999e-06,
+  "OUT": 7.499999999999999e-06,
+  "VOUT_B": 7.499999999999999e-06,
+  "VOUT_A": 7.499999999999999e-06
+ },
+ "levels": [
+  [
+   "V_P",
+   "V",
+   "NC"
+  ],
+  [
+   "SHDN",
+   "SHDN_A",
+   "SHDN_B"
+  ],
+  [
+   "PIN",
+   "IN",
+   "IN_B",
+   "PIN_B",
+   "IN_A",
+   "PIN_A"
+  ],
+  [
+   "OUT",
+   "VOUT_B",
+   "VOUT_A"
+  ]
+ ],
+ "audit": {
+  "mode": "groundtruth_free_provenance",
+  "benchmark_framework": "ParseBench (https://github.com/run-llama/ParseBench.git)",
+  "fidelity_score_pct": 80.5,
+  "status": "ACCEPTABLE"
+ },
+ "audit_with_pages": true
+}

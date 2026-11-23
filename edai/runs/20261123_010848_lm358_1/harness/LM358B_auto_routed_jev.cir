@@ -1,0 +1,30 @@
+
+
+* --- Globally Hoisted Models for Multi-Subcircuit Visibility ---
+.model nfet_06v0_bsim0 NMOS (VTO=0.7 KP=100u LAMBDA=0.02)
+.model pfet_06v0_bsim0 PMOS (VTO=-0.7 KP=40u LAMBDA=0.02)
+
+.subckt LM358B IN1_P IN1_N IN2_P IN2_N OUT1 OUT2 V_P V_N NC
+* 1. DC Biasing and Current Mirrors
+M1 IN1_P IN1_N V_P V_N nfet_06v0_bsim0 W=10u L=0.5u
+M2 IN2_P IN2_N V_P V_N pfet_06v0_bsim0 W=10u L=0.5u
+R1 V_P IN1_P 100k
+R2 V_P IN2_P 100k
+R3 IN1_P IN2_P 1k
+R4 V_N IN1_N 100k
+R5 V_N IN2_N 100k
+R6 IN1_N IN2_N 1k
+* 2. Differential Pair Active Biasing
+Ibias1 V_P IN1_P 0 100u
+Ibias2 V_P IN2_P 0 100u
+* 3. First Stage Gain
+X1 IN1_P IN1_N V_P V_N nfet_06v0_bsim0 W=10u L=0.5u pfet_06v0_bsim0 W=20u L=0.5u LM358B_stage1
+* 4. Second Stage Gain with Miller Compensation
+X2 OUT1 IN1_P IN1_N V_P V_N nfet_06v0_bsim0 W=10u L=0.5u pfet_06v0_bsim0 W=20u L=0.5u LM358B_stage2
+Cc OUT1 OUT2 10p
+Rz OUT1 OUT2 2k
+* 5. Output Buffers
+M3 OUT1 OUT2 V_P V_N nfet_06v0_bsim0 W=20u L=0.5u
+M4 OUT2 OUT2 V_P V_N pfet_06v0_bsim0 W=20u L=0.5u
+* 6. Explicit Device Models
+.ends LM358B

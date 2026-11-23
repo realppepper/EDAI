@@ -1,0 +1,824 @@
+{
+  "ic_device": {
+    "name": "MCP6441",
+    "category": "Operational Amplifier",
+    "description": "A single nanopower operational amplifier with low quiescent current (450 nA typical) and rail-to-rail input and output operation.",
+    "package": "SOIC-8"
+  },
+  "pins": [
+    {
+      "name": "VDD",
+      "pin_number": "8",
+      "role": "POWER",
+      "direction": "POWER",
+      "description": "Positive supply voltage.",
+      "page": 3,
+      "evidence": "VDD 1.4 to 6.0V",
+      "raw_name": "VDD"
+    },
+    {
+      "name": "VSS",
+      "pin_number": "4",
+      "role": "GROUND",
+      "direction": "GROUND",
+      "description": "Ground (0V) reference.",
+      "page": 3,
+      "evidence": "VSS= GND",
+      "raw_name": "VSS"
+    },
+    {
+      "name": "VIN_P",
+      "pin_number": "3",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Non-inverting input.",
+      "page": 3,
+      "evidence": "VIN+ VIN-",
+      "raw_name": "VIN+"
+    },
+    {
+      "name": "VIN_N",
+      "pin_number": "2",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Inverting input.",
+      "page": 3,
+      "evidence": "VIN+ VIN-",
+      "raw_name": "VIN-"
+    },
+    {
+      "name": "VOUT",
+      "pin_number": "1",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "description": "Output voltage.",
+      "page": 3,
+      "evidence": "VOUT",
+      "raw_name": "VOUT"
+    },
+    {
+      "name": "NC",
+      "pin_number": "5,6,7",
+      "role": "NC",
+      "direction": "NC",
+      "description": "No connection.",
+      "page": 3,
+      "evidence": "NC",
+      "raw_name": "NC"
+    }
+  ],
+  "port_dependencies": [
+    {
+      "source": "VDD",
+      "target": "VOUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "VDD = 1.4V to 6.0V"
+    },
+    {
+      "source": "VSS",
+      "target": "VOUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "VSS = GND"
+    },
+    {
+      "source": "VIN_P",
+      "target": "VOUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "Own channel only"
+    },
+    {
+      "source": "VIN_N",
+      "target": "VOUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "Own channel only"
+    }
+  ],
+  "functional_blocks": [
+    {
+      "name": "Operational Amplifier",
+      "type": "Analog Block",
+      "description": "Nanopower op amp with rail-to-rail input and output, unity gain stable.",
+      "input_ports": [
+        "VDD",
+        "VSS",
+        "VIN+",
+        "VIN-"
+      ],
+      "output_ports": [
+        "VOUT"
+      ]
+    }
+  ],
+  "electrical_parameters": [
+    {
+      "symbol": "IDD",
+      "name": "Low Quiescent Current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 450,
+      "max": null,
+      "unit": "nA",
+      "test_conditions": "MCP6441/2/4, Single Supply",
+      "page": 1,
+      "evidence": "Low Quiescent Current: 450 nA (typical)",
+      "related_pins": [
+        "VDD",
+        "VSS"
+      ]
+    },
+    {
+      "symbol": "GBWP",
+      "name": "Gain Bandwidth Product",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 9,
+      "max": null,
+      "unit": "kHz",
+      "test_conditions": "MCP6441/2/4, Single Supply",
+      "page": 1,
+      "evidence": "Gain Bandwidth Product: 9 kHz (typical)",
+      "related_pins": [
+        "VDD",
+        "VSS"
+      ]
+    },
+    {
+      "symbol": "VDD_RANGE",
+      "name": "Supply Voltage Range",
+      "category": "RECOMMENDED",
+      "min": 1.4,
+      "typ": null,
+      "max": 6.0,
+      "unit": "V",
+      "test_conditions": "MCP6441/2/4",
+      "page": 1,
+      "evidence": "Supply Voltage Range: 1.4V to 6.0V",
+      "related_pins": [
+        "VDD"
+      ]
+    },
+    {
+      "symbol": "SR",
+      "name": "Slew Rate",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 3,
+      "max": null,
+      "unit": "V/ms",
+      "test_conditions": "MCP6441/2/4, Single Supply",
+      "page": 1,
+      "evidence": "Slew Rate: 3V/ms (typical)",
+      "related_pins": [
+        "VDD",
+        "VSS"
+      ]
+    },
+    {
+      "symbol": "VDD \u2013 VSS",
+      "name": "Absolute Maximum Ratings",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 7.0,
+      "unit": "V",
+      "test_conditions": "Page 3",
+      "page": 3,
+      "evidence": "VDD \u2013 VSS ........................................................................7.0V",
+      "related_pins": [
+        "VDD",
+        "VSS"
+      ]
+    },
+    {
+      "symbol": "Current at Input Pins",
+      "name": "Absolute Maximum Ratings",
+      "category": "ABS_MAX",
+      "min": -2,
+      "typ": null,
+      "max": 2,
+      "unit": "mA",
+      "test_conditions": "Page 3",
+      "page": 3,
+      "evidence": "Current at Input Pins .....................................................\u00b12 mA",
+      "related_pins": [
+        "VIN+",
+        "VIN-"
+      ]
+    },
+    {
+      "symbol": "Analog Inputs (VIN+, VIN-)",
+      "name": "Absolute Maximum Ratings",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "Page 3",
+      "page": 3,
+      "evidence": "Analog Inputs (VIN+, VIN-)\u2020\u2020 .......... VSS \u2013 1.0V to VDD + 1.0V",
+      "related_pins": [
+        "VIN+",
+        "VIN-"
+      ]
+    },
+    {
+      "symbol": "All Other Inputs and Outputs",
+      "name": "Absolute Maximum Ratings",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "Page 3",
+      "page": 3,
+      "evidence": "All Other Inputs and Outputs ......... VSS \u2013 0.3V to VDD + 0.3V",
+      "related_pins": [
+        "All Other Inputs and Outputs"
+      ]
+    },
+    {
+      "symbol": "Difference Input Voltage",
+      "name": "Absolute Maximum Ratings",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "",
+      "test_conditions": "Page 3",
+      "page": 3,
+      "evidence": "Difference Input Voltage ...................................... |VDD \u2013 VSS|",
+      "related_pins": [
+        "VIN+",
+        "VIN-"
+      ]
+    },
+    {
+      "symbol": "Output Short-Circuit Current",
+      "name": "Absolute Maximum Ratings",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "Continuous",
+      "test_conditions": "Page 3",
+      "page": 3,
+      "evidence": "Output Short-Circuit Current ................................Continuous",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "Current at Output and Supply Pins",
+      "name": "Absolute Maximum Ratings",
+      "category": "ABS_MAX",
+      "min": -30,
+      "typ": null,
+      "max": 30,
+      "unit": "mA",
+      "test_conditions": "Page 3",
+      "page": 3,
+      "evidence": "Current at Output and Supply Pins ............................\u00b130 mA",
+      "related_pins": [
+        "OUT",
+        "VDD",
+        "VSS"
+      ]
+    },
+    {
+      "symbol": "Storage Temperature",
+      "name": "Absolute Maximum Ratings",
+      "category": "THERMAL",
+      "min": -65,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": "Page 3",
+      "page": 3,
+      "evidence": "Storage Temperature ....................................-65\u00b0C to +150\u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "Maximum Junction Temperature (TJ)",
+      "name": "Absolute Maximum Ratings",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": "Page 3",
+      "page": 3,
+      "evidence": "Maximum Junction Temperature (TJ)..........................+150\u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "ESD Protection on All Pins (HBM; MM)",
+      "name": "ESD ratings",
+      "category": "ESD",
+      "min": 4,
+      "typ": null,
+      "max": 200,
+      "unit": "kV",
+      "test_conditions": "Page 3",
+      "page": 3,
+      "evidence": "ESD Protection on All Pins (HBM; MM)............... \u2265 4 kV; 200V",
+      "related_pins": [
+        "All Pins"
+      ]
+    },
+    {
+      "symbol": "VOS",
+      "name": "Input Offset Voltage",
+      "category": "ELECTRICAL",
+      "min": -4.5,
+      "typ": null,
+      "max": 4.5,
+      "unit": "mV",
+      "test_conditions": "VCM = VSS, VDD = +1.4V to +6.0V, VSS= GND, TA= +25\u00b0C, VCM = VDD/2, VOUT \u2248VDD/2, VL = VDD/2 and RL = 1 M\u03a9 to VL.",
+      "page": 3,
+      "evidence": "Input Offset Voltage VOS -4.5 \u2014 +4.5 mV VCM = VSS",
+      "related_pins": [
+        "VIN+",
+        "VIN-"
+      ]
+    },
+    {
+      "symbol": "\u0394VOS/\u0394TA",
+      "name": "Input Offset Drift with Temperature",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -2.5,
+      "max": null,
+      "unit": "\u00b5V/\u00b0C",
+      "test_conditions": "TA= -40\u00b0C to +125\u00b0C, VCM = VSS, VDD = +1.4V to +6.0V, VSS= GND, TA= +25\u00b0C, VCM = VDD/2, VOUT \u2248VDD/2, VL = VDD/2 and RL = 1 M\u03a9 to VL.",
+      "page": 3,
+      "evidence": "Input Offset Drift with Temperature \u0394VOS/\u0394TA \u2014 \u00b12.5 \u2014 \u00b5V/\u00b0C TA= -40\u00b0C to +125\u00b0C, VCM = VSS",
+      "related_pins": [
+        "VIN+",
+        "VIN-"
+      ]
+    },
+    {
+      "symbol": "PSRR",
+      "name": "Power Supply Rejection Ratio",
+      "category": "ELECTRICAL",
+      "min": 65,
+      "typ": 86,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "VCM = VSS, VDD = +1.4V to +6.0V, VSS= GND, TA= +25\u00b0C, VCM = VDD/2, VOUT \u2248VDD/2, VL = VDD/2 and RL = 1 M\u03a9 to VL.",
+      "page": 3,
+      "evidence": "Power Supply Rejection Ratio PSRR 65 86 \u2014 dB VCM = VSS",
+      "related_pins": [
+        "VIN+",
+        "VIN-"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input Bias Current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -1,
+      "max": 20,
+      "unit": "pA",
+      "test_conditions": "TA = +85\u00b0C, VDD = +1.4V to +6.0V, VSS= GND, TA= +25\u00b0C, VCM = VDD/2, VOUT \u2248VDD/2, VL = VDD/2 and RL = 1 M\u03a9 to VL.",
+      "page": 3,
+      "evidence": "Input Bias Current IB \u2014 \u00b11 \u2014 pA \u2014 20 \u2014 pA TA = +85\u00b0C",
+      "related_pins": [
+        "VIN+",
+        "VIN-"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input Bias Current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 400,
+      "unit": "pA",
+      "test_conditions": "TA = +125\u00b0C, VDD = +1.4V to +6.0V, VSS= GND, TA= +25\u00b0C, VCM = VDD/2, VOUT \u2248VDD/2, VL = VDD/2 and RL = 1 M\u03a9 to VL.",
+      "page": 3,
+      "evidence": "Input Bias Current IB \u2014 \u2014 400 \u2014 pA TA = +125\u00b0C",
+      "related_pins": [
+        "VIN+",
+        "VIN-"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input Offset Current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -1,
+      "max": null,
+      "unit": "pA",
+      "test_conditions": "VDD = +1.4V to +6.0V, VSS= GND, TA= +25\u00b0C, VCM = VDD/2, VOUT \u2248VDD/2, VL = VDD/2 and RL = 1 M\u03a9 to VL.",
+      "page": 3,
+      "evidence": "Input Offset Current IOS \u2014 \u00b11 \u2014 pA",
+      "related_pins": [
+        "VIN+",
+        "VIN-"
+      ]
+    },
+    {
+      "symbol": "ZCM",
+      "name": "Common Mode Input Impedance",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1013,
+      "max": null,
+      "unit": "\u03a9||pF",
+      "test_conditions": "VDD = +1.4V to +6.0V, VSS= GND, TA= +25\u00b0C, VCM = VDD/2, VOUT \u2248VDD/2, VL = VDD/2 and RL = 1 M\u03a9 to VL.",
+      "page": 3,
+      "evidence": "Common Mode Input Impedance ZCM \u2014 1013||6 \u2014 \u03a9||pF",
+      "related_pins": [
+        "VIN+",
+        "VIN-"
+      ]
+    },
+    {
+      "symbol": "ZDIFF",
+      "name": "Differential Input Impedance",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1013,
+      "max": null,
+      "unit": "\u03a9||pF",
+      "test_conditions": "VDD = +1.4V to +6.0V, VSS= GND, TA= +25\u00b0C, VCM = VDD/2, VOUT \u2248VDD/2, VL = VDD/2 and RL = 1 M\u03a9 to VL.",
+      "page": 3,
+      "evidence": "Differential Input Impedance ZDIFF \u2014 1013||6 \u2014 \u03a9||pF",
+      "related_pins": [
+        "VIN+",
+        "VIN-"
+      ]
+    },
+    {
+      "symbol": "VCMR",
+      "name": "Common Mode Input Voltage Range",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VDD = +1.4V to +6.0V, VSS= GND, TA= +25\u00b0C, VCM = VDD/2, VOUT \u2248VDD/2, VL = VDD/2 and RL = 1 M\u03a9 to VL.",
+      "page": 3,
+      "evidence": "Common Mode Input Voltage Range VCMR VSS-0.3 \u2014 VDD+0.3 V",
+      "related_pins": [
+        "VIN+",
+        "VIN-"
+      ]
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common Mode Rejection Ratio",
+      "category": "ELECTRICAL",
+      "min": 60,
+      "typ": 76,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "VCM = -0.3V to 6.3V, VDD = 6.0V, VDD = +1.4V to +6.0V, VSS= GND, TA= +25\u00b0C, VCM = VDD/2, VOUT \u2248VDD/2, VL = VDD/2 and RL = 1 M\u03a9 to VL.",
+      "page": 3,
+      "evidence": "Common Mode Rejection Ratio CMRR 60 76 \u2014 dB VCM = -0.3V to 6.3V, VDD = 6.0V",
+      "related_pins": [
+        "VIN+",
+        "VIN-"
+      ]
+    },
+    {
+      "symbol": "AOL",
+      "name": "DC Open-Loop Gain (Large Signal)",
+      "category": "ELECTRICAL",
+      "min": 90,
+      "typ": 110,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "VOUT = 0.1V to VDD-0.1V, RL = 10 k\u03a9 to VL, VDD = +1.4V to +6.0V, VSS= GND, TA= +25\u00b0C, VCM = VDD/2, VOUT \u2248VDD/2, VL = VDD/2 and RL = 1 M\u03a9 to VL.",
+      "page": 3,
+      "evidence": "DC Open-Loop Gain (Large Signal) AOL 90 110 \u2014 dB VOUT = 0.1V to VDD-0.1V RL = 10 k\u03a9 to VL",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VOL, VOH",
+      "name": "Maximum Output Voltage Swing",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "mV",
+      "test_conditions": "VDD = 6.0V, RL = 10 k\u03a9, VDD = +1.4V to +6.0V, VSS= GND, TA= +25\u00b0C, VCM = VDD/2, VOUT \u2248VDD/2, VL = VDD/2 and RL = 1 M\u03a9 to VL.",
+      "page": 3,
+      "evidence": "Maximum Output Voltage Swing VOL, VOH VSS+20 \u2014 VDD\u201320 mV VDD = 6.0V, RL = 10 k\u03a9 0.5V input overdrive",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "ISC",
+      "name": "Output Short-Circuit Current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -3,
+      "max": 3,
+      "unit": "mA",
+      "test_conditions": "VDD = 1.4V, VDD = +1.4V to +6.0V, VSS= GND, TA= +25\u00b0C, VCM = VDD/2, VOUT \u2248VDD/2, VL = VDD/2 and RL = 1 M\u03a9 to VL.",
+      "page": 3,
+      "evidence": "Output Short-Circuit Current ISC \u2014 \u00b13 \u2014 mA VDD = 1.4V",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "ISC",
+      "name": "Output Short-Circuit Current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": -22,
+      "max": 22,
+      "unit": "mA",
+      "test_conditions": "VDD = 6.0V, VDD = +1.4V to +6.0V, VSS= GND, TA= +25\u00b0C, VCM = VDD/2, VOUT \u2248VDD/2, VL = VDD/2 and RL = 1 M\u03a9 to VL.",
+      "page": 3,
+      "evidence": "Output Short-Circuit Current ISC \u2014 \u2014 \u00b122 \u2014 mA VDD = 6.0V",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VDD",
+      "name": "Supply Voltage",
+      "category": "ELECTRICAL",
+      "min": 1.4,
+      "typ": null,
+      "max": 6.0,
+      "unit": "V",
+      "test_conditions": "VDD = +1.4V to +6.0V, VSS= GND, TA= +25\u00b0C, VCM = VDD/2, VOUT \u2248VDD/2, VL = VDD/2 and RL = 1 M\u03a9 to VL.",
+      "page": 3,
+      "evidence": "Supply Voltage VDD 1.4 \u2014 6.0 V",
+      "related_pins": [
+        "VDD"
+      ]
+    },
+    {
+      "symbol": "IQ",
+      "name": "Quiescent Current per Amplifier",
+      "category": "ELECTRICAL",
+      "min": 250,
+      "typ": 450,
+      "max": 650,
+      "unit": "nA",
+      "test_conditions": "IO = 0, VDD = 5.0V, VDD = +1.4V to +6.0V, VSS= GND, TA= +25\u00b0C, VCM = VDD/2, VOUT \u2248VDD/2, VL = VDD/2 and RL = 1 M\u03a9 to VL.",
+      "page": 3,
+      "evidence": "Quiescent Current per Amplifier IQ 250 450 650 nA IO = 0, VDD = 5.0V",
+      "related_pins": [
+        "VDD"
+      ]
+    },
+    {
+      "symbol": "GBWP",
+      "name": "Gain Bandwidth Product",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 9,
+      "max": null,
+      "unit": "kHz",
+      "test_conditions": "MCP6441/2/4, TA = +25\u00b0C, VDD = +1.4V to +6.0V, VSS = GND, VCM = VDD/2, VOUT \u2248 VDD/2, VL = VDD/2, RL = 1 M\u03a9 to VL and CL = 60 pF.",
+      "page": 4,
+      "evidence": "Gain Bandwidth Product GBWP \u2014 9 \u2014 kHz",
+      "related_pins": [
+        "VOUT"
+      ]
+    },
+    {
+      "symbol": "PM",
+      "name": "Phase Margin",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 65,
+      "max": null,
+      "unit": "\u00b0",
+      "test_conditions": "MCP6441/2/4, TA = +25\u00b0C, VDD = +1.4V to +6.0V, VSS = GND, VCM = VDD/2, VOUT \u2248 VDD/2, VL = VDD/2, RL = 1 M\u03a9 to VL and CL = 60 pF.",
+      "page": 4,
+      "evidence": "Phase Margin PM \u2014 65 \u2014 \u00b0 G = +1 V/V",
+      "related_pins": [
+        "VOUT"
+      ]
+    },
+    {
+      "symbol": "SR",
+      "name": "Slew Rate",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 3,
+      "max": null,
+      "unit": "V/ms",
+      "test_conditions": "MCP6441/2/4, TA = +25\u00b0C, VDD = +1.4V to +6.0V, VSS = GND, VCM = VDD/2, VOUT \u2248 VDD/2, VL = VDD/2, RL = 1 M\u03a9 to VL and CL = 60 pF.",
+      "page": 4,
+      "evidence": "Slew Rate SR \u2014 3 \u2014 V/ms",
+      "related_pins": [
+        "VOUT"
+      ]
+    },
+    {
+      "symbol": "Eni",
+      "name": "Input Noise Voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 5,
+      "max": null,
+      "unit": "\u00b5Vp-p",
+      "test_conditions": "MCP6441/2/4, TA = +25\u00b0C, VDD = +1.4V to +6.0V, VSS = GND, VCM = VDD/2, VOUT \u2248 VDD/2, VL = VDD/2, RL = 1 M\u03a9 to VL and CL = 60 pF.",
+      "page": 4,
+      "evidence": "Input Noise Voltage Eni \u2014 5 \u2014 \u00b5Vp-p f = 0.1 Hz to 10 Hz",
+      "related_pins": [
+        "VIN-",
+        "VIN+"
+      ]
+    },
+    {
+      "symbol": "eni",
+      "name": "Input Noise Voltage Density",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 190,
+      "max": null,
+      "unit": "nV/\u221aHz",
+      "test_conditions": "MCP6441/2/4, TA = +25\u00b0C, VDD = +1.4V to +6.0V, VSS = GND, VCM = VDD/2, VOUT \u2248 VDD/2, VL = VDD/2, RL = 1 M\u03a9 to VL and CL = 60 pF.",
+      "page": 4,
+      "evidence": "Input Noise Voltage Density eni \u2014 190 \u2014 nV/\u221aHz f = 1 kHz",
+      "related_pins": [
+        "VIN-",
+        "VIN+"
+      ]
+    },
+    {
+      "symbol": "ini",
+      "name": "Input Noise Current Density",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.6,
+      "max": null,
+      "unit": "fA/\u221aHz",
+      "test_conditions": "MCP6441/2/4, TA = +25\u00b0C, VDD = +1.4V to +6.0V, VSS = GND, VCM = VDD/2, VOUT \u2248 VDD/2, VL = VDD/2, RL = 1 M\u03a9 to VL and CL = 60 pF.",
+      "page": 4,
+      "evidence": "Input Noise Current Density ini \u2014 0.6 \u2014 fA/\u221aHz f = 1 kHz",
+      "related_pins": [
+        "VIN-",
+        "VIN+"
+      ]
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating Temperature Range",
+      "category": "THERMAL",
+      "min": -40,
+      "typ": null,
+      "max": 125,
+      "unit": "\u00b0C",
+      "test_conditions": "MCP6441/2/4, VDD = +1.4V to +6.0V and VSS = GND.",
+      "page": 4,
+      "evidence": "Operating Temperature Range TA -40 \u2014 +125 \u00b0C Note 1",
+      "related_pins": []
+    },
+    {
+      "symbol": "TA",
+      "name": "Storage Temperature Range",
+      "category": "THERMAL",
+      "min": -65,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": "MCP6441/2/4, VDD = +1.4V to +6.0V and VSS = GND.",
+      "page": 4,
+      "evidence": "Storage Temperature Range TA -65 \u2014 +150 \u00b0C",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03b8JA",
+      "name": "Thermal Resistance, 5L-SC70",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 331,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "MCP6441/2/4, VDD = +1.4V to +6.0V and VSS = GND.",
+      "page": 4,
+      "evidence": "Thermal Resistance, 5L-SC70 \u03b8JA \u2014 331 \u2014 \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03b8JA",
+      "name": "Thermal Resistance, 5L-SOT-23",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 220.7,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "MCP6441/2/4, VDD = +1.4V to +6.0V and VSS = GND.",
+      "page": 4,
+      "evidence": "Thermal Resistance, 5L-SOT-23 \u03b8JA \u2014 220.7 \u2014 \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03b8JA",
+      "name": "Thermal Resistance, 8L-MSOP",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 211,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "MCP6441/2/4, VDD = +1.4V to +6.0V and VSS = GND.",
+      "page": 4,
+      "evidence": "Thermal Resistance, 8L-MSOP \u03b8JA \u2014 211 \u2014 \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03b8JA",
+      "name": "Thermal Resistance, 8L-SOIC",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 149.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "MCP6441/2/4, VDD = +1.4V to +6.0V and VSS = GND.",
+      "page": 4,
+      "evidence": "Thermal Resistance, 8L-SOIC \u03b8JA \u2014 149.5 \u2014 \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03b8JA",
+      "name": "Thermal Resistance, 8L-2x3 TDFN",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 52.5,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "MCP6441/2/4, VDD = +1.4V to +6.0V and VSS = GND.",
+      "page": 4,
+      "evidence": "Thermal Resistance, 8L-2x3 TDFN \u03b8JA \u2014 52.5 \u2014 \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03b8JA",
+      "name": "Thermal Resistance, 14L-SOIC",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 95.3,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "MCP6441/2/4, VDD = +1.4V to +6.0V and VSS = GND.",
+      "page": 4,
+      "evidence": "Thermal Resistance, 14L-SOIC \u03b8JA \u2014 95.3 \u2014 \u00b0C/W",
+      "related_pins": []
+    },
+    {
+      "symbol": "\u03b8JA",
+      "name": "Thermal Resistance, 14L-TSSOP",
+      "category": "THERMAL",
+      "min": null,
+      "typ": 100,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "MCP6441/2/4, VDD = +1.4V to +6.0V and VSS = GND.",
+      "page": 4,
+      "evidence": "Thermal Resistance, 14L-TSSOP \u03b8JA \u2014 100 \u2014 \u00b0C/W",
+      "related_pins": []
+    }
+  ],
+  "provenance": {
+    "pin_pages": [
+      11,
+      1,
+      3,
+      4,
+      5,
+      6,
+      2,
+      7,
+      8,
+      9
+    ],
+    "spec_pages": [
+      3,
+      4,
+      5,
+      1,
+      7,
+      8,
+      6,
+      9,
+      11,
+      10
+    ],
+    "func_pages": [
+      1
+    ],
+    "failed_spec_pages": [],
+    "source_file": "MCP6441.pdf"
+  }
+}

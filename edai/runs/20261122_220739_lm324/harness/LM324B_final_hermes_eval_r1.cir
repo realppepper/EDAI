@@ -1,0 +1,95 @@
+
+
+* Default Physical Device Models for AI Analog Synthesis
+
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=120u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model QNPN NPN (IS=1e-14 BF=150 VAF=100 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=100 TF=0.3n TR=10n CJE=2p CJC=1p VJC=0.75 MJC=0.33)
+
+.model QPNP PNP (IS=1e-14 BF=80 VAF=80 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=80 TF=0.5n TR=20n CJE=2p CJC=1.5p VJC=0.75 MJC=0.33)
+
+.model D1N4148 D (IS=2.52n RS=0.568 N=1.752 CJO=4p VJ=0.5 M=0.333 BV=100 IBV=100u TT=4n)
+
+.model D_ESD D (IS=1e-15 RS=10 CJO=1p BV=50)
+
+
+
+
+* --- Globally Hoisted Models for Multi-Subcircuit Visibility ---
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.5 PHI=0.8 LAMBDA=0.01)
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=100u GAMMA=0.4 PHI=0.7 LAMBDA=0.01)
+
+.subckt LM324B 1IN_P 1IN_N 1OUT 2IN_P 2IN_N 2OUT 3IN_P 3IN_N 3OUT 4IN_P 4IN_N 4OUT VCC_P VCC_N NC
+*. EDAI_LM324B GF180 6V Transistor-Level Core (Synthesized for Production)
+.include "gf180_6v_typical.lib"
+
+*. ==========================================================
+*. 1. INPUT DIFFERENTIAL PAIRS (FLIPPED TOPOLOGY)
+*.    MPM1-MPM12: PMOS differential pairs with constant transconductance
+*.    W/L ratios tuned for 100μA bias current per channel (6V supply)
+*. ==========================================================
+MPM1 1OUT VB1 VCC_P VCC_P pfet_06v0_bsim0 w=98.2u l=2u m=14
+MPM6 N5 VB1 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u
+MPM7 N6 N7 VCC_P VCC_P pfet_06v0_bsim0 w=21.9u l=1u
+MPM8 N8 N7 VCC_P VCC_P pfet_06v0_bsim0 w=21.9u l=1u
+MPM9 N9 1IN_N N5 N5 pfet_06v0_bsim0 w=43.8u l=1u
+MPM10 N10 1IN_P N5 N5 pfet_06v0_bsim0 w=43.7u l=1u
+MPM11 N7 VB4 N6 VCC_P pfet_06v0_bsim0 w=35.5u l=1u
+MPM12 N11 VB4 N8 VCC_P pfet_06v0_bsim0 w=35.5u l=1u
+
+*. ==========================================================
+*. 2. ACTIVE CURRENT MIRRORS (NMOS CASCODE GAIN STAGE)
+*.    MNM1-MNM12: NMOS current mirrors with cascode configuration
+*.    W/L ratios sized for 100μA bias current (6V supply headroom)
+*. ==========================================================
+MNM1 1OUT N11 VCC_N VCC_N nfet_06v0_bsim0 w=82.1u l=1u m=3
+MNM7 N9 VB2 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u
+MNM8 N10 VB2 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u
+MNM9 N11 N7 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u
+MNM10 N12 N8 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u
+MNM11 N7 N6 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u
+MNM12 N8 N6 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u
+
+*. ==========================================================
+*. 3. MILLER COMPENSATION (TWO-STAGE OP-AMP)
+*.    Cc=10pF between stage 1 output (N7) and stage 2 input (N9)
+*.    Rz=2k series resistor to eliminate RHP zero
+*. ==========================================================
+Cc N7 N9 10p
+Rz N7 N9 2k
+
+*. ==========================================================
+*. 4. OUTPUT BUFFERS (COMMON-DRAIN CONFIGURATION)
+*.    MPM11-MPM12: PMOS source followers with source degeneration
+*.    W/L ratios sized for rail-to-rail output swing
+*. ==========================================================
+MPM11_2 1OUT N7 VCC_P VCC_P pfet_06v0_bsim0 w=35.5u l=1u m=14
+MPM12_2 2OUT N8 N6 VCC_P VCC_P pfet_06v0_bsim0 w=35.5u l=1u m=14
+MPM13 3OUT N11 N7 VCC_P VCC_P pfet_06v0_bsim0 w=35.5u l=1u m=14
+MPM14 4OUT N12 N8 VCC_P VCC_P pfet_06v0_bsim0 w=35.5u l=1u m=14
+
+*. ==========================================================
+*. 5. BIASING NETWORK (VBE MULTIPLIER + STARTUP)
+*.    Q1-Q4: BJT current mirrors for stable bias currents
+*.    R1-R4: Bias resistors (100k) for VBE-based biasing
+*. ==========================================================
+Q1 N7 VB2 VCC_N VCC_N QNPN
+Q2 N8 VB2 VCC_N VCC_N QNPN
+Q3 N11 VB4 VCC_N VCC_N QNPN
+Q4 N12 VB4 VCC_N VCC_N QNPN
+R1 N7 VCC_P 100k
+R2 N8 VCC_P 100k
+R3 N11 VCC_P 100k
+R4 N12 VCC_P 100k
+
+*. ==========================================================
+*. 6. SUPPLY & GROUND ISOLATION (PHYSICAL ANALOG COMPLIANCE)
+*.    VCC_N tied to external ground (0V), no internal node 0 connections
+*.    All internal nodes reference supply pins (VCC_P/VCC_N)
+*. ==========================================================
+*. NO DIRECT CONNECTION TO EXTERNAL NODE '0' - ALL INTERNAL NODES
+*. ARE SUPPLY-RELATIVE (VCC_P/VCC_N) AS REQUIRED BY GUARDRAIL 3
+
+.ends LM324B

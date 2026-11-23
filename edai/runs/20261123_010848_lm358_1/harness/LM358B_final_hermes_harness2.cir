@@ -1,0 +1,27 @@
+.subckt LM358B IN1_P IN1_N IN2_P IN2_N OUT1 OUT2 V_P V_N NC
+* Differential Pair Stage 1
+M1 IN1_P IN1_N V_P V_N nfet_06v0_bsim0 W=10u L=0.5u
+M2 IN1_P IN1_N V_P V_N pfet_06v0_bsim0 W=10u L=0.5u
+M3 IN2_P IN2_N V_P V_N nfet_06v0_bsim0 W=10u L=0.5u
+M4 IN2_P IN2_N V_P V_N pfet_06v0_bsim0 W=10u L=0.5u
+* Active Load Stage 1
+MNM1 V_P OUT1 V_P NMN NMN nfet_06v0_bsim0 W=20u L=0.5u
+MNM2 V_P OUT1 V_N NMN NMN pfet_06v0_bsim0 W=20u L=0.5u
+* Differential Pair Stage 2
+M5 IN1_P IN2_P V_P V_N nfet_06v0_bsim0 W=10u L=0.5u
+M6 IN1_N IN2_N V_P V_N pfet_06v0_bsim0 W=10u L=0.5u
+* Two-Stage Gain with Miller Compensation
+M7 OUT1 V_P V_N V_P NMN NMN nfet_06v0_bsim0 W=10u L=0.5u
+Cc OUT1 OUT2 10p
+Rz OUT1 OUT2 2k
+M7b OUT2 V_P V_N V_N NMN NMN pfet_06v0_bsim0 W=20u L=0.5u
+* Output Buffer Stage 1
+MPM1 OUT1 V_P V_N OUT1 V_P MPM MPM nfet_06v0_bsim0 W=10u L=0.5u
+MPM2 OUT1 V_P V_N OUT1 V_N MPM MPM pfet_06v0_bsim0 W=10u L=0.5u
+* Output Buffer Stage 2
+MPM3 OUT2 V_P V_N OUT2 V_P MPM MPM nfet_06v0_bsim0 W=10u L=0.5u
+MPM4 OUT2 V_P V_N OUT2 V_N MPM MPM pfet_06v0_bsim0 W=10u L=0.5u
+* Explicit Device Models
+.model nfet_06v0_bsim0 NMOS (VTO=0.7 KP=100u LAMBDA=0.02)
+.model pfet_06v0_bsim0 PMOS (VTO=-0.7 KP=40u LAMBDA=0.02)
+.ends LM358B

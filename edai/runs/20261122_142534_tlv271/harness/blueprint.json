@@ -1,0 +1,29 @@
+{
+  "task_id": "EDAI_C3_TLV271",
+  "category": "operational_amplifier",
+  "cue": "Initial transistor-level topology for TLV271 proposed by EDAI (FLAN-T5)",
+  "lesson": "Start from blueprint 'EDAI_C3_TLV271': GF180MCU 6V transistor-level op-amp sized by gm/ID (ngspice pre-check 3/5 specs). Keep the .include model line; devices use nfet_06v0_bsim0 / pfet_06v0_bsim0.",
+  "evidence": {
+    "selection": "selection_cmp_tlv271_v3.json",
+    "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD ; PM2 D=VB2 G=VB2 S=VDD B=VDD ; PM3 D=OUT G=N1 S=VDD B=VDD ; PM4 D=N2 G=VB2 S=VDD B=VDD ; PM5 D=N1 G=N3 S=VDD B=VDD ; PM6 D=N3 G=N3 S=VDD B=VDD ; PM7 D=N4 G=N5 S=VDD B=VDD ; PM8 D=N5 G=N5 S=VDD B=VDD ; NM1 D=OUT G=N4 S=VSS B=VSS ; NM2 D=VB1 G=N4 S=VSS B=VSS ; NM3 D=N1 G=IN1 S=N6 B=VSS ; NM4 D=N3 G=IN2 S=N6 B=VSS ; NM5 D=N6 G=N4 S=VSS B=VSS ; NM6 D=N4 G=N4 S=VSS B=VSS ; NM7 D=N5 G=N2 S=VSS B=VSS ; NM8 D=N2 G=N2 S=VSS B=VSS ; NM9 D=VB2 G=N2 S=N7 B=VSS ; R1 P=N7 N=VSS",
+    "pin_map": {
+      "VDD": "VDD",
+      "VSS": "GND",
+      "INP": "IN_P",
+      "INN": "IN_N",
+      "OUT": "OUT"
+    },
+    "output_scale": 50.0
+  },
+  "score_before": 0.0,
+  "score_after": 0.0,
+  "delta_score": 0.0,
+  "harness_tree": {
+    "c5_skills": {
+      "EDAI_C3_TLV271": {
+        "description": "EDAI FLAN-T5 initial op-amp core for TLV271 (GF180 6V, LTspice models)",
+        "subckt_code": ".include \"D:\\analogverifier\\edai_compare\\gf180_6v_typical.lib\"\n.subckt TLV271 IN_P IN_N OUT GND VDD NC\nMPM1 VB1 VB1 VDD VDD pfet_06v0_bsim0 w=68.7u l=2u\nMPM2 VB2 VB2 VDD VDD pfet_06v0_bsim0 w=68.7u l=2u\nMPM3 OUT N1 VDD VDD pfet_06v0_bsim0 w=100u l=1u m=20\nMPM4 N2 VB2 VDD VDD pfet_06v0_bsim0 w=68.7u l=2u\nMPM5 N1 N3 VDD VDD pfet_06v0_bsim0 w=32.6u l=2u\nMPM6 N3 N3 VDD VDD pfet_06v0_bsim0 w=32.8u l=2u\nMPM7 N4 N5 VDD VDD pfet_06v0_bsim0 w=60.6u l=2u\nMPM8 N5 N5 VDD VDD pfet_06v0_bsim0 w=45.6u l=2u\nMNM1 OUT N4 GND GND nfet_06v0_bsim0 w=93u l=2u m=9\nMNM2 VB1 N4 GND GND nfet_06v0_bsim0 w=22.7u l=2u\nMNM3 N1 IN_P N6 GND nfet_06v0_bsim0 w=8.17u l=1u\nMNM4 N3 IN_N N6 GND nfet_06v0_bsim0 w=8.22u l=1u\nMNM5 N6 N4 GND GND nfet_06v0_bsim0 w=14.2u l=2u\nMNM6 N4 N4 GND GND nfet_06v0_bsim0 w=13.2u l=2u\nMNM7 N5 N2 GND GND nfet_06v0_bsim0 w=9.91u l=2u\nMNM8 N2 N2 GND GND nfet_06v0_bsim0 w=5.78u l=2u\nMNM9 VB2 N2 N7 GND nfet_06v0_bsim0 w=6.37u l=1u\nR1 N7 GND 10k\nMSU_MS1 SU_SX GND VDD VDD pfet_06v0_bsim0 w=0.5u l=20u\nMSU_MS2 VB2 SU_SX GND GND nfet_06v0_bsim0 w=2u l=1u\nMSU_MS3 SU_SX N2 GND GND nfet_06v0_bsim0 w=5u l=1u\n.ends TLV271\n"
+      }
+    }
+  }
+}

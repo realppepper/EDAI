@@ -1,0 +1,2029 @@
+{
+  "ic_device": {
+    "name": "OPA320",
+    "category": "Operational Amplifier",
+    "description": "Precision, 20-MHz, 0.9-pA, Low-Noise, RRIO, CMOS Operational Amplifier With Shutdown",
+    "package": "SOT-23 (5-pin)"
+  },
+  "pins": [
+    {
+      "name": "V_P",
+      "pin_number": "5",
+      "role": "POWER",
+      "direction": "POWER",
+      "description": "Positive (highest) power supply",
+      "page": 4,
+      "evidence": "V+ 5",
+      "raw_name": "V+",
+      "pin_numbers": [
+        "5",
+        "6",
+        "10"
+      ]
+    },
+    {
+      "name": "V",
+      "pin_number": "2",
+      "role": "GROUND",
+      "direction": "GROUND",
+      "description": "Negative (lowest) power supply",
+      "page": 4,
+      "evidence": "V\u2013 2",
+      "raw_name": "V\u2013",
+      "pin_numbers": [
+        "2",
+        "4"
+      ]
+    },
+    {
+      "name": "PIN",
+      "pin_number": "3",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Positive (noninverting) input",
+      "page": 4,
+      "evidence": "+IN 3",
+      "raw_name": "+IN"
+    },
+    {
+      "name": "IN",
+      "pin_number": "4",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Negative (inverting) input",
+      "page": 4,
+      "evidence": "\u2013IN 4",
+      "raw_name": "\u2013IN"
+    },
+    {
+      "name": "OUT",
+      "pin_number": "1",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "description": "Output",
+      "page": 4,
+      "evidence": "OUT, VOUT 1",
+      "raw_name": "OUT"
+    },
+    {
+      "name": "SHDN",
+      "pin_number": "5",
+      "role": "CONTROL",
+      "direction": "INPUT",
+      "description": "Shutdown, active low",
+      "page": 4,
+      "evidence": "SHDN 5",
+      "raw_name": "SHDN"
+    },
+    {
+      "name": "NC",
+      "pin_number": "6",
+      "role": "NC",
+      "direction": "NC",
+      "description": "No internal connection",
+      "page": 4,
+      "evidence": "1 (No internal connection)",
+      "raw_name": "NC"
+    },
+    {
+      "name": "VOUT_B",
+      "pin_number": "7",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "description": "Output, channel B",
+      "page": 5,
+      "evidence": "VOUT B 7",
+      "raw_name": "VOUT B"
+    },
+    {
+      "name": "IN_B",
+      "pin_number": "8",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Inverting input, channel B",
+      "page": 5,
+      "evidence": "\u2013IN B 8",
+      "raw_name": "\u2013IN B"
+    },
+    {
+      "name": "PIN_B",
+      "pin_number": "9",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Noninverting input, channel B",
+      "page": 5,
+      "evidence": "+IN B 9",
+      "raw_name": "+IN B"
+    },
+    {
+      "name": "VOUT_A",
+      "pin_number": "10",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "description": "Output, channel A",
+      "page": 5,
+      "evidence": "VOUT A 10",
+      "raw_name": "VOUT A"
+    },
+    {
+      "name": "IN_A",
+      "pin_number": "2",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Inverting input, channel A",
+      "page": 5,
+      "evidence": "\u2013IN A 2",
+      "raw_name": "\u2013IN A"
+    },
+    {
+      "name": "PIN_A",
+      "pin_number": "3",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Noninverting input, channel A",
+      "page": 5,
+      "evidence": "+IN A 3",
+      "raw_name": "+IN A"
+    },
+    {
+      "name": "SHDN_A",
+      "pin_number": "5",
+      "role": "CONTROL",
+      "direction": "INPUT",
+      "description": "Shutdown, active low, channel A",
+      "page": 5,
+      "evidence": "SHDN A 5",
+      "raw_name": "SHDN A"
+    },
+    {
+      "name": "SHDN_B",
+      "pin_number": "6",
+      "role": "CONTROL",
+      "direction": "INPUT",
+      "description": "Shutdown, active low, channel B",
+      "page": 5,
+      "evidence": "SHDN B 6",
+      "raw_name": "SHDN B"
+    }
+  ],
+  "port_dependencies": [
+    {
+      "source": "V_P",
+      "target": "OUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "VS = 1.8 V to 5.5 V"
+    },
+    {
+      "source": "V",
+      "target": "OUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "VS = 1.8 V to 5.5 V"
+    },
+    {
+      "source": "PIN",
+      "target": "OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "channel A only"
+    },
+    {
+      "source": "IN",
+      "target": "OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "channel A only"
+    },
+    {
+      "source": "SHDN",
+      "target": "OUT",
+      "dependency_type": "CONTROL_GATE",
+      "settling_delay_us": null,
+      "condition": "active low"
+    },
+    {
+      "source": "V_P",
+      "target": "OUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "OPA2320 channel A and B"
+    },
+    {
+      "source": "V",
+      "target": "OUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "OPA2320 channel A and B"
+    }
+  ],
+  "functional_blocks": [
+    {
+      "name": "Input Stage",
+      "type": "analog",
+      "description": "Linear input stage with zero-crossover distortion",
+      "input_ports": [
+        "+IN",
+        "\u2013IN"
+      ],
+      "output_ports": [
+        "OUT"
+      ]
+    },
+    {
+      "name": "Bias Circuitry",
+      "type": "analog",
+      "description": "Provides bias currents for internal stages",
+      "input_ports": [
+        "V+",
+        "V\u2013"
+      ],
+      "output_ports": [
+        "OUT"
+      ]
+    },
+    {
+      "name": "Shutdown Logic",
+      "type": "digital",
+      "description": "Active low shutdown control",
+      "input_ports": [
+        "SHDN"
+      ],
+      "output_ports": [
+        "OUT"
+      ]
+    },
+    {
+      "name": "Output Stage",
+      "type": "analog",
+      "description": "Drives output voltage with rail-to-rail capability",
+      "input_ports": [
+        "+IN",
+        "\u2013IN"
+      ],
+      "output_ports": [
+        "OUT"
+      ]
+    }
+  ],
+  "electrical_parameters": [
+    {
+      "symbol": "150",
+      "name": "Offset Voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b5V",
+      "test_conditions": "OPA320x, full input range",
+      "page": 1,
+      "evidence": "Low Offset Voltage: 150 \u00b5V (Maximum)",
+      "related_pins": [
+        "IN",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "114",
+      "name": "CMRR",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 114,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "OPA320x, full input range",
+      "page": 1,
+      "evidence": "High CMRR: 114 dB",
+      "related_pins": [
+        "IN"
+      ]
+    },
+    {
+      "symbol": "0.9",
+      "name": "Input Bias Current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 0.9,
+      "unit": "pA",
+      "test_conditions": "OPA320x",
+      "page": 1,
+      "evidence": "Low Input Bias Current: 0.9 pA (Maximum)",
+      "related_pins": [
+        "IN"
+      ]
+    },
+    {
+      "symbol": "7",
+      "name": "Noise",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 7,
+      "max": null,
+      "unit": "nV/\u221aHz",
+      "test_conditions": "OPA320x at 10 kHz",
+      "page": 1,
+      "evidence": "Low Noise: 7 nV/\u221aHz at 10 kHz",
+      "related_pins": [
+        "IN"
+      ]
+    },
+    {
+      "symbol": "20",
+      "name": "Bandwidth",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 20,
+      "max": null,
+      "unit": "MHz",
+      "test_conditions": "OPA320x",
+      "page": 1,
+      "evidence": "Wide Bandwidth: 20 MHz",
+      "related_pins": [
+        "IN",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "10",
+      "name": "Slew Rate",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 10,
+      "max": null,
+      "unit": "V/\u00b5s",
+      "test_conditions": "OPA320x",
+      "page": 1,
+      "evidence": "Slew Rate: 10 V/\u00b5s",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "1.45",
+      "name": "Quiescent Current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1.45,
+      "max": null,
+      "unit": "mA/Ch",
+      "test_conditions": "OPA320x",
+      "page": 1,
+      "evidence": "Quiescent Current: 1.45 mA/Ch",
+      "related_pins": [
+        "V+"
+      ]
+    },
+    {
+      "symbol": "1.8",
+      "name": "Single-Supply Voltage Range",
+      "category": "RECOMMENDED",
+      "min": 1.8,
+      "typ": null,
+      "max": 5.5,
+      "unit": "V",
+      "test_conditions": "OPA320x",
+      "page": 1,
+      "evidence": "Single-Supply Voltage Range: 1.8 V to 5.5 V",
+      "related_pins": [
+        "V+"
+      ]
+    },
+    {
+      "symbol": "0.1",
+      "name": "IQ in Shutdown Mode",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.1,
+      "max": null,
+      "unit": "\u00b5A",
+      "test_conditions": "OPA320S and OPA2320S",
+      "page": 1,
+      "evidence": "IQ in Shutdown Mode: 0.1 \u00b5A",
+      "related_pins": [
+        "V+"
+      ]
+    },
+    {
+      "symbol": "V+",
+      "name": "Voltage Supply",
+      "category": "ABS_MAX",
+      "min": 6,
+      "max": 6,
+      "unit": "V",
+      "test_conditions": "Voltage, VS = (V+) \u2013 (V\u2013)",
+      "page": 6,
+      "evidence": "Voltage Supply, VS = (V+) \u2013 (V\u2013)",
+      "related_pins": [
+        "V+",
+        "V\u2013"
+      ],
+      "typ": null
+    },
+    {
+      "symbol": "V\u2013",
+      "name": "Voltage Supply",
+      "category": "ABS_MAX",
+      "min": -6,
+      "max": -6,
+      "unit": "V",
+      "test_conditions": "Voltage, VS = (V+) \u2013 (V\u2013)",
+      "page": 6,
+      "evidence": "Voltage Supply, VS = (V+) \u2013 (V\u2013)",
+      "related_pins": [
+        "V+",
+        "V\u2013"
+      ],
+      "typ": null
+    },
+    {
+      "symbol": "Signal input pin",
+      "name": "Input Voltage Range",
+      "category": "ABS_MAX",
+      "min": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "Input terminals are diode-clamped to the power-supply rails",
+      "page": 6,
+      "evidence": "Input terminals are diode-clamped to the power-supply rails",
+      "related_pins": [
+        "IN+",
+        "IN\u2013"
+      ],
+      "typ": null
+    },
+    {
+      "symbol": "Signal input pin",
+      "name": "Input Current",
+      "category": "ABS_MAX",
+      "min": -10,
+      "max": 10,
+      "unit": "mA",
+      "test_conditions": "Input signals that can swing more than 0.5 V beyond the supply rails should be current limited to 10 mA or less",
+      "page": 6,
+      "evidence": "Input signals that can swing more than 0.5 V beyond the supply rails should be current limited to 10 mA or less",
+      "related_pins": [
+        "IN+",
+        "IN\u2013"
+      ],
+      "typ": null
+    },
+    {
+      "symbol": "Output short-circuit current",
+      "name": "Output Short-Circuit Current",
+      "category": "ABS_MAX",
+      "min": null,
+      "max": null,
+      "unit": "A",
+      "test_conditions": "Short-circuit to ground, one amplifier per package",
+      "page": 6,
+      "evidence": "Short-circuit to ground, one amplifier per package",
+      "related_pins": [
+        "OUT"
+      ],
+      "typ": null
+    },
+    {
+      "symbol": "Operating range",
+      "name": "Operating Temperature",
+      "category": "ABS_MAX",
+      "min": -40,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": "Operating range, TA",
+      "page": 6,
+      "evidence": "Operating range, TA",
+      "related_pins": [
+        "All pins"
+      ],
+      "typ": null
+    },
+    {
+      "symbol": "Junction Temperature",
+      "name": "Junction Temperature",
+      "category": "ABS_MAX",
+      "min": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": "Junction, TJ",
+      "page": 6,
+      "evidence": "Junction, TJ",
+      "related_pins": [
+        "All pins"
+      ],
+      "typ": null
+    },
+    {
+      "symbol": "Storage Temperature",
+      "name": "Storage Temperature",
+      "category": "ABS_MAX",
+      "min": -65,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": "Storage, Tstg",
+      "page": 6,
+      "evidence": "Storage, Tstg",
+      "related_pins": [
+        "All pins"
+      ],
+      "typ": null
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge",
+      "category": "ESD",
+      "min": -4000,
+      "max": 4000,
+      "unit": "V",
+      "test_conditions": "Human-body model (HBM), per ANSI/ESDA/JEDEC JS-001",
+      "page": 6,
+      "evidence": "Human-body model (HBM), per ANSI/ESDA/JEDEC JS-001",
+      "related_pins": [
+        "All pins"
+      ],
+      "typ": null
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge",
+      "category": "ESD",
+      "min": -1000,
+      "max": 1000,
+      "unit": "V",
+      "test_conditions": "Charged-device model (CDM), per JEDEC specification JESD22-C101",
+      "page": 6,
+      "evidence": "Charged-device model (CDM), per JEDEC specification JESD22-C101",
+      "related_pins": [
+        "All pins"
+      ],
+      "typ": null
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge",
+      "category": "ESD",
+      "min": -200,
+      "max": 200,
+      "unit": "V",
+      "test_conditions": "Machine model (MM)",
+      "page": 6,
+      "evidence": "Machine model (MM)",
+      "related_pins": [
+        "All pins"
+      ],
+      "typ": null
+    },
+    {
+      "symbol": "VS",
+      "name": "Specified voltage",
+      "category": "RECOMMENDED",
+      "min": 1.8,
+      "max": 5.5,
+      "unit": "V",
+      "test_conditions": "over operating free-air temperature range",
+      "page": 6,
+      "evidence": "Specified voltage",
+      "related_pins": [
+        "V+",
+        "V\u2013"
+      ],
+      "typ": null
+    },
+    {
+      "symbol": "TA",
+      "name": "Specified temperature",
+      "category": "RECOMMENDED",
+      "min": -40,
+      "max": 125,
+      "unit": "\u00b0C",
+      "test_conditions": "over operating free-air temperature range",
+      "page": 6,
+      "evidence": "Specified temperature",
+      "related_pins": [
+        "All pins"
+      ],
+      "typ": null
+    },
+    {
+      "symbol": "R\u03b8JA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": 219.3,
+      "max": 219.3,
+      "unit": "\u00b0C/W",
+      "test_conditions": "DBV (SOT-23), 5 PINS",
+      "page": 6,
+      "evidence": "Junction-to-ambient thermal resistance",
+      "related_pins": [
+        "All pins"
+      ],
+      "typ": null
+    },
+    {
+      "symbol": "R\u03b8JC(top)",
+      "name": "Junction-to-case(top) thermal resistance",
+      "category": "THERMAL",
+      "min": 107.5,
+      "max": 107.5,
+      "unit": "\u00b0C/W",
+      "test_conditions": "DBV (SOT-23), 5 PINS",
+      "page": 6,
+      "evidence": "Junction-to-case(top) thermal resistance",
+      "related_pins": [
+        "All pins"
+      ],
+      "typ": null
+    },
+    {
+      "symbol": "R\u03b8JB",
+      "name": "Junction-to-board thermal resistance",
+      "category": "THERMAL",
+      "min": 57.5,
+      "max": 57.5,
+      "unit": "\u00b0C/W",
+      "test_conditions": "DBV (SOT-23), 5 PINS",
+      "page": 6,
+      "evidence": "Junction-to-board thermal resistance",
+      "related_pins": [
+        "All pins"
+      ],
+      "typ": null
+    },
+    {
+      "symbol": "\u03c8JT",
+      "name": "Junction-to-top characterization parameter",
+      "category": "THERMAL",
+      "min": 7.4,
+      "max": 7.4,
+      "unit": "\u00b0C/W",
+      "test_conditions": "DBV (SOT-23), 5 PINS",
+      "page": 6,
+      "evidence": "Junction-to-top characterization parameter",
+      "related_pins": [
+        "All pins"
+      ],
+      "typ": null
+    },
+    {
+      "symbol": "\u03c8JB",
+      "name": "Junction-to-board characterization parameter",
+      "category": "THERMAL",
+      "min": 56.9,
+      "max": 56.9,
+      "unit": "\u00b0C/W",
+      "test_conditions": "DBV (SOT-23), 5 PINS",
+      "page": 6,
+      "evidence": "Junction-to-board characterization parameter",
+      "related_pins": [
+        "All pins"
+      ],
+      "typ": null
+    },
+    {
+      "symbol": "VOS",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": 40,
+      "typ": 150,
+      "max": null,
+      "unit": "\u00b5V",
+      "test_conditions": "VS = 1.8 V to 5.5 V, TA = 25\u00b0C, RL = 10 k\u03a9 connected to VS/2, VCM = VS/2, VOUT = VS/2, and SHDN x = VS+",
+      "page": 7,
+      "evidence": "VOS Input offset voltage 40{150}\u00b5V",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "dVOS/dT",
+      "name": "Input offset voltage vs temperature",
+      "category": "ELECTRICAL",
+      "min": 1.5,
+      "typ": 5,
+      "max": null,
+      "unit": "\u00b5V/\u00b0C",
+      "test_conditions": "VS = 5.5 V, TA = \u201340\u00b0C to 125\u00b0C",
+      "page": 7,
+      "evidence": "dVOS/dT Input offset voltage vs temperature 1.5{5}\u00b5V/\u00b0C",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "PSR",
+      "name": "Input offset voltage vs power supply",
+      "category": "ELECTRICAL",
+      "min": 5,
+      "typ": 20,
+      "max": null,
+      "unit": "\u00b5V/V",
+      "test_conditions": "VS = 1.8 V to 5.5 V, TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "PSR Input offset voltage vs power supply 5{20}\u00b5V/V",
+      "related_pins": [
+        "VCC",
+        "VSS"
+      ]
+    },
+    {
+      "symbol": "Channel separation",
+      "name": "Channel separation",
+      "category": "ELECTRICAL",
+      "min": 130,
+      "typ": null,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "1 kHz",
+      "page": 7,
+      "evidence": "Channel separation 1 kHz 130dB",
+      "related_pins": [
+        "IN+",
+        "IN-",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VCM",
+      "name": "Common-mode voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VS = 1.8 V to 5.5 V",
+      "page": 7,
+      "evidence": "VCM Common-mode voltage (V\u2013) \u2013 0.1 (V+) + 0.1 V",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "category": "ELECTRICAL",
+      "min": 100,
+      "typ": 114,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "VS = 5.5 V, (V\u2013) \u2013 0.1 V < VCM < (V+) + 0.1 V, TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "CMRR Common-mode rejection ratio 100{114}dB",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "category": "ELECTRICAL",
+      "min": 96,
+      "typ": null,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "VS = 5.5 V, (V\u2013) \u2013 0.1 V < VCM < (V+) + 0.1 V, TA = \u201340\u00b0C to 125\u00b0C",
+      "page": 7,
+      "evidence": "CMRR Common-mode rejection ratio 96dB",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": -0.2,
+      "typ": -0.9,
+      "max": null,
+      "unit": "pA",
+      "test_conditions": "TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "IB Input bias current \u00b10.2{\u00b10.9}pA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": -50,
+      "typ": null,
+      "max": null,
+      "unit": "pA",
+      "test_conditions": "TA = \u201340\u00b0C to 85\u00b0C",
+      "page": 7,
+      "evidence": "IB Input bias current \u00b150pA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": -400,
+      "typ": null,
+      "max": null,
+      "unit": "pA",
+      "test_conditions": "OPA2320 and OPA2320S, TA = \u201340\u00b0C to 125\u00b0C",
+      "page": 7,
+      "evidence": "IB Input bias current \u00b1400pA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": -600,
+      "typ": null,
+      "max": null,
+      "unit": "pA",
+      "test_conditions": "OPA320 and OPA320S, TA = \u201340\u00b0C to 125\u00b0C",
+      "page": 7,
+      "evidence": "IB Input bias current \u00b1600pA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": -0.2,
+      "typ": -0.9,
+      "max": null,
+      "unit": "pA",
+      "test_conditions": "TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "IOS Input offset current \u00b10.2{\u00b10.9}pA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": -50,
+      "typ": null,
+      "max": null,
+      "unit": "pA",
+      "test_conditions": "TA = \u201340\u00b0C to 85\u00b0C",
+      "page": 7,
+      "evidence": "IOS Input offset current \u00b150pA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": -400,
+      "typ": null,
+      "max": null,
+      "unit": "pA",
+      "test_conditions": "OPA2320 and OPA2320S, TA = \u201340\u00b0C to 125\u00b0C",
+      "page": 7,
+      "evidence": "IOS Input offset current \u00b1400pA",
+      "related_pins": [
+        "IN+",
+        "IN-"
+      ]
+    },
+    {
+      "symbol": 114,
+      "name": "Open-loop voltage gain",
+      "category": "ELECTRICAL",
+      "min": 114,
+      "typ": 132,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "0.1 V < VO < (V+) \u2013 0.1 V, RL = 10 k\u03a9, TA = 25\u00b0C",
+      "page": 8,
+      "evidence": "Open-loop voltage gain 0.1 V < VO < (V+) \u2013 0.1 V, RL = 10 k\u03a9, TA = 25\u00b0C",
+      "related_pins": [
+        "AOL"
+      ]
+    },
+    {
+      "symbol": 100,
+      "name": "Open-loop voltage gain",
+      "category": "ELECTRICAL",
+      "min": 100,
+      "typ": 130,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "0.1 V < VO < (V+) \u2013 0.1 V, RL = 10 k\u03a9, TA = \u201340\u00b0C to 125\u00b0C",
+      "page": 8,
+      "evidence": "Open-loop voltage gain 0.1 V < VO < (V+) \u2013 0.1 V, RL = 10 k\u03a9, TA = \u201340\u00b0C to 125\u00b0C",
+      "related_pins": [
+        "AOL"
+      ]
+    },
+    {
+      "symbol": 108,
+      "name": "Open-loop voltage gain",
+      "category": "ELECTRICAL",
+      "min": 108,
+      "typ": 123,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "0.2 V < VO < (V+) \u2013 0.2 V, RL = 2 k\u03a9, TA = 25\u00b0C",
+      "page": 8,
+      "evidence": "Open-loop voltage gain 0.2 V < VO < (V+) \u2013 0.2 V, RL = 2 k\u03a9, TA = 25\u00b0C",
+      "related_pins": [
+        "AOL"
+      ]
+    },
+    {
+      "symbol": 96,
+      "name": "Open-loop voltage gain",
+      "category": "ELECTRICAL",
+      "min": 96,
+      "typ": 130,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "0.2 V < VO < (V+) \u2013 0.2 V, RL = 2 k\u03a9, TA = \u201340\u00b0C to 125\u00b0C",
+      "page": 8,
+      "evidence": "Open-loop voltage gain 0.2 V < VO < (V+) \u2013 0.2 V, RL = 2 k\u03a9, TA = \u201340\u00b0C to 125\u00b0C",
+      "related_pins": [
+        "AOL"
+      ]
+    },
+    {
+      "symbol": 47,
+      "name": "Phase margin",
+      "category": "ELECTRICAL",
+      "min": 47,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0",
+      "test_conditions": "VS = 5 V, CL = 50 pF",
+      "page": 8,
+      "evidence": "Phase margin VS = 5 V, CL = 50 pF",
+      "related_pins": [
+        "PM"
+      ]
+    },
+    {
+      "symbol": 20,
+      "name": "Gain bandwidth product",
+      "category": "ELECTRICAL",
+      "min": 20,
+      "typ": null,
+      "max": null,
+      "unit": "MHz",
+      "test_conditions": "VS = 5 V, CL = 50 pF",
+      "page": 8,
+      "evidence": "Gain bandwidth product Unity gain 20 MHz",
+      "related_pins": [
+        "GBP"
+      ]
+    },
+    {
+      "symbol": 10,
+      "name": "Slew rate",
+      "category": "ELECTRICAL",
+      "min": 10,
+      "typ": null,
+      "max": null,
+      "unit": "V/\u00b5s",
+      "test_conditions": "VS = 5 V, CL = 50 pF, G = +1",
+      "page": 8,
+      "evidence": "Slew rate G = +1 10 V/\u00b5s",
+      "related_pins": [
+        "SR"
+      ]
+    },
+    {
+      "symbol": 0.25,
+      "name": "Settling time to 0.1%",
+      "category": "ELECTRICAL",
+      "min": 0.25,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b5s",
+      "test_conditions": "G = +1, 2-V step",
+      "page": 8,
+      "evidence": "Settling time to 0.1%, 2-V step, G = +1",
+      "related_pins": [
+        "tS"
+      ]
+    },
+    {
+      "symbol": 0.32,
+      "name": "Settling time to 0.01%",
+      "category": "ELECTRICAL",
+      "min": 0.32,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b5s",
+      "test_conditions": "G = +1, 2-V step",
+      "page": 8,
+      "evidence": "Settling time to 0.01%, 2-V step, G = +1",
+      "related_pins": [
+        "tS"
+      ]
+    },
+    {
+      "symbol": 0.5,
+      "name": "Settling time to 0.0015%",
+      "category": "ELECTRICAL",
+      "min": 0.5,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b5s",
+      "test_conditions": "G = +1, 2-V step(1)",
+      "page": 8,
+      "evidence": "Settling time to 0.0015%, 2-V step, G = +1(1)",
+      "related_pins": [
+        "tS"
+      ]
+    },
+    {
+      "symbol": 100,
+      "name": "Overload recovery time",
+      "category": "ELECTRICAL",
+      "min": 100,
+      "typ": null,
+      "max": null,
+      "unit": "ns",
+      "test_conditions": "VIN \u00d7 G > VS",
+      "page": 8,
+      "evidence": "Overload recovery time VIN \u00d7 G > VS 100 ns",
+      "related_pins": [
+        "RO"
+      ]
+    },
+    {
+      "symbol": 0.0005,
+      "name": "Total harmonic distortion + noise",
+      "category": "ELECTRICAL",
+      "min": 0.0005,
+      "typ": null,
+      "max": null,
+      "unit": "%",
+      "test_conditions": "VO = 4 VPP, G = 1, f = 10 kHz, RL = 10 k\u03a9",
+      "page": 8,
+      "evidence": "THD+N VO = 4 VPP, G = 1, f = 10 kHz, RL = 10 k\u03a9",
+      "related_pins": [
+        "THD+N"
+      ]
+    },
+    {
+      "symbol": 0.0011,
+      "name": "Total harmonic distortion + noise",
+      "category": "ELECTRICAL",
+      "min": 0.0011,
+      "typ": null,
+      "max": null,
+      "unit": "%",
+      "test_conditions": "VO = 2 VPP, G = 1, f = 10 kHz, RL = 600 \u03a9",
+      "page": 8,
+      "evidence": "THD+N VO = 2 VPP, G = 1, f = 10 kHz, RL = 600 \u03a9",
+      "related_pins": [
+        "THD+N"
+      ]
+    },
+    {
+      "symbol": 10,
+      "name": "Voltage output swing from both rails",
+      "category": "ELECTRICAL",
+      "min": 10,
+      "typ": 20,
+      "max": null,
+      "unit": "mV",
+      "test_conditions": "RL = 10 k\u03a9, TA = 25\u00b0C",
+      "page": 8,
+      "evidence": "Voltage output swing from both rails RL = 10 k\u03a9, TA = 25\u00b0C",
+      "related_pins": [
+        "VO"
+      ]
+    },
+    {
+      "symbol": 25,
+      "name": "Voltage output swing from both rails",
+      "category": "ELECTRICAL",
+      "min": 25,
+      "typ": 35,
+      "max": null,
+      "unit": "mV",
+      "test_conditions": "RL = 2 k\u03a9, TA = 25\u00b0C",
+      "page": 8,
+      "evidence": "Voltage output swing from both rails RL = 2 k\u03a9, TA = 25\u00b0C",
+      "related_pins": [
+        "VO"
+      ]
+    },
+    {
+      "symbol": 30,
+      "name": "Voltage output swing from both rails",
+      "category": "ELECTRICAL",
+      "min": 30,
+      "typ": null,
+      "max": null,
+      "unit": "mV",
+      "test_conditions": "RL = 10 k\u03a9, TA = \u201340\u00b0C to 125\u00b0C",
+      "page": 8,
+      "evidence": "Voltage output swing from both rails RL = 10 k\u03a9, TA = \u201340\u00b0C to 125\u00b0C",
+      "related_pins": [
+        "VO"
+      ]
+    },
+    {
+      "symbol": 45,
+      "name": "Voltage output swing from both rails",
+      "category": "ELECTRICAL",
+      "min": 45,
+      "typ": null,
+      "max": null,
+      "unit": "mV",
+      "test_conditions": "RL = 2 k\u03a9, TA = \u201340\u00b0C to 125\u00b0C",
+      "page": 8,
+      "evidence": "Voltage output swing from both rails RL = 2 k\u03a9, TA = \u201340\u00b0C to 125\u00b0C",
+      "related_pins": [
+        "VO"
+      ]
+    },
+    {
+      "symbol": 65,
+      "name": "Short-circuit current",
+      "category": "ELECTRICAL",
+      "min": 65,
+      "typ": null,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "VS = 5.5 V",
+      "page": 8,
+      "evidence": "Short-circuit current VS = 5.5 V \u00b165 mA",
+      "related_pins": [
+        "ISC"
+      ]
+    },
+    {
+      "symbol": 0.1,
+      "name": "Quiescent current per amplifier",
+      "category": "ELECTRICAL",
+      "min": 0.1,
+      "typ": 0.5,
+      "max": null,
+      "unit": "\u00b5A",
+      "test_conditions": "All amplifiers disabled, SHDN = V\u2013",
+      "page": 8,
+      "evidence": "Quiescent current per amplifier All amplifiers disabled, SHDN = V\u2013",
+      "related_pins": [
+        "IQSD"
+      ]
+    },
+    {
+      "symbol": 1.6,
+      "name": "Quiescent current per amplifier",
+      "category": "ELECTRICAL",
+      "min": 1.6,
+      "typ": null,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "OPA2320S only, SHDN A = VS\u2013, SHDN B = VS+",
+      "page": 8,
+      "evidence": "OPA2320S only, SHDN A = VS\u2013, SHDN B = VS+ 1.6 mA",
+      "related_pins": [
+        "IQSD"
+      ]
+    },
+    {
+      "symbol": 1.6,
+      "name": "Quiescent current per amplifier",
+      "category": "ELECTRICAL",
+      "min": 1.6,
+      "typ": null,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "OPA2320S only, SHDN A = VS+, SHDN B = VS\u2013",
+      "page": 8,
+      "evidence": "OPA2320S only, SHDN A = VS+, SHDN 1.6 mA",
+      "related_pins": [
+        "IQSD"
+      ]
+    },
+    {
+      "symbol": 0.13,
+      "name": "SHDN pin input bias current",
+      "category": "ELECTRICAL",
+      "min": 0.13,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b5A",
+      "test_conditions": "VIH = 5 V",
+      "page": 8,
+      "evidence": "SHDN pin input bias current VIH = 5 V 0.13 \u00b5A",
+      "related_pins": [
+        "SHDN"
+      ]
+    },
+    {
+      "symbol": 0.04,
+      "name": "SHDN pin input bias current",
+      "category": "ELECTRICAL",
+      "min": 0.04,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b5A",
+      "test_conditions": "VIL = 0 V",
+      "page": 8,
+      "evidence": "SHDN pin input bias current VIL = 0 V 0.04 \u00b5A",
+      "related_pins": [
+        "SHDN"
+      ]
+    },
+    {
+      "symbol": 2.8,
+      "name": "Input voltage noise",
+      "category": "ELECTRICAL",
+      "min": 2.8,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b5VPP",
+      "test_conditions": "f = 0.1 Hz to 10 Hz",
+      "page": 8,
+      "evidence": "Input voltage noise f = 0.1 Hz to 10 Hz 2.8 \u00b5VPP",
+      "related_pins": [
+        "en"
+      ]
+    },
+    {
+      "symbol": 8.5,
+      "name": "Input voltage noise density",
+      "category": "ELECTRICAL",
+      "min": 8.5,
+      "typ": null,
+      "max": null,
+      "unit": "nV/\u221aHz",
+      "test_conditions": "f = 1 kHz",
+      "page": 8,
+      "evidence": "Input voltage noise density f = 1 kHz 8.5 nV/\u221aHz",
+      "related_pins": [
+        "en"
+      ]
+    },
+    {
+      "symbol": 7,
+      "name": "Input voltage noise density",
+      "category": "ELECTRICAL",
+      "min": 7,
+      "typ": null,
+      "max": null,
+      "unit": "nV/\u221aHz",
+      "test_conditions": "f = 10 kHz",
+      "page": 8,
+      "evidence": "Input voltage noise density f = 10 kHz 7 nV/\u221aHz",
+      "related_pins": [
+        "en"
+      ]
+    },
+    {
+      "symbol": 0.6,
+      "name": "Input current noise density",
+      "category": "ELECTRICAL",
+      "min": 0.6,
+      "typ": null,
+      "max": null,
+      "unit": "fA/\u221aHz",
+      "test_conditions": "f = 1 kHz",
+      "page": 8,
+      "evidence": "Input current noise density f = 1 kHz 0.6 fA/\u221aHz",
+      "related_pins": [
+        "in"
+      ]
+    },
+    {
+      "symbol": 5,
+      "name": "Differential input capacitance",
+      "category": "ELECTRICAL",
+      "min": 5,
+      "typ": null,
+      "max": null,
+      "unit": "pF",
+      "test_conditions": null,
+      "page": 8,
+      "evidence": "Differential 5 pF",
+      "related_pins": null
+    },
+    {
+      "symbol": 4,
+      "name": "Common mode input capacitance",
+      "category": "ELECTRICAL",
+      "min": 4,
+      "typ": null,
+      "max": null,
+      "unit": "pF",
+      "test_conditions": null,
+      "page": 8,
+      "evidence": "Common mode 4 pF",
+      "related_pins": null
+    },
+    {
+      "symbol": 20,
+      "name": "Amplifier enable time",
+      "category": "ELECTRICAL",
+      "min": 20,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b5s",
+      "test_conditions": "G = 1, VOUT = 0.1 \u00d7 VS/2, full shutdown",
+      "page": 8,
+      "evidence": "Amplifier enable time G = 1, VOUT = 0.1 \u00d7 VS/2, full shutdown",
+      "related_pins": [
+        "tON"
+      ]
+    },
+    {
+      "symbol": 6,
+      "name": "Amplifier enable time",
+      "category": "ELECTRICAL",
+      "min": 6,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b5s",
+      "test_conditions": "OPA2320S only, partial shutdown",
+      "page": 8,
+      "evidence": "OPA2320S only, partial shutdown 6 \u00b5s",
+      "related_pins": [
+        "tON"
+      ]
+    },
+    {
+      "symbol": 3,
+      "name": "Amplifier disable time",
+      "category": "ELECTRICAL",
+      "min": 3,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b5s",
+      "test_conditions": "G = 1, VOUT = 0.1 \u00d7 VS/2",
+      "page": 8,
+      "evidence": "Amplifier disable time G = 1, VOUT = 0.1 \u00d7 VS/2 3 \u00b5s",
+      "related_pins": [
+        "tOFF"
+      ]
+    },
+    {
+      "symbol": "VS",
+      "name": "Specified voltage",
+      "category": "ELECTRICAL",
+      "min": 1.8,
+      "typ": null,
+      "max": 5.5,
+      "unit": "V",
+      "test_conditions": "VS = 1.8 V to 5.5 V or \u00b10.9 V to \u00b12.75 V, TA = 25\u00b0C, RL = 10 k\u03a9 connected to VS/2, VCM = VS/2, VOUT = VS/2, and SHDN x = VS+",
+      "page": 9,
+      "evidence": "VS | Specified voltage | 1.8 | null | 5.5 | V",
+      "related_pins": [
+        "VS"
+      ]
+    },
+    {
+      "symbol": "IQ",
+      "name": "Quiescent current per amplifier, OPA320 and OPA320S",
+      "category": "ELECTRICAL",
+      "min": 1.5,
+      "typ": null,
+      "max": 1.75,
+      "unit": "mA",
+      "test_conditions": "IO = 0 mA, VS = 5.5 V, TA = 25\u00b0C",
+      "page": 9,
+      "evidence": "IQ | Quiescent current per amplifier, OPA320 and OPA320S | 1.5 | null | 1.75 | mA",
+      "related_pins": [
+        "VS"
+      ]
+    },
+    {
+      "symbol": "IQ",
+      "name": "Quiescent current per amplifier, OPA320 and OPA320S",
+      "category": "ELECTRICAL",
+      "min": 1.85,
+      "typ": null,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "IO = 0 mA, VS = 5.5 V, TA = \u201340\u00b0C to 125\u00b0C",
+      "page": 9,
+      "evidence": "IQ | Quiescent current per amplifier, OPA320 and OPA320S | 1.85 | null | null | mA",
+      "related_pins": [
+        "VS"
+      ]
+    },
+    {
+      "symbol": "IQ",
+      "name": "Quiescent current per amplifier, OPA2320 and OPA2320S",
+      "category": "ELECTRICAL",
+      "min": 1.45,
+      "typ": null,
+      "max": 1.6,
+      "unit": "mA",
+      "test_conditions": "IO = 0 mA, VS = 5.5 V, TA = 25\u00b0C",
+      "page": 9,
+      "evidence": "IQ | Quiescent current per amplifier, OPA2320 and OPA2320S | 1.45 | null | 1.6 | mA",
+      "related_pins": [
+        "VS"
+      ]
+    },
+    {
+      "symbol": "IQ",
+      "name": "Quiescent current per amplifier, OPA2320 and OPA2320S",
+      "category": "ELECTRICAL",
+      "min": 1.7,
+      "typ": null,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "IO = 0 mA, VS = 5.5 V, TA = \u201340\u00b0C to 125\u00b0C",
+      "page": 9,
+      "evidence": "IQ | Quiescent current per amplifier, OPA2320 and OPA2320S | 1.7 | null | null | mA",
+      "related_pins": [
+        "VS"
+      ]
+    },
+    {
+      "symbol": "Power-on time",
+      "name": "Power-on time",
+      "category": "ELECTRICAL",
+      "min": 28,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b5s",
+      "test_conditions": "V+ = 0 V to 5 V, to 90% IQ level",
+      "page": 9,
+      "evidence": "Power-on time | Power-on time | 28 | null | null | \u00b5s",
+      "related_pins": [
+        "V+"
+      ]
+    },
+    {
+      "symbol": "A",
+      "name": "Open-Loop Gain",
+      "category": "ELECTRICAL",
+      "min": 75,
+      "typ": 100,
+      "max": 125,
+      "unit": "dB",
+      "test_conditions": "TA = -25C to 125C, RL = 2kW Load to 10kW Load",
+      "page": 10,
+      "evidence": "Open-Loop Gain (dB) 75 100 125",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "IVS",
+      "name": "Supply Voltage",
+      "category": "RECOMMENDED",
+      "min": 1.5,
+      "typ": 2.75,
+      "max": 5.5,
+      "unit": "V",
+      "test_conditions": "TA = 25C, VCM = VOUT = mid-supply, RL = 10 k\u03a9",
+      "page": 10,
+      "evidence": "Supply Voltage (V) 1.5 2.75 5.5",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "Iq",
+      "name": "Quiescent Current",
+      "category": "ELECTRICAL",
+      "min": 2,
+      "typ": 3,
+      "max": 5,
+      "unit": "mA/Ch",
+      "test_conditions": "TA = 25C, VCM = VOUT = mid-supply, RL = 10 k\u03a9",
+      "page": 10,
+      "evidence": "Quiescent Current (mA/Ch) 2 3 5",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "Vcm",
+      "name": "Common-Mode Voltage",
+      "category": "ELECTRICAL",
+      "min": -2.5,
+      "typ": -2,
+      "max": -1.5,
+      "unit": "V",
+      "test_conditions": "TA = 25C, VCM = VOUT = mid-supply, RL = 10 k\u03a9",
+      "page": 10,
+      "evidence": "Common-Mode Voltage (V) -2.5 -2 -1.5",
+      "related_pins": [
+        "CMV"
+      ]
+    },
+    {
+      "symbol": "Vo",
+      "name": "Offset Voltage",
+      "category": "ELECTRICAL",
+      "min": 0.5,
+      "typ": 1,
+      "max": 2.5,
+      "unit": "mV",
+      "test_conditions": "TA = 25C, VCM = VOUT = mid-supply, RL = 10 k\u03a9",
+      "page": 10,
+      "evidence": "Offset Voltage ( V) 0.5 1 2.5",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "f",
+      "name": "Frequency",
+      "category": "ELECTRICAL",
+      "min": 100000,
+      "typ": 1000000,
+      "max": 10000000,
+      "unit": "Hz",
+      "test_conditions": "TA = 25C, VCM = VOUT = mid-supply, RL = 10 k\u03a9",
+      "page": 10,
+      "evidence": "Frequency (Hz) 100k 1M 10M",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "G",
+      "name": "Gain",
+      "category": "ELECTRICAL",
+      "min": 10,
+      "typ": 100,
+      "max": 180,
+      "unit": "dB",
+      "test_conditions": "TA = 25C, VCM = VOUT = mid-supply, RL = 10 k\u03a9",
+      "page": 10,
+      "evidence": "Gain (dB) 10 100 180",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "Phase",
+      "name": "Phase",
+      "category": "ELECTRICAL",
+      "min": -130,
+      "typ": 0,
+      "max": 180,
+      "unit": "\u00b0",
+      "test_conditions": "TA = 25C, VCM = VOUT = mid-supply, RL = 10 k\u03a9",
+      "page": 10,
+      "evidence": "Phase ( )\u00b0 -130 0 180",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "OV_m",
+      "name": "Offset Voltage",
+      "category": "ELECTRICAL",
+      "min": -120,
+      "typ": 0,
+      "max": 130,
+      "unit": "mV",
+      "test_conditions": "TA = 25C, VCM = VOUT = mid-supply, RL = 10 k\u03a9",
+      "page": 10,
+      "evidence": "Offset Voltage ( V) m -120 - 130",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "NA",
+      "name": "Number of Amplifiers",
+      "category": "ELECTRICAL",
+      "min": 5,
+      "typ": 10,
+      "max": 30,
+      "unit": "%",
+      "test_conditions": "TA = 25C, VCM = VOUT = mid-supply, RL = 10 k\u03a9",
+      "page": 10,
+      "evidence": "Number of Amplifiers (%) 5 10 30",
+      "related_pins": []
+    },
+    {
+      "symbol": "OD",
+      "name": "Offset Drift",
+      "category": "ELECTRICAL",
+      "min": 0.1,
+      "typ": 1,
+      "max": 2.9,
+      "unit": "mV/\u00b0C",
+      "test_conditions": "TA = -40C to 125C",
+      "page": 10,
+      "evidence": "Offset Drift ( V/ C) m 0.1 2.9",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-Mode Rejection Ratio",
+      "category": "ELECTRICAL",
+      "min": 130,
+      "typ": 125,
+      "max": 120,
+      "unit": "dB",
+      "test_conditions": "Frequency (Hz) = 1k, TA = -50C to 150C",
+      "page": 11,
+      "evidence": "130 125 120",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-Mode Rejection Ratio",
+      "category": "ELECTRICAL",
+      "min": 115,
+      "typ": 110,
+      "max": 105,
+      "unit": "dB",
+      "test_conditions": "Frequency (Hz) = 10k, TA = -50C to 150C",
+      "page": 11,
+      "evidence": "115 110 105",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-Mode Rejection Ratio",
+      "category": "ELECTRICAL",
+      "min": 100,
+      "typ": 95,
+      "max": 90,
+      "unit": "dB",
+      "test_conditions": "Frequency (Hz) = 100k, TA = -50C to 150C",
+      "page": 11,
+      "evidence": "100 95 90",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "PSRR",
+      "name": "Power-Supply Rejection Ratio",
+      "category": "ELECTRICAL",
+      "min": -50,
+      "typ": 150,
+      "max": 150,
+      "unit": "dB",
+      "test_conditions": "Frequency (Hz) = 1M, TA = -50C to 150C",
+      "page": 11,
+      "evidence": "-50 150",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-Mode Rejection Ratio",
+      "category": "ELECTRICAL",
+      "min": 100,
+      "typ": 75,
+      "max": 50,
+      "unit": "dB",
+      "test_conditions": "Temperature ( C) = -25 to 125, V = 1.8V to 5.5V",
+      "page": 11,
+      "evidence": "100 75 50",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "PSRR",
+      "name": "Power-Supply Rejection Ratio",
+      "category": "ELECTRICAL",
+      "min": 40,
+      "typ": 35,
+      "max": 30,
+      "unit": "dB",
+      "test_conditions": "Temperature ( C) = -25 to 125, V = 1.8V to 5.5V",
+      "page": 11,
+      "evidence": "40 35 30",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-Mode Rejection Ratio",
+      "category": "ELECTRICAL",
+      "min": 25,
+      "typ": 20,
+      "max": 15,
+      "unit": "dB",
+      "test_conditions": "Temperature ( C) = -25 to 125, V = 1.8V to 5.5V",
+      "page": 11,
+      "evidence": "25 20 15",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-Mode Rejection Ratio",
+      "category": "ELECTRICAL",
+      "min": 10,
+      "typ": 5,
+      "max": 0,
+      "unit": "dB",
+      "test_conditions": "Temperature ( C) = -25 to 125, V = 1.8V to 5.5V",
+      "page": 11,
+      "evidence": "10 5 0",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input Bias Current",
+      "category": "ELECTRICAL",
+      "min": -0.35,
+      "typ": -0.2,
+      "max": -0.15,
+      "unit": "pA",
+      "test_conditions": "TA = -50C to 150C",
+      "page": 11,
+      "evidence": "-0.35 -0.2 -0.15",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "IB",
+      "name": "Input Bias Current",
+      "category": "ELECTRICAL",
+      "min": -0.25,
+      "typ": -0.1,
+      "max": -0.05,
+      "unit": "pA",
+      "test_conditions": "TA = -50C to 150C",
+      "page": 11,
+      "evidence": "-0.25 -0.1 -0.05",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "Number of Amplifiers",
+      "name": "Number of Amplifiers",
+      "category": "ELECTRICAL",
+      "min": 0,
+      "typ": 0.05,
+      "max": 0.25,
+      "unit": "%",
+      "test_conditions": "TA = -50C to 150C",
+      "page": 11,
+      "evidence": "0 0.05 0.25",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input Offset Current",
+      "category": "ELECTRICAL",
+      "min": 1300,
+      "typ": 1200,
+      "max": 100,
+      "unit": "pA",
+      "test_conditions": "TA = -50C to 150C",
+      "page": 11,
+      "evidence": "1300 1200 100",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input Offset Current",
+      "category": "ELECTRICAL",
+      "min": 0,
+      "typ": 100,
+      "max": 0,
+      "unit": "pA",
+      "test_conditions": "TA = -50C to 150C",
+      "page": 11,
+      "evidence": "0 100 0",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "IB+",
+      "name": "Input Bias Current (+)",
+      "category": "ELECTRICAL",
+      "min": -2.5,
+      "typ": -2,
+      "max": -1.5,
+      "unit": "pA",
+      "test_conditions": "V = 1.8V to 5.5V",
+      "page": 11,
+      "evidence": "-2.5 -2 -1.5",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "IB-",
+      "name": "Input Bias Current (-)",
+      "category": "ELECTRICAL",
+      "min": -1,
+      "typ": 0.5,
+      "max": 1.5,
+      "unit": "pA",
+      "test_conditions": "V = 1.8V to 5.5V",
+      "page": 11,
+      "evidence": "-1 0.5 1.5",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input Offset Current",
+      "category": "ELECTRICAL",
+      "min": 1,
+      "typ": 0.8,
+      "max": 0.4,
+      "unit": "pA",
+      "test_conditions": "V = 1.8V to 5.5V",
+      "page": 11,
+      "evidence": "1 0.8 0.4",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "IB+",
+      "name": "Input Bias Current (+)",
+      "category": "ELECTRICAL",
+      "min": 0.2,
+      "typ": 0.6,
+      "max": 0.4,
+      "unit": "pA",
+      "test_conditions": "V = 1.8V to 5.5V",
+      "page": 11,
+      "evidence": "0.2 0.6 0.4",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "IB-",
+      "name": "Input Bias Current (-)",
+      "category": "ELECTRICAL",
+      "min": 0,
+      "typ": 0.2,
+      "max": 0.2,
+      "unit": "pA",
+      "test_conditions": "V = 1.8V to 5.5V",
+      "page": 11,
+      "evidence": "0 0.2 0.2",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Input Offset Current",
+      "category": "ELECTRICAL",
+      "min": 0.4,
+      "typ": 0.6,
+      "max": 0.8,
+      "unit": "pA",
+      "test_conditions": "V = 1.8V to 5.5V",
+      "page": 11,
+      "evidence": "0.4 0.6 0.8",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "IB+",
+      "name": "Input Bias Current (+)",
+      "category": "ELECTRICAL",
+      "min": 1,
+      "typ": 0.9,
+      "max": 2.9,
+      "unit": "pA",
+      "test_conditions": "Supply Voltage ( V) = 0 to 6",
+      "page": 11,
+      "evidence": "1 0.9 2.9",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "IB-",
+      "name": "Input Bias Current (-)",
+      "category": "ELECTRICAL",
+      "min": 1.1,
+      "typ": 1.3,
+      "max": 1.5,
+      "unit": "pA",
+      "test_conditions": "Supply Voltage ( V) = 0 to 6",
+      "page": 11,
+      "evidence": "1.1 1.3 1.5",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "IB+",
+      "name": "Input Bias Current (+)",
+      "category": "ELECTRICAL",
+      "min": 1.7,
+      "typ": 2.5,
+      "max": 2.7,
+      "unit": "pA",
+      "test_conditions": "Supply Voltage ( V) = 0 to 6",
+      "page": 11,
+      "evidence": "1.7 2.5 2.7",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "IB-",
+      "name": "Input Bias Current (-)",
+      "category": "ELECTRICAL",
+      "min": 2.3,
+      "typ": 2.1,
+      "max": 1.9,
+      "unit": "pA",
+      "test_conditions": "Supply Voltage ( V) = 0 to 6",
+      "page": 11,
+      "evidence": "2.3 2.1 1.9",
+      "related_pins": [
+        ""
+      ]
+    },
+    {
+      "symbol": "VCM",
+      "name": "Common-Mode Voltage",
+      "category": "ELECTRICAL",
+      "min": -2.5,
+      "typ": -2,
+      "max": -1.5,
+      "unit": "V",
+      "test_conditions": "V = 1.8V to 5.5V",
+      "page": 11,
+      "evidence": "-2.5 -2 -1.5",
+      "related_pins": [
+        ""
+      ]
+    }
+  ],
+  "provenance": {
+    "pin_pages": [
+      4,
+      5,
+      1,
+      6,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12
+    ],
+    "spec_pages": [
+      8,
+      9,
+      7,
+      6,
+      1,
+      11,
+      10,
+      12,
+      4,
+      5
+    ],
+    "func_pages": [
+      1,
+      6
+    ],
+    "failed_spec_pages": [],
+    "source_file": "OPA320.pdf"
+  }
+}

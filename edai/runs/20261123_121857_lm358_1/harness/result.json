@@ -1,0 +1,57 @@
+{
+ "pass_rate_percent": 0.0,
+ "part_name": "LM358",
+ "iterations_count": 10,
+ "iterations": [
+  {
+   "iteration": 1,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 2,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 3,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 4,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 5,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 6,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 7,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 8,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 9,
+   "pass_rate_percent": 0.0
+  },
+  {
+   "iteration": 10,
+   "pass_rate_percent": 0.0
+  }
+ ],
+ "final_netlist": "\n\n* --- Globally Hoisted Models for Multi-Subcircuit Visibility ---\n.model D1N4148 D(IS=1e-14 RS=1)\n.model QNPN NPN(IS=1e-16 BF=250 VAF=120)\n.model QPNP PNP(IS=1e-16 BF=100 VAF=100)\n\n.subckt LM358 IN1_P IN1_N OUT1 IN2_P IN2_N OUT2 V_P V_N NC1 NC2 NC3\n* Synthesized via CircuitBuilder IR (strict physical SPICE)\nRBIAS IN1_P N_BIAS 300k\nQ_BREF N_BIAS N_BIAS N_EREF QNPN\nRE_BREF N_EREF IN1_N 2k\nQ_TAIL N_TAIL N_BIAS N_ETAIL QNPN\nRE_TAIL N_ETAIL IN1_N 2k\nQ_IN1 N_C1 INN N_TAIL QNPN\nQ_IN2 N_C2 INP N_TAIL QNPN\nQ_ML1 N_C1 N_C1 N_ME1 QPNP\nRM_L1 IN1_P N_ME1 500\nQ_ML2 N_C2 N_C1 N_ME2 QPNP\nRM_L2 IN1_P N_ME2 500\nQ_G2 N_G2 N_C2 IN1_P QPNP\nQ_G2L N_G2 N_BIAS N_EG2L QNPN\nRE_G2L N_EG2L IN1_N 1k\nRZ_COMP N_C2 N_CZ 1k\nCC_COMP N_CZ N_G2 30p\nQ_AB_BUF IN1_P N_G2 N_AB_TOP QNPN\nD_AB1 N_AB_TOP N_AB_MID D1N4148\nD_AB2 N_AB_MID N_AB_BOT D1N4148\nQ_AB_SINK N_AB_BOT N_BIAS N_E_ABSINK QNPN\nRE_ABSINK N_E_ABSINK IN1_N 2k\nQ_OUTN IN1_P N_AB_TOP N_EOUTN QNPN\nRE_OUTN N_EOUTN OUT1 25\nQ_OUTP IN1_N N_AB_BOT N_EOUTP QPNP\nRE_OUTP N_EOUTP OUT1 25\nD_AB1_2 IN1_N IN1_N D1N4148\nD_AB2_2 IN1_N IN1_N D1N4148\nRE_ABSINK_2 IN1_N IN1_N 2k\nRE_OUTN_2 IN1_N IN1_N 25\nRE_OUTP_2 IN1_N IN1_N 25\nD1 IN1_N IN1_N D1N4148\nR1 IN1_N IN1_N 10k\nR2 IN1_N IN1_N 10k\n.ends LM358",
+ "pin_map": {
+  "VDD": "V_P",
+  "VSS": "V_N",
+  "INP": "IN1_P",
+  "INN": "IN1_N",
+  "OUT": "OUT1"
+ },
+ "seed": "EDAI_LM358",
+ "seconds": 330
+}
