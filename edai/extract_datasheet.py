@@ -36,6 +36,9 @@ def load_keys() -> None:
         os.environ.setdefault("EDAI_NGSPICE", os.path.expanduser("~/ngspice/bin/ngspice"))   # 박준석 ngspice_runner 용
         # 하네스 시뮬레이터: ngspice (ai_analog_designer/neuro_symbolic_verifier/sim_backend.py). LTspice 로 하려면 ltspice
         os.environ.setdefault("AV_SIMULATOR", "ngspice")
+    # 하네스 시험 전원의 최대값 = 우리 회로를 만들고 잰 전원 (GF180 6 V 소자, run_sim.OPAMP_VDD). 데이터시트가 15 V 로
+    # 시험해도 그 이상은 걸지 않음 (LM358 에서 15 V 로 걸어 전원 전류 0.78 A, PDG 1단계 탈락, 2026-11-23)
+    os.environ.setdefault("AV_MAX_SUPPLY_V", "5")
     env_file = next((f for f in ENV_FILES if f.exists()), None)
     if env_file is None:
         return

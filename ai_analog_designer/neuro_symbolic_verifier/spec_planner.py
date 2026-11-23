@@ -555,6 +555,11 @@ def build_plan(ic_info: dict[str, Any], pins: list[dict[str, Any]], specs: list[
     pin_map = map_pins(device_class, pins)
     elec = [s for s in specs if str(s.get("category") or "ELECTRICAL").upper() == "ELECTRICAL"]
     vs_default = default_vs(device_class, elec)
+    # EDAI: 공정이 버티는 최대 전원 (예: GF180 6 V 소자로 만든 회로는 5 V). 데이터시트 시험 조건이 15 V·30 V 여도
+    # 그 이상은 걸지 않는다 (걸면 소자 한계를 넘어 전원 전류가 폭주해 PDG 1단계에서 탈락). 없으면 원래대로
+    supply_cap = float(os.environ.get("AV_MAX_SUPPLY_V") or 0) or None
+    if supply_cap and vs_default > supply_cap:
+        vs_default = supply_cap
     items = []
     for idx, s in enumerate(specs):
         kind, unit, mag, status = classify_spec(device_class, s)
@@ -605,6 +610,10 @@ def build_plan(ic_info: dict[str, Any], pins: list[dict[str, Any]], specs: list[
             if "vs_range" in cond and "vs" not in cond:
                 lo, hi = cond["vs_range"]
                 vs = vs_default if lo <= vs_default <= hi else lo
+            if supply_cap and vs and vs > supply_cap:
+                item["note"] = ((item.get("note") or "") + f" Measured at process supply cap {supply_cap:g} V "
+                                f"(datasheet condition {vs:g} V).").strip()
+                vs = supply_cap
             rst = cond.get("rst_level")
             if rst == "vcc":
                 rst = vs
