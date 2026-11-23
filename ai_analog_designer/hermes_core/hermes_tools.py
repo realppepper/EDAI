@@ -783,7 +783,10 @@ class HermesAnalogTools:
     def verify_circuit_pdg_gate(self, netlist: str = "", tag: str = "hermes_eval", **kwargs) -> dict[str, Any]:
         """Runs the 4-stage causal gate verifier on the latest sub-agent synthesized netlist."""
         effective_netlist = (netlist or "").strip() or (self.last_synthesized_netlist or "").strip()
-        if self.last_synthesized_netlist and netlist and "Synthesized via CircuitBuilder IR" not in netlist:
+        # EDAI: use_given_netlist=True 면 넘겨받은 회로를 그대로 평가 (설계도 평가가 LLM 이 마지막에 만든 회로로
+        # 바뀌어 평가되던 문제: 씨앗 회로가 한 번도 평가되지 않음)
+        if (self.last_synthesized_netlist and netlist and not kwargs.get("use_given_netlist")
+                and "Synthesized via CircuitBuilder IR" not in netlist):
             # Prefer sub-agent synthesized CircuitBuilder output over hand-written orchestrator SPICE
             effective_netlist = self.last_synthesized_netlist
         if not effective_netlist:

@@ -279,7 +279,7 @@ The subcircuit must operate with its negative supply pin tied to 0 V (single sup
                 if not agent._is_meaningful_netlist(cand_raw):
                     continue
                 adapted = tools.adapt_blueprint_to_dut(cand_raw, subckt_name)
-                eval_try = tools.verify_circuit_pdg_gate(adapted, tag="harness2_blueprint_anchor")
+                eval_try = tools.verify_circuit_pdg_gate(adapted, tag="harness2_blueprint_anchor", use_given_netlist=True)
                 cur_rate = eval_try.get("pass_rate_percent", 0.0)
                 if cur_rate > best_pass_rate or (not best_netlist and cur_rate > 0.0):
                     logger.info(f"Harness² Blueprint Adaptation candidate passed with {cur_rate:.1f}% pass rate!")
