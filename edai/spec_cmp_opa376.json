@@ -1,0 +1,283 @@
+{
+ "description": "OPA376 측정 계획(팀원 spec_planner 결과)에서 판정 항목과 목표값을 가져온 것 (spec_from_plan.py 가 만듦)",
+ "circuit": "opamp",
+ "source": "OPA376",
+ "category": "Operational Amplifier",
+ "conditions": "VDD = 5 V 단일 전원 (공통 측정 조건). 계획의 측정 전원(예: 15 V)과 다를 수 있음",
+ "typ_rule": {
+  "min_ratio": 0.8,
+  "max_ratio": 1.2,
+  "note": "데이터시트가 보장하는 값이 아니라 팀이 정한 기준 (2026-10-12)"
+ },
+ "specs": [
+  {
+   "measure": "avd",
+   "label": "대신호 차동 전압이득",
+   "unit": "dB",
+   "plain": "신호를 얼마나 키우나",
+   "headline": true,
+   "min": 120.0,
+   "max": 134.0,
+   "symbol": "AOL",
+   "condition": "50 mV < VO < (V+) – 50 mV, RL = 10 kΩ",
+   "extracted": {
+    "symbol": "AOL",
+    "name": "Open-loop voltage gain",
+    "min": 120,
+    "typ": null,
+    "max": 134,
+    "unit": "dB",
+    "test_conditions": "50 mV < VO < (V+) – 50 mV, RL = 10 kΩ",
+    "page": 8,
+    "evidence": "Open-loop voltage gain 120{134}dB"
+   },
+   "plan": {
+    "kind": "aol_db",
+    "fixture": "aol_db_d9b31e",
+    "row": 17
+   }
+  },
+  {
+   "measure": "cmrr",
+   "label": "공통모드 제거비",
+   "unit": "dB",
+   "plain": "두 입력에 함께 실린 잡음을 얼마나 걸러내나",
+   "min": 76.0,
+   "max": 90.0,
+   "symbol": "CMRR",
+   "condition": "(V–) < VCM < (V+) – 1.3 V",
+   "extracted": {
+    "symbol": "CMRR",
+    "name": "Common-mode rejection ratio",
+    "min": 76,
+    "typ": null,
+    "max": 90,
+    "unit": "dB",
+    "test_conditions": "(V–) < VCM < (V+) – 1.3 V",
+    "page": 8,
+    "evidence": "Common-mode rejection ratio 76{90}dB"
+   },
+   "plan": {
+    "kind": "cmrr_db",
+    "fixture": "cmrr_db_235021",
+    "row": 14
+   }
+  },
+  {
+   "measure": "idd",
+   "label": "공급 전류",
+   "unit": "µA",
+   "scale": 1000000.0,
+   "plain": "전기를 얼마나 쓰나",
+   "headline": true,
+   "min": 760.0,
+   "max": 950.0,
+   "symbol": "IQ",
+   "condition": "TA = 25°C, IO = 0, VS = 5.5 V, VCM < (V+) – 1.3 V",
+   "extracted": {
+    "symbol": "IQ",
+    "name": "Quiescent current per amplifier",
+    "min": 760,
+    "typ": null,
+    "max": 950,
+    "unit": "μA",
+    "test_conditions": "TA = 25°C, IO = 0, VS = 5.5 V, VCM < (V+) – 1.3 V",
+    "page": 9,
+    "evidence": "760 950 μA TA = 25°C, IO = 0, VS = 5.5 V, VCM < (V+) – 1.3 V"
+   },
+   "plan": {
+    "kind": "iq",
+    "fixture": "iq_522b66",
+    "row": 36
+   }
+  },
+  {
+   "measure": "ugbw",
+   "label": "단위이득 대역폭",
+   "unit": "MHz",
+   "scale": 1e-06,
+   "plain": "얼마나 빠른 신호까지 다루나",
+   "headline": true,
+   "min": 5.5,
+   "symbol": "GBW",
+   "condition": "CL = 100 pF, VS = 5.5 V",
+   "extracted": {
+    "symbol": "GBW",
+    "name": "Gain-bandwidth product",
+    "min": 5.5,
+    "typ": null,
+    "max": null,
+    "unit": "MHz",
+    "test_conditions": "CL = 100 pF, VS = 5.5 V",
+    "page": 8,
+    "evidence": "Gain-bandwidth product 5.5MHz"
+   },
+   "plan": {
+    "kind": "gbw",
+    "fixture": "gbw_b63347",
+    "row": 19
+   }
+  },
+  {
+   "measure": "sr",
+   "label": "슬루율 (단위이득)",
+   "unit": "V/µs",
+   "scale": 1e-06,
+   "plain": "출력이 얼마나 빨리 변하나",
+   "headline": true,
+   "min": 2.0,
+   "symbol": "SR",
+   "condition": "G = 1, To 0.1%, 2-V step",
+   "extracted": {
+    "symbol": "SR",
+    "name": "Slew rate",
+    "min": 2,
+    "typ": null,
+    "max": null,
+    "unit": "V/μs",
+    "test_conditions": "G = 1, To 0.1%, 2-V step",
+    "page": 8,
+    "evidence": "Slew rate 2V/μs"
+   },
+   "plan": {
+    "kind": "sr",
+    "fixture": "sr_4b6491",
+    "row": 20
+   }
+  }
+ ],
+ "extraction": {
+  "total_rows": 60,
+  "electrical_rows": 40,
+  "used_rows": 5,
+  "pins": 6,
+  "file": "OPA376_knowledge_graph.json"
+ },
+ "plan": {
+  "file": "OPA376_SPEC_EVALUATION.json",
+  "planned_rows": 36,
+  "part_rows": [
+   0,
+   63
+  ],
+  "part_planned": 36,
+  "used": 5,
+  "not_measured": [
+   {
+    "kind": "vos",
+    "symbol": "VOS",
+    "name": "Input offset voltage",
+    "condition": "At TA = 25°C, RL = 10 kΩconnected to VS / 2, VCM = VS / 2, and VOUT = VS / 2",
+    "min": 4.9999999999999996e-06,
+    "typ": 2.4999999999999998e-05,
+    "max": null,
+    "unit": "V",
+    "page": 8,
+    "reason": "입력 오프셋 전압: 소자 편차 통계 해석이 필요해 아직 재지 않음"
+   },
+   {
+    "kind": "ib",
+    "symbol": "IB",
+    "name": "Input bias current",
+    "condition": "At TA = 25°C",
+    "min": 2e-13,
+    "typ": null,
+    "max": 1e-11,
+    "unit": "A",
+    "page": 8,
+    "reason": "입력 바이어스 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ios",
+    "symbol": "IOS",
+    "name": "Input offset current",
+    "condition": "At TA = 25°C",
+    "min": 2e-13,
+    "typ": null,
+    "max": 1e-11,
+    "unit": "A",
+    "page": 8,
+    "reason": "입력 오프셋 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "en",
+    "symbol": "en",
+    "name": "Input voltage noise density",
+    "condition": "f = 1 kHz",
+    "min": 7.5,
+    "typ": null,
+    "max": null,
+    "unit": "nV/rtHz",
+    "page": 8,
+    "reason": "입력 잡음 밀도: 잡음 해석(.noise) 측정을 아직 만들지 않음"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VOUT",
+    "name": "Voltage output swing from rail",
+    "condition": "TA = 25°C, RL = 10 kΩ connected to VS / 2, VCM = VS / 2, and VOUT = VS / 2, packages only",
+    "min": 0.01,
+    "typ": 0.02,
+    "max": 0.02,
+    "unit": "V",
+    "page": 9,
+    "reason": "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VOUT",
+    "name": "Voltage output swing from rail",
+    "condition": "TA = 25°C, RL = 2 kΩ, packages only",
+    "min": 0.04,
+    "typ": 0.04,
+    "max": 0.04,
+    "unit": "V",
+    "page": 9,
+    "reason": "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VOUT",
+    "name": "Voltage output swing from rail",
+    "condition": "TA = 25°C, RL = 2 kΩ, packages only",
+    "min": 0.05,
+    "typ": 0.05,
+    "max": 0.05,
+    "unit": "V",
+    "page": 9,
+    "reason": "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
+   },
+   {
+    "kind": "isc",
+    "symbol": "ISC",
+    "name": "Short-circuit current",
+    "condition": "TA = +30, –50",
+    "min": 0.03,
+    "typ": null,
+    "max": 0.05,
+    "unit": "A",
+    "page": 9,
+    "reason": "단락 전류: 출력 단락 측정을 아직 만들지 않음 (LM358B 는 ±10 V 조건이라 6 V 소자로 잴 수도 없음)"
+   }
+  ],
+  "corrections": null,
+  "not_planned": [
+   {
+    "measure": "ts",
+    "label": "정착시간 (0.1%)",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   },
+   {
+    "measure": "gm",
+    "label": "이득여유",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   },
+   {
+    "measure": "vol_5ma",
+    "label": "Low 출력 전압 (IOL = 5 mA)",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   }
+  ]
+ },
+ "unused": []
+}

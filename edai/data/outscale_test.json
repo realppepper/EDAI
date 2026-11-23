@@ -1,0 +1,210 @@
+[
+ {
+  "scale": 20.0,
+  "valid": true,
+  "reason": "",
+  "passed": 4,
+  "judged": 5,
+  "spec": [
+   {
+    "measure": "avd",
+    "label": "대신호 차동 전압이득",
+    "unit": "dB",
+    "value": 85.93437436722041,
+    "target": "≥ 97 dB",
+    "status": "FAIL"
+   },
+   {
+    "measure": "cmrr",
+    "label": "공통모드 제거비",
+    "unit": "dB",
+    "value": 99.5138541156173,
+    "target": "≥ 65 dB",
+    "status": "PASS"
+   },
+   {
+    "measure": "idd",
+    "label": "공급 전류",
+    "unit": "µA",
+    "value": 678.1749762957808,
+    "target": "≥ 440 µA",
+    "status": "PASS"
+   },
+   {
+    "measure": "ugbw",
+    "label": "단위이득 대역폭",
+    "unit": "MHz",
+    "value": 54.212503176471785,
+    "target": "≥ 2.4 MHz",
+    "status": "PASS"
+   },
+   {
+    "measure": "sr",
+    "label": "슬루율 (단위이득)",
+    "unit": "V/µs",
+    "value": 9.646996511499989,
+    "target": "≥ 1.92 V/µs",
+    "status": "PASS"
+   }
+  ],
+  "gain_unloaded": 98.19873391216132,
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 VB2 VB2 VSS VSS nfet_06v0 w=15u l=2u\nXNM3 OUT N1 VSS VSS nfet_06v0 w=86.8u l=1u m=3\nXNM4 N2 VB2 VSS VSS nfet_06v0 w=15u l=2u\nXNM5 N1_NM5 N3 VSS VSS nfet_06v0 w=5.46u l=1u\nXNM6 N3_NM6 N3 VSS VSS nfet_06v0 w=5.46u l=1u\nXNM7 N4 N5 VSS VSS nfet_06v0 w=14.9u l=2u\nXNM8 N5 N5 VSS VSS nfet_06v0 w=8.75u l=2u\nXPM1 OUT N4 VDD VDD pfet_06v0 w=94.6u l=2u m=17\nXPM2 VB1 N4 VDD VDD pfet_06v0 w=91.3u l=2u\nXPM3 N1 INP N6 VDD pfet_06v0 w=39.3u l=1u\nXPM4 N3 INN N6 VDD pfet_06v0 w=39.3u l=1u\nXPM5 N6 N4 VDD VDD pfet_06v0 w=67.5u l=2u\nXPM6 N4 N4 VDD VDD pfet_06v0 w=68.6u l=2u\nXPM7 N5 N2 VDD VDD pfet_06v0 w=40.2u l=2u\nXPM8 N2 N2 VDD VDD pfet_06v0 w=30.1u l=2u\nXPM9 VB2 N2 N7 VDD pfet_06v0 w=31.8u l=1u\nR1 N7 VDD 10k\nXNMC1 N1 VBCN N1_NM5 VSS nfet_06v0 w=8.45u l=1u\nXNMC2 N3 VBCN N3_NM6 VSS nfet_06v0 w=8.45u l=1u\nXNMB1 VBCN VBCN VBCN_S1 VSS nfet_06v0 w=14.9u l=2u\nRBCVBCN VBCN_S1 VSS 28174.6\nXPMF1 VBCN REF_PB VDD VDD pfet_06v0 w=58.6u l=2u m=2\n* 기준 전류 10 uA: beta-multiplier + startup (bias_reference.py)\nXREF_MN1 REF_NB REF_NB VSS VSS nfet_06v0 w=12u l=2u\nXREF_MN2 REF_PB REF_NB REF_NS VSS nfet_06v0 w=48u l=2u\nRREF_S REF_NS VSS 8353.6\nXREF_MP3 REF_PB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MP4 REF_NB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MS1 REF_SX VSS VDD VDD pfet_06v0 w=0.5u l=20u\nXREF_MS2 REF_PB REF_SX VSS VSS nfet_06v0 w=2u l=1u\nXREF_MS3 REF_SX REF_NB VSS VSS nfet_06v0 w=5u l=1u\n* startup (bias_convert.py)\nXSU_MS1 SU_SX VSS VDD VDD pfet_06v0 w=0.5u l=20u\nXSU_MS2 N2 SU_SX VSS VSS nfet_06v0 w=2u l=1u\nXSU_MS3 SU_SX N5 VSS VSS nfet_06v0 w=5u l=1u\n.ends opamp\n",
+  "s": 20
+ },
+ {
+  "scale": 50.0,
+  "valid": true,
+  "reason": "",
+  "passed": 4,
+  "judged": 5,
+  "spec": [
+   {
+    "measure": "avd",
+    "label": "대신호 차동 전압이득",
+    "unit": "dB",
+    "value": 87.64914041732098,
+    "target": "≥ 97 dB",
+    "status": "FAIL"
+   },
+   {
+    "measure": "cmrr",
+    "label": "공통모드 제거비",
+    "unit": "dB",
+    "value": 95.33819339978047,
+    "target": "≥ 65 dB",
+    "status": "PASS"
+   },
+   {
+    "measure": "idd",
+    "label": "공급 전류",
+    "unit": "µA",
+    "value": 807.1496993255923,
+    "target": "≥ 440 µA",
+    "status": "PASS"
+   },
+   {
+    "measure": "ugbw",
+    "label": "단위이득 대역폭",
+    "unit": "MHz",
+    "value": 51.88540405455481,
+    "target": "≥ 2.4 MHz",
+    "status": "PASS"
+   },
+   {
+    "measure": "sr",
+    "label": "슬루율 (단위이득)",
+    "unit": "V/µs",
+    "value": 11.38291856345892,
+    "target": "≥ 1.92 V/µs",
+    "status": "PASS"
+   }
+  ],
+  "gain_unloaded": 98.3548108241603,
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 VB2 VB2 VSS VSS nfet_06v0 w=15u l=2u\nXNM3 OUT N1 VSS VSS nfet_06v0 w=90.5u l=1u m=4\nXNM4 N2 VB2 VSS VSS nfet_06v0 w=15u l=2u\nXNM5 N1_NM5 N3 VSS VSS nfet_06v0 w=5.46u l=1u\nXNM6 N3_NM6 N3 VSS VSS nfet_06v0 w=5.46u l=1u\nXNM7 N4 N5 VSS VSS nfet_06v0 w=14.9u l=2u\nXNM8 N5 N5 VSS VSS nfet_06v0 w=8.75u l=2u\nXPM1 OUT N4 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM2 VB1 N4 VDD VDD pfet_06v0 w=91.3u l=2u\nXPM3 N1 INP N6 VDD pfet_06v0 w=39.3u l=1u\nXPM4 N3 INN N6 VDD pfet_06v0 w=39.3u l=1u\nXPM5 N6 N4 VDD VDD pfet_06v0 w=67.5u l=2u\nXPM6 N4 N4 VDD VDD pfet_06v0 w=68.6u l=2u\nXPM7 N5 N2 VDD VDD pfet_06v0 w=40.2u l=2u\nXPM8 N2 N2 VDD VDD pfet_06v0 w=30.1u l=2u\nXPM9 VB2 N2 N7 VDD pfet_06v0 w=31.8u l=1u\nR1 N7 VDD 10k\nXNMC1 N1 VBCN N1_NM5 VSS nfet_06v0 w=8.45u l=1u\nXNMC2 N3 VBCN N3_NM6 VSS nfet_06v0 w=8.45u l=1u\nXNMB1 VBCN VBCN VBCN_S1 VSS nfet_06v0 w=14.9u l=2u\nRBCVBCN VBCN_S1 VSS 28174.6\nXPMF1 VBCN REF_PB VDD VDD pfet_06v0 w=58.6u l=2u m=2\n* 기준 전류 10 uA: beta-multiplier + startup (bias_reference.py)\nXREF_MN1 REF_NB REF_NB VSS VSS nfet_06v0 w=12u l=2u\nXREF_MN2 REF_PB REF_NB REF_NS VSS nfet_06v0 w=48u l=2u\nRREF_S REF_NS VSS 8353.6\nXREF_MP3 REF_PB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MP4 REF_NB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MS1 REF_SX VSS VDD VDD pfet_06v0 w=0.5u l=20u\nXREF_MS2 REF_PB REF_SX VSS VSS nfet_06v0 w=2u l=1u\nXREF_MS3 REF_SX REF_NB VSS VSS nfet_06v0 w=5u l=1u\n* startup (bias_convert.py)\nXSU_MS1 SU_SX VSS VDD VDD pfet_06v0 w=0.5u l=20u\nXSU_MS2 N2 SU_SX VSS VSS nfet_06v0 w=2u l=1u\nXSU_MS3 SU_SX N5 VSS VSS nfet_06v0 w=5u l=1u\n.ends opamp\n",
+  "s": 23
+ },
+ {
+  "scale": 100.0,
+  "valid": true,
+  "reason": "",
+  "passed": 4,
+  "judged": 5,
+  "spec": [
+   {
+    "measure": "avd",
+    "label": "대신호 차동 전압이득",
+    "unit": "dB",
+    "value": 87.64914041732098,
+    "target": "≥ 97 dB",
+    "status": "FAIL"
+   },
+   {
+    "measure": "cmrr",
+    "label": "공통모드 제거비",
+    "unit": "dB",
+    "value": 95.33819339978047,
+    "target": "≥ 65 dB",
+    "status": "PASS"
+   },
+   {
+    "measure": "idd",
+    "label": "공급 전류",
+    "unit": "µA",
+    "value": 807.1496993255923,
+    "target": "≥ 440 µA",
+    "status": "PASS"
+   },
+   {
+    "measure": "ugbw",
+    "label": "단위이득 대역폭",
+    "unit": "MHz",
+    "value": 51.88540405455481,
+    "target": "≥ 2.4 MHz",
+    "status": "PASS"
+   },
+   {
+    "measure": "sr",
+    "label": "슬루율 (단위이득)",
+    "unit": "V/µs",
+    "value": 11.38291856345892,
+    "target": "≥ 1.92 V/µs",
+    "status": "PASS"
+   }
+  ],
+  "gain_unloaded": 98.3548108241603,
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 VB2 VB2 VSS VSS nfet_06v0 w=15u l=2u\nXNM3 OUT N1 VSS VSS nfet_06v0 w=90.5u l=1u m=4\nXNM4 N2 VB2 VSS VSS nfet_06v0 w=15u l=2u\nXNM5 N1_NM5 N3 VSS VSS nfet_06v0 w=5.46u l=1u\nXNM6 N3_NM6 N3 VSS VSS nfet_06v0 w=5.46u l=1u\nXNM7 N4 N5 VSS VSS nfet_06v0 w=14.9u l=2u\nXNM8 N5 N5 VSS VSS nfet_06v0 w=8.75u l=2u\nXPM1 OUT N4 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM2 VB1 N4 VDD VDD pfet_06v0 w=91.3u l=2u\nXPM3 N1 INP N6 VDD pfet_06v0 w=39.3u l=1u\nXPM4 N3 INN N6 VDD pfet_06v0 w=39.3u l=1u\nXPM5 N6 N4 VDD VDD pfet_06v0 w=67.5u l=2u\nXPM6 N4 N4 VDD VDD pfet_06v0 w=68.6u l=2u\nXPM7 N5 N2 VDD VDD pfet_06v0 w=40.2u l=2u\nXPM8 N2 N2 VDD VDD pfet_06v0 w=30.1u l=2u\nXPM9 VB2 N2 N7 VDD pfet_06v0 w=31.8u l=1u\nR1 N7 VDD 10k\nXNMC1 N1 VBCN N1_NM5 VSS nfet_06v0 w=8.45u l=1u\nXNMC2 N3 VBCN N3_NM6 VSS nfet_06v0 w=8.45u l=1u\nXNMB1 VBCN VBCN VBCN_S1 VSS nfet_06v0 w=14.9u l=2u\nRBCVBCN VBCN_S1 VSS 28174.6\nXPMF1 VBCN REF_PB VDD VDD pfet_06v0 w=58.6u l=2u m=2\n* 기준 전류 10 uA: beta-multiplier + startup (bias_reference.py)\nXREF_MN1 REF_NB REF_NB VSS VSS nfet_06v0 w=12u l=2u\nXREF_MN2 REF_PB REF_NB REF_NS VSS nfet_06v0 w=48u l=2u\nRREF_S REF_NS VSS 8353.6\nXREF_MP3 REF_PB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MP4 REF_NB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MS1 REF_SX VSS VDD VDD pfet_06v0 w=0.5u l=20u\nXREF_MS2 REF_PB REF_SX VSS VSS nfet_06v0 w=2u l=1u\nXREF_MS3 REF_SX REF_NB VSS VSS nfet_06v0 w=5u l=1u\n* startup (bias_convert.py)\nXSU_MS1 SU_SX VSS VDD VDD pfet_06v0 w=0.5u l=20u\nXSU_MS2 N2 SU_SX VSS VSS nfet_06v0 w=2u l=1u\nXSU_MS3 SU_SX N5 VSS VSS nfet_06v0 w=5u l=1u\n.ends opamp\n",
+  "s": 22
+ },
+ {
+  "scale": 200.0,
+  "valid": true,
+  "reason": "",
+  "passed": 4,
+  "judged": 5,
+  "spec": [
+   {
+    "measure": "avd",
+    "label": "대신호 차동 전압이득",
+    "unit": "dB",
+    "value": 87.65319885918439,
+    "target": "≥ 97 dB",
+    "status": "FAIL"
+   },
+   {
+    "measure": "cmrr",
+    "label": "공통모드 제거비",
+    "unit": "dB",
+    "value": 94.33844667024978,
+    "target": "≥ 65 dB",
+    "status": "PASS"
+   },
+   {
+    "measure": "idd",
+    "label": "공급 전류",
+    "unit": "µA",
+    "value": 807.1504296411974,
+    "target": "≥ 440 µA",
+    "status": "PASS"
+   },
+   {
+    "measure": "ugbw",
+    "label": "단위이득 대역폭",
+    "unit": "MHz",
+    "value": 51.84912880110779,
+    "target": "≥ 2.4 MHz",
+    "status": "PASS"
+   },
+   {
+    "measure": "sr",
+    "label": "슬루율 (단위이득)",
+    "unit": "V/µs",
+    "value": 11.382843892857855,
+    "target": "≥ 1.92 V/µs",
+    "status": "PASS"
+   }
+  ],
+  "gain_unloaded": 98.35878022498011,
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXNM1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 VB2 VB2 VSS VSS nfet_06v0 w=15u l=2u\nXNM3 OUT N1 VSS VSS nfet_06v0 w=90.5u l=1u m=4\nXNM4 N2 VB2 VSS VSS nfet_06v0 w=15u l=2u\nXNM5 N1_NM5 N3 VSS VSS nfet_06v0 w=5.45u l=1u\nXNM6 N3_NM6 N3 VSS VSS nfet_06v0 w=5.47u l=1u\nXNM7 N4 N5 VSS VSS nfet_06v0 w=14.9u l=2u\nXNM8 N5 N5 VSS VSS nfet_06v0 w=8.75u l=2u\nXPM1 OUT N4 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM2 VB1 N4 VDD VDD pfet_06v0 w=91.3u l=2u\nXPM3 N1 INP N6 VDD pfet_06v0 w=39.3u l=1u\nXPM4 N3 INN N6 VDD pfet_06v0 w=39.4u l=1u\nXPM5 N6 N4 VDD VDD pfet_06v0 w=67.5u l=2u\nXPM6 N4 N4 VDD VDD pfet_06v0 w=68.6u l=2u\nXPM7 N5 N2 VDD VDD pfet_06v0 w=40.2u l=2u\nXPM8 N2 N2 VDD VDD pfet_06v0 w=30.1u l=2u\nXPM9 VB2 N2 N7 VDD pfet_06v0 w=31.8u l=1u\nR1 N7 VDD 10k\nXNMC1 N1 VBCN N1_NM5 VSS nfet_06v0 w=8.43u l=1u\nXNMC2 N3 VBCN N3_NM6 VSS nfet_06v0 w=8.46u l=1u\nXNMB1 VBCN VBCN VBCN_S1 VSS nfet_06v0 w=14.9u l=2u\nRBCVBCN VBCN_S1 VSS 28174.6\nXPMF1 VBCN REF_PB VDD VDD pfet_06v0 w=58.6u l=2u m=2\n* 기준 전류 10 uA: beta-multiplier + startup (bias_reference.py)\nXREF_MN1 REF_NB REF_NB VSS VSS nfet_06v0 w=12u l=2u\nXREF_MN2 REF_PB REF_NB REF_NS VSS nfet_06v0 w=48u l=2u\nRREF_S REF_NS VSS 8353.6\nXREF_MP3 REF_PB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MP4 REF_NB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MS1 REF_SX VSS VDD VDD pfet_06v0 w=0.5u l=20u\nXREF_MS2 REF_PB REF_SX VSS VSS nfet_06v0 w=2u l=1u\nXREF_MS3 REF_SX REF_NB VSS VSS nfet_06v0 w=5u l=1u\n* startup (bias_convert.py)\nXSU_MS1 SU_SX VSS VDD VDD pfet_06v0 w=0.5u l=20u\nXSU_MS2 N2 SU_SX VSS VSS nfet_06v0 w=2u l=1u\nXSU_MS3 SU_SX N5 VSS VSS nfet_06v0 w=5u l=1u\n.ends opamp\n",
+  "s": 24
+ }
+]

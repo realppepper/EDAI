@@ -1,0 +1,239 @@
+<title>AnalogVerifier 시스템 지도</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<style>
+/* 레이아웃: 한 단 문서. 위에서 아래로 "흐름 → 개념 → 실제 결과 → 만든 방법 → 우리와 연결" 순서 */
+:root {
+  --paper: #f5f7f6; --card: #ffffff; --ink: #1c2328; --muted: #5d6a70; --line: #d9e0e2;
+  --accent: #1f6f8b; --accent-soft: #e2eff3; --pass: #2e7d4f; --pass-soft: #e3f2e8;
+  --warn: #a8641a; --warn-soft: #f8ecdc; --fail: #b23b2e; --fail-soft: #f8e1de;
+  --sans: "IBM Plex Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #121719; --card: #192124; --ink: #e3eaec; --muted: #94a3a8; --line: #2b373b;
+  --accent: #5fb6d3; --accent-soft: #173640; --pass: #5cc788; --pass-soft: #163625;
+  --warn: #e0a258; --warn-soft: #3a2a15; --fail: #ec7a6c; --fail-soft: #3d1f1b; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --paper: #121719; --card: #192124; --ink: #e3eaec; --muted: #94a3a8; --line: #2b373b;
+  --accent: #5fb6d3; --accent-soft: #173640; --pass: #5cc788; --pass-soft: #163625;
+  --warn: #e0a258; --warn-soft: #3a2a15; --fail: #ec7a6c; --fail-soft: #3d1f1b; color-scheme: dark }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.65; }
+.wrap { max-width: 960px; margin: 0 auto; padding-block: 36px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 44px; }
+h1, h2, h3 { margin: 0; line-height: 1.3; text-wrap: balance; }
+h1 { font-size: 30px; }
+h2 { font-size: 20px; display: flex; gap: 10px; align-items: baseline; }
+h2 .k { font-family: var(--mono); font-size: 12px; color: var(--accent); letter-spacing: .06em; }
+h3 { font-size: 15px; }
+p { margin: 0; max-width: 68ch; }
+section { display: grid; gap: 14px; min-width: 0; }
+.eyebrow { font-size: 12px; letter-spacing: .08em; color: var(--muted); }
+.lead { font-size: 16px; color: var(--muted); }
+.muted { color: var(--muted); }
+.note { font-size: 13px; color: var(--muted); }
+.mono, code { font-family: var(--mono); font-size: 13px; }
+code { background: var(--accent-soft); padding: 1px 5px; border-radius: 3px; }
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: grid; gap: 10px; min-width: 0; }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; font-size: 14px; width: 100%; }
+th, td { text-align: left; vertical-align: top; padding: 8px 12px 8px 0; border-bottom: 1px solid var(--line); }
+th { font-size: 12px; color: var(--muted); font-weight: 500; }
+td.num, .num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+ol, ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; max-width: 72ch; }
+.grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 12px; }
+.term { display: grid; gap: 4px; }
+.term b { font-size: 15px; }
+.term .en { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+.chip { display: inline-block; font-size: 12px; font-weight: 700; padding: 1px 8px; border-radius: 10px; }
+.chip.ok { background: var(--pass-soft); color: var(--pass); }
+.chip.warn { background: var(--warn-soft); color: var(--warn); }
+.chip.bad { background: var(--fail-soft); color: var(--fail); }
+.callout { border-left: 4px solid var(--warn); background: var(--warn-soft); padding: 12px 14px; border-radius: 0 6px 6px 0; display: grid; gap: 6px; }
+pre.mermaid { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px; margin: 0; overflow-x: auto; }
+pre.code { font-family: var(--mono); font-size: 12px; line-height: 1.55; background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; margin: 0; overflow-x: auto; }
+.timeline { display: grid; gap: 0; }
+.tl { display: grid; grid-template-columns: 92px 1fr; gap: 14px; padding: 8px 0; border-bottom: 1px dashed var(--line); }
+.tl .d { font-family: var(--mono); font-size: 13px; color: var(--accent); }
+.bar { height: 8px; border-radius: 4px; background: var(--accent); }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+@media (max-width: 520px) { h1 { font-size: 24px; } .tl { grid-template-columns: 1fr; gap: 2px; } }
+</style>
+
+<div class="wrap">
+  <header style="display:grid;gap:10px">
+    <div class="eyebrow">EDAI 17조 · 팀원 시스템 해설 · 저장소 eethsc/analogverifier (2026-11-09 커밋 ef308f3 기준)</div>
+    <h1>AnalogVerifier 시스템 지도</h1>
+    <p class="lead">데이터시트 PDF 하나를 넣으면 LLM이 특성표를 구조화하고, LLM 에이전트가 트랜지스터 회로를 써서 LTspice로 검증하고, 떨어진 항목을 보고 회로를 고쳐 쓰는 일을 반복하는 시스템입니다.</p>
+    <p class="note">코드를 실행하지 않고 README, 핵심 모듈, LM358B 결과 파일, 커밋 기록을 읽어 정리했습니다.</p>
+  </header>
+
+  <section>
+    <h2><span class="k">1</span>전체 흐름</h2>
+    <p>여섯 단계가 차례로 이어지고, 5~6단계가 반복됩니다. 각 상자 아래 줄은 그 단계가 남기는 결과물입니다.</p>
+<pre class="mermaid">
+flowchart TD
+  PDF["데이터시트 PDF"] --> P1["1 정보 추출<br/>표 위치 복원 + LLM 표 읽기<br/><i>HKG: 핀 목록, 특성 줄</i>"]
+  P1 --> P2["2 핀 관계<br/>전원 → 바이어스 → 입력 → 출력<br/><i>PDG, 핀별 켜지는 순서</i>"]
+  P1 --> P3["3 측정 계획<br/>줄마다 측정 종류·조건 분류<br/><i>spec_planner 계획</i>"]
+  P2 --> P4["4 회로 합성<br/>LLM 에이전트 Hermes가 넷리스트 작성<br/><i>.cir 회로 파일</i>"]
+  P3 --> P4
+  P4 --> P5["5 검증<br/>LTspice, 4단계 순차 관문<br/><i>줄별 통과/미달, 통과율</i>"]
+  P5 -->|"미달"| P6["6 고치기<br/>회로와 작업 지침(Harness²)을 함께 수정"]
+  P6 --> P4
+  P5 -->|"가장 좋은 회로"| OUT["최종 회로 + 보고서"]
+</pre>
+    <div class="panel scroll">
+      <table>
+        <thead><tr><th>단계</th><th>누가 정하나</th><th>핵심 파일</th></tr></thead>
+        <tbody>
+          <tr><td>1 정보 추출</td><td>PDF 좌표로 표 열을 복원하고, LLM이 쪽마다 줄을 JSON으로 뽑음. 실패한 쪽만 큰 모델로 다시 시도</td><td class="mono">pdf_parser.py, hardware_kg_builder.py</td></tr>
+          <tr><td>2 핀 관계</td><td>데이터시트에서 뽑은 핀 연결 + 역할 순서 규칙 (+ LLM 보정)</td><td class="mono">pdg_extractor.py</td></tr>
+          <tr><td>3 측정 계획</td><td>정규식 규칙표로 줄을 39가지 측정 종류에 분류 (+ LLM 보정)</td><td class="mono">spec_planner.py</td></tr>
+          <tr><td>4 회로 합성</td><td>LLM. 웹·논문 검색 결과와 저장된 설계도를 참고</td><td class="mono">hermes_agent.py, hermes_workflow.py</td></tr>
+          <tr><td>5 검증</td><td>규칙(결정론적). LLM이 판정하지 않음</td><td class="mono">deterministic_testbench.py, verification_flow.py</td></tr>
+          <tr><td>6 고치기</td><td>LLM. 두 가지 수정안을 만들어 둘 다 시험하고 나은 쪽을 채택</td><td class="mono">harness_proposer.py, harness2_architect.py</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="k">2</span>핵심 개념</h2>
+    <div class="grid2">
+      <div class="panel term"><span class="en">HKG · Hardware Knowledge Graph</span><b>하드웨어 지식 그래프</b>
+        <p class="note">데이터시트를 구조화한 표. 줄마다 기호, 이름, min/typ/max, 단위, 측정 조건, 쪽 번호, 근거 문장. LM358B는 260줄(전기 특성 195줄).</p></div>
+      <div class="panel term"><span class="en">PDG · Port Dependency Graph</span><b>포트 의존성 그래프</b>
+        <p class="note">핀 사이의 순서 관계. 목표 숫자는 없고 "어느 핀이 먼저 자리 잡아야 다음 핀이 의미 있나"를 담음. 검증 순서에 씀.</p></div>
+      <div class="panel term"><span class="en">spec_planner</span><b>측정 계획</b>
+        <p class="note">특성 줄마다 측정 종류(예: <code>aol_db</code> 개방 이득, <code>vswing</code> 출력 스윙)와 조건(전원, 부하)을 붙임. 잴 수 없는 줄은 이유와 함께 제외.</p></div>
+      <div class="panel term"><span class="en">Hermes Agent</span><b>회로를 쓰는 LLM 에이전트</b>
+        <p class="note">NousResearch의 오픈소스 에이전트 구조를 감싼 여러 턴 루프. 도구 6개: 설계도 찾기, 웹 검색, 문법 검사, 시뮬레이션 검증, 메모 기록, 설계도 저장.</p></div>
+      <div class="panel term"><span class="en">Harness² · C1~C8</span><b>LLM을 둘러싼 작업 환경</b>
+        <p class="note">지침, 문법 규칙, 실패 메모, 도구 사용법, 회로 설계도, 스크립트, 보조 에이전트, 플러그인의 8칸. 반복할 때 회로만이 아니라 이 환경도 고침.</p></div>
+      <div class="panel term"><span class="en">Golden Oracle</span><b>검증 기준 지킴이</b>
+        <p class="note">LLM이 검증 규칙을 바꾸자고 하면, 제조사 공식 모델(TI LM358, LM393 등)을 100% 통과할 때만 받아들임. 기준이 느슨해지는 것을 막음.</p></div>
+    </div>
+
+    <h3>가장 중요한 아이디어: 4단계 순차 검증</h3>
+    <p>앞 단계에서 떨어지면 뒤 단계를 재지 않고 0%로 처리합니다. 동작하지 않는 회로가 "출력이 낮으면 통과" 같은 항목으로 점수를 얻는 착시를 막기 위해 넣었습니다. 예전에는 입력과 출력이 끊어진 LM358 회로가 25%를 받았습니다.</p>
+<pre class="mermaid">
+flowchart LR
+  S0["0 연결 검사<br/>행동 모델·내부 전원 금지<br/>입력→출력 경로 존재"] -->|통과| S1["1 전원·바이어스<br/>대기 전류 100 nA~250 mA"]
+  S1 -->|통과| S2["2 DC 신호 전달<br/>입력 ±100 mV에<br/>출력 0.5 V 이상 변화"]
+  S2 -->|통과| S3["3 개별 스펙<br/>정적 → 구동 → AC·과도"]
+  S0 -.->|실패| F["0% 탈락<br/>결함 위치 보고"]
+  S1 -.->|실패| F
+  S2 -.->|실패| F
+</pre>
+
+    <h3>반복할 때 고치는 방법: Propose–Probe–Compose</h3>
+    <ol>
+      <li>수정안 A(문법·수렴·접지 같은 안정성 규칙)와 수정안 B(소자 크기, 구조, 보상)를 LLM이 각각 만듭니다.</li>
+      <li>두 안으로 회로를 다시 써서 둘 다 시뮬레이션합니다.</li>
+      <li>통과 수가 더 높은 안을 다음 반복의 작업 환경으로 채택합니다.</li>
+    </ol>
+
+    <h3>LLM 사용</h3>
+    <p>NVIDIA NIM, Groq, OpenRouter를 바꿔 쓸 수 있고, 작업마다 모델 크기를 나눕니다. 표 읽기는 작은 모델(4B급), 회로 합성은 중간 모델(30B MoE), 실패한 쪽 복구와 어려운 수리는 추론형 모델을 씁니다. 동시 요청은 4개로 제한합니다.</p>
+  </section>
+
+  <section>
+    <h2><span class="k">3</span>LM358B로 본 실제 결과물</h2>
+    <div class="panel scroll">
+      <table>
+        <thead><tr><th>결과 파일</th><th>내용</th><th>상태</th></tr></thead>
+        <tbody>
+          <tr><td class="mono">LM358B_knowledge_graph.json</td><td>핀 8개, 특성 260줄, 핀 연결 8개</td><td><span class="chip ok">사용 가능</span></td></tr>
+          <tr><td class="mono">LM358B_PDG_FIDELITY_AUDIT.json</td><td>추출 신뢰도 85.7%. 핀 8/8, 특성 241/260줄이 데이터시트 원문과 대조됨</td><td><span class="chip ok">TRUSTWORTHY</span></td></tr>
+          <tr><td class="mono">LM358B_SPEC_EVALUATION.json</td><td>측정 계획 152줄. 실제 측정 0줄</td><td><span class="chip bad">핀 대응 실패</span></td></tr>
+          <tr><td class="mono">LM358B_BEST.cir</td><td>LLM이 쓴 BJT 회로: PNP 차동 입력, 전류 미러 부하, 이득단, 30 pF 보상. 이상 전류원과 일반 BJT 모델 사용</td><td><span class="chip warn">통과율 0%</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="note">측정이 0줄인 이유는 계획 단계에서 양 전원 핀(V_P)을 찾지 못해 "입력/출력 채널을 찾지 못함" 오류가 났기 때문입니다. 같은 핀 정보로 우리 쪽 PDG 핀 확인은 채널 2개를 모두 찾았습니다.</p>
+<pre class="code">* LM358B_BEST.cir 일부 (LLM이 쓴 회로)
+I_TAIL1   N_TAIL1 V_P 15u            ; 꼬리 전류원 (이상 전류원)
+Q1_IN1_P  N_C1    IN1_P N_TAIL1 QLPNP ; 입력 PNP (+)
+Q2_IN1_N  N_C2    IN1   N_TAIL1 QLPNP ; 입력 PNP (-)
+Q3_LOAD1  N_C1    N_C1  V   QPNP      ; 다이오드 연결 부하
+Q4_LOAD2  N_C2    N_C1  V   QPNP      ; 전류 미러 부하
+Q5_GAIN1  N_GAIN1 N_C2  V   QNPN      ; 이득단
+C_COMP1   N_GAIN1 N_C2  30p           ; 밀러 보상
+R_GAIN1   N_GAIN1 V_P   200k          ; 이득단 부하 저항</pre>
+  </section>
+
+  <section>
+    <h2><span class="k">4</span>성과와 한계</h2>
+    <div class="grid2">
+      <div class="panel"><h3>잘 되는 것</h3>
+        <ol>
+          <li>정보 추출: 8개 IC를 사람이 만든 정답과 비교해 평균 95.2점.</li>
+          <li>근거 추적: 줄마다 쪽 번호와 원문을 남기고, 원문과 다시 대조하는 감사 기능이 있음.</li>
+          <li>검증 설계: 4단계 순차 관문과 중복 줄 부풀리기 방지(고유 지표 통과율).</li>
+          <li>제조사 공식 모델로 검증기를 맞춤: TI LM393 16/16, NE555 28/28 오판 없음.</li>
+        </ol></div>
+      <div class="panel"><h3>아직 안 되는 것</h3>
+        <ol>
+          <li>LLM 단독 합성은 4단계 검증에서 모두 0%.</li>
+          <li>LM358B 자동 실행은 핀 대응 실패로 측정 0줄.</li>
+          <li>설계도 라이브러리의 OP-Amp 칸에 실제 회로가 없음(경험 메모 1건).</li>
+          <li>일반 BJT/MOS 모델이라 실제 공정(PDK)과 차이. 크기는 LLM이 정하고, 수치 최적화는 과제로 남음. 사이징 규칙 칸(C6)은 비어 있음.</li>
+        </ol></div>
+    </div>
+    <div class="callout">
+      <b>100% 통과 회로의 실체 (README에 직접 공개된 내용)</b>
+      <p>LM393, TL431, LM358의 100% 통과 회로는 오픈 모델이 혼자 만든 결과가 아니라, AI 코딩 도우미가 다이오드 방정식과 BJT 모델 수식을 직접 계산하고 디버깅해 다시 만든 것입니다. 이 회로를 "골든 설계도"로 저장해 다음 실행에서 LLM이 참고하게 하는 것이 설계 의도입니다.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2><span class="k">5</span>어떻게 만들어졌나</h2>
+    <p>커밋 기록과 파일에 남은 흔적에서 읽을 수 있는 사실입니다. 개발 도구는 추정이므로 박준석에게 확인이 필요합니다.</p>
+    <div class="panel timeline">
+      <div class="tl"><span class="d">10-28</span><div><b>저장소 첫 커밋에 444개 파일, 171,871줄이 한 번에 올라옴.</b> 그 전 개발 과정은 이 저장소에 없고, <code>legacy/</code> 폴더에 이전 버전(LM741 매크로모델 기반 최적화기 등)이 남아 있습니다.</div></div>
+      <div class="tl"><span class="d">10-29~31</span><div>Hermes 에이전트와 Harness² 통합, 웹·논문 검색(Tavily, Exa) 추가. 하루 최대 약 2,000줄 변경.</div></div>
+      <div class="tl"><span class="d">11-03~04</span><div>데이터시트 추출 안정화, 여러 채널 설계도 대응, 모델별 응답 속도를 실측해 LLM 단계 배치 변경.</div></div>
+      <div class="tl"><span class="d">11-06</span><div>도구 선택 라우터, 설계도 순위 매기기, 브라우저 자동 시험 추가 (27개 파일, 약 1,900줄).</div></div>
+      <div class="tl"><span class="d">11-08~09</span><div>Groq 연결, 그리고 "규칙 대신 LLM 확률 추론" 전환 (20개 파일, 약 3,800줄).</div></div>
+    </div>
+    <div class="grid2">
+      <div class="panel"><h3>숫자로 본 개발</h3>
+        <ol>
+          <li>커밋 20개, 작성자 1명(eethsc), 기간 13일.</li>
+          <li>핵심 패키지 파이썬 코드 약 15,900줄.</li>
+          <li>LLM 단계 배치를 모델 속도 실측으로 정함 (응답 시작 0.5~0.7초 모델 위주).</li>
+        </ol></div>
+      <div class="panel"><h3>개발 방식의 흔적</h3>
+        <ol>
+          <li>결과 파일의 경로가 <code>C:\Users\Sera\GensparkCode\analogverifier</code>. Genspark 같은 AI 코딩 도구 작업 폴더에서 만든 것으로 보입니다.</li>
+          <li>README가 회로 수리를 "AI 코딩 에이전트"가 했다고 밝힘.</li>
+          <li>짧은 기간에 큰 단위 변경이 반복되는 패턴. AI 코딩 도구로 기능을 빠르게 붙인 개발로 보입니다.</li>
+          <li>공개 연구·프로젝트 개념을 가져와 이름을 붙임: ParseBench(표 파싱), NousResearch Hermes Agent, AgentBaton·Terminus(모델 배치), Jev(도구 선택).</li>
+        </ol></div>
+    </div>
+    <p class="note">이 방식의 의미: 기능 범위가 넓고 문서가 자세하지만, README의 수치는 일부가 특정 조건의 실행 기록입니다. 시연에 쓸 때는 어떤 결과가 자동 실행이고 어떤 결과가 손(또는 AI 도우미)으로 고친 것인지 구분해서 말하는 것이 안전합니다.</p>
+  </section>
+
+  <section>
+    <h2><span class="k">6</span>우리 작업과 맞물리는 곳</h2>
+    <div class="panel scroll">
+      <table>
+        <thead><tr><th>박준석 시스템</th><th>우리(구조 결정)</th><th>관계</th></tr></thead>
+        <tbody>
+          <tr><td>HKG</td><td>목표값과 근거(쪽 번호)</td><td><span class="chip ok">이미 사용</span></td></tr>
+          <tr><td>측정 계획</td><td>판정 항목 12개</td><td><span class="chip ok">이미 사용</span></td></tr>
+          <tr><td>PDG</td><td>OP-Amp 5단자 핀 확인</td><td><span class="chip ok">이미 사용</span></td></tr>
+          <tr><td>설계도 칸(C5), OP-Amp 비어 있음</td><td>선택된 구조와 크기</td><td><span class="chip warn">넣어 줄 수 있음</span></td></tr>
+          <tr><td>사이징 칸(C6), 수치 최적화 과제</td><td>gm/ID 자동 크기 정하기</td><td><span class="chip warn">출발점이 될 수 있음</span></td></tr>
+          <tr><td>BJT, 일반 모델, LTspice</td><td>CMOS, GF180 공정 모델, ngspice</td><td><span class="chip bad">팀 결정 필요</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p>역할을 나눈다면 이렇게 할 수 있습니다: 추출·측정 계획·순차 검증은 박준석, 구조 후보 생성·선택·초기 크기는 김지윤, 화면은 곽승철. 그 전에 "원래 칩 구조(BJT)를 흉내 낼지, 실제 공정으로 만들 수 있는 회로(CMOS)로 할지"를 먼저 정해야 합니다.</p>
+  </section>
+</div>

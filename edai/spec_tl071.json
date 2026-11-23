@@ -1,0 +1,413 @@
+{
+ "description": "TL071H 측정 계획(팀원 spec_planner 결과)에서 판정 항목과 목표값을 가져온 것 (spec_from_plan.py 가 만듦)",
+ "circuit": "opamp",
+ "source": "TL071H",
+ "category": "Operational Amplifier",
+ "conditions": "VDD = 5 V 단일 전원 (공통 측정 조건). 계획의 측정 전원(예: 15 V)과 다를 수 있음",
+ "typ_rule": {
+  "min_ratio": 0.8,
+  "max_ratio": 1.2,
+  "note": "데이터시트가 보장하는 값이 아니라 팀이 정한 기준 (2026-10-12)"
+ },
+ "specs": [
+  {
+   "measure": "avd",
+   "label": "대신호 차동 전압이득",
+   "unit": "dB",
+   "plain": "신호를 얼마나 키우나",
+   "headline": true,
+   "min": 118.0,
+   "typ": 125.0,
+   "symbol": "AOL",
+   "condition": "Open-loop voltage gain, VS = 40 V, VCM = VS / 2, (VCC–) + 0.3 V < VO < (VCC+) – 0.3 V, TA = –40°C to +125°C",
+   "extracted": {
+    "symbol": "AOL",
+    "name": "Open-loop voltage gain",
+    "min": 118,
+    "typ": 125,
+    "max": null,
+    "unit": "dB",
+    "test_conditions": "Open-loop voltage gain, VS = 40 V, VCM = VS / 2, (VCC–) + 0.3 V < VO < (VCC+) – 0.3 V, TA = –40°C to +125°C",
+    "page": 13,
+    "evidence": "Open-loop voltage gain 118 125 dB"
+   },
+   "plan": {
+    "kind": "aol_db",
+    "fixture": "aol_db_8d85b5",
+    "row": 100
+   }
+  },
+  {
+   "measure": "cmrr",
+   "label": "공통모드 제거비",
+   "unit": "dB",
+   "plain": "두 입력에 함께 실린 잡음을 얼마나 걸러내나",
+   "min": 100.0,
+   "typ": 105.0,
+   "symbol": "CMRR",
+   "condition": "VS = 40 V, (VCC–) + 2.5 V < VCM < (VCC+) – 1.5 V, TA = 25°C",
+   "extracted": {
+    "symbol": "CMRR",
+    "name": "Common-mode rejection ratio",
+    "min": 100,
+    "typ": 105,
+    "max": null,
+    "unit": "dB",
+    "test_conditions": "VS = 40 V, (VCC–) + 2.5 V < VCM < (VCC+) – 1.5 V, TA = 25°C",
+    "page": 13,
+    "evidence": "Common-mode rejection ratio 100 105 dB"
+   },
+   "plan": {
+    "kind": "cmrr_db",
+    "fixture": "cmrr_db_e7059f",
+    "row": 95
+   }
+  },
+  {
+   "measure": "psrr",
+   "label": "전원 제거비",
+   "unit": "dB",
+   "plain": "전원이 흔들려도 얼마나 버티나",
+   "min": 100.0,
+   "typ": 120.0,
+   "symbol": "PSRR",
+   "condition": "VS = 5 V to 40 V, VCM = VS / 2, TA = –40°C to +125°C",
+   "extracted": {
+    "symbol": "PSRR",
+    "name": "Input offset voltage versus power supply",
+    "min": 1,
+    "typ": 10,
+    "max": null,
+    "unit": "μV/V",
+    "test_conditions": "VS = 5 V to 40 V, VCM = VS / 2, TA = –40°C to +125°C",
+    "page": 13,
+    "evidence": "Input offset voltage versus power supply ±1 ±10 μV/V"
+   },
+   "plan": {
+    "kind": "psrr_db",
+    "fixture": "psrr_db_fix",
+    "row": 81
+   },
+   "corrected": {
+    "original": {
+     "fixture": "vos_c17105",
+     "symbol": "PSRR",
+     "unit": "V",
+     "min_target": null,
+     "typ_target": null,
+     "max_target": null
+    },
+    "reason": "측정 계획이 PSRR 줄을 vos 로 분류함. 원문 ±1 (typ) / ±10 (max) μV/V -> 120 dB / 100 dB 이상",
+    "pdf": "p13 PSRR Input offset voltage versus power supply, VS = 5 V to 40 V, VCM = VS / 2, TA = –40°C to +125°C, ±1 ±10 μV/V"
+   }
+  },
+  {
+   "measure": "idd",
+   "label": "공급 전류",
+   "unit": "µA",
+   "scale": 1000000.0,
+   "plain": "전기를 얼마나 쓰나",
+   "headline": true,
+   "typ": 937.5,
+   "max": 1125.0,
+   "symbol": "IQ",
+   "condition": "IO = 0 A, TA = 25°C",
+   "extracted": {
+    "symbol": "IQ",
+    "name": "Quiescent current per amplifier",
+    "min": 937.5,
+    "typ": 1125,
+    "max": null,
+    "unit": "µA",
+    "test_conditions": "IO = 0 A, TA = 25°C",
+    "page": 14,
+    "evidence": "Quiescent current per amplifier IQ IO = 0 A 937.5 1125 µA"
+   },
+   "plan": {
+    "kind": "iq",
+    "fixture": "iq_3a5748",
+    "row": 119
+   },
+   "corrected": {
+    "original": {
+     "min_target": 0.0009375,
+     "typ_target": 0.001125,
+     "max_target": null
+    },
+    "reason": "원문 typ/max 가 min/typ 칸으로 한 칸씩 밀림",
+    "pdf": "p14 IQ Quiescent current per amplifier, IO = 0 A, 937.5 (TYP) 1125 (MAX) µA"
+   }
+  },
+  {
+   "measure": "ugbw",
+   "label": "단위이득 대역폭",
+   "unit": "MHz",
+   "scale": 1e-06,
+   "plain": "얼마나 빠른 신호까지 다루나",
+   "headline": true,
+   "typ": 5.25,
+   "typ_rule": "higher",
+   "symbol": "GBW",
+   "condition": "Gain-bandwidth product",
+   "extracted": {
+    "symbol": "GBW",
+    "name": "Gain-bandwidth product",
+    "min": 5.25,
+    "typ": null,
+    "max": null,
+    "unit": "MHz",
+    "test_conditions": "Gain-bandwidth product",
+    "page": 13,
+    "evidence": "Gain-bandwidth product 5.25 MHz"
+   },
+   "plan": {
+    "kind": "gbw",
+    "fixture": "gbw_f264b9",
+    "row": 102
+   },
+   "corrected": {
+    "original": {
+     "min_target": 5250000.0,
+     "typ_target": null,
+     "max_target": null
+    },
+    "reason": "원문 typ 값이 min 칸에 들어감",
+    "pdf": "p13 GBW Gain-bandwidth product 5.25 MHz (TYP 칸)"
+   }
+  },
+  {
+   "measure": "sr",
+   "label": "슬루율 (단위이득)",
+   "unit": "V/µs",
+   "scale": 1e-06,
+   "plain": "출력이 얼마나 빨리 변하나",
+   "headline": true,
+   "typ": 20.0,
+   "typ_rule": "higher",
+   "symbol": "SR",
+   "condition": "Slew rate, VS = 40 V, G = +1, CL = 20 pF",
+   "extracted": {
+    "symbol": "SR",
+    "name": "Slew rate",
+    "min": 20,
+    "typ": null,
+    "max": null,
+    "unit": "V/μs",
+    "test_conditions": "Slew rate, VS = 40 V, G = +1, CL = 20 pF",
+    "page": 13,
+    "evidence": "Slew rate 20 V/μs"
+   },
+   "plan": {
+    "kind": "sr",
+    "fixture": "sr_431b2a",
+    "row": 103
+   },
+   "corrected": {
+    "original": {
+     "min_target": 20.0,
+     "typ_target": null,
+     "max_target": null
+    },
+    "reason": "원문 typ 값이 min 칸에 들어감",
+    "pdf": "p13 SR Slew rate, VS = 40 V, G = +1, CL = 20 pF, 20 V/μs (TYP 칸)"
+   }
+  },
+  {
+   "measure": "pm",
+   "label": "위상여유",
+   "unit": "°",
+   "plain": "얼마나 안정적으로 동작하나",
+   "typ": 56.0,
+   "typ_rule": "higher",
+   "symbol": "Phase margin",
+   "condition": "Phase margin, G = +1, RL = 10kΩ, CL = 20 pF",
+   "extracted": {
+    "symbol": "Phase margin",
+    "name": "Phase margin",
+    "min": 56,
+    "typ": null,
+    "max": null,
+    "unit": "°",
+    "test_conditions": "Phase margin, G = +1, RL = 10kΩ, CL = 20 pF",
+    "page": 13,
+    "evidence": "Phase margin 56 °"
+   },
+   "plan": {
+    "kind": "pm",
+    "fixture": "pm_9acc0d",
+    "row": 108
+   },
+   "corrected": {
+    "original": {
+     "min_target": 56.0,
+     "typ_target": null,
+     "max_target": null
+    },
+    "reason": "원문 typ 값이 min 칸에 들어감",
+    "pdf": "p13 Phase margin, G = +1, RL = 10kΩ, CL = 20 pF, 56 ° (TYP 칸)"
+   }
+  }
+ ],
+ "extraction": {
+  "total_rows": 148,
+  "electrical_rows": 90,
+  "used_rows": 7,
+  "pins": 6,
+  "file": "TL071H_knowledge_graph.json"
+ },
+ "plan": {
+  "file": "TL071H_SPEC_EVALUATION.json",
+  "planned_rows": 63,
+  "part_rows": [
+   79,
+   125
+  ],
+  "part_planned": 24,
+  "used": 7,
+  "not_measured": [
+   {
+    "kind": "vos",
+    "symbol": "VOS",
+    "name": "Input offset voltage",
+    "condition": "Input offset voltage, VS = (VCC+) – (VCC–) = 4.5 V to 40 V (±2.25 V to ±20 V), TA = 25°C, RL = 10 kΩ connected to VS / 2, VCM = VS / 2, and VOUT = VS / 2",
+    "min": 0.001,
+    "typ": null,
+    "max": 0.004,
+    "unit": "V",
+    "page": 13,
+    "reason": "입력 오프셋 전압: 소자 편차 통계 해석이 필요해 아직 재지 않음"
+   },
+   {
+    "kind": "ib",
+    "symbol": "IB",
+    "name": "Input bias current",
+    "condition": "Input bias current, ±1 ±120 pA, DCK and DBV packages",
+    "min": 1e-12,
+    "typ": null,
+    "max": 1.2e-10,
+    "unit": "A",
+    "page": 13,
+    "reason": "입력 바이어스 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ib",
+    "symbol": "IB",
+    "name": "Input bias current",
+    "condition": "Input bias current, ±1 ±300 pA, DCK and DBV packages, TA = –40°C to +125°C(1)",
+    "min": 1e-12,
+    "typ": null,
+    "max": 3e-10,
+    "unit": "A",
+    "page": 13,
+    "reason": "입력 바이어스 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ib",
+    "symbol": "IB",
+    "name": "Input bias current",
+    "condition": "Input bias current, ±5 nA, TA = –40°C to +125°C(1)",
+    "min": 5e-09,
+    "typ": null,
+    "max": null,
+    "unit": "A",
+    "page": 13,
+    "reason": "입력 바이어스 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ios",
+    "symbol": "IOS",
+    "name": "Input offset current",
+    "condition": "Input offset current, ±0.5 ±120 pA, DCK and DBV packages",
+    "min": 5e-13,
+    "typ": null,
+    "max": 1.2e-10,
+    "unit": "A",
+    "page": 13,
+    "reason": "입력 오프셋 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ios",
+    "symbol": "IOS",
+    "name": "Input offset current",
+    "condition": "Input offset current, ±0.5 ±250 pA, DCK and DBV packages, TA = –40°C to +125°C(1)",
+    "min": 5e-13,
+    "typ": null,
+    "max": 2.5e-10,
+    "unit": "A",
+    "page": 13,
+    "reason": "입력 오프셋 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ios",
+    "symbol": "IOS",
+    "name": "Input offset current",
+    "condition": "Input offset current, ±5 nA, TA = –40°C to +125°C(1)",
+    "min": 5e-09,
+    "typ": null,
+    "max": null,
+    "unit": "A",
+    "page": 13,
+    "reason": "입력 오프셋 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "en",
+    "symbol": "eN",
+    "name": "Input voltage noise density",
+    "condition": "Input voltage noise density, f = 1 kHz",
+    "min": 37.0,
+    "typ": null,
+    "max": null,
+    "unit": "nV/rtHz",
+    "page": 13,
+    "reason": "입력 잡음 밀도: 잡음 해석(.noise) 측정을 아직 만들지 않음"
+   },
+   {
+    "kind": "en",
+    "symbol": "eN",
+    "name": "Input voltage noise density",
+    "condition": "Input voltage noise density, f = 10 kHz",
+    "min": 21.0,
+    "typ": null,
+    "max": null,
+    "unit": "nV/rtHz",
+    "page": 13,
+    "reason": "입력 잡음 밀도: 잡음 해석(.noise) 측정을 아직 만들지 않음"
+   },
+   {
+    "kind": "isc",
+    "symbol": "ISC",
+    "name": "Short-circuit current",
+    "condition": "TA = 25°C",
+    "min": -0.026000000000000002,
+    "typ": null,
+    "max": 0.026000000000000002,
+    "unit": "A",
+    "page": 14,
+    "reason": "단락 전류: 출력 단락 측정을 아직 만들지 않음 (LM358B 는 ±10 V 조건이라 6 V 소자로 잴 수도 없음)"
+   }
+  ],
+  "corrections": {
+   "section_reason": "5.7 Electrical Characteristics for TL07xH (PDF 13~14쪽). 24~41번 줄(±5 V 조건, 10쪽)은 PDF 10쪽(절대 최대 정격)에 없는 내용이라 쓰지 않음. 125번 이후는 구형 TL07x 표",
+   "rows": 5,
+   "file": "TL071H_corrections.json"
+  },
+  "not_planned": [
+   {
+    "measure": "ts",
+    "label": "정착시간 (0.1%)",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   },
+   {
+    "measure": "gm",
+    "label": "이득여유",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   },
+   {
+    "measure": "vol_5ma",
+    "label": "Low 출력 전압 (IOL = 5 mA)",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   }
+  ]
+ },
+ "unused": []
+}

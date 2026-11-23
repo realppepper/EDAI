@@ -1,0 +1,397 @@
+"""
+데이터시트 PDF 하나 -> 최종 회로도까지 한 번에 도는 실행 흐름 (UI 가 부른다, 직접 돌려도 됨).
+
+결과는 실행 폴더 하나(runs/<날짜_시각_이름>/)에 모인다. 단계가 끝날 때마다 status.json 과 report.html 을 새로 쓴다.
+    input.json        PDF 경로, 이름 (UI 가 만듦)
+    status.json       단계별 상태·걸린 시간·요약
+    log.txt           진행 기록
+    datasheet.pdf     올린 데이터시트
+    hkg.json          1. 데이터시트 분석 결과 (데이터시트 추출)
+    spec.json         1. 우리 판정 기준 (측정 항목과 목표값)
+    candidates.json   2. 모델(FLAN-T5)이 만든 구조 후보
+    selection_dev.json 3. 후보마다 바이어스 채우기·크기 정하기·측정 결과
+    selection.json    4. 순위 규칙 v4 로 고른 결과
+    final.json        5. 규칙(상보 뒤집기, 캐스코드)을 해 본 결과와 하네스에 넘긴 회로
+    harness/          6. 하네스 (LLM 으로 값 조정, 반복 HARNESS_ITERATIONS 번)
+    schematic/        7. 회로도 PNG·SVG (하네스 전 우리 회로, 하네스 후 최종 회로)
+    report.html       결과 화면 (파일 하나, 더블클릭으로 열림)
+
+사용법 (WSL 가상환경, 프로젝트 폴더에서):
+    ~/.venvs/edai/bin/python pipeline.py runs/<실행 폴더>        (폴더 안에 input.json 이 있어야 함)
+    ~/.venvs/edai/bin/python pipeline.py runs/<실행 폴더> --from rules   (그 단계부터 다시)
+"""
+
+import json
+import re
+import shutil
+import subprocess
+import sys
+import time
+import traceback
+from pathlib import Path
+
+HERE = Path(__file__).resolve().parent
+PY = sys.executable
+STEPS = [
+    ("extract", "1. 데이터시트 분석"),
+    ("candidates", "2. 모델 구조 후보"),
+    ("select", "3. 바이어스 채우기·크기 정하기·측정"),
+    ("fix", "4. 실패한 구조 고치기 (규칙·LLM)"),
+    ("rank", "5. 구조 고르기"),
+    ("rules", "6. 규칙 적용"),
+    ("harness", "7. 하네스"),
+    ("schematic", "8. 최종 회로도"),
+]
+RULE_SCALES = (20.0, 50.0)      # 규칙을 적용한 회로를 잴 때 해 보는 출력단 배율 (구조 선택과 같은 값)
+
+
+# ---------------------------------------------------------------- 실행 폴더 상태
+class Run:
+    def __init__(self, run_dir: Path):
+        self.dir = run_dir.resolve()
+        self.input = json.loads((self.dir / "input.json").read_text(encoding="utf-8"))
+        self.name = self.input["name"]          # 데이터 파일 이름에 쓰는 이름 (실행마다 다름)
+        self.pdf = self.dir / "datasheet.pdf"
+        status_file = self.dir / "status.json"
+        self.status = json.loads(status_file.read_text(encoding="utf-8")) if status_file.exists() else {
+            "title": self.input.get("title", self.name), "name": self.name,
+            "steps": [{"key": k, "title": t, "state": "wait"} for k, t in STEPS]}
+        # 단계를 더하거나 이름을 바꿨을 때 예전 실행 폴더도 지금 단계 목록으로 (없던 단계는 '대기'로 끼워 넣음)
+        old = {s["key"]: s for s in self.status["steps"]}
+        self.status["steps"] = [dict(old.get(k, {"key": k, "state": "wait"}), title=t) for k, t in STEPS]
+
+    def log(self, message: str) -> None:
+        line = f"[{time.strftime('%H:%M:%S')}] {message}"
+        print(line, flush=True)
+        with open(self.dir / "log.txt", "a", encoding="utf-8") as f:
+            f.write(line + "\n")
+
+    def step(self, key: str) -> dict:
+        return next(s for s in self.status["steps"] if s["key"] == key)
+
+    def save(self) -> None:
+        (self.dir / "status.json").write_text(json.dumps(self.status, ensure_ascii=False, indent=1), encoding="utf-8")
+        try:
+            import make_run_report
+            make_run_report.write(self.dir)
+        except Exception as error:                 # 결과 화면을 못 만들어도 실행은 계속
+            self.log(f"결과 화면 만들기 실패: {error}")
+
+    def copy(self, source: Path, target: str) -> None:
+        shutil.copyfile(source, self.dir / target)
+
+    def read(self, file: str):
+        return json.loads((self.dir / file).read_text(encoding="utf-8"))
+
+
+REFRESH_EVERY_S = 30         # 오래 걸리는 단계에서 결과 화면을 다시 만드는 간격 (하네스 진행 표가 바로 보이게)
+
+
+def sh(run: Run, cmd: list, cwd: Path = HERE) -> None:
+    """다른 스크립트를 돌리고 출력을 log.txt 에 남긴다. 실패하면 멈춘다."""
+    last = time.time()
+    run.log("실행: " + " ".join(str(c) for c in cmd))
+    proc = subprocess.Popen([str(c) for c in cmd], cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
+                            text=True, encoding="utf-8", errors="replace")
+    for line in proc.stdout:
+        line = line.rstrip()
+        if line and not line.startswith("[LLM]"):
+            run.log("  " + line)
+        if time.time() - last > REFRESH_EVERY_S:
+            run.save()
+            last = time.time()
+    if proc.wait() != 0:
+        raise RuntimeError(f"{Path(str(cmd[1])).name} 실패 (종료 코드 {proc.returncode})")
+
+
+# ---------------------------------------------------------------- 단계
+def step_extract(run: Run) -> dict:
+    import extract_datasheet
+    hkg_file = extract_datasheet.extract(run.pdf, run.name, log=run.log)
+    spec_file = extract_datasheet.plan_specs(hkg_file, run.name, log=run.log)
+    run.copy(hkg_file, "hkg.json")
+    run.copy(spec_file, "spec.json")
+    run.copy(HERE / "data" / "train" / f"{run.name}.json", "model_input.json")
+    pages = HERE / "data" / "extraction" / f"{run.name}_pages.json"
+    if pages.exists():
+        run.copy(pages, "pages.json")
+    extract_datasheet.build_pdg(run.dir / "hkg.json", run.dir, log=run.log, pages_file=run.dir / "pages.json")
+    hkg, spec = run.read("hkg.json"), run.read("spec.json")
+    part = str(hkg["ic_device"].get("name") or "").strip().upper()
+    if part:                                     # 제목은 파일 이름 대신 데이터시트에서 뽑은 부품 이름으로
+        inp = run.read("input.json")
+        inp["title"] = part
+        (run.dir / "input.json").write_text(json.dumps(inp, ensure_ascii=False, indent=1), encoding="utf-8")
+    return {"part": hkg["ic_device"].get("name"), "rows": len(hkg["electrical_parameters"]), "pins": len(hkg["pins"]),
+            "judged": len(spec["specs"]), "model_input": run.read("model_input.json")["input"]}
+
+
+def step_candidates(run: Run) -> dict:
+    sh(run, [PY, "generate_candidates.py", run.name])
+    run.copy(HERE / "data" / "train" / f"{run.name}_candidates.json", "candidates.json")
+    cands = run.read("candidates.json")["candidates"]
+    ok = [c for c in cands if not c["problems"]]
+    return {"total": len(cands), "rule_ok": len(ok), "new": sum(not c["in_train"] for c in ok)}
+
+
+def step_select(run: Run) -> dict:
+    # --repair: 후보마다 원래 / 바이어스 정리 / 상보 뒤집기 / 쌓인 규칙 모양을 같이 잰다 (select_structure.repair_main)
+    sh(run, [PY, "select_structure.py", run.name, "--bias-devices", "--repair"])
+    run.copy(HERE / "data" / f"selection_{run.name}_dev.json", "selection_dev.json")
+    sel = run.read("selection_dev.json")
+    entries = sel["entries"]
+    working = [e for e in entries if e.get("best")]
+    return {"evaluated": len({e.get("from", i) for i, e in enumerate(entries)}), "forms": len(entries),
+            "working": len(working), "forms_working": (sel.get("summary") or {}).get("forms_working"),
+            "best_passed": max((f"{e['best']['passed']}/{e['best']['judged']}" for e in working),
+                               key=lambda x: int(x.split("/")[0]), default=None)}
+
+
+def step_fix(run: Run) -> dict:
+    """동작한 후보가 없으면 쌓인 규칙을 먼저 적용하고, 안 되면 LLM 이 블록을 바꿔 고친다 (structure_doctor.py). 있으면 건너뜀."""
+    import structure_doctor
+    report = structure_doctor.run(run.dir, log=run.log)
+    return {"needed": report["needed"], "working_before": report["working_before"],
+            "llm_calls": report["llm_calls"], "fixed": len(report["fixed"]),
+            "rules_tried": len(report.get("rules_tried") or []),
+            "rules_written": sum(bool(w.get("new")) for w in report.get("rules_written") or [])}
+
+
+def step_rank(run: Run) -> dict:
+    import rank_v2
+    sel = run.read("selection_dev.json")
+    top = rank_v2.ranked(sel, "v4")
+    if not top:
+        raise RuntimeError("동작한 후보가 없습니다")
+    rank_v2.write_selection(sel, top[0], run.dir / "selection.json", "v4")
+    keep = ("index", "passed", "judged", "scale", "gain_nodes", "input_ok", "avd", "shortfall")
+    return {"rule": "v4", "top": [dict({k: r[k] for k in keep}, how=sel["entries"][r["index"]].get("how"))
+                                  for r in top[:5]]}
+
+
+def step_rules(run: Run) -> dict:
+    """규칙을 해 보고 가장 나은 회로를 고른다: 상보 뒤집기(입력쌍이 공통모드 범위를 못 덮을 때),
+    캐스코드(목표 AVD 에 못 미칠 때). 고른 회로를 final.json 에 쓴다 (하네스가 이것으로 시작)."""
+    import auto_size
+    import cascode
+    import complement
+    import rank_v2
+    import run_sim
+    import select_structure as ss
+    auto_size.BIAS_MODE = "devices"
+    spec = run_sim.load_spec(run.dir / "spec.json")
+    sel = run.read("selection.json")
+    entry = sel["entries"][sel["summary"]["selected"]]
+    base_v = next(v for v in entry["variants"] if v["valid"] and v["output_scale"] == entry["best"]["output_scale"])
+    tried = [{"label": "모델 구조 그대로", "rules": [], "table": entry["table"], "variant": base_v}]
+    unit_current = base_v.get("unit_current_a") or auto_size.UNIT_CURRENT   # 4단계에서 LLM 이 바꿨으면 그 값
+    # 4단계에서 LLM 이 바꾼 소자 목표(gm/ID, 길이)도 이어서 쓴다. 상보 뒤집기 뒤에는 이름 앞글자(NM/PM)가 바뀐다
+    overrides = {k: tuple(v) for k, v in (base_v.get("target_overrides") or {}).items()}
+    auto_size.TARGET_OVERRIDES = dict(overrides)
+    table = ss.to_table(entry["table"])
+    table, flipped = complement.fit_input_range(table)
+    rules = []
+    if flipped:
+        rules.append("상보 뒤집기")
+        run.log("입력쌍이 공통모드 범위를 못 덮어 상보 뒤집기")
+        auto_size.TARGET_OVERRIDES = {complement.SWAP_PREFIX.get(k[:2], k[:2]) + k[2:]: v for k, v in overrides.items()}
+        tried += evaluate(run, ss, unit_current, table, spec, "상보 뒤집기", list(rules))
+    target = rank_v2.target_value(next((r["target"] for r in base_v["spec"] if r["measure"] == "avd"), ""))[0]
+    best_avd = max((row["value"] or 0) for t in tried for row in t["variant"]["spec"] if row["measure"] == "avd") \
+        if target else None
+    if target and best_avd < target:
+        new, nodes = cascode.cascode(table)
+        if nodes:
+            rules.append("캐스코드")
+            run.log(f"AVD {best_avd:.1f} dB < 목표 {target} dB -> 이득 노드 {nodes} 캐스코드")
+            tried += evaluate(run, ss, unit_current, new, spec, " + ".join(rules), list(rules))
+    auto_size.TARGET_OVERRIDES = {}
+    working = [t for t in tried if t["variant"].get("valid")]
+    chosen = min(working, key=lambda t: (-t["variant"]["passed"], rank_v2.shortfall(t["variant"]["spec"])))
+    v = chosen["variant"]
+    final = {"label": chosen["label"], "rules": chosen["rules"], "table": chosen["table"],
+             "output_scale": v["output_scale"], "subckt": v["subckt"], "sizes": v.get("sizes"), "bias": v.get("bias"),
+             "spec": v["spec"], "passed": v["passed"], "judged": v["judged"],
+             "tried": [{"label": t["label"], "scale": t["variant"]["output_scale"], "valid": t["variant"]["valid"],
+                        "reason": t["variant"].get("reason"), "passed": t["variant"].get("passed"),
+                        "judged": t["variant"].get("judged"), "spec": t["variant"].get("spec")} for t in tried]}
+    (run.dir / "final.json").write_text(json.dumps(final, ensure_ascii=False, indent=1), encoding="utf-8")
+    return {"chosen": chosen["label"], "passed": f"{v['passed']}/{v['judged']}", "tried": len(tried)}
+
+
+def evaluate(run: Run, ss, unit_current: float, table: dict, spec: dict, label: str, rules: list) -> list:
+    import netlist_table as nt
+    out = []
+    for scale in RULE_SCALES:
+        v = ss.evaluate_variant(table, unit_current, scale, spec)
+        run.log(f"  {label} x{scale:g}: " + (f"{v['passed']}/{v['judged']}" if v["valid"] else f"실패 ({v['reason'][:50]})"))
+        out.append({"label": label, "rules": rules, "variant": v,
+                    "table": " ; ".join(nt.table_text(table).splitlines())})
+    return out
+
+
+def step_harness(run: Run) -> dict:
+    sh(run, [PY, HERE / "run_harness.py", run.dir])
+    result = run.read("harness/result.json")
+    return {"pass_rate": result.get("pass_rate_percent"), "iterations": result.get("iterations_count"),
+            "has_netlist": bool(result.get("final_netlist"))}
+
+
+def step_schematic(run: Run) -> dict:
+    import make_schematic_svg as ms
+    out_dir = run.dir / "schematic"
+    out_dir.mkdir(exist_ok=True)
+    ms.WORK_DIR.mkdir(exist_ok=True)
+    skin = ms.make_skin()
+    made = []
+    try:
+        rows, sizes = ms.rows_from_subckt(run.read("final.json")["subckt"])
+        ms.render(rows, sizes, out_dir / "before_harness.svg", skin)
+        made.append("before_harness")
+        harness_file = run.dir / "harness" / "result.json"
+        if harness_file.exists():
+            result = json.loads(harness_file.read_text(encoding="utf-8"))
+            rows, sizes, skipped = harness_rows(result.get("final_netlist") or "", result.get("pin_map") or {})
+            if rows:
+                ms.render(rows, sizes, out_dir / "after_harness.svg", skin)
+                made.append("after_harness")
+            if skipped:
+                run.log(f"하네스 회로도에서 그리지 않은 소자: {', '.join(skipped[:10])}")
+    finally:
+        skin.unlink()
+    return {"made": made}
+
+
+def harness_rows(netlist: str, pin_map: dict) -> tuple:
+    """하네스 최종 회로(첫 .subckt, M 소자 + LTspice 모델 이름) -> 회로도 행. 칩 핀 이름은 우리 단자 이름으로 되돌린다."""
+    import make_schematic_svg as ms
+    back = {v: k for k, v in pin_map.items() if isinstance(v, str)}
+    lines, inside, skipped = [], False, []
+    for raw in netlist.splitlines():
+        tokens = raw.split()
+        if not tokens:
+            continue
+        low = tokens[0].lower()
+        if low == ".subckt":
+            if inside:
+                break
+            inside = True
+            continue
+        if low == ".ends":
+            break
+        if not inside or low.startswith(("*", ".")):
+            continue
+        name = tokens[0]
+        if name[0].upper() == "M" and len(tokens) > 5:
+            model = tokens[5].lower()
+            kind = "nfet_06v0" if ("nfet" in model or "nmos" in model) else "pfet_06v0" if ("pfet" in model or "pmos" in model) else None
+            if kind:
+                nets = [back.get(t, t) for t in tokens[1:5]]
+                lines.append(" ".join(["X" + name[1:]] + nets + [kind] + tokens[6:]))
+                continue
+        if name[0].upper() in "RC" and len(tokens) > 2:
+            lines.append(" ".join([name, back.get(tokens[1], tokens[1]), back.get(tokens[2], tokens[2])] + tokens[3:]))
+            continue
+        skipped.append(name)
+    rows, sizes = ms.rows_from_subckt("\n".join(lines))
+    return rows, sizes, skipped
+
+
+def check_step(run: Run, key: str) -> list:
+    """단계가 끝난 뒤 결과가 앞뒤가 맞는지 본다. 맞지 않으면 회로 문제가 아니라 프로그램 오류일 가능성이 크다
+    (예: 하네스 통과율은 있는데 최종 회로 파일이 없음 -> 파일을 못 찾은 것). 결과 화면에 빨갛게 표시한다."""
+    d, out = run.dir, []
+
+    def has(name):
+        return (d / name).exists()
+
+    if key == "extract":
+        hkg = run.read("hkg.json") if has("hkg.json") else {}
+        if not hkg.get("electrical_parameters"):
+            out.append("데이터시트에서 뽑은 전기적 사양이 0줄")
+        if not hkg.get("pins"):
+            out.append("데이터시트에서 뽑은 핀이 0개")
+        if not has("spec.json") or not run.read("spec.json").get("specs"):
+            out.append("판정 항목이 0개")
+        if not has("pdg.json"):
+            out.append("PDG 파일이 없음")
+    elif key == "candidates":
+        if not has("candidates.json") or not run.read("candidates.json").get("candidates"):
+            out.append("모델 후보가 0개")
+    elif key == "rules":
+        final = run.read("final.json") if has("final.json") else {}
+        if ".subckt" not in (final.get("subckt") or ""):
+            out.append("하네스에 넘길 회로(final.json)에 .subckt 가 없음")
+    elif key == "harness":
+        result = run.read("harness/result.json") if has("harness/result.json") else None
+        if result is None:
+            out.append("하네스 결과 파일(harness/result.json)이 없음")
+        else:
+            if result.get("pass_rate_percent") is None:
+                out.append("하네스 통과율이 기록되지 않음")
+            if (result.get("pass_rate_percent") or 0) > 0 and ".subckt" not in (result.get("final_netlist") or "").lower():
+                out.append("통과율은 있는데 최종 회로를 못 찾음 (파일 이름·경로 문제일 가능성)")
+            if result.get("pass_rate_percent") == 0:
+                out.append("하네스 통과율 0%: 넘긴 회로가 동작하는데 0% 면 하네스가 회로를 시뮬레이션하지 못했을 수 있음")
+            # 하네스가 돌린 시뮬레이션의 오류 (ngspice 출력 *.ng.out). 같은 오류가 여러 번이면 연결 문제일 가능성이 큼
+            errors = {}
+            for f in (d / "harness").rglob("*.ng.out"):
+                for line in f.read_text(encoding="utf-8", errors="ignore").splitlines():
+                    m = re.search(r"(unknown subckt|could not find|Undefined parameter|fatal error)", line, re.I)
+                    if m:
+                        errors[m.group(1).lower()] = errors.get(m.group(1).lower(), 0) + 1
+            if errors:
+                out.append("하네스 시뮬레이션 오류: " + ", ".join(f"{k} {v}번" for k, v in errors.items())
+                           + " (하네스 LLM 이 쓴 회로의 문법 오류일 수도, 연결 코드 문제일 수도 있음)")
+    elif key == "schematic":
+        if not has("schematic/before_harness.png"):
+            out.append("하네스 전 회로도가 없음")
+        result = run.read("harness/result.json") if has("harness/result.json") else {}
+        if result.get("final_netlist") and not has("schematic/after_harness.png"):
+            out.append("하네스 최종 회로는 있는데 그 회로도가 없음")
+    return out
+
+
+STEP_FUNCS = {"extract": step_extract, "candidates": step_candidates, "select": step_select, "fix": step_fix, "rank": step_rank,
+              "rules": step_rules, "harness": step_harness, "schematic": step_schematic}
+
+
+def main() -> None:
+    run = Run(Path(sys.argv[1]))
+    start = sys.argv[sys.argv.index("--from") + 1] if "--from" in sys.argv else None
+    keys = [k for k, _ in STEPS]
+    todo = keys[keys.index(start):] if start else keys
+    run.status["state"] = "running"
+    run.status["started"] = run.status.get("started") or time.strftime("%Y-%m-%d %H:%M:%S")
+    for key in keys:
+        if key in todo:
+            run.step(key).update(state="wait", summary=None, error=None)
+    run.save()
+    for key in todo:
+        step = run.step(key)
+        step.update(state="run", started=time.strftime("%H:%M:%S"))
+        run.save()
+        run.log(f"== {step['title']}")
+        t0 = time.time()
+        try:
+            step["summary"] = STEP_FUNCS[key](run)
+            step["state"] = "done"
+            step["warnings"] = check_step(run, key)
+            for w in step["warnings"]:
+                run.log(f"점검: {w}")
+        except Exception as error:
+            step.update(state="fail", error=f"{type(error).__name__}: {error}")
+            run.log(traceback.format_exc())
+            run.status["state"] = "failed"
+        step["seconds"] = round(time.time() - t0)
+        run.save()
+        if step["state"] == "fail":
+            return
+    run.status["state"] = "done"
+    run.status["finished"] = time.strftime("%Y-%m-%d %H:%M:%S")
+    run.save()
+    run.log("끝")
+
+
+if __name__ == "__main__":
+    main()

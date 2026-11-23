@@ -1,0 +1,20 @@
+* 테스트벤치: OP-Amp - 정착시간 (반전 증폭기 AV = -1 에 1 V 계단 입력)
+* 중괄호 자리는 run_sim.py가 채운다. 이 파일을 직접 실행하지 않는다.
+* 되먹임 저항 값은 데이터시트에 없어 10 kΩ으로 두었다.
+
+.include {pdk_dir}/design.ngspice
+.lib {pdk_dir}/sm141064.ngspice typical
+.include {dut_file}
+
+X1   VCM INN OUT VDD 0 opamp
+
+VDD  VDD  0    DC {vdd}
+EVCM VCM  0    VDD 0 0.5
+VIN  VSIG VCM  PULSE(-0.5 0.5 2u 10n 10n 20u 40u)
+R1   VSIG INN  10k
+R2   INN  OUT  10k
+RL   OUT  VCM  {rl}
+CL   OUT  0    {cl}
+
+.tran 5n 20u
+.end

@@ -1,0 +1,38 @@
+{
+  "description": "TLV271.PDF(TI SLOS351D)의 electrical characteristics 표에서 VDD = 5 V, TA = 25°C 값만 손으로 옮긴 것이다. 형식은 spec_cascode.json과 같고 symbol(데이터시트 기호), typ_rule, scope가 추가된다. typ_rule: 데이터시트에 typ 값만 있는 항목에 팀이 정한 합격 기준을 적용한다. higher면 typ x typ_rule.min_ratio 이상, lower면 typ x typ_rule.max_ratio 이하. scope가 excluded인 항목은 시뮬레이션으로 잴 수 없어 판정에서 빼고 reason에 이유를 적는다. plain 은 화면에 보여줄 쉬운 말 이름이고, headline 이 true 인 항목은 화면에서 대표 항목으로 크게 보여준다.",
+  "circuit": "opamp",
+  "source": "TLV271.PDF (TI SLOS351D), 5~7쪽",
+  "conditions": "VDD = 5 V 단일 전원, TA = 25°C. 공통모드 입력 범위(권장 동작 조건) 0 ~ VDD - 1.35 V",
+  "typ_rule": {
+    "min_ratio": 0.8,
+    "max_ratio": 1.2,
+    "note": "데이터시트가 보장하는 값이 아니라 팀이 정한 기준 (2026-10-12)"
+  },
+  "specs": [
+    {"measure": "avd", "symbol": "AVD", "label": "대신호 차동 전압이득", "unit": "dB", "min": 100, "typ": 110, "condition": "VO(PP) = VDD/2, RL = 10 kΩ", "plain": "신호를 얼마나 키우나", "headline": true},
+    {"measure": "cmrr", "symbol": "CMRR", "label": "공통모드 제거비", "unit": "dB", "min": 65, "typ": 80, "condition": "VIC = 0 ~ VDD - 1.35 V, RS = 50 Ω", "plain": "두 입력에 함께 실린 잡음을 얼마나 걸러내나"},
+    {"measure": "psrr", "symbol": "PSRR", "label": "전원 제거비", "unit": "dB", "min": 70, "typ": 80, "condition": "VDD = 2.7 ~ 16 V, VIC = VDD/2, 무부하", "plain": "전원이 흔들려도 얼마나 버티나"},
+    {"measure": "idd", "symbol": "IDD", "label": "공급 전류", "unit": "µA", "scale": 1000000.0, "typ": 550, "max": 660, "condition": "VO = VDD/2", "plain": "전기를 얼마나 쓰나", "headline": true},
+    {"measure": "ugbw", "symbol": "UGBW", "label": "단위이득 대역폭", "unit": "MHz", "scale": 1e-06, "typ": 3, "condition": "RL = 2 kΩ, CL = 10 pF", "typ_rule": "higher", "plain": "얼마나 빠른 신호까지 다루나", "headline": true},
+    {"measure": "sr", "symbol": "SR", "label": "슬루율 (단위이득)", "unit": "V/µs", "scale": 1e-06, "min": 1.45, "typ": 2.4, "condition": "VO(PP) = VDD/2, CL = 50 pF, RL = 10 kΩ", "plain": "출력이 얼마나 빨리 변하나", "headline": true},
+    {"measure": "pm", "symbol": "φm", "label": "위상여유", "unit": "°", "typ": 65, "condition": "RL = 2 kΩ, CL = 10 pF", "typ_rule": "higher", "plain": "얼마나 안정적으로 동작하나"},
+    {"measure": "gm", "label": "이득여유", "unit": "dB", "typ": 18, "condition": "RL = 2 kΩ, CL = 10 pF", "typ_rule": "higher", "plain": "안정성에 여유가 얼마나 있나"},
+    {"measure": "ts", "symbol": "ts", "label": "정착시간 (0.1%)", "unit": "µs", "scale": 1000000.0, "typ": 2, "condition": "V(STEP)PP = 1 V, AV = -1, CL = 47 pF, RL = 2 kΩ", "typ_rule": "lower", "plain": "출력이 얼마나 빨리 자리 잡나"},
+    {"measure": "voh_1ma", "symbol": "VOH", "label": "High 출력 전압 (IOH = -1 mA)", "unit": "V", "min": 4.9, "typ": 4.93, "condition": "VIC = VDD/2, IOH = -1 mA", "plain": "가벼운 부하에서 출력을 얼마나 높이 올리나"},
+    {"measure": "voh_5ma", "symbol": "VOH", "label": "High 출력 전압 (IOH = -5 mA)", "unit": "V", "min": 4.6, "typ": 4.68, "condition": "VIC = VDD/2, IOH = -5 mA", "plain": "무거운 부하에서 출력을 얼마나 높이 올리나"},
+    {"measure": "vol_1ma", "symbol": "VOL", "label": "Low 출력 전압 (IOL = 1 mA)", "unit": "V", "typ": 0.05, "max": 0.1, "condition": "VIC = VDD/2, IOL = 1 mA", "plain": "가벼운 부하에서 출력을 얼마나 낮게 내리나"},
+    {"measure": "vol_5ma", "symbol": "VOL", "label": "Low 출력 전압 (IOL = 5 mA)", "unit": "V", "typ": 0.28, "max": 0.4, "condition": "VIC = VDD/2, IOL = 5 mA", "plain": "무거운 부하에서 출력을 얼마나 낮게 내리나"},
+    {"measure": "io_source", "symbol": "IO", "label": "출력 전류 (+레일에서 0.5 V)", "unit": "mA", "scale": 1000.0, "typ": 7, "condition": "VO = VDD - 0.5 V", "typ_rule": "higher", "plain": "전류를 얼마나 내보낼 수 있나", "headline": true},
+    {"measure": "io_sink", "symbol": "IO", "label": "출력 전류 (-레일에서 0.5 V)", "unit": "mA", "scale": 1000.0, "typ": 8, "condition": "VO = 0.5 V", "typ_rule": "higher", "plain": "전류를 얼마나 받아들일 수 있나"},
+    {"measure": "vio", "symbol": "VIO", "label": "입력 오프셋 전압", "unit": "mV", "scale": 1000.0, "typ": 0.5, "max": 5, "condition": "VIC = VDD/2, VO = VDD/2, RL = 10 kΩ, RS = 50 Ω", "scope": "excluded", "reason": "측정 미구현. 소자 편차로 생기는 값이라 PDK의 통계(Monte Carlo) 해석이 필요함"},
+    {"measure": "vio_drift", "symbol": "αVIO", "label": "오프셋 전압 온도 드리프트", "unit": "µV/°C", "typ": 2, "scope": "excluded", "reason": "측정 미구현. 통계 해석과 온도 스윕이 필요함"},
+    {"measure": "iio", "symbol": "IIO", "label": "입력 오프셋 전류", "unit": "pA", "scale": 1000000000000.0, "typ": 1, "max": 60, "condition": "VIC = VDD/2, VO = VDD/2, RS = 50 Ω", "scope": "excluded", "reason": "MOS 입력이라 시뮬레이션에서는 0에 가깝게 나옴. 실제 값은 보호 소자 누설이 정하므로 판정 의미 없음"},
+    {"measure": "iib", "symbol": "IIB", "label": "입력 바이어스 전류", "unit": "pA", "scale": 1000000000000.0, "typ": 1, "max": 60, "condition": "VIC = VDD/2, VO = VDD/2, RS = 50 Ω", "scope": "excluded", "reason": "위와 같음"},
+    {"measure": "rid", "symbol": "ri(d)", "label": "차동 입력 저항", "unit": "GΩ", "scale": 1e-09, "typ": 1000, "scope": "excluded", "reason": "위와 같음"},
+    {"measure": "cic", "symbol": "CIC", "label": "공통모드 입력 커패시턴스", "unit": "pF", "scale": 1000000000000.0, "typ": 8, "condition": "f = 21 kHz", "scope": "excluded", "reason": "패키지·보호 소자 기생 성분이 포함된 값이라 회로 넷리스트만으로 재현되지 않음"},
+    {"measure": "vn_1k", "symbol": "Vn", "label": "등가 입력 잡음 전압 (1 kHz)", "unit": "nV/√Hz", "scale": 1000000000.0, "typ": 39, "condition": "f = 1 kHz", "scope": "excluded", "reason": "측정 미구현. PDK 모델로 잡음 해석(.noise)이 가능하므로 추가 예정"},
+    {"measure": "vn_10k", "symbol": "Vn", "label": "등가 입력 잡음 전압 (10 kHz)", "unit": "nV/√Hz", "scale": 1000000000.0, "typ": 35, "condition": "f = 10 kHz", "scope": "excluded", "reason": "위와 같음"},
+    {"measure": "in_1k", "symbol": "In", "label": "등가 입력 잡음 전류", "unit": "fA/√Hz", "scale": 1000000000000000.0, "typ": 0.6, "condition": "f = 1 kHz", "scope": "excluded", "reason": "위와 같음"},
+    {"measure": "thd_av1", "symbol": "THD+N", "label": "전고조파 왜곡 + 잡음 (AV = 1)", "unit": "%", "scale": 100, "typ": 0.02, "condition": "VO(PP) = VDD/2, RL = 2 kΩ, f = 10 kHz", "scope": "excluded", "reason": "측정 미구현. 과도 해석과 주파수 분석이 필요함"}
+  ]
+}

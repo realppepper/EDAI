@@ -1,0 +1,103 @@
+[
+ {
+  "id": "R1",
+  "if": {
+   "own_bias": true,
+   "failed_blocks": [
+    "bias"
+   ],
+   "failure": "포화 영역"
+  },
+  "then": [
+   {
+    "type": "replace_bias",
+    "params": {}
+   }
+  ],
+  "text": "자체 바이어스 네트워크가 레퍼런스 전류 미러 없이 다이오드 연결된 트랜지스터들로만 루프를 구성하여 바이어스 전류가 정의되지 않고 바이어스 트랜지스터가 트라이오드 영역에 진입할 때, 외부 레퍼런스 전류원을 추가하거나 바이어스 회로를 검증된 구조로 교체하여 바이어스 전류를 고정해야 합니다.",
+  "status": "candidate",
+  "tries": 4,
+  "wins": 2,
+  "chips": [
+   "LM324B"
+  ],
+  "created": "2026-11-23 00:15",
+  "source": {
+   "run": "20261122_220739_lm324",
+   "candidate": 6,
+   "call": 2
+  },
+  "last_used": "2026-11-23 00:38"
+ },
+ {
+  "id": "R2",
+  "if": {
+   "input_stage": "symmetric",
+   "output_stage": "none",
+   "input_pair": "nmos",
+   "own_bias": true,
+   "has_compensation": true,
+   "gain_nodes": 1,
+   "failure": "포화 영역"
+  },
+  "then": [
+   {
+    "type": "rebuild",
+    "params": {
+     "input_stage": "folded_cascode",
+     "input_pair": "nmos",
+     "output_stage": "common_source_pmos",
+     "compensation": "miller"
+    }
+   }
+  ],
+  "text": "대칭형 입력단에 출력단이 없고 자체 바이어스를 사용하는 구조에서 출력 노드 전압이 VDD 근처가 아니어 PMOS 출력단을 구동할 수 없을 때, 폴디드 캐스코드 입력단과 PMOS 공통소스 출력단을 추가하고 밀러 보상을 적용하여 출력 스윙과 게이트 드라이브를 확보하세요.",
+  "status": "candidate",
+  "tries": 1,
+  "wins": 1,
+  "chips": [
+   "LM324B"
+  ],
+  "created": "2026-11-23 00:36",
+  "source": {
+   "run": "20261122_220739_lm324",
+   "candidate": 6,
+   "call": 5
+  }
+ },
+ {
+  "id": "R3",
+  "if": {
+   "failure": "포화 영역",
+   "input_pair": "nmos",
+   "input_covers_range": false,
+   "input_stage": "symmetric",
+   "output_stage": "none",
+   "gain_nodes": 1,
+   "has_compensation": false,
+   "own_bias": true,
+   "failed_blocks": [
+    "bias"
+   ]
+  },
+  "then": [
+   {
+    "type": "replace_bias",
+    "params": {}
+   }
+  ],
+  "text": "자체 바이어스 회로를 가진 대칭 입력 단일 게인 노드 증폭기에서 바이어스 블록 실패로 포화 영역 문제가 발생하면 바이어스 회로를 교체하여 출력 스테이지 트랜지스터의 트라이오드 영역 진입과 전류 미러링 불일치를 방지하십시오.",
+  "status": "candidate",
+  "tries": 1,
+  "wins": 1,
+  "chips": [
+   "LM324B"
+  ],
+  "created": "2026-11-23 00:37",
+  "source": {
+   "run": "20261122_220739_lm324",
+   "candidate": 12,
+   "call": 10
+  }
+ }
+]

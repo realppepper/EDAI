@@ -1,0 +1,15 @@
+* 블록: 1단 - PMOS 입력 폴디드 캐스코드
+* 단자: VDD VSS IN_PLUS IN_MINUS NB PB VBN VBP OUT_LO OUT_HI
+* OUT_LO 는 아래쪽(NMOS 캐스코드) 출력, OUT_HI 는 위쪽(PMOS 캐스코드) 출력.
+* 둘을 한 노드로 묶으면 일반적인 단일 출력이 되고, 따로 두면 class-AB 출력단을 구동할 수 있다.
+XMT   tail PB       VDD  VDD  pfet_06v0 w=24u l=2u m=4
+XM1   fn1  IN_MINUS tail tail pfet_06v0 w=40u l=1u m=2
+XM2   fn2  IN_PLUS  tail tail pfet_06v0 w=40u l=1u m=2
+XMN3  fn1  NB       VSS  VSS  nfet_06v0 w=11.5u l=2u m=4
+XMN4  fn2  NB       VSS  VSS  nfet_06v0 w=11.5u l=2u m=4
+XMNC1 d1   VBN      fn1  VSS  nfet_06v0 w=23u l=2u
+XMNC2 OUT_LO VBN    fn2  VSS  nfet_06v0 w=23u l=2u
+XMP3  x1   d1       VDD  VDD  pfet_06v0 w=24u l=2u m=2
+XMP4  x2   d1       VDD  VDD  pfet_06v0 w=24u l=2u m=2
+XMPC3 d1   VBP      x1   VDD  pfet_06v0 w=40u l=1u
+XMPC4 OUT_HI VBP    x2   VDD  pfet_06v0 w=40u l=1u

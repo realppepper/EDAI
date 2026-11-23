@@ -1,0 +1,1073 @@
+<title>구조 선택 자세히 보기</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans+KR:wght@400;500;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+<style>
+/* 레이아웃: 위에서 아래로 한 흐름. 입력 -> 구조 생성 -> 후보 -> 고르기 -> 후보 상세. 숫자는 고정폭 */
+:root {
+  --paper: #f2f5f4; --card: #ffffff; --ink: #14232b; --muted: #5a6a71; --line: #d4dcdb; --grid: #e6eceb;
+  --accent: #0d6a87; --accent-soft: #dcecf1;
+  --pass: #2c8549; --pass-soft: #dcefe2; --fail: #c2453a; --warn: #b06a12; --none: #aab3b6; --wait: #e3e8e8;
+  --pm: #6b5a9e; --nm: #0d6a87; --ghost: #9fb0b5;
+  --sans: "IBM Plex Sans KR", "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --paper: #0f1719; --card: #162226; --ink: #e2eaec; --muted: #93a3a9; --line: #2a393e; --grid: #1f2c30;
+  --accent: #52b6d4; --accent-soft: #173640;
+  --pass: #4bb36e; --pass-soft: #183323; --fail: #e2695b; --warn: #e09a43; --none: #56646a; --wait: #1f2c30;
+  --pm: #a796db; --nm: #52b6d4; --ghost: #4a5a60; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --paper: #0f1719; --card: #162226; --ink: #e2eaec; --muted: #93a3a9; --line: #2a393e; --grid: #1f2c30;
+  --accent: #52b6d4; --accent-soft: #173640;
+  --pass: #4bb36e; --pass-soft: #183323; --fail: #e2695b; --warn: #e09a43; --none: #56646a; --wait: #1f2c30;
+  --pm: #a796db; --nm: #52b6d4; --ghost: #4a5a60; color-scheme: dark }
+
+body { background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.6; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-block: 40px 80px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 64px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; line-height: 1.3; }
+h1 { font-size: 34px; font-weight: 700; letter-spacing: -0.01em; }
+h2 { font-size: 22px; font-weight: 700; display: flex; gap: 12px; align-items: baseline; }
+h2 .n { font-family: var(--mono); font-size: 14px; color: var(--accent); font-weight: 500; }
+h3 { font-size: 15px; font-weight: 700; }
+p { margin: 0; max-width: 70ch; }
+.eyebrow { font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 500; }
+.muted { color: var(--muted); }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums; }
+section { display: grid; gap: 18px; min-width: 0; }
+.panel { background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 18px 20px; min-width: 0; display: grid; gap: 12px; align-content: start; }
+.panel-head { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+.note { font-size: 13px; color: var(--muted); }
+.two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; }
+.cols3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.scroll { overflow-x: auto; }
+svg { display: block; width: 100%; height: auto; overflow: visible; }
+svg text { font-family: var(--mono); font-size: 11px; fill: var(--muted); }
+svg .axis line, svg .gridline { stroke: var(--grid); stroke-width: 1; }
+svg .axis path { stroke: var(--line); }
+
+/* 머리 */
+header { display: grid; gap: 14px; }
+.lead { font-size: 16px; color: var(--muted); }
+.input-line { font-family: var(--mono); font-size: 13px; background: var(--card); border: 1px solid var(--line);
+  border-radius: 6px; padding: 12px 14px; overflow-x: auto; white-space: nowrap; }
+.progress { font-size: 13px; color: var(--warn); font-weight: 500; }
+.funnel { display: grid; gap: 10px; }
+.frow { display: grid; grid-template-columns: 170px 1fr 56px; gap: 14px; align-items: center; }
+.frow .bar { height: 22px; background: var(--wait); border-radius: 3px; position: relative; overflow: hidden; }
+.frow .bar span { position: absolute; inset: 0 auto 0 0; background: var(--accent); border-radius: 3px; }
+.frow .bar.final span { background: var(--pass); }
+.frow .count { font-family: var(--mono); text-align: right; font-weight: 500; font-size: 17px; }
+.frow .label { font-size: 14px; line-height: 1.35; }
+
+/* 스펙 칩 */
+.specs { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 10px; }
+.spec { background: var(--card); border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; display: grid; gap: 2px; }
+.spec .sym { font-family: var(--mono); font-size: 12px; color: var(--accent); }
+.spec .lab { font-size: 13px; }
+.spec .plain { font-size: 12px; color: var(--muted); line-height: 1.4; }
+.spec .tgt { font-family: var(--mono); font-size: 14px; font-weight: 500; }
+
+/* 모델 */
+.big { font-family: var(--mono); font-size: 26px; font-weight: 500; line-height: 1.1; }
+.kv { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: 14px; }
+.kv .num { text-align: right; }
+.mbar { display: grid; gap: 4px; }
+.mbar .track { height: 8px; background: var(--wait); border-radius: 4px; overflow: hidden; }
+.mbar .track span { display: block; height: 100%; background: var(--accent); }
+.mbar .row { display: flex; justify-content: space-between; font-size: 13px; gap: 8px; }
+.flow { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 13px; }
+.flow .box { border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; background: var(--card); display: grid; gap: 2px; }
+.flow .box b { font-weight: 500; }
+.flow .box code { font-family: var(--mono); font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.flow .arrow { color: var(--muted); font-family: var(--mono); }
+
+/* 후보 타일 */
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted); }
+.legend i { display: inline-block; width: 12px; height: 12px; border-radius: 2px; margin-right: 6px; vertical-align: -1px; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(104px, 1fr)); gap: 8px; }
+.tile { font: inherit; text-align: left; cursor: pointer; border: 1px solid var(--line); border-radius: 6px;
+  background: var(--card); color: var(--ink); padding: 8px 10px 8px 14px; display: grid; gap: 1px; position: relative; overflow: hidden; }
+.tile::before { content: ""; position: absolute; inset: 0 auto 0 0; width: 5px; background: var(--c, var(--none)); }
+.tile:hover { border-color: var(--accent); }
+.tile:focus-visible, .rankrow:focus-visible, .vtabs button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tile[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent) inset; }
+.tile .no { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.tile .res { font-family: var(--mono); font-size: 17px; font-weight: 500; }
+.tile .sub { font-size: 11px; color: var(--muted); line-height: 1.35; }
+.tile .star { position: absolute; top: 7px; right: 8px; font-size: 11px; font-weight: 700; color: var(--pass); }
+.bars { display: grid; gap: 6px; }
+.hbar { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 2fr) 32px; gap: 10px; align-items: center; font-size: 13px; }
+.hbar .track { height: 14px; background: var(--wait); border-radius: 3px; overflow: hidden; }
+.hbar .track span { display: block; height: 100%; }
+
+/* 순위 열지도 */
+table { border-collapse: collapse; width: 100%; font-size: 13px; }
+th, td { padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th { font-weight: 500; color: var(--muted); font-size: 12px; }
+.heat td.c { padding: 3px 2px; }
+.heat td.c b { display: block; min-width: 24px; height: 22px; border-radius: 3px; }
+.heat th.c { font-family: var(--mono); font-size: 11px; text-align: center; writing-mode: vertical-rl; transform: rotate(180deg); height: 70px; padding: 4px 2px; }
+.rankrow { cursor: pointer; }
+.rankrow:hover td, .rankrow.on td { background: var(--accent-soft); }
+.s-PASS { background: var(--pass); } .s-FAIL { background: var(--fail); } .s-미측정 { background: var(--none); }
+.tag { display: inline-block; font-size: 11px; padding: 0 7px; border-radius: 10px; border: 1px solid var(--line); color: var(--muted); }
+.tag.new { color: var(--accent); border-color: var(--accent); }
+.tag.sel { color: var(--pass); border-color: var(--pass); }
+
+/* 상세 */
+.detail-head { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper);
+  padding-block: 10px; border-bottom: 1px solid var(--line); display: flex; gap: 12px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+.picker { display: flex; gap: 8px; align-items: center; font-size: 13px; }
+.picker select { font: inherit; padding: 4px 8px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); }
+.steps { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.step { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; display: grid; gap: 4px; align-content: start; min-width: 0; background: var(--card); }
+.step .t { font-size: 12px; color: var(--muted); }
+.step .v { font-weight: 700; }
+.step.ok { border-color: var(--pass); } .step.ok .v { color: var(--pass); }
+.step.bad { border-color: var(--fail); } .step.bad .v { color: var(--fail); }
+.step.skip { opacity: 0.5; }
+.step .why { font-size: 12px; overflow-wrap: anywhere; line-height: 1.45; }
+.gen { display: grid; gap: 14px; min-width: 0; }
+.gen > *, .panel, section, .two > * { min-width: 0; }
+.gen .stage-lab { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+.gen .arrowdown { text-align: center; color: var(--accent); font-size: 20px; line-height: 1; }
+.rawout { font-family: var(--mono); font-size: 13px; line-height: 1.9; background: var(--card); border: 1px solid var(--line);
+  border-radius: 6px; padding: 10px 12px; word-break: break-word; }
+.rawout .seg { padding: 1px 3px; border-radius: 3px; cursor: default; }
+.rawout .seg sup { color: var(--muted); font-size: 10px; margin-right: 2px; }
+.rawout .sep { color: var(--muted); margin: 0 4px; }
+.rawout .seg.hl, .stab tr.hl td { background: var(--accent-soft); }
+.stab td, .stab th { white-space: nowrap; }
+.stab td.ln { color: var(--muted); font-family: var(--mono); font-size: 11px; width: 24px; }
+.stab td.kind { color: var(--muted); font-size: 12px; }
+.stab td.pin { font-family: var(--mono); }
+.stab td.pin .p { color: var(--muted); font-size: 11px; margin-right: 4px; }
+.pdgwrap { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 860px) { .pdgwrap { grid-template-columns: 1fr; } }
+.pdg-node rect { fill: var(--card); stroke: var(--line); stroke-width: 1.5; }
+.pdg-node.on rect { stroke: var(--accent); stroke-width: 2.5; }
+.pdg-node text { fill: var(--ink); font-family: var(--mono); font-size: 13px; }
+.pdg-node text.sub { fill: var(--muted); font-size: 11px; }
+.pdg-node.off { opacity: .45; }
+.pdg-edge { fill: none; stroke: var(--ghost); stroke-width: 1.5; }
+.pdg-edge.on { stroke: var(--accent); stroke-width: 2; }
+.pdg-edge.rule { stroke-dasharray: 5 4; }
+.pdg-col { fill: var(--muted); font-size: 12px; }
+.verdict { display: inline-block; font-weight: 700; font-size: 13px; padding: 3px 10px; border-radius: 4px; }
+.verdict.ok { background: var(--pass-soft); color: var(--pass); } .verdict.bad { background: var(--fail-soft, #f6dcd8); color: var(--fail); }
+.srcbox { border: 2px solid var(--accent); border-radius: 8px; padding: 12px 14px; background: var(--card); display: grid; gap: 6px; }
+.srcbox .badge { display: inline-block; font-size: 12px; font-weight: 700; color: var(--card); background: var(--accent); border-radius: 4px; padding: 2px 8px; justify-self: start; }
+.srcbox .kv2 { display: flex; flex-wrap: wrap; gap: 4px 18px; font-size: 13px; }
+.srcbox .kv2 b { font-family: var(--mono); font-weight: 500; }
+.spec .from { font-size: 11px; color: var(--muted); border-top: 1px dashed var(--line); margin-top: 4px; padding-top: 4px; line-height: 1.5; }
+.spec .from b { color: var(--accent); font-weight: 500; }
+.spec.none { opacity: .5; }
+.net { font-family: var(--mono); font-size: 12px; padding: 1px 6px; border-radius: 3px; background: var(--wait); }
+.net.rail { color: var(--pm); font-weight: 500; } .net.in { color: var(--accent); font-weight: 500; }
+.net.out { color: var(--warn); font-weight: 500; } .net.bias { color: var(--pass); }
+.dev { font-family: var(--mono); font-weight: 500; }
+.dev.pm { color: var(--pm); } .dev.nm { color: var(--nm); }
+tr.added td { background: var(--accent-soft); }
+.state { font-size: 11px; font-weight: 700; }
+.state.off { color: var(--fail); } .state.triode { color: var(--warn); } .state.startup { color: var(--muted); }
+.st { font-family: var(--mono); font-size: 12px; font-weight: 500; }
+.st.PASS { color: var(--pass); } .st.FAIL { color: var(--fail); } .st.미측정 { color: var(--muted); }
+.vtabs { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; font-size: 13px; }
+.vtabs button { font: inherit; font-size: 13px; padding: 4px 12px; border-radius: 14px; border: 1px solid var(--line);
+  background: var(--card); color: var(--ink); cursor: pointer; }
+.vtabs button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--card); }
+.difflist { font-family: var(--mono); font-size: 12px; display: grid; gap: 3px; }
+.difflist .plus { color: var(--accent); } .difflist .minus { color: var(--fail); text-decoration: line-through; }
+details summary { cursor: pointer; font-size: 13px; color: var(--muted); }
+.libbar { display: flex; height: 26px; border-radius: 5px; overflow: hidden; font-size: 12px; }
+.libbar span { display: flex; align-items: center; justify-content: center; color: #fff; white-space: nowrap; overflow: hidden; }
+.libgroups { display: grid; gap: 10px; }
+.libgroup h4 { margin: 0 0 4px; font-size: 13px; }
+.libgroup h4 .muted { font-weight: 400; }
+.libtiles { display: flex; flex-wrap: wrap; gap: 3px; }
+.lt { width: 16px; height: 16px; border-radius: 3px; border: 0; padding: 0; cursor: pointer; background: var(--ghost); opacity: .55; }
+.lt.near { background: var(--accent); opacity: .5; }
+.lt.same { background: var(--accent); opacity: 1; box-shadow: 0 0 0 2px var(--card), 0 0 0 3px var(--accent); }
+.lt.on { outline: 2px solid var(--ink); outline-offset: 1px; opacity: 1; }
+.libwrap { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 860px) { .libwrap { grid-template-columns: 1fr; } }
+.libdetail { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; display: grid; gap: 8px; font-size: 13px; background: var(--paper); }
+.libdetail img { max-width: 100%; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
+.libdetail .rowsbox { font-family: var(--mono); font-size: 12px; line-height: 1.7; }
+details.sizing { border: 1px solid var(--line); border-left: 4px solid var(--warn); border-radius: 6px; background: var(--card); padding: 10px 14px; }
+details.sizing > summary { font-size: 14px; font-weight: 700; color: var(--ink); }
+details.sizing[open] > summary { margin-bottom: 10px; }
+details.sizing .body { display: grid; gap: 14px; }
+details.sizing h4 { margin: 0 0 4px; font-size: 13px; }
+details.sizing ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: 13px; }
+details.sizing p { font-size: 13px; }
+.sizelink { font-size: 12px; color: var(--accent); }
+pre { font-family: var(--mono); font-size: 12px; background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 12px; overflow-x: auto; margin: 8px 0 0; }
+.schem { background: #fbfbf7; border: 1px solid var(--line); border-radius: 6px; padding: 12px; }
+.schem { overflow: auto; max-height: 75vh; }
+.schem svg { display: block; margin: 0 auto; width: 100%; max-width: 820px; height: auto; }
+.schem.full svg { width: var(--w, 1000px); max-width: none; }
+.schem-tools { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; font-size: 13px; }
+.schem-tools button { font: inherit; font-size: 13px; padding: 4px 10px; border-radius: 6px; border: 1px solid var(--line); background: var(--card); color: var(--ink); cursor: pointer; }
+.schem svg text { fill: #000; }
+.graph-wrap { border: 1px solid var(--line); border-radius: 6px; background: var(--paper); overflow: hidden; }
+.graph-wrap svg { max-height: 560px; }
+.g-link { stroke: var(--ghost); stroke-width: 1.3; fill: none; }
+.g-link.G { stroke-dasharray: 4 3; }
+.g-dev rect { stroke-width: 1.5; }
+.g-dev.pm rect { fill: var(--card); stroke: var(--pm); } .g-dev.nm rect { fill: var(--card); stroke: var(--nm); }
+.g-dev.rc rect { fill: var(--card); stroke: var(--muted); }
+.g-dev.added rect { fill: var(--accent-soft); }
+.g-dev.off rect { stroke: var(--fail); stroke-width: 3; } .g-dev.triode rect { stroke: var(--warn); stroke-width: 3; }
+.g-dev text { font-size: 11px; fill: var(--ink); font-weight: 500; }
+.g-net circle { fill: var(--ghost); }
+.g-net.port circle { stroke-width: 2; fill: var(--card); }
+.g-net.rail circle { stroke: var(--pm); } .g-net.in circle { stroke: var(--accent); } .g-net.out circle { stroke: var(--warn); } .g-net.bias circle { stroke: var(--pass); }
+.g-net text { font-size: 11px; fill: var(--ink); font-weight: 500; }
+.l-faint { stroke: var(--ghost); stroke-width: 1; fill: none; opacity: .55; }
+.l-main { stroke: var(--accent); stroke-width: 2.2; fill: none; }
+.l-zero { stroke: var(--muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.mark { fill: var(--accent); }
+.target-zone { fill: var(--pass-soft); }
+.target-line { stroke: var(--pass); stroke-width: 1.5; }
+.dot-train { fill: var(--ghost); opacity: .55; }
+.dot-cand { fill: var(--accent); opacity: .85; }
+.dot-cur { fill: none; stroke: var(--ink); stroke-width: 2; }
+.bar-train { fill: var(--ghost); } .bar-cand { fill: var(--accent); }
+.empty { padding: 24px; text-align: center; color: var(--muted); font-size: 13px; }
+
+@media (max-width: 800px) {
+  .cols3, .two { grid-template-columns: 1fr; }
+  .steps { grid-template-columns: 1fr 1fr; }
+  .frow { grid-template-columns: 110px 1fr 40px; }
+  h1 { font-size: 27px; }
+}
+@media (prefers-reduced-motion: no-preference) { .frow .bar span { transition: width .4s ease; } }
+
+/* 표는 내용 길이만큼만 (칸 폭에 꽉 채우지 않음) */
+table { width: auto; max-width: 100%; }
+th, td { padding: 5px 14px 5px 0; }
+.genarrow { font-size: 13px !important; }
+
+/* 단계 강조: 맨 위 바로가기 줄 */
+.stepnav { display: flex; flex-wrap: wrap; align-items: stretch; gap: 0; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: var(--card); }
+.stepnav a { flex: 1 1 150px; display: grid; gap: 2px; padding: 10px 14px; text-decoration: none; color: var(--ink); border-right: 1px solid var(--line); position: relative; }
+.stepnav a:last-child { border-right: 0; }
+.stepnav a:hover { background: var(--accent-soft); }
+.stepnav .no { font-family: var(--mono); font-size: 11px; color: var(--accent); font-weight: 700; letter-spacing: .06em; }
+.stepnav .t { font-size: 14px; font-weight: 700; }
+.stepnav .d { font-size: 12px; color: var(--muted); }
+
+/* 단계 강조: 섹션 제목을 번호 띠로 */
+section.stage > h2, #detail .detail-head h2 { background: var(--accent-soft); border-left: 5px solid var(--accent); border-radius: 6px; padding: 10px 14px; align-items: center; }
+section.stage > h2 { margin-bottom: 2px; }
+h2 .n { display: inline-flex; align-items: center; justify-content: center; white-space: nowrap; flex: none; min-width: 58px; height: 26px; padding: 0 8px; border-radius: 13px; background: var(--accent); color: var(--card); font-size: 12px; font-weight: 700; letter-spacing: .05em; }
+h2 .n::before { content: "STEP "; }
+
+/* 단계 강조: 후보 상세의 검사 단계를 화살표로 잇기 */
+.steps { gap: 22px; }
+.step { border-width: 2px; position: relative; padding: 10px 12px; }
+.step .t { font-size: 12px; font-weight: 700; color: var(--ink); }
+.step .v { font-size: 16px; }
+.step + .step::before { content: "→"; position: absolute; left: -18px; top: 50%; transform: translateY(-50%); color: var(--accent); font-weight: 700; font-size: 16px; }
+@media (max-width: 700px) { .steps { grid-template-columns: 1fr 1fr; } .step:nth-child(3)::before { display: none; } }
+
+/* 크기 줄이기 (구성은 그대로) */
+body { font-size: 14px; line-height: 1.5; }
+.wrap { max-width: 1080px; gap: 40px; padding-block: 24px 60px; }
+h1 { font-size: 26px; } h2 { font-size: 18px; } h3 { font-size: 14px; }
+.lead { font-size: 14px; }
+section { gap: 12px; }
+.panel { padding: 12px 14px; gap: 8px; }
+.note { font-size: 12px; }
+.input-line { padding: 8px 10px; font-size: 12px; }
+.specs { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 8px; }
+.spec { padding: 7px 9px; }
+.two { gap: 12px; } .cols3 { gap: 10px; }
+.frow .bar { height: 16px; } .frow .count { font-size: 15px; } .frow .label { font-size: 13px; }
+.funnel { gap: 6px; }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="eyebrow">EDAI 17조 · 회로 구조 자동 결정</div>
+    <h1><span class="part"></span> 구조 선택</h1>
+    <p class="lead">FLAN-T5가 <span class="part"></span> 스펙을 보고 OP-Amp 구조 후보를 만들고, 후보마다 크기를 정해 ngspice로 시뮬레이션한 뒤 스펙을 가장 많이 맞춘 구조 하나를 고릅니다. 이 페이지는 그 과정을 처음부터 끝까지 보여 줍니다.</p>
+    <div class="progress" id="progress" hidden></div>
+    <nav class="stepnav" aria-label="단계">
+      <a href="#s1"><span class="no">STEP 1</span><span class="t">입력</span><span class="d">데이터시트 목표값 · PDG 핀 확인</span></a>
+      <a href="#s2"><span class="no">STEP 2</span><span class="t">구조 만들기</span><span class="d">FLAN-T5가 구조 표를 씀</span></a>
+      <a href="#s3"><span class="no">STEP 3</span><span class="t">후보 확인</span><span class="d">규칙 · 크기 · 동작 · 스펙</span></a>
+      <a href="#s4"><span class="no">STEP 4</span><span class="t">고르기</span><span class="d">통과 항목 수 순위</span></a>
+      <a href="#detail"><span class="no">STEP 5</span><span class="t">선택 구조</span><span class="d">회로도 · 측정 결과</span></a>
+    </nav>
+    <div class="panel funnel" id="funnel"></div>
+  </header>
+
+  <section id="s1" class="stage">
+    <h2><span class="n">1</span>입력: <span class="part"></span> 스펙 <span class="nj"></span>개 항목</h2>
+    <div class="srcbox" id="srcbox" hidden></div>
+    <div class="panel" id="pdgPanel" hidden>
+      <h3>핀 확인: 포트 의존성 그래프(PDG)</h3>
+      <p class="note">데이터시트 분석 시스템 결과물(팀원)의 핀 목록과 핀 연결로 PDG를 만들고, 구조를 만들기 전에 이 부품이 우리 모델이 만드는 OP-Amp 단자 5개(입력 2, 출력 1, 전원 2)와 맞는지 확인합니다. 맞지 않으면(예: 끄기 핀이 더 있음) 후보를 만들지 않고 멈춥니다.</p>
+      <div class="pdgwrap"><div id="pdgGraph"></div><div id="pdgMap"></div></div>
+    </div>
+    <p class="muted">데이터시트의 목표값입니다. 모델에는 아래 한 줄 문장으로 들어갑니다. 이 데이터시트는 학습에 쓰지 않았습니다.</p>
+    <div class="input-line" id="inputLine"></div>
+    <div class="specs" id="specs"></div>
+  </section>
+
+  <section id="s2" class="stage">
+    <h2><span class="n">2</span>구조 만들기: FLAN-T5</h2>
+    <p class="muted">스펙 문장을 넣으면 소자 연결 표(구조)를 글로 써 내는 모델입니다. 모든 OP-Amp 데이터로 학습했습니다.</p>
+    <div class="srcbox">
+      <span class="badge">학습 데이터 출처: AnalogGenie 공개 데이터셋 (ICLR 2025)</span>
+      <div>J. Gao, W. Cao, J. Yang, X. Zhang, "AnalogGenie: A Generative Engine for Automatic Discovery of Analog Circuit Topologies," <i>International Conference on Learning Representations (ICLR)</i>, 2025.
+        <a href="https://proceedings.iclr.cc/paper_files/paper/2025/hash/f0552f14388d95b19740dee809f5cad1-Abstract-Conference.html">논문</a> ·
+        <a href="https://github.com/xz-group/AnalogGenie">데이터셋 (GitHub, MIT 라이선스)</a></div>
+      <div>교과서와 논문에 실린 아날로그 회로 3,350개를 넷리스트로 옮긴 데이터셋입니다. 교과서: Razavi, Gray·Hurst·Lewis·Meyer, Allen·Holberg, Johns·Martin, Camenzind. AnalogFed, AnalogToBi 등 후속 연구도 기준 데이터로 씁니다.</div>
+      <div class="kv2" id="libSummary"></div>
+      <p class="note">학습 구조마다 어느 책·묶음에서 왔는지는 아래 "학습에 쓴 구조" 지도에서 볼 수 있습니다.</p>
+    </div>
+    <div class="panel"><h3>학습 데이터가 만들어진 길</h3><div class="flow" id="flow"></div></div>
+    <div class="cols3" id="model"></div>
+    <div class="panel" id="libPanel">
+      <h3>학습에 쓴 구조 <span id="libCount"></span>개: 어디서 왔고, 모델이 무엇을 다시 썼나</h3>
+      <p class="note">네모 하나가 학습 구조 하나입니다. 진한 파랑은 이번 후보가 그대로 쓴 구조, 옅은 파랑은 이번 후보가 고쳐 쓴(가장 비슷한) 구조입니다. 네모를 누르면 출처와 구조 표가 나오고, 교과서 회로는 책 원본 그림도 나옵니다.</p>
+      <div class="libbar" id="libBar"></div>
+      <div class="libwrap"><div class="libgroups" id="libGroups"></div><div class="libdetail" id="libDetail"></div></div>
+      <details class="sizing"><summary>이 데이터셋은 믿을 만한가 (눌러서 펼치기)</summary><div class="body" id="libTrust"></div></details>
+    </div>
+    <div class="panel"><h3>모델이 실제로 쓴 결과: <span id="genTitle"></span></h3>
+      <p class="note">모델은 구조를 글 한 줄로 씁니다. 세미콜론(;)으로 나뉜 조각 하나가 소자 하나이고, 각 조각은 소자 이름과 단자별 연결 노드입니다. 이 글을 조각별로 펼친 것이 아래 구조 표입니다. 표의 줄이나 글 조각에 마우스를 올리면 서로 짝이 표시됩니다.</p>
+      <div id="genExample"></div></div>
+  </section>
+
+  <section id="s3" class="stage">
+    <h2><span class="n">3</span>후보 <span id="candCount"></span>개를 하나씩 확인</h2>
+    <p class="muted">후보마다 1 규칙 검사, 2 크기 정하기(출력단 전류 1·5·20·50배), 3 동작 판정, 4 스펙 판정을 거칩니다. 타일을 누르면 아래 5번에 그 후보의 과정이 나옵니다.</p>
+    <div class="legend">
+      <span><i style="background:var(--pass)"></i>동작 (숫자는 <span class="nj"></span>개 중 통과 수)</span>
+      <span><i style="background:var(--fail)"></i>크기 정하기·동작 판정 탈락</span>
+      <span><i style="background:var(--warn)"></i>규칙 검사 탈락</span>
+      <span><i style="background:var(--none)"></i>평가 전</span>
+    </div>
+    <details class="sizing" id="sizing">
+      <summary>크기 정하기는 어떻게 했나, 그리고 한계 (눌러서 펼치기)</summary>
+      <div class="body">
+        <div><h4>방법: 역할별 gm/ID로 "동작하는 크기" 찾기 (auto_size.py)</h4>
+          <p>목표는 스펙을 맞추는 것이 아니라 모든 트랜지스터가 증폭하는 상태(포화 영역)로 동작하는 크기를 찾는 것입니다.</p>
+          <ol>
+            <li>연결만 보고 트랜지스터 역할을 정합니다: 입력쌍, 다이오드 연결, 전류원, 캐스코드, 이득단.</li>
+            <li>역할마다 gm/ID(전류 대비 증폭 효율)와 길이를 정합니다.
+              <table style="margin-top:4px"><thead><tr><th>역할</th><th>gm/ID</th><th>길이 L</th></tr></thead><tbody>
+              <tr><td>입력쌍, 캐스코드</td><td class="num">12 /V</td><td class="num">1 µm</td></tr>
+              <tr><td>이득단, 기타</td><td class="num">10 /V</td><td class="num">1 µm</td></tr>
+              <tr><td>다이오드 연결, 전류원</td><td class="num">8 /V</td><td class="num">2 µm</td></tr></tbody></table></li>
+            <li>전류원 하나당 20 µA, VB 단자에는 그 gm/ID에 맞는 게이트 전압을 넣습니다.</li>
+            <li>폭 10 µm에서 시작해 ngspice 동작점 → 실제 전류 → GF180 특성표로 폭 다시 계산을 반복합니다 (변화 5% 안 또는 8번). 100 µm가 넘으면 병렬 개수(×m)로 나눕니다.</li>
+            <li>꺼진 소자(1 nA 미만), 포화 영역 밖 소자, 버퍼 출력이 2.5 V ± 0.5 V를 벗어나는지 확인합니다.</li>
+            <li>출력(OUT)에 붙은 트랜지스터만 처음 폭을 1배·5배·20배·50배로 해 보고 통과 항목이 많은 쪽을 씁니다 (학습 데이터는 1배·5배만 씀. mA 단위 출력 전류를 내려면 출력단이 커야 해서 선택할 때는 20배·50배도 봅니다). +/− 입력 방향도 두 가지를 다 해 보고 출력이 가운데에 서는 쪽을 고릅니다.</li>
+          </ol></div>
+        <div><h4>이번 결과에서 보이는 문제</h4><ol id="sizingIssues"></ol></div>
+        <div><h4>방법 자체의 한계</h4>
+          <ol>
+            <li>목표값을 보지 않습니다. 이득이 부족해도 길이를 늘리는 식으로 조정하지 않습니다.</li>
+            <li>저항 10 kΩ, 보상 커패시터 1 pF가 고정이라 대역폭·위상여유가 맞춰지지 않습니다.</li>
+            <li>전류원 전류가 20 µA로 고정이라 공급 전류가 목표에 맞춰지지 않습니다. 출력단은 1·5·20·50배 네 가지만 봅니다.</li>
+            <li>VB·IB 바이어스 단자는 이상적인 전원으로 채웁니다. 실제 칩이라면 바이어스 회로까지 있어야 해서 결과가 실제보다 좋게 나옵니다.</li>
+            <li>전원 5 V, 입력 2.5 V 한 조건만 봅니다. 데이터시트는 대부분 15 V 조건이고, 입력이 0 V 근처까지 동작하는지·온도·공정 변화는 보지 않습니다.</li>
+            <li>역할 판단이 연결 모양 규칙이라 처음 보는 구조에서는 잘못 매길 수 있습니다.</li>
+          </ol>
+          <p class="note">원래 학습 데이터용 도구입니다. 구조 수백 개에 사람 손 없이 동작하는 크기를 붙여 성능을 재는 데는 충분하지만, 구조를 고르는 기준으로 쓰면 위 한계가 순위에 섞입니다.</p></div>
+        <div><h4>다른 연구는 어떻게 하나</h4>
+          <table><thead><tr><th>연구</th><th>구조</th><th>크기 정하기</th></tr></thead><tbody>
+            <tr><td><a href="https://arxiv.org/abs/2503.00205">AnalogGenie</a> (ICLR 2025)</td><td>GPT가 핀 연결 순서를 생성</td><td>구조를 만든 뒤 유전 알고리즘으로 W·L·R 최적화, FoM = GBW·C<sub>L</sub>/전력</td></tr>
+            <tr><td><a href="https://arxiv.org/html/2508.02518v1">AnalogCoder-Pro</a></td><td>멀티모달 LLM</td><td>LLM이 최적화할 변수를 골라 베이지안 최적화</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2406.18770">ADO-LLM</a></td><td>주어진 구조</td><td>베이지안 최적화 + LLM이 후보 크기 제안</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2508.05113">EasySize</a></td><td>주어진 구조</td><td>LLM이 손실 함수를 만들고 휴리스틱 탐색, gm/ID 방법과 비교</td></tr>
+            <tr><td><a href="https://research.buaa.edu.cn/en/publications/astra-automatic-sizing-of-transistors-with-reasoning-agents/">ASTRA</a></td><td>주어진 구조</td><td>gm/ID 기반 LLM 초기값 → 베이지안 최적화로 다듬기</td></tr>
+            <tr><td><a href="https://arxiv.org/abs/2604.20916">AnalogMaster</a></td><td>회로 그림 → 넷리스트</td><td>LLM 파라미터 탐색 에이전트</td></tr>
+          </tbody></table>
+          <p class="note">공통점: 구조를 정한 뒤 시뮬레이션을 수십~수백 번 돌리며 목표(FoM이나 스펙)에 맞춰 크기를 최적화합니다. 우리 방식은 그 앞 단계인 "동작하는 초기 크기"까지만 합니다. ASTRA처럼 gm/ID 초기값 위에 최적화를 얹는 것이 다음 단계로 자연스럽습니다.</p></div>
+      </div>
+    </details>
+    <div class="tiles" id="tiles"></div>
+    <div class="two">
+      <div class="panel"><h3>떨어진 이유</h3><p class="note">후보마다 크기 정하기에서 처음 걸린 이유입니다. 꺼진 소자는 전류가 흐르지 않는 트랜지스터, 포화 영역 밖은 증폭하지 못하는 상태의 트랜지스터입니다.</p><div class="bars" id="reasons"></div></div>
+      <div class="panel"><h3>학습 데이터와 얼마나 다른가</h3><p class="note">후보마다 연결 줄이 가장 많이 겹치는 학습 구조를 찾아, 후보에만 있는 줄과 학습 구조에만 있는 줄을 셉니다. 0이면 학습 구조를 그대로 낸 것입니다.</p><div id="novelty"></div></div>
+    </div>
+  </section>
+
+  <section id="s4" class="stage">
+    <h2><span class="n">4</span>고르기: 통과 항목 수 순위</h2>
+    <p class="muted">동작한 후보만 줄 세웁니다. 통과 항목이 많은 순, 같으면 공급 전류(idd)가 작은 순입니다. 칸 색은 항목별 판정이고, 줄을 누르면 5번 상세가 그 후보로 바뀝니다.</p>
+    <div class="legend">
+      <span><i class="s-PASS"></i>통과</span><span><i class="s-FAIL"></i>미달</span><span><i class="s-미측정"></i>재지 못함 (예: 이득이 낮아 대역폭이 없음)</span>
+    </div>
+    <div class="panel scroll" id="rank"></div>
+    <div class="panel">
+      <div class="panel-head"><h3>항목별 측정값: 후보와 학습 구조</h3>
+        <div class="legend"><span><i style="background:var(--ghost)"></i>학습 구조 <span class="ntrain"></span>개</span><span><i style="background:var(--accent)"></i>동작한 후보</span><span><i style="border:2px solid var(--ink);border-radius:50%"></i>지금 보는 후보</span><span><i style="background:var(--pass-soft);border:1px solid var(--pass)"></i>합격 범위</span></div></div>
+      <p class="note">한 줄이 한 항목입니다. 초록 띠 안에 들어가야 통과합니다. 대역폭·슬루율·전류처럼 범위가 넓은 항목은 로그 눈금입니다. 범위 밖 값은 양 끝에 붙입니다.</p>
+      <div id="strip"></div>
+    </div>
+    <div class="panel">
+      <h3>후보가 학습 구조보다 나은가: 통과 항목 수 분포</h3>
+      <p class="note" id="histNote"> 회색은 학습 구조, 파란색은 동작한 후보이고 막대 높이는 각 묶음 안의 비율입니다.</p>
+      <div id="hist"></div>
+    </div>
+  </section>
+
+  <section id="detail">
+    <div class="detail-head">
+      <h2><span class="n">5</span><span id="detailTitle">후보 상세</span></h2>
+      <label class="picker" for="pick">후보 <select id="pick"></select></label>
+    </div>
+    <div class="steps" id="steps"></div>
+    <div class="vtabs" id="vtabs"></div>
+    <div class="panel"><h3>모델이 쓴 글과 구조 표</h3><div id="genDetail"></div></div>
+    <div class="panel">
+      <h3>회로도</h3>
+      <p class="note">구조 표와 정한 크기로 netlistsvg가 자동으로 배치한 회로도입니다. 소자 옆 숫자는 W/L(µm)과 병렬 개수입니다.</p>
+      <div class="schem-tools"><button type="button" id="schemZoom" aria-pressed="false">원래 크기로 보기</button><span class="note">원래 크기에서는 상자 안에서 위아래·좌우로 움직여 봅니다.</span></div>
+      <div class="schem" id="schem"></div>
+    </div>
+    <details class="panel"><summary>노드 연결 그림 보기 (소자를 끌어 옮길 수 있음)</summary>
+      <div class="panel-head"><h3>회로 연결 그림</h3>
+        <div class="legend"><span><i style="border:2px solid var(--pm)"></i>PMOS</span><span><i style="border:2px solid var(--nm)"></i>NMOS</span><span><i style="background:var(--accent-soft)"></i>학습 구조에 없던 소자</span><span><i style="border:3px solid var(--fail)"></i>꺼짐</span><span><i style="border:3px solid var(--warn)"></i>포화 영역 밖</span><span>점선: 게이트 연결</span></div></div>
+      <p class="note">네모는 소자, 동그라미는 노드입니다. VDD는 위, VSS는 아래, 입력은 왼쪽, 출력은 오른쪽에 둡니다. 소자를 끌어 옮길 수 있습니다.</p>
+      <div class="graph-wrap" id="graph"></div>
+    </details>
+    <div class="panel scroll"><h3>스펙 판정</h3><div id="specTable"></div></div>
+    <div class="two">
+      <div class="panel"><div class="panel-head"><h3>개방루프 주파수 응답</h3><span class="note" id="bodeNote"></span></div>
+        <p class="note">파란 선이 지금 후보, 회색은 다른 동작 후보입니다. 이득이 0 dB를 지나는 곳이 단위이득 대역폭, 그때 위상이 −180°에서 떨어진 정도가 위상 여유입니다.</p><div id="bode"></div></div>
+      <div class="panel"><h3>계단 응답</h3>
+        <p class="note">위: 단위이득 버퍼에 1 V → 3.5 V 계단 (슬루율). 아래: 반전 증폭기에 1 V 계단 (정착시간).</p><div id="steps2"></div></div>
+    </div>
+    <div class="panel"><h3>가장 비슷한 학습 구조와 비교</h3><div id="diff"></div></div>
+    <details id="netWrap"><summary>시뮬레이션에 넣은 넷리스트 보기</summary><pre id="netlist"></pre></details>
+  </section>
+</div>
+
+<script>
+const DATA = /*DATA*/null;
+const $ = id => document.getElementById(id);
+const esc = s => String(s ?? "").replace(/[&<>"]/g, c => ({"&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;"}[c]));
+const fmt = v => v == null ? "—" : (Math.abs(v) >= 1000 || (Math.abs(v) < 0.01 && v !== 0) ? Number(v).toPrecision(3) : String(+Number(v).toPrecision(3)));
+const E = DATA.entries;
+const NJ = DATA.spec.length;
+const PART = DATA.part;
+document.title = `${PART} 구조 선택 자세히 보기`;
+document.querySelectorAll('.part').forEach(el => el.textContent = PART);
+document.querySelectorAll('.nj').forEach(el => el.textContent = NJ);
+document.querySelectorAll('.ntrain').forEach(el => el.textContent = DATA.training.length);
+{ const tm = Math.max(...DATA.training.map(t => t.passed));
+  document.getElementById('histNote').textContent = `학습에 쓴 구조 ${DATA.training.length}개도 같은 방식(자동 크기 정하기)으로 ${PART} 판정을 하면 최고 ${tm}/${NJ}입니다. 회색은 학습 구조, 파란색은 동작한 후보이고 막대 높이는 각 묶음 안의 비율입니다.`; }
+const summary = DATA.summary || {ranking: [], selected: null};
+const selectedIdx = summary.selected;
+const LOG_ITEMS = new Set(["ugbw", "sr", "ts", "idd", "io_source", "io_sink"]);
+const svgNS = "http://www.w3.org/2000/svg";
+
+function bestVariant(e) { return e.best ? e.variants.find(v => v.output_scale === e.best.output_scale) : null; }
+function outcome(e) {
+  if (e.state === "waiting") return {c: "var(--none)", res: "대기", sub: e.rules.ok ? "규칙 통과, 시뮬레이션 전" : "규칙 탈락"};
+  if (!e.rules.ok) return {c: "var(--warn)", res: "규칙 탈락", sub: e.rules.problems[0] || ""};
+  if (!e.best) return {c: "var(--fail)", res: "탈락", sub: shortReason(e.variants[0].reason)};
+  return {c: "var(--pass)", res: `${e.best.passed}/${e.best.judged}`, sub: "동작"};
+}
+function shortReason(r) {
+  if (!r) return "";
+  if (r.startsWith("꺼진 소자")) return "꺼진 소자";
+  if (r.startsWith("포화 영역 밖")) return "포화 영역 밖 소자";
+  if (r.includes("이득")) return "이득 부족";
+  if (r.includes("시간 초과")) return "시뮬레이션 시간 초과";
+  if (r.includes("출력")) return "출력이 VDD/2에서 벗어남";
+  return r.split(":")[0].slice(0, 24);
+}
+function novelty(e) { return e.nearest.added.length + e.nearest.removed.length; }
+
+/* ---------- 머리 ---------- */
+function renderHeader() {
+  const total = DATA.generated.beam + DATA.generated.sample;
+  const rulesOk = E.filter(e => e.rules.ok).length;
+  const working = E.filter(e => e.best).length;
+  const newWorking = E.filter(e => e.best && novelty(e) > 0).length;
+  if (DATA.evaluated < E.length) {
+    const p = $("progress"); p.hidden = false;
+    p.textContent = `시뮬레이션 진행 중: 후보 ${E.length}개 중 ${DATA.evaluated}개 평가함. 동작·선택 수는 지금까지의 결과입니다.`;
+  }
+  const rows = [
+    ["모델이 쓴 글", total, `빔 탐색 ${DATA.generated.beam} + 무작위 생성 ${DATA.generated.sample}`],
+    ["서로 다른 후보", E.length, "같은 글은 하나로"],
+    ["규칙 검사 통과", rulesOk, "단자·연결이 말이 되는지"],
+    ["동작", working, `그중 학습 구조와 다른 것 ${newWorking}개`],
+    ["선택", selectedIdx == null ? 0 : 1, selectedIdx == null ? "" : `후보 ${selectedIdx + 1}, ${E[selectedIdx].best.passed}/${NJ} 통과`],
+  ];
+  $("funnel").innerHTML = rows.map(([label, n, hint], i) => `
+    <div class="frow"><div class="label">${label}<div class="note">${esc(hint)}</div></div>
+    <div class="bar ${i === rows.length - 1 ? "final" : ""}"><span style="width:${(100 * n / total).toFixed(1)}%"></span></div>
+    <div class="count">${n}</div></div>`).join("");
+}
+
+function renderInput() {
+  $("inputLine").textContent = DATA.input;
+  const X = DATA.extraction;
+  if (X) {
+    $("srcbox").hidden = false;
+    $("srcbox").innerHTML = `<span class="badge">출처: 데이터시트 분석 시스템 결과물 (팀원) · ${X.plan ? "측정 계획(spec_planner) + 특성 표(HKG)" : "특성 표(HKG)"}</span>
+      <div>${esc((X.device || {}).name || DATA.part)} 데이터시트를 데이터시트 분석 시스템이 읽어 만든 특성 표에서 목표값을 가져왔습니다. 아래 카드마다 그 결과물의 원래 값과 데이터시트 쪽 번호를 적었습니다.</div>
+      <div class="kv2"><span>결과물 파일 <b>${esc(X.file)}</b></span><span>추출된 줄 <b>${X.total_rows}</b></span>
+        <span>그중 전기 특성 <b>${X.electrical_rows}</b></span><span>목표값으로 쓴 줄 <b>${X.used_rows}</b></span>
+        ${X.missing && X.missing.length ? `<span>데이터시트에 없어 뺀 항목 <b>${esc(X.missing.join(", "))}</b></span>` : ""}</div>
+      ${X.plan ? `<div class="kv2"><span>판정 항목 출처 <b>측정 계획(spec_planner) 결과물 (팀원)</b></span><span>파일 <b>${esc(X.plan.file)}</b></span>
+        <span>계획된 줄 <b>${X.plan.planned_rows}</b></span><span>그중 ${esc((X.device || {}).name || DATA.part)} 구간 <b>${X.plan.part_planned}</b></span><span>판정 항목 <b>${X.plan.used}</b></span></div>
+      <details><summary>계획에는 있지만 판정하지 않는 항목 ${X.plan.not_measured.length + X.plan.not_planned.length}개</summary>
+        <table style="margin-top:6px"><thead><tr><th>항목</th><th>계획 목표</th><th>이유</th></tr></thead><tbody>
+        ${X.plan.not_measured.map(m => `<tr><td class="mono">${esc(m.symbol)} <span class="muted">${esc(m.kind)}</span></td><td class="num">${[m.min, m.typ, m.max].map(v => v == null ? "—" : fmt(v)).join(" / ")} ${esc(m.unit)}</td><td>${esc(m.reason)}</td></tr>`).join("")}
+        ${X.plan.not_planned.map(m => `<tr><td>${esc(m.label)}</td><td>—</td><td>${esc(m.reason)}</td></tr>`).join("")}
+        </tbody></table></details>` : ""}
+      <p class="note">${X.plan ? "어떤 항목을 잴지와 dB 등 단위 정리는 측정 계획이 했고, 우리 단위(µA, MHz, mA)로 바꾸기와 출력 전압 계산(전원 5 V에서 떨어지는 폭을 뺌)은 이쪽 변환 스크립트(spec_from_plan.py)가 했습니다. 계획의 측정 전원(예: 이득·출력 전류는 15 V)과 달리 시뮬레이션은 5 V에서 합니다." : "단위 바꾸기(예: V/mV → dB)와 출력 전압 계산(전원 5 V에서 떨어지는 폭을 뺌)은 이쪽 변환 스크립트(spec_from_hkg.py)가 했습니다."} 포트 의존성 그래프(PDG)는 아래 핀 확인에 씁니다.</p>`;
+  }
+  const fromText = x => {
+    if (!x) return "";
+    const v = ["min", "typ", "max"].filter(k => x[k] != null).map(k => `${k} ${x[k]}`).join(" · ");
+    return `<span class="from"><b>분석 결과</b> ${esc(x.symbol || "")} ${esc(v)} ${esc(x.unit || "")}${x.page ? ` · p.${x.page}` : ""}</span>`;
+  };
+  $("specs").innerHTML = DATA.spec.map(s => `<div class="spec${s.scope === "excluded" ? " none" : ""}"><span class="sym">${esc(s.symbol)}</span>
+    <span class="lab">${esc(s.label)}</span><span class="plain">${esc(s.plain)}</span><span class="tgt">${esc(s.target)}</span>${fromText(s.extracted)}</div>`).join("");
+}
+
+/* 선택 후보에서 IN1 이 + 입력인지: 시뮬레이션 넷리스트에서 IN1 자리에 INP 가 들어갔는지 본다 */
+function inputPolarity(e) {
+  const v = e && bestVariant(e);
+  if (!v || !v.subckt) return null;
+  const order = {D: 0, G: 1, S: 2, B: 3, P: 0, N: 1};
+  for (const [name, pins] of e.rows) {
+    const pin = Object.keys(pins).find(k => pins[k] === "IN1");
+    if (!pin) continue;
+    const line = v.subckt.split("\n").find(l => l.split(/\s+/)[0].replace(/^X/, "") === name);
+    if (!line) continue;
+    const net = line.split(/\s+/)[1 + order[pin]];
+    if (net === "INP") return {"+": "IN1", "−": "IN2"};
+    if (net === "INN") return {"+": "IN2", "−": "IN1"};
+  }
+  return null;
+}
+
+function renderPdg() {
+  const R = DATA.pdg;
+  if (!R) return;
+  $("pdgPanel").hidden = false;
+  const pdg = R.pdg, chk = R.check;
+  const lv = r => ({GROUND: 0, POWER: 0, BIAS: 1, REFERENCE: 1, ENABLE: 2, CONTROL: 2, SIGNAL: 3, INPUT: 3, FEEDBACK: 4, OUTPUT: 4})[r] ?? 3;
+  const chosen = chk.channels.find(c => c.output === chk.chosen);
+  const onPins = new Set(chosen ? [chosen.output, ...chosen.inputs, ...pdg.pins.filter(p => lv(p.role) === 0).map(p => p.name)] : []);
+  const cols = [...new Set(pdg.pins.filter(p => p.role !== "NC").map(p => lv(p.role)))].sort();
+  const W = 640, NW = 150, NH = 40, GAP = 16, TOP = 34;
+  const colX = k => 10 + cols.indexOf(k) * ((W - 20 - NW) / Math.max(1, cols.length - 1));
+  const pos = {}; let H = 0;
+  cols.forEach(k => {
+    const list = pdg.pins.filter(p => p.role !== "NC" && lv(p.role) === k);
+    list.forEach((p, i) => { pos[p.name] = {x: colX(k), y: TOP + i * (NH + GAP), p}; H = Math.max(H, TOP + (i + 1) * (NH + GAP)); });
+  });
+  let out = cols.map(k => `<text class="pdg-col" x="${colX(k) + NW / 2}" y="16" text-anchor="middle">${esc(pdg.levels[k])}</text>`).join("");
+  out += `<defs><marker id="pa" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--ghost)"/></marker>
+    <marker id="pa2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"/></marker></defs>`;
+  const edges = pdg.edges.filter(e => pos[e.source] && pos[e.target]);
+  edges.sort((a, b) => (onPins.has(a.target) && onPins.has(a.source)) - (onPins.has(b.target) && onPins.has(b.source)));
+  edges.forEach(e => {
+    const a = pos[e.source], b = pos[e.target];
+    const on = onPins.has(e.source) && onPins.has(e.target);
+    const x1 = a.x + NW, y1 = a.y + NH / 2, x2 = b.x, y2 = b.y + NH / 2, mx = (x1 + x2) / 2;
+    out += `<path class="pdg-edge${on ? " on" : ""}${e.origin === "rule" ? " rule" : ""}" d="M${x1},${y1} C${mx},${y1} ${mx},${y2} ${x2},${y2}" marker-end="url(#${on ? "pa2" : "pa"})"><title>${esc(e.source)} → ${esc(e.target)} (${esc(e.type)}, ${e.origin === "rule" ? "순서 규칙으로 채움" : "데이터시트"})</title></path>`;
+  });
+  Object.values(pos).forEach(({x, y, p}) => {
+    out += `<g class="pdg-node ${onPins.has(p.name) ? "on" : "off"}"><rect x="${x}" y="${y}" width="${NW}" height="${NH}" rx="6"/>
+      <text x="${x + 10}" y="${y + 17}">${esc(p.name)}</text><text class="sub" x="${x + 10}" y="${y + 32}">${p.number ? p.number + "번 · " : ""}${esc(p.role)}</text><title>${esc(p.description)}</title></g>`;
+  });
+  $("pdgGraph").innerHTML = `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" style="min-width:480px" role="img" aria-label="포트 의존성 그래프">${out}</svg></div>
+    <p class="note">실선: 데이터시트에서 뽑은 핀 연결 · 점선: 빠진 연결을 전원 → 바이어스 → 제어 → 신호 → 출력 순서 규칙으로 채운 것. 파란 테두리가 쓰는 채널입니다.</p>`;
+  const pol = selectedIdx != null ? inputPolarity(E[selectedIdx]) : null;
+  const ours = m => m.ours !== "IN1 / IN2" ? m.ours : (pol ? `${pol[m.note[0]]}` : "IN1 / IN2");
+  $("pdgMap").innerHTML = `<p><span class="verdict ${chk.ok ? "ok" : "bad"}">${chk.ok ? "통과" : "탈락"}</span> ${esc(chk.summary.replace(/^(통과|탈락): /, ""))}</p>
+    <table><thead><tr><th>데이터시트 핀</th><th>역할</th><th>우리 구조 단자</th></tr></thead><tbody>
+    ${chk.mapping.map(m => `<tr><td class="mono">${esc(m.pin)}${m.number ? ` <span class="muted">(${m.number}번)</span>` : ""}</td><td>${esc(m.note)}</td><td><span class="net ${netClass(ours(m).split(" ")[0])}">${esc(ours(m))}</span></td></tr>`).join("")}
+    </tbody></table>
+    <p class="note" style="margin-top:8px">${pol ? `+ 입력이 구조의 어느 단자인지는 크기 정하기에서 두 방향을 다 시뮬레이션해 출력이 가운데에 서는 쪽으로 정했습니다 (선택 후보 ${E[selectedIdx].no} 기준).` : "+ / − 입력이 구조의 어느 단자인지는 크기 정하기에서 정합니다."}
+    전원은 시뮬레이션에서 VDD 5 V, VSS 0 V로 둡니다.</p>
+    ${chk.channels.length > 1 ? `<p class="note">채널: ${chk.channels.map(c => `${esc(c.output)} ${c.ok ? "맞음" : "안 맞음 (" + esc(c.problems.join(", ")) + ")"}`).join(" · ")}. 채널 하나만 설계합니다.</p>` : ""}`;
+}
+
+function renderSizingIssues() {
+  const tried = E.filter(e => e.rules.ok && e.state === "done");
+  const working = tried.filter(e => e.best);
+  const why = {};
+  tried.filter(e => !e.best).forEach(e => { const r = shortReason((e.variants[0] || {}).reason); why[r] = (why[r] || 0) + 1; });
+  const fails = {};
+  working.forEach(e => (bestVariant(e).spec || []).forEach(r => { if (r.status !== "PASS") fails[r.measure] = (fails[r.measure] || 0) + 1; }));
+  const label = m => (DATA.spec.find(s => s.measure === m) || {}).label || m;
+  const top = Object.entries(fails).sort((a, b) => b[1] - a[1]).slice(0, 4);
+  const items = [
+    `규칙을 통과한 ${tried.length}개 중 ${tried.length - working.length}개가 크기 정하기에서 떨어졌습니다 (${Object.entries(why).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${esc(k)} ${n}`).join(", ")}). 구조가 나빠서인지, 모든 구조에 같은 규칙을 쓰는 크기 정하기가 맞지 않아서인지 구분되지 않습니다.`,
+    `동작한 ${working.length}개가 같은 항목에서 미달입니다: ${top.map(([m, n]) => `${esc(label(m))} ${n}/${working.length}`).join(", ")}. 구조가 달라도 똑같이 떨어지면 원인은 구조보다 크기 쪽입니다.`,
+    "그래서 통과 항목 수로 구조를 고르는 순위에 크기 정하기의 한계가 섞여 있습니다. 크기를 목표에 맞춰 다시 조정하면 순위가 바뀔 수 있습니다.",
+  ];
+  $("sizingIssues").innerHTML = items.map(t => `<li>${t}</li>`).join("");
+}
+
+/* 학습 구조 지도: 출처별 묶음, 이번 후보가 그대로 쓴 것/고쳐 쓴 것 */
+function renderLibrary() {
+  const T = DATA.training;
+  $("libCount").textContent = T.length;
+  { const n = g => T.filter(t => t.group === g).length;
+    $("libSummary").innerHTML = `<span>학습 구조 <b>${T.length}</b></span><span>교과서 회로 <b>${n("교과서")}</b> (책 쪽·원본 그림 있음)</span><span>논문 묶음 <b>${n("논문 묶음")}</b> (논문 이름 표시 없음)</span><span>직접 만든 블록 <b>${n("직접 만든 블록")}</b></span>`; }
+  const same = {}, near = {};
+  E.forEach(e => { const n = e.nearest.name, m = (e.in_train && !e.nearest.added.length && !e.nearest.removed.length) ? same : near; m[n] = [...(m[n] || []), e.no]; });
+  const groups = [["논문 묶음", "#8a6fc9"], ["교과서", "#2e8b57"], ["직접 만든 블록", "#c9822e"], ["기타", "#888"]].filter(([g]) => T.some(t => t.group === g));
+  $("libBar").innerHTML = groups.map(([g, c]) => { const n = T.filter(t => t.group === g).length; return `<span style="width:${100 * n / T.length}%;background:${c}" title="${g} ${n}개">${g} ${n}</span>`; }).join("");
+  $("libGroups").innerHTML = groups.map(([g]) => {
+    const list = T.map((t, i) => [t, i]).filter(([t]) => t.group === g);
+    const books = [...new Set(list.map(([t]) => t.book))];
+    return `<div class="libgroup"><h4>${g} <span class="muted">${list.length}개${g === "교과서" ? " · " + books.length + "권" : ""}</span></h4><div class="libtiles">${list.map(([t, i]) =>
+      `<button class="lt ${same[t.name] ? "same" : near[t.name] ? "near" : ""}" data-i="${i}" title="${esc(t.name)} · 트랜지스터 ${t.rows.filter(r => /^[NP]M/.test(r)).length}개${same[t.name] ? " · 후보 " + same[t.name].join(", ") + "가 그대로 씀" : ""}" aria-label="${esc(t.name)}"></button>`).join("")}</div></div>`;
+  }).join("");
+  const show = i => {
+    const t = T[i];
+    $("libGroups").querySelectorAll(".lt").forEach(b => b.classList.toggle("on", +b.dataset.i === i));
+    const used = same[t.name], nearBy = near[t.name];
+    $("libDetail").innerHTML = `<div><b>${esc(t.name)}</b> <span class="muted">· ${esc(t.group)}</span></div>
+      <div>${esc(t.book)}${t.page ? ` · ${esc(t.page)}쪽` : ""}</div>
+      <div>트랜지스터 ${t.rows.filter(r => /^[NP]M/.test(r)).length}개 · 소자 ${t.rows.length}개 · 자동 크기로 잰 ${PART} 판정 ${t.passed}/${NJ}</div>
+      ${used ? `<div style="color:var(--accent)"><b>이번 후보 ${used.join(", ")}가 이 구조를 그대로 썼습니다.</b></div>` : ""}
+      ${nearBy ? `<div style="color:var(--accent)">이번 후보 ${nearBy.join(", ")}가 이 구조를 고쳐 썼습니다 (가장 비슷한 학습 구조).</div>` : ""}
+      ${t.image ? `<img alt="책 원본 그림" src="data:image/png;base64,${t.image}">` : `<p class="note">${t.group === "논문 묶음" ? "이 묶음은 원본 그림·논문 이름이 데이터셋에 없습니다." : "원본 그림 없음"}</p>`}
+      <div class="rowsbox">${t.rows.map(r => esc(r)).join("<br>")}</div>`;
+  };
+  $("libGroups").addEventListener("click", ev => { const b = ev.target.closest(".lt"); if (b) show(+b.dataset.i); });
+  const first = T.findIndex(t => same[t.name]); show(first >= 0 ? first : 0);
+  const n = g => T.filter(t => t.group === g).length;
+  $("libTrust").innerHTML = `<ol>
+    <li><b>출처</b>: AnalogGenie (ICLR 2025, Northeastern·George Washington 대학). 교과서와 논문에 실린 아날로그 회로 3,350개를 넷리스트로 옮긴 공개 데이터셋입니다 (MIT 라이선스).</li>
+    <li><b>교과서 회로</b>: 회로마다 책 쪽 번호와 원본 그림 캡처가 같이 있어 확인할 수 있습니다. 우리 학습 구조 중 ${n("교과서")}개입니다.</li>
+    <li><b>논문 묶음</b>: "opamp papers" 400개는 논문 이름·쪽·그림이 데이터셋에 없어 어느 논문인지 확인할 수 없습니다. 우리 학습 구조 중 ${n("논문 묶음")}개가 여기서 왔습니다.</li>
+    <li><b>우리가 거른 것</b>: OP-Amp 범위 568개 중 출력 하나·트랜지스터·R·C만 있는 435개를 남기고, 자동 크기 정하기로 "동작"한 것만 썼습니다. 교과서 회로가 적게 남은 이유는 완전 차동, 이상 전류원 같은 그림용 회로가 많기 때문입니다.</li>
+    <li><b>"자주 쓰는 구조"를 고른 것은 아닙니다</b>: 걸러진 구조를 모두 같은 비중으로 넣었습니다. 모델이 "그대로 쓴" 구조는 많이 쓰이는 구조라서가 아니라 이 학습 세트에 있던 구조입니다.</li>
+    <li><b>정리</b>: 회로 모양 자체는 사람이 그린 실제 회로라 믿을 만하지만, 논문 묶음은 출처를 따라가 확인할 수 없다는 한계가 있습니다. 발표에서 이 점을 같이 말하는 것이 안전합니다.</li></ol>`;
+}
+
+function renderModel() {
+  const t = DATA.train, n = DATA.eval_count;
+  $("flow").innerHTML = [
+    ["AnalogGenie 회로 (ICLR 2025)", "568개 중 OP-Amp 435개"], ["직접 만든 블록", "15개 구조"],
+    ["구조 표로 변환", "NM1 D=OUT G=IN1 S=N6 B=VSS"], ["자동 크기 정하기", "gm/ID, 출력단 1배·5배"],
+    ["ngspice 측정", "15개 항목"], ["동작한 것만", `${t.structures}개 구조`], ["학습 문장", `${t.train.toLocaleString()} + 검증 ${t.val}`],
+  ].map(([b, c], i) => `${i ? '<span class="arrow">→</span>' : ""}<div class="box"><b>${b}</b><code>${esc(c)}</code></div>`).join("");
+  const bars = Object.entries(DATA.eval).map(([k, v]) => `<div class="mbar"><div class="row"><span>${esc(k)}</span>
+    <span class="num">${v} / ${n}</span></div><div class="track"><span style="width:${100 * v / n}%"></span></div></div>`).join("");
+  $("model").innerHTML = `
+    <div class="panel"><div class="eyebrow">학습 데이터</div><div class="big">${t.train.toLocaleString()}문장</div>
+      <div class="kv"><span>학습 문장</span><span class="num">${t.train.toLocaleString()}</span>
+      <span>검증 문장</span><span class="num">${t.val}</span><span>서로 다른 구조</span><span class="num">${t.structures}</span>
+      <span>검증용으로 뗀 구조</span><span class="num">${t.val_structures}</span></div>
+      <p class="note">한 측정 줄마다 15개 항목을 다 쓴 문장과, 항목 일부만 남긴 문장을 함께 만듭니다. 실제 데이터시트는 항목 일부만 주기 때문입니다.</p></div>
+    <div class="panel"><div class="eyebrow">검증: 학습에 없던 구조 ${n}개의 스펙으로 시험</div>${bars}
+      <p class="note">형식과 규칙은 거의 다 맞춥니다. 정답 구조를 똑같이 쓴 경우는 없고, 처음 보는 스펙에 학습 때 본 구조를 그대로 내는 경우가 많습니다.</p></div>
+    <div class="panel"><div class="eyebrow">모델</div><div class="big">${esc(DATA.model.split("/").pop())}</div>
+      <div class="kv"><span>가중치</span><span class="num">2.5억 개</span><span>학습</span><span class="num">${DATA.epochs} 에폭</span>
+      <span>장비</span><span class="num">Colab T4</span><span>걸린 시간</span><span class="num">약 2시간</span></div>
+      <p class="note">저장 위치: 구글 드라이브 2026_2/flan_t5_structure</p></div>`;
+}
+
+/* ---------- 후보 ---------- */
+function renderTiles(active) {
+  $("candCount").textContent = E.length;
+  $("tiles").innerHTML = E.map((e, i) => {
+    const o = outcome(e), nv = novelty(e);
+    return `<button class="tile" style="--c:${o.c}" data-i="${i}" aria-pressed="${i === active}">
+      ${i === selectedIdx ? '<span class="star">선택</span>' : ""}
+      <span class="no">후보 ${e.no} · ${e.how === "beam" ? "빔" : "무작위"}</span>
+      <span class="res">${esc(o.res)}</span><span class="sub">${esc(o.sub)}</span>
+      <span class="sub">${nv === 0 ? "학습 구조 그대로" : `학습 구조와 ${nv}줄 다름`}</span></button>`;
+  }).join("");
+}
+
+function renderReasons() {
+  const count = {};
+  E.forEach(e => {
+    let k;
+    if (e.state === "waiting") k = "평가 전";
+    else if (!e.rules.ok) k = "규칙: " + (e.rules.problems[0] || "").split(":")[0];
+    else if (!e.best) k = shortReason(e.variants[0].reason);
+    else k = "동작";
+    count[k] = (count[k] || 0) + 1;
+  });
+  const color = k => k === "동작" ? "var(--pass)" : k === "평가 전" ? "var(--none)" : k.startsWith("규칙") ? "var(--warn)" : "var(--fail)";
+  const max = Math.max(...Object.values(count));
+  $("reasons").innerHTML = Object.entries(count).sort((a, b) => b[1] - a[1]).map(([k, n]) =>
+    `<div class="hbar"><span>${esc(k)}</span><div class="track"><span style="width:${100 * n / max}%;background:${color(k)}"></span></div><span class="num">${n}</span></div>`).join("");
+}
+
+function renderNovelty() {
+  // 다른 줄 수 (가로) x 후보 점, 색은 결과
+  const W = 520, H = 150, L = 34, B = 30, maxN = Math.max(6, ...E.map(novelty));
+  const x = n => L + (W - L - 10) * n / maxN;
+  const stack = {};
+  let dots = "";
+  E.forEach((e, i) => {
+    const n = novelty(e); stack[n] = (stack[n] || 0) + 1;
+    const y = H - B - 9 - (stack[n] - 1) * 14;
+    dots += `<circle cx="${x(n)}" cy="${y}" r="6" style="fill:${outcome(e).c};cursor:pointer" data-i="${i}"><title>후보 ${e.no}: ${n}줄 다름 (${esc(e.nearest.name)})</title></circle>`;
+  });
+  let ticks = "";
+  for (let n = 0; n <= maxN; n += maxN > 12 ? 2 : 1) ticks += `<text x="${x(n)}" y="${H - B + 16}" text-anchor="middle">${n}</text>`;
+  $("novelty").innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="학습 구조와 다른 줄 수">
+    <line x1="${L}" x2="${W - 10}" y1="${H - B}" y2="${H - B}" class="gridline"/>${ticks}
+    <text x="${(W + L) / 2}" y="${H - 2}" text-anchor="middle">학습 구조와 다른 줄 수</text>${dots}</svg>`;
+  $("novelty").querySelectorAll("circle[data-i]").forEach(c => c.addEventListener("click", () => select(+c.dataset.i, true)));
+}
+
+/* ---------- 순위 ---------- */
+function renderRank(active) {
+  const order = summary.ranking || [];
+  if (!order.length) { $("rank").innerHTML = `<p class="empty">아직 동작한 후보가 없습니다.</p>`; return; }
+  const head = DATA.spec.map(s => `<th class="c" title="${esc(s.label)}">${esc(s.symbol)}</th>`).join("");
+  const body = order.map((i, r) => {
+    const e = E[i], v = bestVariant(e);
+    const by = Object.fromEntries(v.spec.map(s => [s.measure, s]));
+    const cells = DATA.spec.map(s => { const c = by[s.measure];
+      return `<td class="c" title="${esc(s.label)}: ${c ? fmt(c.value) + " " + esc(s.unit) + " / 목표 " + esc(s.target) : "—"}"><b class="s-${c ? c.status : "미측정"}"></b></td>`; }).join("");
+    const nv = novelty(e);
+    return `<tr class="rankrow ${i === active ? "on" : ""}" data-i="${i}" tabindex="0">
+      <td class="num">${r + 1}</td><td>후보 ${e.no} ${i === selectedIdx ? '<span class="tag sel">선택</span>' : ""} ${nv ? `<span class="tag new">새 구조 ${nv}줄</span>` : '<span class="tag">학습 구조</span>'}</td>
+      <td class="num"><b>${e.best.passed}</b>/${e.best.judged}</td><td class="num">${e.best.idd == null ? "—" : fmt(e.best.idd * 1e6) + " µA"}</td><td class="num">${e.best.output_scale}배</td>${cells}</tr>`;
+  }).join("");
+  $("rank").innerHTML = `<table class="heat"><thead><tr><th>순위</th><th>후보</th><th>통과</th><th>idd</th><th>출력단</th>${head}</tr></thead><tbody>${body}</tbody></table>`;
+}
+
+/* ---------- 항목별 분포 ---------- */
+function scaleFor(s, values) {
+  const isLog = LOG_ITEMS.has(s.measure);
+  let vals = values.filter(v => v != null && isFinite(v) && (!isLog || v > 0));
+  [s.min, s.max].forEach(b => { if (b != null && (!isLog || b > 0)) vals.push(b); });
+  if (!vals.length) vals = [0, 1];
+  const sorted = vals.slice().sort((a, b) => a - b);
+  const q = p => sorted[Math.min(sorted.length - 1, Math.max(0, Math.round(p * (sorted.length - 1))))];
+  let lo = q(0.02), hi = q(0.98);
+  [s.min, s.max].forEach(b => { if (b != null && (!isLog || b > 0)) { lo = Math.min(lo, b); hi = Math.max(hi, b); } });
+  if (lo === hi) { lo -= 1; hi += 1; }
+  const f = isLog ? v => Math.log10(v) : v => v;
+  const a = f(lo), b = f(hi), pad = (b - a) * 0.04;
+  return {isLog, lo, hi, t: v => { if (v == null || !isFinite(v) || (isLog && v <= 0)) return null; const x = (f(v) - a + pad) / (b - a + 2 * pad); return Math.max(0, Math.min(1, x)); }};
+}
+function renderStrip(active) {
+  const W = 760, rowH = 34, L = 150, R = 70, H = DATA.spec.length * rowH + 6;
+  const working = E.map((e, i) => [e, i]).filter(([e]) => e.best);
+  let out = "";
+  DATA.spec.forEach((s, k) => {
+    const y = k * rowH + rowH / 2;
+    const tv = DATA.training.map(t => t.values[s.measure]);
+    const cv = working.map(([e]) => (bestVariant(e).spec.find(r => r.measure === s.measure) || {}).value);
+    const sc = scaleFor(s, tv.concat(cv));
+    const X = t => L + (W - L - R) * t;
+    // 합격 범위
+    const a = s.min != null ? sc.t(s.min) : 0, b = s.max != null ? sc.t(s.max) : 1;
+    if (a != null && b != null) out += `<rect class="target-zone" x="${X(a)}" y="${y - 11}" width="${Math.max(1, X(b) - X(a))}" height="22" rx="2"/>`;
+    [s.min, s.max].forEach(v => { const t = v != null ? sc.t(v) : null; if (t != null) out += `<line class="target-line" x1="${X(t)}" x2="${X(t)}" y1="${y - 12}" y2="${y + 12}"/>`; });
+    out += `<line class="gridline" x1="${L}" x2="${W - R}" y1="${y}" y2="${y}"/>`;
+    out += `<text x="${L - 10}" y="${y + 4}" text-anchor="end" style="fill:var(--ink)">${esc(s.symbol)}</text>`;
+    out += `<text x="${W - R + 8}" y="${y + 4}">${esc(s.target)}</text>`;
+    tv.forEach((v, n) => { const t = sc.t(v); if (t != null) out += `<circle class="dot-train" cx="${X(t)}" cy="${y + ((n * 37) % 13 - 6)}" r="2.2"/>`; });
+    working.forEach(([e, i], j) => { const t = sc.t(cv[j]); if (t != null) out += `<circle class="dot-cand" cx="${X(t)}" cy="${y}" r="4.5" data-i="${i}" style="cursor:pointer"><title>후보 ${e.no}: ${fmt(cv[j])} ${esc(s.unit)}</title></circle>`; });
+    const cur = E[active] && E[active].best ? (bestVariant(E[active]).spec.find(r => r.measure === s.measure) || {}).value : null;
+    const tc = sc.t(cur); if (tc != null) out += `<circle class="dot-cur" cx="${X(tc)}" cy="${y}" r="8"><title>지금 후보: ${fmt(cur)} ${esc(s.unit)}</title></circle>`;
+    out += `<text x="${L}" y="${y + 15}" style="font-size:9px">${fmt(sc.lo)}</text><text x="${W - R}" y="${y + 15}" text-anchor="end" style="font-size:9px">${fmt(sc.hi)}${sc.isLog ? " (log)" : ""}</text>`;
+  });
+  $("strip").innerHTML = `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" style="min-width:620px" role="img" aria-label="항목별 측정값 분포">${out}</svg></div>`;
+  $("strip").querySelectorAll("circle[data-i]").forEach(c => c.addEventListener("click", () => select(+c.dataset.i, true)));
+}
+
+function renderHist() {
+  const W = 760, H = 200, L = 40, B = 34, T = 10;
+  const tr = Array(NJ + 1).fill(0), ca = Array(NJ + 1).fill(0);
+  DATA.training.forEach(t => tr[t.passed]++);
+  const working = E.filter(e => e.best); working.forEach(e => ca[e.best.passed]++);
+  const pt = tr.map(n => n / DATA.training.length), pc = ca.map(n => working.length ? n / working.length : 0);
+  const max = Math.max(...pt, ...pc, 0.1);
+  const bw = (W - L - 10) / (NJ + 1), y = v => H - B - (H - B - T) * v / max;
+  let out = "";
+  [0, max / 2, max].forEach(v => out += `<line class="gridline" x1="${L}" x2="${W - 10}" y1="${y(v)}" y2="${y(v)}"/><text x="${L - 6}" y="${y(v) + 4}" text-anchor="end">${Math.round(v * 100)}%</text>`);
+  for (let k = 0; k <= NJ; k++) {
+    const x0 = L + k * bw;
+    out += `<rect class="bar-train" x="${x0 + 3}" y="${y(pt[k])}" width="${bw / 2 - 3}" height="${H - B - y(pt[k])}"><title>학습 구조 ${tr[k]}개가 ${k}/${NJ}</title></rect>`;
+    out += `<rect class="bar-cand" x="${x0 + bw / 2}" y="${y(pc[k])}" width="${bw / 2 - 3}" height="${H - B - y(pc[k])}"><title>후보 ${ca[k]}개가 ${k}/${NJ}</title></rect>`;
+    out += `<text x="${x0 + bw / 2}" y="${H - B + 15}" text-anchor="middle">${k}</text>`;
+  }
+  out += `<text x="${(W + L) / 2}" y="${H - 2}" text-anchor="middle">${PART} ${NJ}개 항목 중 통과 수</text>`;
+  $("hist").innerHTML = `<div class="scroll"><svg viewBox="0 0 ${W} ${H}" style="min-width:520px" role="img" aria-label="통과 항목 수 분포">${out}</svg></div>`;
+}
+
+/* ---------- 상세 ---------- */
+function netClass(n) {
+  if (n === "VDD" || n === "VSS") return "rail";
+  if (n === "IN1" || n === "IN2") return "in";
+  if (n === "OUT") return "out";
+  if (/^(VB|IB)/.test(n)) return "bias";
+  return "";
+}
+/* 모델이 쓴 글(조각마다 번호)과 그 글을 펼친 구조 표 */
+const KIND = {PM: "PMOS", NM: "NMOS", R: "저항", C: "커패시터"};
+function genView(e, opts = {}) {
+  const sizes = opts.sizes || {}, state = opts.state || {}, added = opts.added || new Set();
+  const stateText = {off: "꺼짐", triode: "포화 밖", startup: "시동 회로"};
+  const raw = e.rows.map(([name, pins], k) => `<span class="seg" data-k="${k}"><sup>${k + 1}</sup>${esc(rowText(name, pins))}</span>`).join('<span class="sep">;</span>');
+  const hasSize = Object.keys(sizes).length > 0;
+  const body = e.rows.map(([name, pins], k) => {
+    const kind = KIND[name.replace(/\d+$/, "")] || "";
+    const cls = name.startsWith("PM") ? "pm" : name.startsWith("NM") ? "nm" : "";
+    const cols = cls ? ["D", "G", "S", "B"] : ["P", null, "N", null];
+    const cells = cols.map(c => c && pins[c] ? `<td class="pin"><span class="p">${c}</span><span class="net ${netClass(pins[c])}">${esc(pins[c])}</span></td>` : "<td></td>").join("");
+    const sz = sizes[name]; const size = sz ? `${sz.w} / ${sz.l}${sz.m ? " ×" + sz.m : ""}` : "";
+    const isNew = added.has(rowText(name, pins));
+    const note = (state[name] ? `<span class="state ${state[name]}">${stateText[state[name]]}</span> ` : "") + (isNew ? '<span class="tag new">학습에 없던 줄</span>' : "");
+    return `<tr data-k="${k}"><td class="ln">${k + 1}</td><td class="dev ${cls}">${esc(name)}</td><td class="kind">${kind}</td>${cells}${hasSize ? `<td class="num">${esc(size)}</td>` : ""}<td>${note}</td></tr>`;
+  }).join("");
+  return `<div class="gen">
+    ${opts.input ? `<div><div class="stage-lab">입력 문장 (데이터시트 목표값)</div><div class="input-line">${esc(opts.input)}</div></div><div class="arrowdown">↓ FLAN-T5</div>` : ""}
+    <div><div class="stage-lab">모델이 쓴 글 그대로 (${e.how === "beam" ? "빔 탐색" : "무작위 생성"}${e.in_train ? ", 학습 데이터에 있던 구조" : ", 학습 데이터에 없던 구조"})</div><div class="rawout">${raw}</div></div>
+    <div class="arrowdown genarrow">↓ 조각마다 한 줄로 펼침</div>
+    <div class="scroll"><table class="stab"><thead><tr><th></th><th>소자</th><th>종류</th><th>D (드레인) · P</th><th>G (게이트)</th><th>S (소스) · N</th><th>B (바디)</th>${hasSize ? "<th>W / L × 개수</th>" : ""}<th></th></tr></thead><tbody>${body}</tbody></table></div>
+    <p class="note"><span class="net rail">VDD VSS</span> 전원 · <span class="net in">IN1 IN2</span> 입력 · <span class="net out">OUT</span> 출력 · <span class="net bias">VB IB</span> 바이어스 · N# 내부 노드. 저항·커패시터는 양 끝을 P, N으로 씁니다.</p>
+  </div>`;
+}
+/* 글 조각과 표 줄을 서로 짚어 준다 */
+function linkGen(box) {
+  box.querySelectorAll("[data-k]").forEach(el => {
+    const on = v => box.querySelectorAll(`[data-k="${el.dataset.k}"]`).forEach(x => x.classList.toggle("hl", v));
+    el.addEventListener("mouseenter", () => on(true)); el.addEventListener("mouseleave", () => on(false));
+  });
+}
+function renderGenExample() {
+  const i = selectedIdx != null ? selectedIdx : 0, e = E[i];
+  $("genTitle").textContent = `후보 ${e.no}${i === selectedIdx ? " (선택된 구조)" : ""}`;
+  $("genExample").innerHTML = genView(e, {input: DATA.input});
+  linkGen($("genExample"));
+}
+
+function rowText(name, pins) { return [name, ...Object.entries(pins).map(([p, n]) => `${p}=${n}`)].join(" "); }
+
+let current = null;
+function select(i, scroll) { showDetail(i); if (scroll) $("detail").scrollIntoView({behavior: "smooth", block: "start"}); }
+
+function showDetail(i, scale) {
+  current = i; const e = E[i];
+  $("detailTitle").textContent = `후보 ${e.no} 상세${i === selectedIdx ? " (선택된 구조)" : ""}`;
+  $("pick").value = String(i);
+  const variants = e.variants || [];
+  const bv = bestVariant(e);
+  const v = variants.find(x => x.output_scale === scale) || bv || variants[0];
+  const added = new Set(e.nearest.added);
+  // 단계
+  const st = [];
+  const nT = e.rows.filter(r => /^[NP]M/.test(r[0])).length;
+  st.push(e.rules.ok ? ["ok", "1 규칙 검사", "통과", `트랜지스터 ${nT}개, 소자 ${e.rows.length}개`] : ["bad", "1 규칙 검사", "탈락", e.rules.problems.join(", ")]);
+  if (e.state === "waiting") st.push(["skip", "2 크기 정하기", "평가 전", ""], ["skip", "3 동작 판정", "", ""], ["skip", "4 스펙 판정", "", ""]);
+  else if (!e.rules.ok) st.push(["skip", "2 크기 정하기", "건너뜀", ""], ["skip", "3 동작 판정", "", ""], ["skip", "4 스펙 판정", "", ""]);
+  else {
+    const secs = variants.reduce((a, x) => a + (x.seconds || 0), 0);
+    st.push([variants.some(x => x.sizes) ? "ok" : "bad", "2 크기 정하기", `출력단 ${variants.length}가지`, `동작점 시뮬레이션을 되풀이해 W/L을 정함. 걸린 시간 ${Math.round(secs)} s`]);
+    st.push([e.best ? "ok" : "bad", "3 동작 판정", e.best ? "동작" : "동작 안 함", variants.map(x => `${x.output_scale}배: ${x.valid ? "동작" : x.reason}`).join(" / ")]);
+    st.push(e.best ? ["ok", "4 스펙 판정", `${e.best.passed} / ${e.best.judged} 통과`, `출력단 ${e.best.output_scale}배 결과 사용`] : ["skip", "4 스펙 판정", "재지 않음", ""]);
+  }
+  $("steps").innerHTML = st.map(([c, t, v2, why]) => `<div class="step ${c}"><span class="t">${t}</span><span class="v">${esc(v2)}</span><span class="why">${esc(why)}</span></div>`).join("");
+  $("vtabs").innerHTML = variants.length ? `<span class="muted">출력단 전류</span>` + `<a class="sizelink" href="#sizing" onclick="document.getElementById('sizing').open = true">크기 정하기 방법과 한계 ↑</a> ` + variants.map(x => `<button data-s="${x.output_scale}" aria-pressed="${x === v}">${x.output_scale}배 · ${x.valid ? `${x.passed}/${x.judged}` : shortReason(x.reason)}</button>`).join("") : "";
+  // 소자 상태
+  const state = {};
+  if (v) { (v.off || []).forEach(n => state[n] = "off"); (v.triode || []).forEach(n => state[n] = state[n] || "triode"); (v.startup || []).forEach(n => state[n] = state[n] || "startup"); }
+  // 글과 표
+  $("genDetail").innerHTML = genView(e, {sizes: (v && v.sizes) || {}, state, added});
+  linkGen($("genDetail"));
+  // 스펙
+  if (v && v.spec && v.spec.length) {
+    const by = Object.fromEntries(v.spec.map(s => [s.measure, s]));
+    $("specTable").innerHTML = `<table><thead><tr><th>항목</th><th>목표</th><th>측정</th><th>판정</th></tr></thead><tbody>${DATA.spec.map(s => {
+      const c = by[s.measure];
+      return `<tr><td>${esc(s.label)}</td><td class="num">${esc(s.target)}</td><td class="num">${c ? fmt(c.value) + " " + esc(s.unit) + (/^voh/.test(s.measure) && c.value < 0 ? ' <span class="note">(부하 전류를 못 내 출력이 올라가지 못함)</span>' : "") : "—"}</td><td class="st ${c ? c.status : "미측정"}">${c ? (c.status === "PASS" ? "통과" : c.status === "FAIL" ? "미달" : "재지 못함") : "—"}</td></tr>`;
+    }).join("")}</tbody></table>`;
+  } else {
+    $("specTable").innerHTML = `<p class="empty">${e.state === "waiting" ? "아직 시뮬레이션하지 않았습니다." : "동작하지 않아 스펙을 재지 않았습니다."}</p>`;
+  }
+  drawSchematic(e);
+  drawGraph(e, state, added);
+  drawBode(i); drawSteps(i);
+  // 비교
+  const nr = e.nearest;
+  $("diff").innerHTML = `<p>가장 비슷한 학습 구조는 <b>${esc(nr.name)}</b>입니다. 줄 ${nr.same}개가 같고, 후보에만 있는 줄 ${nr.added.length}개, 학습 구조에만 있는 줄 ${nr.removed.length}개입니다. 그 학습 구조를 같은 방식으로 판정하면 ${PART} ${nr.passed}/${NJ}입니다.</p>
+    ${nr.added.length + nr.removed.length ? `<div class="difflist">${nr.added.map(r => `<span class="plus">+ ${esc(r)}</span>`).join("")}${nr.removed.map(r => `<span class="minus">− ${esc(r)}</span>`).join("")}</div>` : `<p class="note">모델이 학습 구조를 그대로 썼습니다.</p>`}`;
+  $("netWrap").hidden = !(v && v.subckt);
+  $("netlist").textContent = (v && v.subckt) || "";
+  renderTiles(i); renderRank(i); renderStrip(i);
+}
+
+/* netlistsvg 회로도를 상자 폭에 맞춰 넣는다 */
+function drawSchematic(e) {
+  const box = $("schem");
+  box.innerHTML = e.schematic || `<p class="empty">이 후보는 회로도를 만들지 않았습니다 (동작한 후보만 만듭니다).</p>`;
+  const svg = box.querySelector("svg");
+  if (!svg) return;
+  const w = svg.getAttribute("width"), h = svg.getAttribute("height");
+  if (w && h && !svg.getAttribute("viewBox")) svg.setAttribute("viewBox", `0 0 ${w} ${h}`);
+  if (w) svg.style.setProperty("--w", parseFloat(w) * 1.3 + "px");
+  svg.removeAttribute("width"); svg.removeAttribute("height");
+}
+
+/* 회로 연결 그림: 소자와 노드를 힘 배치로 놓는다 */
+function drawGraph(e, state, added) {
+  const box = $("graph");
+  if (typeof d3 === "undefined") { box.innerHTML = `<p class="empty">그림 라이브러리를 불러오지 못했습니다.</p>`; return; }
+  const W = 900, H = 540;
+  const nodes = [], links = [], netIndex = {};
+  const net = n => {
+    if (!(n in netIndex)) {
+      netIndex[n] = nodes.length;
+      const node = {id: "n:" + n, label: n, type: "net", cls: netClass(n), port: ["VDD", "VSS", "IN1", "IN2", "OUT"].includes(n)};
+      if (n === "VDD") { node.fy = 30; } if (n === "VSS") { node.fy = H - 30; }
+      if (n === "IN1") { node.fx = 40; node.fy = H * 0.42; } if (n === "IN2") { node.fx = 40; node.fy = H * 0.58; }
+      if (n === "OUT") { node.fx = W - 40; node.fy = H / 2; }
+      nodes.push(node);
+    }
+    return netIndex[n];
+  };
+  e.rows.forEach(([name, pins]) => {
+    const kind = name.startsWith("PM") ? "pm" : name.startsWith("NM") ? "nm" : "rc";
+    const di = nodes.length;
+    nodes.push({id: "d:" + name, label: name, type: "dev", kind, state: state[name], added: added.has(rowText(name, pins))});
+    Object.entries(pins).forEach(([p, n]) => { if (p === "B" && (n === "VDD" || n === "VSS")) return; links.push({source: di, target: net(n), pin: p}); });
+  });
+  const yTarget = d => d.type === "dev" ? (d.kind === "pm" ? H * 0.3 : d.kind === "nm" ? H * 0.7 : H / 2) : H / 2;
+  const sim = d3.forceSimulation(nodes)
+    .force("link", d3.forceLink(links).distance(l => l.pin === "G" ? 70 : 48).strength(0.7))
+    .force("charge", d3.forceManyBody().strength(-260))
+    .force("y", d3.forceY(yTarget).strength(0.12))
+    .force("x", d3.forceX(W / 2).strength(0.03))
+    .force("collide", d3.forceCollide(d => d.type === "dev" ? 26 : 12))
+    .stop();
+  for (let k = 0; k < 400; k++) sim.tick();
+  const clamp = d => { d.x = Math.max(30, Math.min(W - 30, d.x)); d.y = Math.max(20, Math.min(H - 20, d.y)); };
+  nodes.forEach(clamp);
+  box.innerHTML = "";
+  const svg = d3.select(box).append("svg").attr("viewBox", `0 0 ${W} ${H}`).attr("role", "img").attr("aria-label", "회로 연결 그림");
+  const link = svg.append("g").selectAll("path").data(links).join("path").attr("class", l => "g-link " + l.pin);
+  const pinLabel = svg.append("g").selectAll("text").data(links).join("text").text(l => l.pin).style("font-size", "9px");
+  const netG = svg.append("g").selectAll("g").data(nodes.filter(n => n.type === "net")).join("g")
+    .attr("class", n => `g-net ${n.port || n.cls === "bias" ? "port" : ""} ${n.cls}`);
+  netG.append("circle").attr("r", n => n.port ? 9 : n.cls === "bias" ? 6 : 4);
+  netG.append("text").text(n => n.label).attr("dx", n => n.label === "OUT" ? -12 : 10).attr("dy", n => n.label === "VDD" ? -10 : n.label === "VSS" ? 20 : 4).attr("text-anchor", n => n.label === "OUT" ? "end" : "start");
+  const devG = svg.append("g").selectAll("g").data(nodes.filter(n => n.type === "dev")).join("g")
+    .attr("class", n => `g-dev ${n.kind} ${n.state || ""} ${n.added ? "added" : ""}`).style("cursor", "grab");
+  devG.append("rect").attr("x", -22).attr("y", -12).attr("width", 44).attr("height", 24).attr("rx", 4);
+  devG.append("text").text(n => n.label).attr("text-anchor", "middle").attr("dy", 4);
+  devG.append("title").text(n => n.label + (n.state ? ` (${{off: "꺼짐", triode: "포화 영역 밖", startup: "시동 회로"}[n.state]})` : "") + (n.added ? " · 학습 구조에 없던 줄" : ""));
+  const draw = () => {
+    link.attr("d", l => `M${l.source.x},${l.source.y}L${l.target.x},${l.target.y}`);
+    pinLabel.attr("x", l => l.source.x + (l.target.x - l.source.x) * 0.3).attr("y", l => l.source.y + (l.target.y - l.source.y) * 0.3);
+    netG.attr("transform", n => `translate(${n.x},${n.y})`);
+    devG.attr("transform", n => `translate(${n.x},${n.y})`);
+  };
+  draw();
+  devG.call(d3.drag().on("drag", (ev, d) => { d.x = ev.x; d.y = ev.y; clamp(d); draw(); }));
+}
+
+/* 그래프 공용 */
+function axes(svg, x, y, w, h, xTicks, yTicks, xFmt, yFmt) {
+  let out = "";
+  yTicks.forEach(v => out += `<line class="gridline" x1="${x}" x2="${x + w}" y1="${v[0]}" y2="${v[0]}"/><text x="${x - 6}" y="${v[0] + 4}" text-anchor="end">${v[1]}</text>`);
+  xTicks.forEach(v => out += `<line class="gridline" x1="${v[0]}" x2="${v[0]}" y1="${y}" y2="${y + h}"/><text x="${v[0]}" y="${y + h + 14}" text-anchor="middle">${v[1]}</text>`);
+  return out;
+}
+function path(xs, ys, X, Y) {
+  let d = "";
+  for (let k = 0; k < xs.length; k++) { const px = X(xs[k]), py = Y(ys[k]); if (px == null || py == null || !isFinite(px) || !isFinite(py)) continue; d += (d ? "L" : "M") + px.toFixed(1) + "," + py.toFixed(1); }
+  return d;
+}
+const freqLabel = f => f >= 1e9 ? f / 1e9 + "G" : f >= 1e6 ? f / 1e6 + "M" : f >= 1e3 ? f / 1e3 + "k" : String(f);
+
+function drawBode(i) {
+  const others = E.map((e, k) => [e, k]).filter(([e, k]) => e.curves && e.curves.freq && k !== i);
+  const cur = E[i].curves;
+  if (!cur || !cur.freq) { $("bode").innerHTML = `<p class="empty">${E[i].best ? "파형을 아직 받지 않았습니다 (selection_curves.py)." : "동작하지 않은 후보는 파형이 없습니다."}</p>`; $("bodeNote").textContent = ""; if (!others.length) return; }
+  const all = (cur && cur.freq ? [cur] : []).concat(others.map(([e]) => e.curves));
+  const fmin = Math.min(...all.map(c => c.freq[0])), fmax = Math.max(...all.map(c => c.freq[c.freq.length - 1]));
+  const W = 520, L = 46, Rr = 10, h1 = 150, h2 = 110, gap = 30, T = 8;
+  const lx = f => L + (W - L - Rr) * (Math.log10(f) - Math.log10(fmin)) / (Math.log10(fmax) - Math.log10(fmin));
+  const magMax = Math.ceil(Math.max(...all.map(c => Math.max(...c.mag_db))) / 20) * 20, magMin = -40;
+  const Ym = v => T + h1 * (magMax - Math.max(magMin, Math.min(magMax, v))) / (magMax - magMin);
+  const pTop = 0, pBot = -270, y2 = T + h1 + gap;
+  const Yp = v => y2 + h2 * (pTop - Math.max(pBot, Math.min(pTop, v))) / (pTop - pBot);
+  const xt = []; for (let p = Math.ceil(Math.log10(fmin)); p <= Math.floor(Math.log10(fmax)); p += 2) xt.push([lx(10 ** p), freqLabel(10 ** p)]);
+  const ym = []; for (let v = magMin; v <= magMax; v += 40) ym.push([Ym(v), v]);
+  const yp = [[Yp(0), 0], [Yp(-90), -90], [Yp(-180), -180], [Yp(-270), -270]];
+  let out = axes(null, L, T, W - L - Rr, h1, xt, ym) + axes(null, L, y2, W - L - Rr, h2, xt, yp);
+  out += `<line class="l-zero" x1="${L}" x2="${W - Rr}" y1="${Ym(0)}" y2="${Ym(0)}"/><line class="l-zero" x1="${L}" x2="${W - Rr}" y1="${Yp(-180)}" y2="${Yp(-180)}"/>`;
+  out += `<text x="${L}" y="${T - 0}" style="fill:var(--ink)">이득 dB</text><text x="${L}" y="${y2 - 4}" style="fill:var(--ink)">위상 °</text>`;
+  others.forEach(([e]) => { out += `<path class="l-faint" d="${path(e.curves.freq, e.curves.mag_db, lx, Ym)}"/><path class="l-faint" d="${path(e.curves.freq, e.curves.phase, lx, Yp)}"/>`; });
+  if (cur && cur.freq) {
+    out += `<path class="l-main" d="${path(cur.freq, cur.mag_db, lx, Ym)}"/><path class="l-main" d="${path(cur.freq, cur.phase, lx, Yp)}"/>`;
+    const v = bestVariant(E[i]); const by = Object.fromEntries((v ? v.spec : []).map(s => [s.measure, s]));
+    // 0 dB 지점
+    const f = cur.freq, m = cur.mag_db; let fx = null;
+    for (let k = 1; k < f.length; k++) if (m[k - 1] >= 0 && m[k] < 0) { const t = m[k - 1] / (m[k - 1] - m[k]); fx = 10 ** (Math.log10(f[k - 1]) + t * (Math.log10(f[k]) - Math.log10(f[k - 1]))); break; }
+    if (fx) { out += `<circle class="mark" cx="${lx(fx)}" cy="${Ym(0)}" r="4"/><line class="l-zero" x1="${lx(fx)}" x2="${lx(fx)}" y1="${Ym(0)}" y2="${y2 + h2}"/>`; }
+    $("bodeNote").textContent = `DC 이득 ${fmt(m[0])} dB · 대역폭 ${by.ugbw ? fmt(by.ugbw.value) + " MHz" : "—"} · 위상 여유 ${by.pm ? fmt(by.pm.value) + "°" : "—"}`;
+  }
+  out += `<text x="${(W + L) / 2}" y="${y2 + h2 + 28}" text-anchor="middle">주파수 Hz</text>`;
+  $("bode").innerHTML = `<svg viewBox="0 0 ${W} ${y2 + h2 + 34}" role="img" aria-label="개방루프 주파수 응답">${out}</svg>`;
+}
+
+function drawSteps(i) {
+  const cur = E[i].curves;
+  const others = E.map((e, k) => [e, k]).filter(([e, k]) => e.curves && e.curves.slew_t && k !== i);
+  if (!(cur && cur.slew_t) && !others.length) { $("steps2").innerHTML = `<p class="empty">파형이 없습니다.</p>`; return; }
+  const W = 520, L = 46, Rr = 10, h = 110, gap = 34, T = 14;
+  let out = "";
+  [["slew_t", "slew_out", "버퍼 출력 V"], ["settle_t", "settle_out", "반전 증폭기 출력 V"]].forEach(([tk, vk, title], row) => {
+    const y0 = T + row * (h + gap);
+    const set = (cur && cur[tk] ? [cur] : []).concat(others.map(([e]) => e.curves)).filter(c => c[tk]);
+    const tmax = Math.max(...set.map(c => c[tk][c[tk].length - 1]));
+    const vals = set.flatMap(c => c[vk]);
+    let vmin = Math.min(...vals), vmax = Math.max(...vals);
+    vmin = Math.max(-0.5, Math.floor(vmin * 2) / 2); vmax = Math.min(5.5, Math.ceil(vmax * 2) / 2); if (vmax - vmin < 1) vmax = vmin + 1;
+    const X = t => L + (W - L - Rr) * t / tmax, Y = v => y0 + h * (vmax - Math.max(vmin, Math.min(vmax, v))) / (vmax - vmin);
+    const xt = [0, 0.25, 0.5, 0.75, 1].map(p => [X(p * tmax), fmt(p * tmax * 1e6) + "µs"]);
+    const yt = [vmin, (vmin + vmax) / 2, vmax].map(v => [Y(v), fmt(v)]);
+    out += axes(null, L, y0, W - L - Rr, h, xt, yt);
+    out += `<text x="${L}" y="${y0 - 3}" style="fill:var(--ink)">${title}</text>`;
+    others.forEach(([e]) => { if (e.curves[tk]) out += `<path class="l-faint" d="${path(e.curves[tk], e.curves[vk], X, Y)}"/>`; });
+    if (cur && cur[tk]) out += `<path class="l-main" d="${path(cur[tk], cur[vk], X, Y)}"/>`;
+  });
+  $("steps2").innerHTML = `<svg viewBox="0 0 ${W} ${T + 2 * h + gap + 22}" role="img" aria-label="계단 응답">${out}</svg>`;
+}
+
+/* ---------- 이벤트 ---------- */
+document.addEventListener("click", ev => {
+  const t = ev.target.closest(".tile, .rankrow");
+  if (t) { select(+t.dataset.i, true); return; }
+  const b = ev.target.closest(".vtabs button");
+  if (b) showDetail(current, +b.dataset.s);
+});
+document.addEventListener("keydown", ev => {
+  const t = ev.target.closest && ev.target.closest(".rankrow");
+  if (t && (ev.key === "Enter" || ev.key === " ")) { ev.preventDefault(); select(+t.dataset.i, true); }
+});
+$("pick").innerHTML = E.map((e, i) => `<option value="${i}">${e.no} · ${esc(outcome(e).res)}${i === selectedIdx ? " (선택)" : ""}</option>`).join("");
+$("pick").addEventListener("change", ev => showDetail(+ev.target.value));
+
+renderHeader(); renderInput(); renderPdg(); renderModel(); renderLibrary(); renderGenExample(); renderSizingIssues();
+$("schemZoom").addEventListener("click", ev => { const on = $("schem").classList.toggle("full"); ev.target.setAttribute("aria-pressed", on); ev.target.textContent = on ? "화면에 맞추기" : "원래 크기로 보기"; }); renderReasons(); renderNovelty(); renderHist();
+showDetail(selectedIdx ?? 0);
+</script>

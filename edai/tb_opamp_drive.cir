@@ -1,0 +1,21 @@
+* 테스트벤치: OP-Amp - 출력 구동 능력 (VOH, VOL, 출력 전류)
+* 중괄호 자리는 run_sim.py가 채운다. 이 파일을 직접 실행하지 않는다.
+* 입력을 한쪽으로 크게 벌려 출력을 레일로 몰고, {load} 자리에 전류 부하 또는 전압 강제를 넣는다.
+*   ILOAD OUT 0 DC 1m   : 출력에서 1 mA를 빼낼 때의 출력 전압 (VOH)
+*   ILOAD OUT 0 DC -1m  : 출력으로 1 mA를 넣을 때의 출력 전압 (VOL)
+*   VFORCE OUT 0 DC 4.5 : 출력을 4.5 V로 묶었을 때 흐르는 전류 (출력 전류)
+
+.include {pdk_dir}/design.ngspice
+.lib {pdk_dir}/sm141064.ngspice typical
+.include {dut_file}
+
+X1   INP INN OUT VDD 0 opamp
+
+VDD  VDD  0    DC {vdd}
+EVCM VCM  0    VDD 0 0.5
+VID  INP  VCM  DC {vid}
+VINN INN  VCM  DC 0
+{load}
+
+.op
+.end

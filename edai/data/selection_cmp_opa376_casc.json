@@ -1,0 +1,271 @@
+{
+ "source": "cascode.py on cmp_opa376_v3",
+ "entries": [
+  {
+   "how": "sample",
+   "in_train": false,
+   "table": "PM1 D=VB1 G=VB1 S=VDD B=VDD ; PM2 D=VB2 G=VB2 S=VDD B=VDD ; PM3 D=OUT G=N1 S=VDD B=VDD ; PM4 D=N2 G=VB2 S=VDD B=VDD ; PM5 D=N1_PM5 G=N3 S=VDD B=VDD ; PM6 D=N3_PM6 G=N3 S=VDD B=VDD ; PM7 D=N4 G=N5 S=VDD B=VDD ; PM8 D=N5 G=N5 S=VDD B=VDD ; NM1 D=OUT G=N4 S=VSS B=VSS ; NM2 D=VB1 G=N4 S=VSS B=VSS ; NM3 D=N1_NM3 G=IN1 S=N6 B=VSS ; NM4 D=N3_NM4 G=IN2 S=N6 B=VSS ; NM5 D=N6 G=N4 S=VSS B=VSS ; NM6 D=N4 G=N4 S=VSS B=VSS ; NM7 D=N5 G=N2 S=VSS B=VSS ; NM8 D=N2 G=N2 S=VSS B=VSS ; NM9 D=VB2 G=N2 S=N7 B=VSS ; R1 P=N7 N=VSS ; PMC1 D=N1 G=VBCP S=N1_PM5 B=VDD ; NMC2 D=N1 G=VBCN S=N1_NM3 B=VSS ; PMC3 D=N3 G=VBCP S=N3_PM6 B=VDD ; NMC4 D=N3 G=VBCN S=N3_NM4 B=VSS",
+   "steps": {
+    "rules": {
+     "ok": true
+    }
+   },
+   "variants": [
+    {
+     "selection": "cmp_opa376_v3",
+     "cascoded_nodes": [
+      "N1",
+      "N3"
+     ],
+     "scale": 50.0,
+     "valid": true,
+     "reason": "",
+     "avd": 120.01111539046805,
+     "gain_unloaded": 130.8428095505167,
+     "ugbw": 17712414.18624425,
+     "idd": 0.001131131690046451,
+     "passed": 3,
+     "judged": 5,
+     "spec": [
+      {
+       "measure": "avd",
+       "label": "대신호 차동 전압이득",
+       "unit": "dB",
+       "value": 120.01111539046805,
+       "target": "≥ 120, ≤ 134 dB",
+       "status": "PASS"
+      },
+      {
+       "measure": "cmrr",
+       "label": "공통모드 제거비",
+       "unit": "dB",
+       "value": 3.2870636834896496,
+       "target": "≥ 76, ≤ 90 dB",
+       "status": "FAIL"
+      },
+      {
+       "measure": "idd",
+       "label": "공급 전류",
+       "unit": "µA",
+       "value": 1131.131690046451,
+       "target": "≥ 760, ≤ 950 µA",
+       "status": "FAIL"
+      },
+      {
+       "measure": "ugbw",
+       "label": "단위이득 대역폭",
+       "unit": "MHz",
+       "value": 17.71241418624425,
+       "target": "≥ 5.5 MHz",
+       "status": "PASS"
+      },
+      {
+       "measure": "sr",
+       "label": "슬루율 (단위이득)",
+       "unit": "V/µs",
+       "value": 14.439327962853437,
+       "target": "≥ 2 V/µs",
+       "status": "PASS"
+      }
+     ],
+     "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 VB2 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM3 OUT N1 VDD VDD pfet_06v0 w=100u l=1u m=20\nXPM4 N2 VB2 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM5 N1_PM5 N3 VDD VDD pfet_06v0 w=23.5u l=1u\nXPM6 N3_PM6 N3 VDD VDD pfet_06v0 w=23.5u l=1u\nXPM7 N4 N5 VDD VDD pfet_06v0 w=60.6u l=2u\nXPM8 N5 N5 VDD VDD pfet_06v0 w=45.6u l=2u\nXNM1 OUT N4 VSS VSS nfet_06v0 w=93u l=2u m=9\nXNM2 VB1 N4 VSS VSS nfet_06v0 w=22.7u l=2u\nXNM3 N1_NM3 INP N6 VSS nfet_06v0 w=8.19u l=1u\nXNM4 N3_NM4 INN N6 VSS nfet_06v0 w=8.19u l=1u\nXNM5 N6 N4 VSS VSS nfet_06v0 w=14.2u l=2u\nXNM6 N4 N4 VSS VSS nfet_06v0 w=13.2u l=2u\nXNM7 N5 N2 VSS VSS nfet_06v0 w=9.91u l=2u\nXNM8 N2 N2 VSS VSS nfet_06v0 w=5.78u l=2u\nXNM9 VB2 N2 N7 VSS nfet_06v0 w=6.37u l=1u\nR1 N7 VSS 10k\nXPMC1 N1 VBCP N1_PM5 VDD pfet_06v0 w=38.2u l=1u\nXNMC2 N1 VBCN N1_NM3 VSS nfet_06v0 w=8.19u l=1u\nXPMC3 N3 VBCP N3_PM6 VDD pfet_06v0 w=38.2u l=1u\nXNMC4 N3 VBCN N3_NM4 VSS nfet_06v0 w=8.19u l=1u\nXPMB1 VBCP VBCP VBCP_S1 VDD pfet_06v0 w=72.9u l=2u\nRBCVBCP VBCP_S1 VDD 26473.2\nXNMF1 VBCP REF_NB VSS VSS nfet_06v0 w=24u l=2u\nXNMB2 VBCN VBCN VBCN_S1 VSS nfet_06v0 w=14.4u l=2u\nXNMB3 VBCN_S1 VBCN_S1 VBCN_S2 VSS nfet_06v0 w=14.4u l=2u\nXNMB4 VBCN_S2 VBCN_S2 VBCN_S3 VSS nfet_06v0 w=14.4u l=2u\nRBCVBCN VBCN_S3 VSS 4011.21\nXPMF2 VBCN REF_PB VDD VDD pfet_06v0 w=58.6u l=2u m=2\n* 기준 전류 10 uA: beta-multiplier + startup (bias_reference.py)\nXREF_MN1 REF_NB REF_NB VSS VSS nfet_06v0 w=12u l=2u\nXREF_MN2 REF_PB REF_NB REF_NS VSS nfet_06v0 w=48u l=2u\nRREF_S REF_NS VSS 8353.6\nXREF_MP3 REF_PB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MP4 REF_NB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MS1 REF_SX VSS VDD VDD pfet_06v0 w=0.5u l=20u\nXREF_MS2 REF_PB REF_SX VSS VSS nfet_06v0 w=2u l=1u\nXREF_MS3 REF_SX REF_NB VSS VSS nfet_06v0 w=5u l=1u\n* startup (bias_convert.py)\nXSU_MS1 SU_SX VSS VDD VDD pfet_06v0 w=0.5u l=20u\nXSU_MS2 VB2 SU_SX VSS VSS nfet_06v0 w=2u l=1u\nXSU_MS3 SU_SX N2 VSS VSS nfet_06v0 w=5u l=1u\n.ends opamp\n",
+     "sizes": {
+      "PM1": {
+       "w": "68.7u",
+       "l": "2u"
+      },
+      "PM2": {
+       "w": "68.7u",
+       "l": "2u"
+      },
+      "PM4": {
+       "w": "68.7u",
+       "l": "2u"
+      },
+      "PM3": {
+       "w": "100u",
+       "l": "1u",
+       "m": "20"
+      },
+      "PM5": {
+       "w": "23.5u",
+       "l": "1u"
+      },
+      "PM6": {
+       "w": "23.5u",
+       "l": "1u"
+      },
+      "PM7": {
+       "w": "60.6u",
+       "l": "2u"
+      },
+      "PM8": {
+       "w": "45.6u",
+       "l": "2u"
+      },
+      "NM1": {
+       "w": "93u",
+       "l": "2u",
+       "m": "9"
+      },
+      "NM2": {
+       "w": "22.7u",
+       "l": "2u"
+      },
+      "NM5": {
+       "w": "14.2u",
+       "l": "2u"
+      },
+      "NM6": {
+       "w": "13.2u",
+       "l": "2u"
+      },
+      "NM3": {
+       "w": "8.19u",
+       "l": "1u"
+      },
+      "NM4": {
+       "w": "8.19u",
+       "l": "1u"
+      },
+      "NM7": {
+       "w": "9.91u",
+       "l": "2u"
+      },
+      "NM8": {
+       "w": "5.78u",
+       "l": "2u"
+      },
+      "NM9": {
+       "w": "6.37u",
+       "l": "1u"
+      },
+      "PMC1": {
+       "w": "38.2u",
+       "l": "1u"
+      },
+      "NMC2": {
+       "w": "8.19u",
+       "l": "1u"
+      },
+      "PMC3": {
+       "w": "38.2u",
+       "l": "1u"
+      },
+      "NMC4": {
+       "w": "8.19u",
+       "l": "1u"
+      },
+      "PMB1": {
+       "w": "72.9u",
+       "l": "2u"
+      },
+      "NMF1": {
+       "w": "24u",
+       "l": "2u"
+      },
+      "NMB2": {
+       "w": "14.4u",
+       "l": "2u"
+      },
+      "NMB3": {
+       "w": "14.4u",
+       "l": "2u"
+      },
+      "NMB4": {
+       "w": "14.4u",
+       "l": "2u"
+      },
+      "PMF2": {
+       "w": "58.6u",
+       "l": "2u",
+       "m": "2"
+      },
+      "RBCVBCP": {
+       "value": "26473.2"
+      },
+      "RBCVBCN": {
+       "value": "4011.21"
+      }
+     },
+     "bias": {
+      "nodes": {
+       "VB1": {
+        "kind": "self",
+        "why": "이미 PM1 가 전압을 만듦"
+       },
+       "VB2": {
+        "kind": "self",
+        "why": "이미 PM2 가 전압을 만듦"
+       },
+       "VBCP": {
+        "kind": "gate_only",
+        "why": "게이트에만 붙음"
+       },
+       "VBCN": {
+        "kind": "gate_only",
+        "why": "게이트에만 붙음"
+       }
+      },
+      "added": [
+       "PMB1",
+       "RBCVBCP",
+       "NMF1",
+       "NMB2",
+       "NMB3",
+       "NMB4",
+       "RBCVBCN",
+       "PMF2"
+      ],
+      "fixed": {
+       "RBCVBCP": {
+        "value": "26473.2"
+       },
+       "NMF1": {
+        "w": "24u",
+        "l": "2u"
+       },
+       "RBCVBCN": {
+        "value": "4011.21"
+       },
+       "PMF2": {
+        "w": "58.6u",
+        "l": "2u",
+        "m": "2"
+       }
+      },
+      "reference": true,
+      "free_loops": [],
+      "completed_loops": [],
+      "unresolved": []
+     },
+     "powerup": {
+      "ok": true,
+      "vout_op": 2.499998,
+      "vout_on": 2.499998,
+      "idd_op": 0.00113113,
+      "idd_on": 0.001131131
+     },
+     "s": 112,
+     "output_scale": 50.0
+    }
+   ],
+   "best": {
+    "output_scale": 50.0,
+    "passed": 3,
+    "judged": 5,
+    "idd": 0.001131131690046451
+   }
+  }
+ ],
+ "summary": {
+  "selected": 0,
+  "candidates": 1,
+  "rules_ok": 1,
+  "working": 1,
+  "ranking": [
+   0
+  ],
+  "rank_rule": "v3+cascode"
+ }
+}

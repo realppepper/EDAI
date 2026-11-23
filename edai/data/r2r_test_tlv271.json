@@ -1,0 +1,366 @@
+[
+ {
+  "structure": "A_PMOS증폭",
+  "chip": "tlv271",
+  "scale": 5.0,
+  "valid": false,
+  "reason": "출력이 VCM 에서 벗어남",
+  "passed": null,
+  "judged": null,
+  "spec": null,
+  "gain_unloaded": null,
+  "subckt": null,
+  "bias": {
+   "nodes": {
+    "VB1": {
+     "kind": "gate_only",
+     "why": "게이트에만 붙음"
+    },
+    "VB2": {
+     "kind": "gate_only",
+     "why": "게이트에만 붙음"
+    },
+    "VB3": {
+     "kind": "gate_only",
+     "why": "게이트에만 붙음"
+    },
+    "VB4": {
+     "kind": "gate_only",
+     "why": "게이트에만 붙음"
+    },
+    "IB1": {
+     "kind": "current",
+     "why": "전류 단자"
+    },
+    "IB2": {
+     "kind": "current",
+     "why": "전류 단자"
+    }
+   },
+   "added": [
+    "NMB1",
+    "RBCVB1",
+    "PMF1",
+    "PMB2",
+    "RBCVB2",
+    "NMF2",
+    "PMB3",
+    "NMF3",
+    "NMB4",
+    "PMF4",
+    "NMF5",
+    "PMF5"
+   ],
+   "fixed": {
+    "RBCVB1": {
+     "value": "28174.6"
+    },
+    "PMF1": {
+     "w": "58.6u",
+     "l": "2u",
+     "m": "2"
+    },
+    "RBCVB2": {
+     "value": "26473.2"
+    },
+    "NMF2": {
+     "w": "24u",
+     "l": "2u"
+    },
+    "NMF3": {
+     "w": "24u",
+     "l": "2u"
+    },
+    "PMF4": {
+     "w": "58.6u",
+     "l": "2u",
+     "m": "2"
+    },
+    "NMF5": {
+     "w": "24u",
+     "l": "2u"
+    },
+    "PMF5": {
+     "w": "58.6u",
+     "l": "2u",
+     "m": "2"
+    }
+   },
+   "reference": true,
+   "free_loops": [],
+   "completed_loops": [],
+   "unresolved": []
+  },
+  "s": 3
+ },
+ {
+  "structure": "A_PMOS증폭",
+  "chip": "tlv271",
+  "scale": 20.0,
+  "valid": true,
+  "reason": "",
+  "passed": 5,
+  "judged": 5,
+  "spec": [
+   {
+    "measure": "avd",
+    "label": "대신호 차동 전압이득",
+    "unit": "dB",
+    "value": 104.91596695572085,
+    "target": "≥ 97 dB",
+    "status": "PASS"
+   },
+   {
+    "measure": "cmrr",
+    "label": "공통모드 제거비",
+    "unit": "dB",
+    "value": 73.19186177009871,
+    "target": "≥ 65 dB",
+    "status": "PASS"
+   },
+   {
+    "measure": "idd",
+    "label": "공급 전류",
+    "unit": "µA",
+    "value": 581.1646797627118,
+    "target": "≥ 440 µA",
+    "status": "PASS"
+   },
+   {
+    "measure": "ugbw",
+    "label": "단위이득 대역폭",
+    "unit": "MHz",
+    "value": 32.95084598770504,
+    "target": "≥ 2.4 MHz",
+    "status": "PASS"
+   },
+   {
+    "measure": "sr",
+    "label": "슬루율 (단위이득)",
+    "unit": "V/µs",
+    "value": 7.3979414146866675,
+    "target": "≥ 1.92 V/µs",
+    "status": "PASS"
+   }
+  ],
+  "gain_unloaded": 121.98284969694443,
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 N1 VB3 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 N2 VB3 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM3 N6 VB2 N2 VDD pfet_06v0 w=45.6u l=1u\nXPM4 N3 INN IB2 VDD pfet_06v0 w=38.7u l=1u\nXPM5 N4 INP IB2 VDD pfet_06v0 w=38.7u l=1u\nXPM6 N5 VB2 N1 VDD pfet_06v0 w=45.4u l=1u\nXNM1 N2 INP IB1 VSS nfet_06v0 w=8.66u l=1u\nXNM2 N1 INN IB1 VSS nfet_06v0 w=8.7u l=1u\nXNM3 N6 VB1 N4 VSS nfet_06v0 w=9.78u l=1u\nXNM4 N5 VB1 N3 VSS nfet_06v0 w=9.75u l=1u\nXNM5 N3 N5 VSS VSS nfet_06v0 w=11.7u l=1u\nXNM6 N4 N5 VSS VSS nfet_06v0 w=11.7u l=1u\nXPM7 OUT N6 VDD VDD pfet_06v0 w=92.7u l=1u m=11\nXNM7 OUT VB4 VSS VSS nfet_06v0 w=99.7u l=2u m=3\nXNMB1 VB1 VB1 VB1_S1 VSS nfet_06v0 w=14.9u l=2u\nRBCVB1 VB1_S1 VSS 28174.6\nXPMF1 VB1 REF_PB VDD VDD pfet_06v0 w=58.6u l=2u m=2\nXPMB2 VB2 VB2 VB2_S1 VDD pfet_06v0 w=72.9u l=2u\nRBCVB2 VB2_S1 VDD 26473.2\nXNMF2 VB2 REF_NB VSS VSS nfet_06v0 w=24u l=2u\nXPMB3 VB3 VB3 VDD VDD pfet_06v0 w=68.7u l=2u\nXNMF3 VB3 REF_NB VSS VSS nfet_06v0 w=24u l=2u\nXNMB4 VB4 VB4 VSS VSS nfet_06v0 w=15u l=2u\nXPMF4 VB4 REF_PB VDD VDD pfet_06v0 w=58.6u l=2u m=2\nXNMF5 IB1 REF_NB VSS VSS nfet_06v0 w=24u l=2u\nXPMF5 IB2 REF_PB VDD VDD pfet_06v0 w=58.6u l=2u m=2\n* 기준 전류 10 uA: beta-multiplier + startup (bias_reference.py)\nXREF_MN1 REF_NB REF_NB VSS VSS nfet_06v0 w=12u l=2u\nXREF_MN2 REF_PB REF_NB REF_NS VSS nfet_06v0 w=48u l=2u\nRREF_S REF_NS VSS 8353.6\nXREF_MP3 REF_PB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MP4 REF_NB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MS1 REF_SX VSS VDD VDD pfet_06v0 w=0.5u l=20u\nXREF_MS2 REF_PB REF_SX VSS VSS nfet_06v0 w=2u l=1u\nXREF_MS3 REF_SX REF_NB VSS VSS nfet_06v0 w=5u l=1u\n.ends opamp\n",
+  "bias": {
+   "nodes": {
+    "VB1": {
+     "kind": "gate_only",
+     "why": "게이트에만 붙음"
+    },
+    "VB2": {
+     "kind": "gate_only",
+     "why": "게이트에만 붙음"
+    },
+    "VB3": {
+     "kind": "gate_only",
+     "why": "게이트에만 붙음"
+    },
+    "VB4": {
+     "kind": "gate_only",
+     "why": "게이트에만 붙음"
+    },
+    "IB1": {
+     "kind": "current",
+     "why": "전류 단자"
+    },
+    "IB2": {
+     "kind": "current",
+     "why": "전류 단자"
+    }
+   },
+   "added": [
+    "NMB1",
+    "RBCVB1",
+    "PMF1",
+    "PMB2",
+    "RBCVB2",
+    "NMF2",
+    "PMB3",
+    "NMF3",
+    "NMB4",
+    "PMF4",
+    "NMF5",
+    "PMF5"
+   ],
+   "fixed": {
+    "RBCVB1": {
+     "value": "28174.6"
+    },
+    "PMF1": {
+     "w": "58.6u",
+     "l": "2u",
+     "m": "2"
+    },
+    "RBCVB2": {
+     "value": "26473.2"
+    },
+    "NMF2": {
+     "w": "24u",
+     "l": "2u"
+    },
+    "NMF3": {
+     "w": "24u",
+     "l": "2u"
+    },
+    "PMF4": {
+     "w": "58.6u",
+     "l": "2u",
+     "m": "2"
+    },
+    "NMF5": {
+     "w": "24u",
+     "l": "2u"
+    },
+    "PMF5": {
+     "w": "58.6u",
+     "l": "2u",
+     "m": "2"
+    }
+   },
+   "reference": true,
+   "free_loops": [],
+   "completed_loops": [],
+   "unresolved": []
+  },
+  "s": 19
+ },
+ {
+  "structure": "A_PMOS증폭",
+  "chip": "tlv271",
+  "scale": 50.0,
+  "valid": true,
+  "reason": "",
+  "passed": 5,
+  "judged": 5,
+  "spec": [
+   {
+    "measure": "avd",
+    "label": "대신호 차동 전압이득",
+    "unit": "dB",
+    "value": 110.92795246559545,
+    "target": "≥ 97 dB",
+    "status": "PASS"
+   },
+   {
+    "measure": "cmrr",
+    "label": "공통모드 제거비",
+    "unit": "dB",
+    "value": 73.32278020934407,
+    "target": "≥ 65 dB",
+    "status": "PASS"
+   },
+   {
+    "measure": "idd",
+    "label": "공급 전류",
+    "unit": "µA",
+    "value": 1201.9296162632982,
+    "target": "≥ 440 µA",
+    "status": "PASS"
+   },
+   {
+    "measure": "ugbw",
+    "label": "단위이득 대역폭",
+    "unit": "MHz",
+    "value": 31.705176272733905,
+    "target": "≥ 2.4 MHz",
+    "status": "PASS"
+   },
+   {
+    "measure": "sr",
+    "label": "슬루율 (단위이득)",
+    "unit": "V/µs",
+    "value": 16.98689657787614,
+    "target": "≥ 1.92 V/µs",
+    "status": "PASS"
+   }
+  ],
+  "gain_unloaded": 121.65910013455735,
+  "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 N1 VB3 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM2 N2 VB3 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM3 N6 VB2 N2 VDD pfet_06v0 w=45.6u l=1u\nXPM4 N3 INN IB2 VDD pfet_06v0 w=38.7u l=1u\nXPM5 N4 INP IB2 VDD pfet_06v0 w=38.7u l=1u\nXPM6 N5 VB2 N1 VDD pfet_06v0 w=45.4u l=1u\nXNM1 N2 INP IB1 VSS nfet_06v0 w=8.66u l=1u\nXNM2 N1 INN IB1 VSS nfet_06v0 w=8.7u l=1u\nXNM3 N6 VB1 N4 VSS nfet_06v0 w=9.78u l=1u\nXNM4 N5 VB1 N3 VSS nfet_06v0 w=9.75u l=1u\nXNM5 N3 N5 VSS VSS nfet_06v0 w=11.7u l=1u\nXNM6 N4 N5 VSS VSS nfet_06v0 w=11.7u l=1u\nXPM7 OUT N6 VDD VDD pfet_06v0 w=100u l=1u m=20\nXNM7 OUT VB4 VSS VSS nfet_06v0 w=93.5u l=2u m=8\nXNMB1 VB1 VB1 VB1_S1 VSS nfet_06v0 w=14.9u l=2u\nRBCVB1 VB1_S1 VSS 28174.6\nXPMF1 VB1 REF_PB VDD VDD pfet_06v0 w=58.6u l=2u m=2\nXPMB2 VB2 VB2 VB2_S1 VDD pfet_06v0 w=72.9u l=2u\nRBCVB2 VB2_S1 VDD 26473.2\nXNMF2 VB2 REF_NB VSS VSS nfet_06v0 w=24u l=2u\nXPMB3 VB3 VB3 VDD VDD pfet_06v0 w=68.7u l=2u\nXNMF3 VB3 REF_NB VSS VSS nfet_06v0 w=24u l=2u\nXNMB4 VB4 VB4 VSS VSS nfet_06v0 w=15u l=2u\nXPMF4 VB4 REF_PB VDD VDD pfet_06v0 w=58.6u l=2u m=2\nXNMF5 IB1 REF_NB VSS VSS nfet_06v0 w=24u l=2u\nXPMF5 IB2 REF_PB VDD VDD pfet_06v0 w=58.6u l=2u m=2\n* 기준 전류 10 uA: beta-multiplier + startup (bias_reference.py)\nXREF_MN1 REF_NB REF_NB VSS VSS nfet_06v0 w=12u l=2u\nXREF_MN2 REF_PB REF_NB REF_NS VSS nfet_06v0 w=48u l=2u\nRREF_S REF_NS VSS 8353.6\nXREF_MP3 REF_PB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MP4 REF_NB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MS1 REF_SX VSS VDD VDD pfet_06v0 w=0.5u l=20u\nXREF_MS2 REF_PB REF_SX VSS VSS nfet_06v0 w=2u l=1u\nXREF_MS3 REF_SX REF_NB VSS VSS nfet_06v0 w=5u l=1u\n.ends opamp\n",
+  "bias": {
+   "nodes": {
+    "VB1": {
+     "kind": "gate_only",
+     "why": "게이트에만 붙음"
+    },
+    "VB2": {
+     "kind": "gate_only",
+     "why": "게이트에만 붙음"
+    },
+    "VB3": {
+     "kind": "gate_only",
+     "why": "게이트에만 붙음"
+    },
+    "VB4": {
+     "kind": "gate_only",
+     "why": "게이트에만 붙음"
+    },
+    "IB1": {
+     "kind": "current",
+     "why": "전류 단자"
+    },
+    "IB2": {
+     "kind": "current",
+     "why": "전류 단자"
+    }
+   },
+   "added": [
+    "NMB1",
+    "RBCVB1",
+    "PMF1",
+    "PMB2",
+    "RBCVB2",
+    "NMF2",
+    "PMB3",
+    "NMF3",
+    "NMB4",
+    "PMF4",
+    "NMF5",
+    "PMF5"
+   ],
+   "fixed": {
+    "RBCVB1": {
+     "value": "28174.6"
+    },
+    "PMF1": {
+     "w": "58.6u",
+     "l": "2u",
+     "m": "2"
+    },
+    "RBCVB2": {
+     "value": "26473.2"
+    },
+    "NMF2": {
+     "w": "24u",
+     "l": "2u"
+    },
+    "NMF3": {
+     "w": "24u",
+     "l": "2u"
+    },
+    "PMF4": {
+     "w": "58.6u",
+     "l": "2u",
+     "m": "2"
+    },
+    "NMF5": {
+     "w": "24u",
+     "l": "2u"
+    },
+    "PMF5": {
+     "w": "58.6u",
+     "l": "2u",
+     "m": "2"
+    }
+   },
+   "reference": true,
+   "free_loops": [],
+   "completed_loops": [],
+   "unresolved": []
+  },
+  "s": 16
+ }
+]

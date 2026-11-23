@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EDAI 설계</title>
+<style>
+:root { --bg:#f4f5f8; --panel:#fff; --fg:#1d2330; --muted:#6b7280; --line:#e3e6ec; --accent:#2856c7;
+        --ok:#1a7f37; --bad:#c62828; --run:#b26a00; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#101318; --panel:#181c23; --fg:#e7e9ee;
+        --muted:#9aa3b2; --line:#2c313b; --accent:#7aa2ff; --ok:#4cc26b; --bad:#ef6b6b; --run:#e0a13c; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--fg); font:14px/1.5 "Malgun Gothic","Apple SD Gothic Neo",sans-serif; }
+.wrap { display:grid; grid-template-columns:320px 1fr; gap:16px; padding:16px; height:100vh; }
+aside { display:flex; flex-direction:column; gap:16px; min-height:0; }
+.box { background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:14px; }
+.box.grow { flex:1; min-height:0; display:flex; flex-direction:column; }
+h1 { font-size:18px; margin:0 0 2px; } h2 { font-size:15px; margin:0 0 10px; }
+.sub { color:var(--muted); font-size:12px; }
+label { display:block; font-size:12px; color:var(--muted); margin:8px 0 4px; }
+input[type=text], input[type=file] { width:100%; font:inherit; color:inherit; }
+input[type=text] { padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--bg); }
+button { font:inherit; border:1px solid var(--accent); background:var(--accent); color:#fff; border-radius:6px;
+         padding:6px 12px; cursor:pointer; margin-top:10px; }
+button.ghost { background:none; color:var(--accent); padding:3px 8px; margin:0; font-size:12px; }
+button:disabled { opacity:.5; cursor:default; }
+.list { overflow:auto; flex:1; margin:0 -6px; }
+.item { padding:8px 6px; border-radius:6px; cursor:pointer; border-bottom:1px solid var(--line); }
+.item:hover, .item.on { background:var(--bg); }
+.item .t { font-weight:600; } .item .m { font-size:12px; color:var(--muted); }
+.st.done { color:var(--ok); } .st.failed { color:var(--bad); } .st.running { color:var(--run); }
+.view { background:var(--panel); border:1px solid var(--line); border-radius:10px; display:flex; flex-direction:column; min-height:0; }
+.bar { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--line); }
+iframe { flex:1; width:100%; border:0; border-radius:0 0 10px 10px; background:#fff; min-height:0; }
+.empty { margin:auto; color:var(--muted); padding:24px; text-align:center; }
+.msg { font-size:12px; margin-top:6px; } .msg.bad { color:var(--bad); }
+.drop { display:flex; align-items:center; justify-content:center; text-align:center; min-height:110px; margin:0;
+        border:2px dashed var(--line); border-radius:8px; color:var(--muted); font-size:13px; cursor:pointer; padding:10px; }
+.drop.over { border-color:var(--accent); color:var(--accent); }
+.drop.has { border-style:solid; border-color:var(--accent); color:var(--fg); }
+@media (max-width: 760px) { .wrap { grid-template-columns:1fr; height:auto; } .view { min-height:80vh; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <aside>
+    <div class="box">
+      <h1>EDAI 설계</h1>
+      <div class="sub">데이터시트 → 분석 → 모델 구조 → 규칙 → 하네스 → 회로도</div>
+      <h2 style="margin-top:14px">새 설계</h2>
+      <label class="drop" id="drop" for="pdf">
+        <span id="dropText">데이터시트 PDF를 끌어다 놓거나<br><u>클릭해서 고르세요</u></span>
+        <input type="file" id="pdf" accept="application/pdf" hidden>
+      </label>
+      <button id="start" disabled>설계 시작</button>
+      <div class="msg" id="msg"></div>
+    </div>
+    <div class="box grow">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h2 style="margin:0">지난 결과 불러오기</h2>
+        <button class="ghost" id="reload">새로고침</button>
+      </div>
+      <div class="sub" style="margin:4px 0 8px">팀원에게 받은 실행 폴더는 runs/ 에 넣으면 여기 나와요</div>
+      <div class="list" id="list"></div>
+    </div>
+  </aside>
+  <div class="view">
+    <div class="bar">
+      <div><b id="vtitle">결과</b> <span class="sub" id="vsub"></span></div>
+      <div><button class="ghost" id="memo" hidden>메모 고치기</button>
+           <span id="rerunBox" hidden><label for="fromStep" class="sub">다시 돌릴 단계</label>
+           <select id="fromStep"></select>
+           <button class="ghost" id="retry">이 단계부터 다시</button>
+           <button class="ghost" id="stop" hidden>멈추기</button></span>
+           <a id="open" class="sub" target="_blank" hidden>새 창으로 열기</a></div>
+    </div>
+    <div class="empty" id="empty">왼쪽에서 새 설계를 시작하거나 지난 결과를 고르세요</div>
+    <iframe id="frame" hidden title="결과 화면"></iframe>
+  </div>
+</div>
+<script>
+const STATE = { running: "진행 중", done: "완료", failed: "실패" };
+const STEP_KEYS = ["extract", "candidates", "select", "fix", "rank", "rules", "harness", "schematic"];
+let current = null, runs = [];
+
+function esc(s) { return String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c])); }
+
+async function loadRuns() {
+  try { runs = await (await fetch("/api/runs")).json(); } catch (e) { return; }
+  const list = document.getElementById("list");
+  list.innerHTML = runs.length ? "" : "<div class='sub'>아직 없어요</div>";
+  for (const r of runs) {
+    const div = document.createElement("div");
+    div.className = "item" + (r.id === current ? " on" : "");
+    div.innerHTML = `<div class="t">${esc(r.title)}</div><div class="m">${line(r)}</div>`;
+    div.onclick = () => openRun(r.id);
+    list.appendChild(div);
+  }
+  if (current) updateBar();
+}
+
+// 모든 실행이 같은 형식: 월/일 시:분 · 메모 · 상태 · 하네스 결과
+function line(r) {
+  const parts = [esc(r.when), esc(r.memo)];
+  const state = r.state === "running" ? `진행 중 (${r.done}/${r.total}${r.current ? " · " + esc(r.current) : ""})`
+              : r.state === "failed" ? `실패 (${r.done}/${r.total})` : (STATE[r.state] || "");
+  parts.push(`<span class="st ${r.state}">${state}</span>`);
+  if (r.pass_rate != null) parts.push(`하네스 ${r.pass_rate}%`);
+  return parts.filter(Boolean).join(" · ");
+}
+
+function updateBar() {
+  const r = runs.find(x => x.id === current);
+  document.getElementById("vtitle").textContent = r ? r.title : current;
+  document.getElementById("vsub").innerHTML = r ? line(r) : "";
+  document.getElementById("memo").hidden = !r;
+  const box = document.getElementById("rerunBox");
+  box.hidden = !(r && r.steps);
+  const running = r && r.state === "running";
+  document.getElementById("retry").textContent = running ? "멈추고 이 단계부터 다시" : "이 단계부터 다시";
+  document.getElementById("stop").hidden = !running;
+  if (r && r.steps && box.dataset.run !== r.id + r.state + r.done) {   // 고른 값이 10초마다 되돌아가지 않게
+    box.dataset.run = r.id + r.state + r.done;
+    document.getElementById("fromStep").innerHTML = r.steps.map(s =>
+      `<option value="${s.key}" ${s.key === r.suggest_from ? "selected" : ""}>${esc(s.title)}</option>`).join("");
+  }
+}
+
+function openRun(id) {
+  current = id;
+  const frame = document.getElementById("frame");
+  frame.src = `/runs/${encodeURIComponent(id)}/report.html?t=${Date.now()}`;
+  frame.hidden = false;
+  document.getElementById("empty").hidden = true;
+  const open = document.getElementById("open");
+  open.href = `/runs/${encodeURIComponent(id)}/report.html`;
+  open.hidden = false;
+  loadRuns();
+}
+
+let chosen = null;
+function choose(file) {
+  const msg = document.getElementById("msg");
+  if (!file || !/\.pdf$/i.test(file.name)) { msg.className = "msg bad"; msg.textContent = "PDF 파일만 넣을 수 있어요"; return; }
+  chosen = file;
+  msg.textContent = "";
+  document.getElementById("dropText").textContent = file.name;
+  document.getElementById("drop").classList.add("has");
+  document.getElementById("start").disabled = false;
+}
+const drop = document.getElementById("drop");
+document.getElementById("pdf").onchange = e => choose(e.target.files[0]);
+drop.ondragover = e => { e.preventDefault(); drop.classList.add("over"); };
+drop.ondragleave = () => drop.classList.remove("over");
+drop.ondrop = e => { e.preventDefault(); drop.classList.remove("over"); choose(e.dataTransfer.files[0]); };
+
+document.getElementById("start").onclick = async () => {
+  const file = chosen;
+  const title = file ? file.name.replace(/\.pdf$/i, "") : "";
+  const msg = document.getElementById("msg");
+  if (!file) { msg.className = "msg bad"; msg.textContent = "PDF 파일을 고르세요"; return; }
+  const btn = document.getElementById("start");
+  btn.disabled = true; msg.className = "msg"; msg.textContent = "올리는 중…";
+  try {
+    const res = await fetch(`/api/run?title=${encodeURIComponent(title)}&filename=${encodeURIComponent(file.name)}`,
+                            { method: "POST", body: file });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error);
+    msg.textContent = "시작했어요. 단계가 끝날 때마다 오른쪽 화면이 바뀌어요.";
+    openRun(data.id);
+  } catch (e) { msg.className = "msg bad"; msg.textContent = "실패: " + e.message; }
+  btn.disabled = false;
+};
+
+document.getElementById("retry").onclick = async () => {
+  const r = runs.find(x => x.id === current);
+  if (!r) return;
+  const from = document.getElementById("fromStep").value || r.suggest_from;
+  const title = r.steps.find(s => s.key === from)?.title || from;
+  if (r.state === "running" && !confirm(`지금 돌고 있는 과정을 멈추고 '${title}'부터 다시 돌릴까요?`)) return;
+  document.getElementById("retry").disabled = true;
+  await fetch(`/api/rerun?id=${encodeURIComponent(current)}&from=${from}`, { method: "POST" });
+  setTimeout(() => { document.getElementById("retry").disabled = false; openRun(current); }, 1500);
+};
+
+document.getElementById("stop").onclick = async () => {
+  if (!current || !confirm("지금 돌고 있는 과정을 멈출까요? 멈춘 단계는 '실패: 사용자가 멈춤'으로 남아요.")) return;
+  document.getElementById("stop").disabled = true;
+  await fetch(`/api/stop?id=${encodeURIComponent(current)}`, { method: "POST" });
+  document.getElementById("stop").disabled = false;
+  openRun(current);
+};
+
+document.getElementById("memo").onclick = async () => {
+  const r = runs.find(x => x.id === current);
+  if (!r) return;
+  const memo = prompt("메모 (예: 발표용, 캐스코드 시험). 비우면 지워져요", r.memo || "");
+  if (memo === null) return;
+  await fetch(`/api/memo?id=${encodeURIComponent(current)}`, { method: "POST", body: memo });
+  openRun(current);
+};
+
+document.getElementById("reload").onclick = loadRuns;
+loadRuns();
+setInterval(loadRuns, 10000);
+</script>
+</body>
+</html>

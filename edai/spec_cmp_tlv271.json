@@ -1,0 +1,357 @@
+{
+ "description": "TLV271 측정 계획(팀원 spec_planner 결과)에서 판정 항목과 목표값을 가져온 것 (spec_from_plan.py 가 만듦)",
+ "circuit": "opamp",
+ "source": "TLV271",
+ "category": "Operational Amplifier",
+ "conditions": "VDD = 5 V 단일 전원 (공통 측정 조건). 계획의 측정 전원(예: 15 V)과 다를 수 있음",
+ "typ_rule": {
+  "min_ratio": 0.8,
+  "max_ratio": 1.2,
+  "note": "데이터시트가 보장하는 값이 아니라 팀이 정한 기준 (2026-10-12)"
+ },
+ "specs": [
+  {
+   "measure": "avd",
+   "label": "대신호 차동 전압이득",
+   "unit": "dB",
+   "plain": "신호를 얼마나 키우나",
+   "headline": true,
+   "min": 97.0,
+   "typ": 106.0,
+   "symbol": "AVD",
+   "condition": "VO(PP) = VDD/2, VDD = 5 V, 25°C",
+   "extracted": {
+    "symbol": "AVD",
+    "name": "Large-signal differential voltage amplification",
+    "min": 97,
+    "typ": 106,
+    "max": null,
+    "unit": "dB",
+    "test_conditions": "VO(PP) = VDD/2, VDD = 5 V, 25°C",
+    "page": 5,
+    "evidence": "97 106 dB"
+   },
+   "plan": {
+    "kind": "aol_db",
+    "fixture": "aol_db_c0b170",
+    "row": 45
+   }
+  },
+  {
+   "measure": "cmrr",
+   "label": "공통모드 제거비",
+   "unit": "dB",
+   "plain": "두 입력에 함께 실린 잡음을 얼마나 걸러내나",
+   "min": 65.0,
+   "typ": 80.0,
+   "symbol": "CMRR",
+   "condition": "VIC = 0 to VDD−1.35V, VDD = 5 V, 25°C",
+   "extracted": {
+    "symbol": "CMRR",
+    "name": "Common mode rejection ratio",
+    "min": 65,
+    "typ": 80,
+    "max": null,
+    "unit": "dB",
+    "test_conditions": "VIC = 0 to VDD−1.35V, VDD = 5 V, 25°C",
+    "page": 5,
+    "evidence": "65 80 dB"
+   },
+   "plan": {
+    "kind": "cmrr_db",
+    "fixture": "cmrr_db_d831a0",
+    "row": 41
+   }
+  },
+  {
+   "measure": "idd",
+   "label": "공급 전류",
+   "unit": "µA",
+   "scale": 1000000.0,
+   "plain": "전기를 얼마나 쓰나",
+   "headline": true,
+   "typ": 550.0,
+   "typ_rule": "higher",
+   "symbol": "Iq/Ch",
+   "condition": "5 V, 25°C",
+   "extracted": {
+    "symbol": "Iq/Ch",
+    "name": "Supply Current per Channel",
+    "min": null,
+    "typ": 550,
+    "max": null,
+    "unit": "µA",
+    "test_conditions": "5 V, 25°C",
+    "page": 1,
+    "evidence": "Supply Current . . . 550 µA/Channel"
+   },
+   "plan": {
+    "kind": "iq",
+    "fixture": "iq_c82511",
+    "row": 1
+   }
+  },
+  {
+   "measure": "ugbw",
+   "label": "단위이득 대역폭",
+   "unit": "MHz",
+   "scale": 1e-06,
+   "plain": "얼마나 빠른 신호까지 다루나",
+   "headline": true,
+   "typ": 3.0,
+   "typ_rule": "higher",
+   "symbol": "GBW",
+   "condition": "5 V, 25°C",
+   "extracted": {
+    "symbol": "GBW",
+    "name": "Gain Bandwidth Product",
+    "min": null,
+    "typ": 3,
+    "max": null,
+    "unit": "MHz",
+    "test_conditions": "5 V, 25°C",
+    "page": 1,
+    "evidence": "Wide Bandwidth . . . 3 MHz"
+   },
+   "plan": {
+    "kind": "gbw",
+    "fixture": "gbw_705c1b",
+    "row": 4
+   }
+  },
+  {
+   "measure": "sr",
+   "label": "슬루율 (단위이득)",
+   "unit": "V/µs",
+   "scale": 1e-06,
+   "plain": "출력이 얼마나 빨리 변하나",
+   "headline": true,
+   "typ": 2.4,
+   "typ_rule": "higher",
+   "symbol": "SR",
+   "condition": "5 V, 25°C",
+   "extracted": {
+    "symbol": "SR",
+    "name": "Slew Rate",
+    "min": null,
+    "typ": 2.4,
+    "max": null,
+    "unit": "V/µs",
+    "test_conditions": "5 V, 25°C",
+    "page": 1,
+    "evidence": "High Slew Rate . . . 2 .4 V/µs"
+   },
+   "plan": {
+    "kind": "sr",
+    "fixture": "sr_6351be",
+    "row": 5
+   }
+  }
+ ],
+ "extraction": {
+  "total_rows": 109,
+  "electrical_rows": 88,
+  "used_rows": 5,
+  "pins": 6,
+  "file": "TLV271_knowledge_graph.json"
+ },
+ "plan": {
+  "file": "TLV271_SPEC_EVALUATION.json",
+  "planned_rows": 27,
+  "part_rows": [
+   0,
+   109
+  ],
+  "part_planned": 27,
+  "used": 5,
+  "not_measured": [
+   {
+    "kind": "vos",
+    "symbol": "Vio",
+    "name": "Input Offset Voltage",
+    "condition": "5 V, 25°C",
+    "min": null,
+    "typ": 0.0005,
+    "max": null,
+    "unit": "V",
+    "page": 1,
+    "reason": "입력 오프셋 전압: 소자 편차 통계 해석이 필요해 아직 재지 않음"
+   },
+   {
+    "kind": "ib",
+    "symbol": "IIB",
+    "name": "Input Bias Current",
+    "condition": "5 V, 25°C",
+    "min": null,
+    "typ": 1e-12,
+    "max": null,
+    "unit": "A",
+    "page": 1,
+    "reason": "입력 바이어스 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "vos",
+    "symbol": "VIO",
+    "name": "Input offset voltage",
+    "condition": "VIC = VDD/2, RL = 10 kΩ, VO = VDD/2, RS = 50 Ω, VDD = 2.7 V, 5 V, and ±5 C",
+    "min": 0.0005,
+    "typ": 0.005,
+    "max": null,
+    "unit": "V",
+    "page": 5,
+    "reason": "입력 오프셋 전압: 소자 편차 통계 해석이 필요해 아직 재지 않음"
+   },
+   {
+    "kind": "ios",
+    "symbol": "IIO",
+    "name": "Input offset current",
+    "condition": "VDD = 5 V, VIC = VDD/2, 25°C",
+    "min": 1e-12,
+    "typ": 6e-11,
+    "max": null,
+    "unit": "A",
+    "page": 5,
+    "reason": "입력 오프셋 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ios",
+    "symbol": "IIO",
+    "name": "Input offset current",
+    "condition": "VDD = 5 V, VIC = VDD/2, 70°C",
+    "min": 1e-10,
+    "typ": null,
+    "max": null,
+    "unit": "A",
+    "page": 5,
+    "reason": "입력 오프셋 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ios",
+    "symbol": "IIO",
+    "name": "Input offset current",
+    "condition": "VDD = 5 V, VIC = VDD/2, 125°C",
+    "min": 1e-09,
+    "typ": null,
+    "max": null,
+    "unit": "A",
+    "page": 5,
+    "reason": "입력 오프셋 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ib",
+    "symbol": "IIB",
+    "name": "Input bias current",
+    "condition": "VDD = 5 V, VIC = VDD/2, VO = VDD/2, RS = 50 Ω, 25°C",
+    "min": 1e-12,
+    "typ": 6e-11,
+    "max": null,
+    "unit": "A",
+    "page": 5,
+    "reason": "입력 바이어스 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ib",
+    "symbol": "IIB",
+    "name": "Input bias current",
+    "condition": "VDD = 5 V, VIC = VDD/2, VO = VDD/2, RS = 50 Ω, 70°C",
+    "min": 1e-10,
+    "typ": null,
+    "max": null,
+    "unit": "A",
+    "page": 5,
+    "reason": "입력 바이어스 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ib",
+    "symbol": "IIB",
+    "name": "Input bias current",
+    "condition": "VDD = 5 V, VIC = VDD/2, VO = VDD/2, RS = 50 Ω, 125°C",
+    "min": 1e-09,
+    "typ": null,
+    "max": null,
+    "unit": "A",
+    "page": 5,
+    "reason": "입력 바이어스 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "iout",
+    "symbol": 5,
+    "name": "Output current",
+    "condition": "VO = 0.5 V from rail, VDD = 2.7 V",
+    "min": 0.005,
+    "typ": null,
+    "max": null,
+    "unit": "A",
+    "page": 6,
+    "reason": "출력 전류 (출력 200 mV): 우리 측정 조건과 다름"
+   },
+   {
+    "kind": "iout",
+    "symbol": 7,
+    "name": "Output current",
+    "condition": "VO = 0.5 V from rail, VDD = 5 V",
+    "min": 0.007,
+    "typ": null,
+    "max": null,
+    "unit": "A",
+    "page": 6,
+    "reason": "출력 전류 (출력 200 mV): 우리 측정 조건과 다름"
+   },
+   {
+    "kind": "iout",
+    "symbol": 10,
+    "name": "Output current",
+    "condition": "VO = 0.5 V from rail, VDD = 10 V",
+    "min": 0.01,
+    "typ": null,
+    "max": null,
+    "unit": "A",
+    "page": 6,
+    "reason": "출력 전류 (출력 200 mV): 우리 측정 조건과 다름"
+   },
+   {
+    "kind": "iout",
+    "symbol": 13,
+    "name": "Output current",
+    "condition": "VO = 0.5 V from rail, VDD = 10 V",
+    "min": 0.013000000000000001,
+    "typ": null,
+    "max": null,
+    "unit": "A",
+    "page": 6,
+    "reason": "출력 전류 (출력 200 mV): 우리 측정 조건과 다름"
+   },
+   {
+    "kind": "vos",
+    "symbol": 2500,
+    "name": "Input offset voltage",
+    "condition": "VDD = 5 V, VO = 2.5 V, VOUT = 0 V to VDD, TA = 25°C",
+    "min": null,
+    "typ": 2.5,
+    "max": null,
+    "unit": "V",
+    "page": 7,
+    "reason": "입력 오프셋 전압: 소자 편차 통계 해석이 필요해 아직 재지 않음"
+   }
+  ],
+  "corrections": null,
+  "not_planned": [
+   {
+    "measure": "ts",
+    "label": "정착시간 (0.1%)",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   },
+   {
+    "measure": "gm",
+    "label": "이득여유",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   },
+   {
+    "measure": "vol_5ma",
+    "label": "Low 출력 전압 (IOL = 5 mA)",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   }
+  ]
+ },
+ "unused": []
+}
