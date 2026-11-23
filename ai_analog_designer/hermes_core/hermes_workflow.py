@@ -5,6 +5,7 @@ using the Harness²-tuned Hermes Agent.
 """
 from __future__ import annotations
 
+import json
 import logging
 import os
 import re
@@ -241,6 +242,23 @@ The subcircuit must operate with its negative supply pin tied to 0 V (single sup
                         all_blueprints.append(bp)
 
             candidates: list[str] = []
+            # EDAI: EXPERIENCE.json 의 회로(harness_tree.c5_skills.*.subckt_code)는 검색 결과 content 에서 4000자로 잘리고
+            # 줄바꿈이 \n 글자로 된 한 줄이라 아래 검사(_is_meaningful_netlist)에서 늘 빠졌다. 파일 전체를 다시 읽어 넣는다.
+            library_root = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", "harness2_library"))
+            for bp in all_blueprints:
+                bp_file = str(bp.get("file") or "")
+                if not bp_file.lower().endswith(".json"):
+                    continue
+                try:
+                    with open(os.path.join(library_root, bp_file), "r", encoding="utf-8") as fp:
+                        record = json.load(fp)
+                except Exception:
+                    continue
+                skills = ((record.get("harness_tree") or {}).get("c5_skills") or {}) if isinstance(record, dict) else {}
+                for skill in skills.values():
+                    code = skill.get("subckt_code") if isinstance(skill, dict) else None
+                    if code and ".subckt" in code.lower() and ".ends" in code.lower():
+                        candidates.append(code.strip())
             for bp in all_blueprints:
                 raw_code = bp.get("content", "")
                 # Extract all fenced SPICE/cir code blocks preserving models

@@ -1358,6 +1358,15 @@ pins: [{pins_str}]
         ch2_inn = next((p for p in pin_names if ('2IN' in p.upper() or 'IN2' in p.upper()) and (is_neg(p) or p.upper() == 'IN2')), None)
         ch2_out = next((p for p in pin_names if '2OUT' in p.upper() or 'OUT2' in p.upper()), None)
 
+        # EDAI: 설계도가 이미 이 칩의 핀 이름 그대로(채널 복사까지 끝난 회로)면 핀을 다시 짜지 않고 이름만 맞춘다
+        # (아래 다채널 처리는 한 채널짜리 INP INM OUT VCC GND 코어를 가정해서, 완성된 회로를 넣으면 망가지고 3·4채널은 빠짐)
+        m_own = re.search(r'(?m)^\s*\.subckt\s+([a-zA-Z0-9_]+)\s+([^\r\n]+)$', code, re.IGNORECASE)
+        if m_own and [p.upper() for p in m_own.group(2).split()] == [p.upper() for p in pin_names]:
+            old_name = m_own.group(1)
+            code = code[:m_own.start()] + f".subckt {target_name} {pins_line}" + code[m_own.end():]
+            code = re.sub(r'(?m)^\s*\.ends\s+' + re.escape(old_name) + r'\b', f".ends {target_name}", code, flags=re.IGNORECASE)
+            return code
+
         # 4. Check for single-channel comparator/opamp core inside blueprint
         m_sub = re.search(r'(?m)^\s*\.subckt\s+([a-zA-Z0-9_]+)\s+[^\r\n]+([\s\S]*?)^\s*\.ends\b', code, re.IGNORECASE)
         if m_sub and ch1_inp and ch1_inn and ch1_out and ch2_inp and ch2_inn and ch2_out:
