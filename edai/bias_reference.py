@@ -79,8 +79,14 @@ def simulate(lines: list, analysis: list, prints: list) -> str:
            [".control", *analysis, *prints, ".endc", ".end"]
     with tempfile.NamedTemporaryFile("w", suffix=".cir", delete=False) as f:
         f.write("\n".join(deck) + "\n")
-    out = subprocess.run([run_sim.NGSPICE_EXE, "-b", f.name], capture_output=True, text=True, timeout=300).stdout
-    Path(f.name).unlink()
+    try:
+        out = subprocess.run([run_sim.NGSPICE_EXE, "-b", f.name], capture_output=True, text=True,
+                             timeout=run_sim.sim_timeout(300)).stdout
+    except subprocess.TimeoutExpired:
+        run_sim.check_deadline()
+        raise
+    finally:
+        Path(f.name).unlink(missing_ok=True)
     return out
 
 

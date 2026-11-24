@@ -29,6 +29,7 @@ import os
 import re
 import shutil
 import subprocess
+import time
 from pathlib import Path
 
 import numpy as np
@@ -45,6 +46,31 @@ HERE = Path(__file__).resolve().parent
 OUT_DIR = HERE / "sim_out"
 SIM_TIMEOUT_S = 300        # ngspice 한 번 실행의 시간 제한. 수렴하지 않고 멈추는 회로를 건너뛰기 위함
 OUT_DIR.mkdir(exist_ok=True)
+
+# 후보 하나에 쓰는 시간의 마감 (time.time() 기준, select_structure 가 후보마다 정함. None 이면 제한 없음).
+# 수렴이 안 되는 후보 하나가 크기 정하기를 몇 시간씩 붙잡은 일이 있어서 (LMV321 후보 8: 2시간 51분, 2026-11-24) 둔다
+CANDIDATE_DEADLINE = None
+
+
+class CandidateTimeout(BaseException):
+    """후보 하나의 시간 제한을 넘김. 수렴 실패를 잡는 'except Exception' 들에 걸리지 않고 후보 반복까지 올라가도록
+    BaseException 을 잇는다 (KeyboardInterrupt 와 같은 방식)."""
+
+
+def sim_timeout(limit: float) -> float:
+    """ngspice 한 번에 줄 시간: 원래 제한과 후보 마감까지 남은 시간 중 짧은 쪽. 마감이 지났으면 CandidateTimeout."""
+    if CANDIDATE_DEADLINE is None:
+        return limit
+    left = CANDIDATE_DEADLINE - time.time()
+    if left <= 0:
+        raise CandidateTimeout()
+    return min(limit, left)
+
+
+def check_deadline() -> None:
+    """ngspice 가 시간 초과로 끝난 뒤 부른다. 후보 마감 때문에 끊긴 것이면 CandidateTimeout."""
+    if CANDIDATE_DEADLINE is not None and time.time() >= CANDIDATE_DEADLINE - 1:
+        raise CandidateTimeout()
 
 TB_PREFIX = "tb_"
 SPEC_PREFIX = "spec_"
@@ -148,9 +174,10 @@ def run(netlist_path: Path) -> RawRead:
             [NGSPICE_EXE, "-b", "-r", str(raw_path), "-o", str(log_path), str(netlist_path)],
             capture_output=True,
             text=True,
-            timeout=SIM_TIMEOUT_S,
+            timeout=sim_timeout(SIM_TIMEOUT_S),
         )
     except subprocess.TimeoutExpired:
+        check_deadline()
         raise RuntimeError(f"{netlist_path.name} 시뮬레이션이 {SIM_TIMEOUT_S}초 안에 끝나지 않음") from None
     if result.returncode != 0 or not raw_path.exists():
         raise RuntimeError(

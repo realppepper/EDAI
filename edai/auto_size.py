@@ -256,8 +256,10 @@ def run_op(subckt: str, table: dict, polarity: tuple) -> dict:
         handle.write(deck)
         path = Path(handle.name)
     try:
-        done = subprocess.run([run_sim.NGSPICE_EXE, "-b", str(path)], capture_output=True, text=True, timeout=120)
+        done = subprocess.run([run_sim.NGSPICE_EXE, "-b", str(path)], capture_output=True, text=True,
+                              timeout=run_sim.sim_timeout(120))
     except subprocess.TimeoutExpired:
+        run_sim.check_deadline()
         return {"vout": None, "devices": {}, "error": "동작점 시뮬레이션 시간 초과 (120 s)"}
     finally:
         path.unlink(missing_ok=True)
@@ -344,8 +346,10 @@ def powerup(subckt: str) -> dict:
         handle.write(deck)
         path = Path(handle.name)
     try:
-        done = subprocess.run([run_sim.NGSPICE_EXE, "-b", str(path)], capture_output=True, text=True, timeout=300)
+        done = subprocess.run([run_sim.NGSPICE_EXE, "-b", str(path)], capture_output=True, text=True,
+                              timeout=run_sim.sim_timeout(300))
     except subprocess.TimeoutExpired:
+        run_sim.check_deadline()
         return {"ok": False, "error": "시간 초과"}
     finally:
         path.unlink(missing_ok=True)

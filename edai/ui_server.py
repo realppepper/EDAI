@@ -177,9 +177,7 @@ class Handler(BaseHTTPRequestHandler):
             run_dir.mkdir(parents=True)
             (run_dir / "datasheet.pdf").write_bytes(data)
             (run_dir / "input.json").write_text(json.dumps(
-                {"title": title, "name": f"ui_{run_id}", "pdf_name": query.get("filename"),
-                 "part": (query.get("part") or "").strip()[:40].upper()},   # 사용자가 적은 대상 칩 (없으면 빈칸)
-                ensure_ascii=False, indent=1),
+                {"title": title, "name": f"ui_{run_id}", "pdf_name": query.get("filename")}, ensure_ascii=False, indent=1),
                 encoding="utf-8")
             start_pipeline(run_dir)
             return self.send_json({"id": run_id})

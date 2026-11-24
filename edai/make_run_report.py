@@ -77,7 +77,8 @@ def run_info(run_dir: Path) -> dict:
     status = read(run_dir, "status.json") or {}
     m = re.match(r"\d{4}-(\d\d)-(\d\d) (\d\d):(\d\d)", status.get("started") or "")         or re.match(r"\d{4}(\d\d)(\d\d)_(\d\d)(\d\d)", run_dir.name)
     title = inp.get("title") or run_dir.name
-    return {"title": f"{title} ({chip_number(run_dir, title)})", "chip": title, "memo": inp.get("memo") or "",
+    number = chip_number(run_dir, title)          # 같은 칩의 첫 실행은 번호 없이, 두 번째부터 (2) (3) …
+    return {"title": title if number == 1 else f"{title} ({number})", "chip": title, "memo": inp.get("memo") or "",
             "when": f"{m.group(1)}/{m.group(2)} {m.group(3)}:{m.group(4)}" if m else ""}
 
 

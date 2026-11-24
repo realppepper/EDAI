@@ -15,6 +15,7 @@ API 키는 .env 에서 환경변수로만 넘긴다 (출력하지 않음).
 
 import json
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -50,6 +51,23 @@ def load_keys() -> None:
                 os.environ[key.strip()] = value.strip().strip('"').strip("'")
 
 
+# 칩 이름이 아닌 파일 이름 (TI 문서 번호 SBOS414B, Microchip DS20005..., 'datasheet')
+NOT_PART_NAME = re.compile(r"^(S[A-Z]{3}\d{3,4}[A-Z]?|DS\d{5,}[A-Z]?|DATASHEET|DATA_?SHEET|DOC.*)$")
+
+
+def part_from_filename(pdf: Path, filename: str):
+    """올린 파일 이름이 칩 이름이면 그 이름 (대문자), 아니면 None.
+    'LMV321 (1).pdf' 처럼 사본 번호는 뗀다. PDF 앞 10쪽 본문에 그 이름이 나와야 칩 이름으로 본다."""
+    stem = re.sub(r"\s*\(\d+\)$", "", Path(filename or "").stem).strip().upper()
+    key = re.sub(r"[^A-Z0-9]", "", stem)
+    if len(key) < 3 or NOT_PART_NAME.match(key) or not re.search(r"\d", key):
+        return None
+    import pymupdf
+    with pymupdf.open(str(pdf)) as doc:
+        text = " ".join(doc[i].get_text() for i in range(min(len(doc), 10)))
+    return stem if key in re.sub(r"[^A-Z0-9]", "", text.upper()) else None
+
+
 def extract(pdf: Path, name: str, log=print, target: str = None) -> Path:
     """PDF 하나를 추출해 저장하고 결과 파일 경로를 돌려준다. log 는 진행 상황을 받는 함수.
     target 은 사용자가 고른 칩 이름 (예: LMV321). 여러 칩이 같이 실린 데이터시트에서 그 칩의 핀·스펙을 뽑게 한다."""
@@ -66,8 +84,6 @@ def extract(pdf: Path, name: str, log=print, target: str = None) -> Path:
                               log(f"PDF 읽기 {done}/{total} (쪽 {page}){' - 글자만 읽음' if err else ''}"))
     log(f"PDF 읽기 끝 ({time.time() - t0:.0f} s)")
     builder = HardwareKnowledgeGraphBuilder()
-    if target:
-        log(f"대상 칩: {target}")
     hkg = builder.build_kg_from_parsed_pdf(parsed, progress_callback=lambda done, total, page, err:
                                            log(f"스펙 표 추출 {done}/{total} (쪽 {page}){' - 다시 시도' if err else ''}"),
                                            target=target)

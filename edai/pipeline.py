@@ -107,7 +107,12 @@ def sh(run: Run, cmd: list, cwd: Path = HERE) -> None:
 # ---------------------------------------------------------------- 단계
 def step_extract(run: Run) -> dict:
     import extract_datasheet
-    target = (run.read("input.json").get("part") or "").strip().upper() or None   # UI 에서 사용자가 적은 칩 이름
+    # 대상 칩 = 올린 파일 이름 (LMV321.pdf -> LMV321). PDF 본문에 그 이름이 있을 때만 쓰고, 아니면 분석이 고른다
+    inp = run.read("input.json")
+    target = extract_datasheet.part_from_filename(run.pdf, inp.get("pdf_name"))
+    inp["part"] = target or ""
+    (run.dir / "input.json").write_text(json.dumps(inp, ensure_ascii=False, indent=1), encoding="utf-8")
+    run.log(f"대상 칩: {target} (파일 이름)" if target else "대상 칩: 파일 이름이 칩 이름이 아니어서 분석이 고름")
     hkg_file = extract_datasheet.extract(run.pdf, run.name, log=run.log, target=target)
     spec_file = extract_datasheet.plan_specs(hkg_file, run.name, log=run.log)
     run.copy(hkg_file, "hkg.json")
@@ -120,7 +125,7 @@ def step_extract(run: Run) -> dict:
     hkg, spec = run.read("hkg.json"), run.read("spec.json")
     part = str(hkg["ic_device"].get("name") or "").strip().upper()
     if part:
-        # 제목: 사용자가 칩 이름을 적었으면 그 이름, 아니면 데이터시트에서 뽑은 부품 이름. 뽑은 이름은 따로 남기고,
+        # 제목: 파일 이름이 칩 이름이면 그 이름, 아니면 데이터시트에서 뽑은 부품 이름. 뽑은 이름은 따로 남기고,
         # 둘이 다르면 check_step 이 1단계 결과에 경고를 띄운다 (LMV321 을 LMV358 로 분석한 일, 2026-11-24)
         inp = run.read("input.json")
         inp["title"] = target or part
@@ -147,6 +152,8 @@ def step_select(run: Run) -> dict:
     working = [e for e in entries if e.get("best")]
     return {"evaluated": len({e.get("from", i) for i, e in enumerate(entries)}), "forms": len(entries),
             "working": len(working), "forms_working": (sel.get("summary") or {}).get("forms_working"),
+            "timed_out": (sel.get("summary") or {}).get("timed_out", 0),     # 후보당 3분 제한에 걸린 후보
+            "skipped": (sel.get("summary") or {}).get("skipped", 0),         # 3단계 45분 제한으로 못 잰 후보
             "best_passed": max((f"{e['best']['passed']}/{e['best']['judged']}" for e in working),
                                key=lambda x: int(x.split("/")[0]), default=None)}
 

@@ -124,6 +124,10 @@ def evaluate_candidate(candidate: dict, spec: dict) -> dict:
 #   규칙 R#           : 위 모양이 모두 실패하면 쌓인 구조 규칙 중 맞는 것 (structure_rules, 정식 먼저)
 REPAIR_SCALES = (20.0, 50.0)     # 고쳐 보기에서 재는 출력단 배율 (1·5 배는 데이터시트 부품의 출력 전류에 모자람)
 REPAIR_RULES = 2                 # 후보 하나에 적용해 보는 규칙 수
+# 시간 제한 (2026-11-24). 실행 5번·후보 184개에서 90 % 가 2분 안에 끝났고, 최종으로 뽑힌 후보는 모두 1분 안쪽.
+# 3분을 넘긴 후보 8개는 하나도 뽑히지 않았는데 오래 걸린 것은 몇 시간 (LMV321: 3단계 4시간 34분)
+CANDIDATE_LIMIT_S = 180          # 후보 하나 (모든 모양 포함). 넘으면 '시간 초과'로 남기고 다음 후보
+STAGE_LIMIT_S = 45 * 60          # 3단계 전체. 넘으면 남은 후보는 '시간 부족으로 건너뜀'
 
 
 def evaluate_form(table: dict, spec: dict) -> list:
@@ -192,6 +196,13 @@ def form_entry(candidate: dict, number: int, label: str, table: dict, acts: list
                                  "transistors": sum(r["kind"] in ("nmos", "pmos") for r in table["rows"])}},
              "variants": variants}
     return finish_entry(entry)
+
+
+def cut_entry(candidate: dict, number: int, why: str) -> dict:
+    """시간 제한으로 끝까지 재지 못한 후보의 기록 (동작 안 함으로 셈, 이유는 steps.cut)."""
+    return {"how": candidate.get("how"), "in_train": candidate.get("in_train"), "table": candidate["table"],
+            "form": "원래", "from": number, "variants": [],
+            "steps": {"rules": {"ok": True, "problems": []}, "cut": why, "forms": [why]}}
 
 
 def repair_candidate(candidate: dict, number: int, spec: dict, rules: list, rule_results: dict) -> list:
@@ -347,11 +358,25 @@ def repair_main(part: str, data: dict, spec: dict, result: dict, out_file: Path,
         pass
     print(f"고쳐 보기: 원래 / 바이어스 정리 / 상보 뒤집기, 다 실패하면 규칙 {len(rules)}개 중 맞는 것. "
           f"출력단 배율 {', '.join(f'x{s:g}' for s in REPAIR_SCALES)}", flush=True)
+    stage_end = started + STAGE_LIMIT_S
     for number, candidate in enumerate(data["candidates"], 1):
-        entries = repair_candidate(candidate, number, spec, rules, rule_results)
+        t0 = time.time()
+        if t0 >= stage_end:
+            entries = [cut_entry(candidate, number, f"시간 부족으로 건너뜀 (3단계 {STAGE_LIMIT_S // 60}분 제한)")]
+        else:
+            run_sim.CANDIDATE_DEADLINE = min(t0 + CANDIDATE_LIMIT_S, stage_end)
+            try:
+                entries = repair_candidate(candidate, number, spec, rules, rule_results)
+            except run_sim.CandidateTimeout:
+                entries = [cut_entry(candidate, number,
+                                     f"시간 초과 ({time.time() - t0:.0f} s, 후보당 {CANDIDATE_LIMIT_S // 60}분 제한)")]
+            finally:
+                run_sim.CANDIDATE_DEADLINE = None
         result["entries"] += entries
         first = entries[0]
-        if not first["steps"]["rules"]["ok"]:
+        if first["steps"].get("cut"):
+            note = first["steps"]["cut"]
+        elif not first["steps"]["rules"]["ok"]:
             note = "규칙 검사 탈락: " + "; ".join(first["steps"]["rules"]["problems"])[:100]
         else:
             note = " | ".join(first["steps"].get("forms") or [])
@@ -372,10 +397,14 @@ def repair_main(part: str, data: dict, spec: dict, result: dict, out_file: Path,
     for e in result["entries"]:
         if e.get("best"):
             forms_ok[e.get("form", "원래")] = forms_ok.get(e.get("form", "원래"), 0) + 1
-    result["summary"] = dict(summarize(result["entries"]), forms_working=forms_ok)
+    cuts = [e["steps"]["cut"] for e in result["entries"] if e["steps"].get("cut")]
+    timed_out = sum(c.startswith("시간 초과") for c in cuts)
+    result["summary"] = dict(summarize(result["entries"]), forms_working=forms_ok,
+                             timed_out=timed_out, skipped=len(cuts) - timed_out)
     out_file.write_text(json.dumps(result, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"후보 {len(data['candidates'])}개 -> 동작한 모양 {result['summary']['working']}개 "
-          f"({', '.join(f'{k} {v}' for k, v in forms_ok.items()) or '없음'})  {time.time() - started:.0f} s")
+          f"({', '.join(f'{k} {v}' for k, v in forms_ok.items()) or '없음'})  {time.time() - started:.0f} s"
+          + (f"  (시간 초과 {timed_out}개, 건너뜀 {len(cuts) - timed_out}개)" if cuts else ""))
 
 
 if __name__ == "__main__":
