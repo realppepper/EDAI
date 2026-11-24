@@ -36,7 +36,24 @@ import spec_from_hkg
 HERE = Path(__file__).resolve().parent
 TEST_SUPPLY = spec_from_hkg.TEST_SUPPLY
 TEMPLATE_SPEC = spec_from_hkg.TEMPLATE_SPEC
-PART_NAME = re.compile(r"\b(LM\d{3,4}[A-Z]*|TL[V]?\d{3,4}[A-Z]*|OPA\d+[A-Z]*)\b")
+PART_NAME = re.compile(r"\b(LMV?\d{3,4}[A-Z]*|TL[V]?\d{3,4}[A-Z]*|OPA\d+[A-Z]*)\b")
+# 조건에 적힌 전원 하나 (예: "VCC+ = 2.7 V", "VDD = 5 V", "VS = ±15 V"). "VCC = 2.7 V to 5 V" 같은 범위는 PSRR 시험 조건이라 뺀다
+SUPPLY_IN_COND = re.compile(r"\bV\s*(?:CC|DD|S)\s*\+?\s*=\s*±?\s*(\d+(?:\.\d+)?)\s*V\b(?!\s*to)", re.I)
+
+
+def same_part(name: str, part: str) -> bool:
+    """조건의 부품 이름이 이 부품인지. 끝의 온도 등급 I 는 같은 부품 (LMV321I = LMV321)."""
+    return name == part or name == part + "I"
+
+
+def supply_rank(row: dict) -> int:
+    """같은 측정 항목이 여러 전원 조건으로 있을 때 고르는 순서 (작을수록 먼저).
+    0: 우리 측정 전원(TEST_SUPPLY)과 같은 줄, 1: 전원이 안 적힌 줄, 2: 다른 전원 줄 (예: 5 V 로 재는데 2.7 V 표).
+    데이터시트는 낮은 전원 표가 먼저 나오는 일이 많아, 먼저 나온 줄을 쓰면 2.7 V 값이 목표가 됐다 (LMV321, 2026-11-25)."""
+    supplies = {float(v) for v in SUPPLY_IN_COND.findall(row.get("conditions") or "")}
+    if TEST_SUPPLY in supplies:
+        return 0
+    return 1 if not supplies else 2
 TEMPERATURE_NOTE = "Full-temperature"
 # 조건에 적힌 온도 범위 (예: "TA = –40°C to 125°C", "Full range") -> 25°C 줄이 아니므로 뺀다
 TEMPERATURE_RANGE = re.compile(r"[–−-]?\d+\s*°?\s*C\s*to\s*\+?\d+|Full range|Temperature\s*\(", re.I)
@@ -139,11 +156,11 @@ def build(plan: dict, hkg: dict, part: str, fix: dict | None = None, whole: bool
     else:
         section = range(*fix["section"]["rows"]) if fix and fix.get("section") else part_rows(rows, part)
     specs, missing, seen = [], [], set()
-    planned = [i for i in section if rows[i].get("fixture")]
+    planned = sorted((i for i in section if rows[i].get("fixture")), key=lambda i: supply_rank(rows[i]))
     for i in planned:
         row = rows[i]
         named = set(PART_NAME.findall(row.get("conditions") or ""))
-        if (named and part not in named) or (row.get("note") or "").startswith(TEMPERATURE_NOTE):
+        if (named and not any(same_part(n, part) for n in named)) or (row.get("note") or "").startswith(TEMPERATURE_NOTE):
             continue
         if whole and TEMPERATURE_RANGE.search(row.get("conditions") or ""):
             continue
