@@ -353,7 +353,7 @@ class CircuitBuilder:
         if prim_out not in connected_nodes:
             return
 
-        # Discover auxiliary channels by suffix (_A, _B, _C, _D, _1, _2, _3, _4)
+        # Discover auxiliary channels by suffix (_A.._D, _1.._4) or infix (_B_P, _B_N)
         channel_groups: dict[str, dict[str, str]] = defaultdict(dict)
         for p in self.pins:
             if not isinstance(p, dict):
@@ -361,16 +361,16 @@ class CircuitBuilder:
             pname = str(p.get("name") or "")
             up = pname.upper()
             role = str(p.get("role") or "").upper()
-            m = re.search(r"_([A-D]|[1-4])$", up)
+            m = re.search(r"_([A-D]|[1-4])(?:_[PNM]|$)", up)
             if not m:
                 continue
             ch = m.group(1)
             if role == "OUTPUT" or "OUT" in up:
                 channel_groups[ch]["OUT"] = pname
             elif role == "SIGNAL":
-                if "NON" in up or any(tok in up for tok in ("PIN_", "INP_", "IN_P_", "VIN_P_")):
+                if "NON" in up or up.endswith("_P") or any(tok in up for tok in ("PIN_", "INP_", "IN_P_", "VIN_P_")):
                     channel_groups[ch]["INP"] = pname
-                elif "INV" in up or any(tok in up for tok in ("NIN_", "INN_", "IN_N_", "VIN_N_", "INM_")):
+                elif "INV" in up or up.endswith("_N") or up.endswith("_M") or any(tok in up for tok in ("NIN_", "INN_", "IN_N_", "VIN_N_", "INM_")):
                     channel_groups[ch]["INN"] = pname
 
         base_devices = list(self.devices)

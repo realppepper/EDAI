@@ -413,8 +413,10 @@ def adapt_flan_t5_subckt_to_dut(
         return None
 
     # Parse models + body lines from generated subcircuit
+    # Replace any internal ideal V/I bias sources (e.g. VBIAS_VB1 VDD VB1 1.1) with physical
+    # resistive biasing so the subcircuit strictly passes PDG Stage-0 physical-only rules.
     model_lines: list[str] = []
-    body_lines: list[str] = []
+    raw_body_lines: list[str] = []
     in_sub = False
     for ln in subckt_ltspice.splitlines():
         s = ln.strip()
@@ -426,10 +428,38 @@ def adapt_flan_t5_subckt_to_dut(
         elif low.startswith(".ends"):
             in_sub = False
         elif in_sub and s and not s.startswith("*"):
-            body_lines.append(s)
+            raw_body_lines.append(s)
 
-    if not body_lines:
+    if not raw_body_lines:
         return None
+
+    # Track diode-connected MOSFET nodes (D == G) so we know whether a bias node is self-clamped
+    diode_nodes: set[str] = set()
+    for ln in raw_body_lines:
+        toks = ln.split()
+        if len(toks) >= 5 and toks[0][0].upper() == "M" and toks[1].upper() == toks[2].upper():
+            diode_nodes.add(toks[1].upper())
+
+    body_lines: list[str] = []
+    for idx, ln in enumerate(raw_body_lines):
+        toks = ln.split()
+        if len(toks) >= 3 and toks[0][0].upper() in ("V", "I"):
+            src_name, n1, n2 = toks[0], toks[1], toks[2]
+            u1, u2 = n1.upper(), n2.upper()
+            bias_node = n2 if u1 in ("VDD", "VSS") else (n1 if u2 in ("VDD", "VSS") else n1)
+            rail_node = n1 if u1 in ("VDD", "VSS") else (n2 if u2 in ("VDD", "VSS") else "VDD")
+            opp_rail = "VSS" if rail_node.upper() == "VDD" else "VDD"
+            if bias_node.upper() in diode_nodes:
+                # Node is already diode-clamped to rail_node; pull current to opposite rail via resistor
+                body_lines.append(f"RBIAS_{src_name}_{idx} {bias_node} {opp_rail} 100k")
+            else:
+                # Pure gate bias node: physical resistive divider between VDD and VSS
+                r_near = "68k" if rail_node.upper() == "VDD" else "68k"
+                r_far = "180k"
+                body_lines.append(f"RBIAS_A_{src_name}_{idx} {rail_node} {bias_node} {r_near}")
+                body_lines.append(f"RBIAS_B_{src_name}_{idx} {bias_node} {opp_rail} {r_far}")
+        else:
+            body_lines.append(ln)
 
     def _remap_device_line(line: str, port_map: dict[str, str], ch_suffix: str = "") -> str:
         toks = line.split()
@@ -453,11 +483,12 @@ def adapt_flan_t5_subckt_to_dut(
 
     adapted_body = [_remap_device_line(ln, prim) for ln in body_lines]
 
-    # Detect unwired auxiliary channels (_A/_B/_C/_D or _1/_2/_3/_4)
+    # Detect unwired auxiliary channels (_A/_B/_C/_D, _1/_2/_3/_4, or infix _B_P/_B_N)
     ch_groups: dict[str, dict[str, str]] = defaultdict(dict)
     ch_extra_sigs: dict[str, list[str]] = defaultdict(list)
     for pname, kind in classified:
-        m = re.search(r"_([A-D]|[1-4])$", pname.upper())
+        up = pname.upper()
+        m = re.search(r"_([A-D]|[1-4])(?:_[PNM]|$)", up)
         if not m:
             continue
         ch = m.group(1)
