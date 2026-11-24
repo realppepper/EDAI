@@ -36,6 +36,13 @@ class HKGExtractionError(RuntimeError):
         )
 
 
+TARGET_PINS_RULE = """TARGET PART: the user designs '{target}'. This datasheet may describe several parts together
+(e.g. single / dual / quad versions). Use ONLY '{target}': in step 1 pick a package of '{target}' (never the package of
+another part, even if that one has 8 pins), list only the pins of '{target}', and set ic_device.name to '{target}'.
+If '{target}' itself has several packages, prefer its 8-pin SOIC/PDIP, else its most common package.
+
+"""
+
 PINS_PROMPT = """You are extracting the PIN INTERFACE and PORT DEPENDENCIES of an IC from its datasheet.
 Pages are delimited by '===== PAGE N ====='.
 
@@ -129,6 +136,7 @@ class HardwareKnowledgeGraphBuilder:
         parsed_data: dict[str, Any],
         progress_callback: Callable[[int, int, int, str | None], None] | None = None,
         pins_only: bool = False,
+        target: str | None = None,
     ) -> dict[str, Any]:
         from .pdf_parser import PDFDatasheetParser as P
         if "pages" not in parsed_data:  # legacy input
@@ -140,6 +148,13 @@ class HardwareKnowledgeGraphBuilder:
         pin_text_limit = int(os.environ.get("HKG_PIN_TEXT_CHARS", "12000"))
         pin_text = P.page_tagged_text(parsed_data, sorted(set(pin_pages + func_pages)), pin_text_limit)
         ic_guess = re.sub(r'\.pdf$', '', parsed_data.get("source_file", "IC"), flags=re.IGNORECASE).upper()
+        # EDAI: 사용자가 고른 대상 칩. 한 데이터시트에 1·2·4 채널 칩이 같이 있으면 '8핀 우선' 규칙 때문에 다른 칩
+        # (LMV321 -> LMV358)의 핀을 골랐다 (2026-11-24). 대상 칩이 있으면 그 칩의 패키지와 핀을 쓰게 한다
+        if target:
+            ic_guess = str(target).strip().upper()
+        pins_prompt = PINS_PROMPT.format(text=pin_text, roles="|".join(ROLES))
+        if target:
+            pins_prompt = TARGET_PINS_RULE.format(target=ic_guess) + pins_prompt
 
         # Spec tables are extracted ONE PAGE PER CALL in parallel: a single call over all spec pages emits
         # ~10k output tokens (100-170 s on NIM and frequently truncated); per-page calls emit 1-2k tokens each.
@@ -176,7 +191,7 @@ class HardwareKnowledgeGraphBuilder:
             combined_spec_text = P.page_tagged_text(parsed_data, spec_pages, 60000, layout=True)
             try:
                 pins_json = self.llm.complete_json(
-                    PINS_PROMPT.format(text=pin_text, roles="|".join(ROLES)),
+                    pins_prompt,
                     system_prompt=sys_p,
                     max_tokens=3000,
                     tag="hkg_pins",
@@ -218,7 +233,7 @@ class HardwareKnowledgeGraphBuilder:
 
         if self.parallel_spec_calls <= 1:
             pins_json = self.llm.complete_json(
-                PINS_PROMPT.format(text=pin_text, roles="|".join(ROLES)),
+                pins_prompt,
                 system_prompt=sys_p,
                 max_tokens=min(2500, self.spec_max_tokens),
                 tag="hkg_pins",
@@ -258,7 +273,7 @@ class HardwareKnowledgeGraphBuilder:
                 f_pins = ex.submit(
                     _with_ctx,
                     self.llm.complete_json,
-                    PINS_PROMPT.format(text=pin_text, roles="|".join(ROLES)),
+                    pins_prompt,
                     system_prompt=sys_p,
                     max_tokens=min(3000, self.spec_max_tokens),
                     tag="hkg_pins",
@@ -355,8 +370,9 @@ class HardwareKnowledgeGraphBuilder:
         parsed_data: dict[str, Any],
         progress_callback: Callable[[int, int, int, str | None], None] | None = None,
         pins_only: bool = False,
+        target: str | None = None,
     ) -> nx.MultiDiGraph:
-        data = self.extract_raw(parsed_data, progress_callback=progress_callback, pins_only=pins_only)
+        data = self.extract_raw(parsed_data, progress_callback=progress_callback, pins_only=pins_only, target=target)
         G = self._json_to_networkx_graph(data)
         from .pdf_parser import PDFDatasheetParser
         G.graph["parsed_pages"] = PDFDatasheetParser.audit_pages(parsed_data)

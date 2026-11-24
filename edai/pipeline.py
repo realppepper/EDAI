@@ -107,7 +107,8 @@ def sh(run: Run, cmd: list, cwd: Path = HERE) -> None:
 # ---------------------------------------------------------------- 단계
 def step_extract(run: Run) -> dict:
     import extract_datasheet
-    hkg_file = extract_datasheet.extract(run.pdf, run.name, log=run.log)
+    target = (run.read("input.json").get("part") or "").strip().upper() or None   # UI 에서 사용자가 적은 칩 이름
+    hkg_file = extract_datasheet.extract(run.pdf, run.name, log=run.log, target=target)
     spec_file = extract_datasheet.plan_specs(hkg_file, run.name, log=run.log)
     run.copy(hkg_file, "hkg.json")
     run.copy(spec_file, "spec.json")
@@ -118,9 +119,12 @@ def step_extract(run: Run) -> dict:
     extract_datasheet.build_pdg(run.dir / "hkg.json", run.dir, log=run.log, pages_file=run.dir / "pages.json")
     hkg, spec = run.read("hkg.json"), run.read("spec.json")
     part = str(hkg["ic_device"].get("name") or "").strip().upper()
-    if part:                                     # 제목은 파일 이름 대신 데이터시트에서 뽑은 부품 이름으로
+    if part:
+        # 제목: 사용자가 칩 이름을 적었으면 그 이름, 아니면 데이터시트에서 뽑은 부품 이름. 뽑은 이름은 따로 남기고,
+        # 둘이 다르면 check_step 이 1단계 결과에 경고를 띄운다 (LMV321 을 LMV358 로 분석한 일, 2026-11-24)
         inp = run.read("input.json")
-        inp["title"] = part
+        inp["title"] = target or part
+        inp["extracted_part"] = part
         (run.dir / "input.json").write_text(json.dumps(inp, ensure_ascii=False, indent=1), encoding="utf-8")
     return {"part": hkg["ic_device"].get("name"), "rows": len(hkg["electrical_parameters"]), "pins": len(hkg["pins"]),
             "judged": len(spec["specs"]), "model_input": run.read("model_input.json")["input"]}
@@ -297,6 +301,12 @@ def harness_rows(netlist: str, pin_map: dict) -> tuple:
     return rows, sizes, skipped
 
 
+def same_part(a: str, b: str) -> bool:
+    """칩 이름 두 개가 같은 칩인지. 글자·숫자만 비교하고, 한쪽이 다른 쪽을 포함하면 같다고 본다 (LM358 / LM358B)."""
+    a, b = (re.sub(r"[^A-Z0-9]", "", s.upper()) for s in (a, b))
+    return bool(a and b) and (a in b or b in a)
+
+
 def check_step(run: Run, key: str) -> list:
     """단계가 끝난 뒤 결과가 앞뒤가 맞는지 본다. 맞지 않으면 회로 문제가 아니라 프로그램 오류일 가능성이 크다
     (예: 하네스 통과율은 있는데 최종 회로 파일이 없음 -> 파일을 못 찾은 것). 결과 화면에 빨갛게 표시한다."""
@@ -315,6 +325,11 @@ def check_step(run: Run, key: str) -> list:
             out.append("판정 항목이 0개")
         if not has("pdg.json"):
             out.append("PDG 파일이 없음")
+        target = (run.read("input.json").get("part") or "").strip().upper()
+        got = str((hkg.get("ic_device") or {}).get("name") or "").strip().upper()
+        if target and got and not same_part(target, got):
+            out.append(f"{target} 을(를) 요청했는데 {got} 으로 분석됨 (핀 {len(hkg.get('pins') or [])}개). "
+                       "같은 데이터시트의 다른 칩일 수 있음")
     elif key == "candidates":
         if not has("candidates.json") or not run.read("candidates.json").get("candidates"):
             out.append("모델 후보가 0개")

@@ -52,6 +52,8 @@ iframe { flex:1; width:100%; border:0; border-radius:0 0 10px 10px; background:#
         <span id="dropText">데이터시트 PDF를 끌어다 놓거나<br><u>클릭해서 고르세요</u></span>
         <input type="file" id="pdf" accept="application/pdf" hidden>
       </label>
+      <label class="sub" for="part" style="display:block;margin-top:8px">설계할 칩 이름 (한 데이터시트에 여러 칩이 있으면 꼭 확인)</label>
+      <input id="part" placeholder="예: LMV321" style="width:100%;box-sizing:border-box;padding:6px 8px;margin-top:4px">
       <button id="start" disabled>설계 시작</button>
       <div class="msg" id="msg"></div>
     </div>
@@ -145,6 +147,7 @@ function choose(file) {
   chosen = file;
   msg.textContent = "";
   document.getElementById("dropText").textContent = file.name;
+  document.getElementById("part").value = file.name.replace(/\.pdf$/i, "").replace(/\s*\(\d+\)$/, "").toUpperCase();
   document.getElementById("drop").classList.add("has");
   document.getElementById("start").disabled = false;
 }
@@ -156,13 +159,14 @@ drop.ondrop = e => { e.preventDefault(); drop.classList.remove("over"); choose(e
 
 document.getElementById("start").onclick = async () => {
   const file = chosen;
-  const title = file ? file.name.replace(/\.pdf$/i, "") : "";
+  const part = document.getElementById("part").value.trim();
+  const title = part || (file ? file.name.replace(/\.pdf$/i, "") : "");
   const msg = document.getElementById("msg");
   if (!file) { msg.className = "msg bad"; msg.textContent = "PDF 파일을 고르세요"; return; }
   const btn = document.getElementById("start");
   btn.disabled = true; msg.className = "msg"; msg.textContent = "올리는 중…";
   try {
-    const res = await fetch(`/api/run?title=${encodeURIComponent(title)}&filename=${encodeURIComponent(file.name)}`,
+    const res = await fetch(`/api/run?title=${encodeURIComponent(title)}&filename=${encodeURIComponent(file.name)}&part=${encodeURIComponent(part)}`,
                             { method: "POST", body: file });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error);

@@ -50,8 +50,9 @@ def load_keys() -> None:
                 os.environ[key.strip()] = value.strip().strip('"').strip("'")
 
 
-def extract(pdf: Path, name: str, log=print) -> Path:
-    """PDF 하나를 추출해 저장하고 결과 파일 경로를 돌려준다. log 는 진행 상황을 받는 함수."""
+def extract(pdf: Path, name: str, log=print, target: str = None) -> Path:
+    """PDF 하나를 추출해 저장하고 결과 파일 경로를 돌려준다. log 는 진행 상황을 받는 함수.
+    target 은 사용자가 고른 칩 이름 (예: LMV321). 여러 칩이 같이 실린 데이터시트에서 그 칩의 핀·스펙을 뽑게 한다."""
     load_keys()
     if not os.environ.get("NVIDIA_API_KEY"):
         raise RuntimeError(".env 에 NVIDIA_API_KEY 가 없습니다")
@@ -65,8 +66,11 @@ def extract(pdf: Path, name: str, log=print) -> Path:
                               log(f"PDF 읽기 {done}/{total} (쪽 {page}){' - 글자만 읽음' if err else ''}"))
     log(f"PDF 읽기 끝 ({time.time() - t0:.0f} s)")
     builder = HardwareKnowledgeGraphBuilder()
+    if target:
+        log(f"대상 칩: {target}")
     hkg = builder.build_kg_from_parsed_pdf(parsed, progress_callback=lambda done, total, page, err:
-                                           log(f"스펙 표 추출 {done}/{total} (쪽 {page}){' - 다시 시도' if err else ''}"))
+                                           log(f"스펙 표 추출 {done}/{total} (쪽 {page}){' - 다시 시도' if err else ''}"),
+                                           target=target)
     raw = hkg.graph.get("raw_extraction", {})
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     # 쪽별 원문 (PDG 감사가 근거 글이 그 쪽에 있는지 확인할 때 씀)
