@@ -194,6 +194,24 @@ class PDFDatasheetParser:
             return ["toc"]
         return classes
 
+    KEY_PAGE_WORDS = ("electrical characteristics", "pin configuration", "pin functions",
+                      "absolute maximum ratings", "recommended operating conditions")
+
+    @classmethod
+    def pick_pages(cls, doc, max_pages: int) -> list[int]:
+        """읽을 쪽 (0부터). 앞에서부터 max_pages 쪽이 기본이고, 그 뒤에 핵심 표 쪽(전기적 특성, 핀, 정격)이 있으면
+        뒤쪽 앞번호 쪽 대신 그 쪽을 넣는다 (쪽 수는 그대로). 긴 묶음 데이터시트에서 표가 30쪽 뒤에 있어도 놓치지 않게."""
+        total = len(doc)
+        if total <= max_pages:
+            return list(range(total))
+        def is_key(text: str) -> bool:      # 개정 이력 쪽은 표 제목을 언급만 하므로 뺀다
+            return (any(w in text for w in cls.KEY_PAGE_WORDS)
+                    and not any(w in text for w in ("revision history", "changes from revision")))
+        keys = [0] + [i for i in range(1, total) if is_key(doc[i].get_text().lower())]   # 1쪽(칩 이름·개요)은 항상
+        keys = keys[:max_pages]
+        fill = [i for i in range(total) if i not in keys][:max_pages - len(keys)]
+        return sorted(set(keys) | set(fill))
+
     def parse_pdf(
         self,
         pdf_path: str,
@@ -208,7 +226,8 @@ class PDFDatasheetParser:
 
         doc = pymupdf.open(pdf_path)
         total_pages = len(doc)
-        pages_to_process = min(total_pages, self.max_pages)
+        page_indices = self.pick_pages(doc, self.max_pages)
+        pages_to_process = len(page_indices)
 
         pages: dict[int, dict[str, Any]] = {}
         tables_found = []
@@ -218,7 +237,7 @@ class PDFDatasheetParser:
         with cf.ThreadPoolExecutor(max_workers=self.concurrency) as executor:
             future_to_idx = {
                 executor.submit(self.parse_page_with_nemotron, p_idx, doc): p_idx + 1
-                for p_idx in range(pages_to_process)
+                for p_idx in page_indices
             }
             for future in cf.as_completed(future_to_idx):
                 p_num = future_to_idx[future]
@@ -247,7 +266,7 @@ class PDFDatasheetParser:
                         progress_callback(completed_pages, pages_to_process, p_num, page_error)
 
         # Also collect basic tables if detected by pymupdf
-        for p_idx in range(pages_to_process):
+        for p_idx in page_indices:
             try:
                 page_tables = doc[p_idx].find_tables()
                 for t in page_tables.tables:
