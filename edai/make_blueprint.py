@@ -57,6 +57,10 @@ def pin_groups(pins: list) -> tuple:
         if sig:
             groups.setdefault(channel_of(p), {}).setdefault(sig, p["name"])
     full = {k: v for k, v in groups.items() if {"INP", "INN", "OUT"} <= set(v)}
+    found = [(sig, name) for g in groups.values() for sig, name in g.items()]
+    if not full and sorted(sig for sig, _ in found) == ["INN", "INP", "OUT"]:
+        # 1채널 칩인데 여러 칩을 묶은 데이터시트라 입력만 1IN+/1IN- 처럼 번호가 붙은 경우 (LMV321): 한 벌로 본다
+        full = {None: dict(found)}
     if None in full:
         main = full.pop(None)
     elif full:
