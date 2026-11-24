@@ -104,14 +104,27 @@ def spec_table(rows: list) -> str:
     return "".join(out) + "</table>"
 
 
+def evidence_cell(e: dict) -> str:
+    """판정 항목이 나온 데이터시트 줄: 쪽(누르면 PDF 그 쪽이 열림), 원문 값(최소/보통/최대 단위), 근거 글."""
+    if not e:
+        return ""
+    page = e.get("page")
+    link = f"<a href='datasheet.pdf#page={esc(page)}' target='_blank'>{esc(page)}쪽</a>" if page else ""
+    values = " / ".join("-" if e.get(k) is None else esc(e.get(k)) for k in ("min", "typ", "max"))
+    quote = esc(str(e.get("evidence") or "")[:160])
+    return f"{link} · 원문 {values} {esc(e.get('unit'))}<br><span class='sub'>{quote}</span>"
+
+
 def body_extract(run_dir: Path, s: dict) -> str:
     spec = read(run_dir, "spec.json")
     out = [f"<p>부품 <b>{esc(s.get('part'))}</b> · 추출한 사양 {s.get('rows')}줄 · 핀 {s.get('pins')}개 · 판정 항목 {s.get('judged')}개</p>"]
     if spec:
-        out.append("<table><tr><th>판정 항목</th><th>최소</th><th>보통</th><th>최대</th><th>단위</th><th>조건</th></tr>")
+        out.append("<table><tr><th>판정 항목</th><th>최소</th><th>보통</th><th>최대</th><th>단위</th><th>조건</th>"
+                   "<th>데이터시트 근거</th></tr>")
         for it in spec["specs"]:
             out.append(f"<tr><td>{esc(it.get('label') or it['measure'])}</td><td>{num(it.get('min'))}</td><td>{num(it.get('typ'))}</td>"
-                       f"<td>{num(it.get('max'))}</td><td>{esc(it.get('unit'))}</td><td>{esc(it.get('condition'))}</td></tr>")
+                       f"<td>{num(it.get('max'))}</td><td>{esc(it.get('unit'))}</td><td>{esc(it.get('condition'))}</td>"
+                       f"<td>{evidence_cell(it.get('extracted') or {})}</td></tr>")
         out.append("</table>")
     out.append(f"<p class='sub'>모델 입력 문장</p><p class='mono'>{esc(s.get('model_input'))}</p>")
     out.append(hkg_details(run_dir) + pdg_details(run_dir))
