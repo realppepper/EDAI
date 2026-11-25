@@ -20,6 +20,8 @@ import sys
 import time
 from pathlib import Path
 
+import table_columns
+
 HERE = Path(__file__).resolve().parent
 # 박준석 시스템(ai_analog_designer) 이 있는 폴더 = 이 저장소 루트 (main). 다른 곳이면 EDAI_AV_DIR 로
 AV_DIR = Path(os.environ.get("EDAI_AV_DIR") or HERE.parent)
@@ -90,8 +92,15 @@ def extract(pdf: Path, name: str, log=print, target: str = None) -> Path:
     raw = hkg.graph.get("raw_extraction", {})
     OUT_DIR.mkdir(parents=True, exist_ok=True)
     # 쪽별 원문 (PDG 감사가 근거 글이 그 쪽에 있는지 확인할 때 씀)
-    (OUT_DIR / f"{name}_pages.json").write_text(json.dumps(
-        {str(k): v for k, v in PDFDatasheetParser.audit_pages(parsed).items()}, ensure_ascii=False), encoding="utf-8")
+    pages = {str(k): v for k, v in PDFDatasheetParser.audit_pages(parsed).items()}
+    (OUT_DIR / f"{name}_pages.json").write_text(json.dumps(pages, ensure_ascii=False), encoding="utf-8")
+    # LLM 이 MIN 칸이 빈 줄의 값을 최소/최대로 넣는 일이 있어, 표 칸 위치와 PDF 위치가 둘 다 맞을 때 고친다
+    fixes = table_columns.fix_columns(raw, pages, pdf)
+    (OUT_DIR / f"{name}_column_fixes.json").write_text(json.dumps(fixes, ensure_ascii=False, indent=1), encoding="utf-8")
+    for f in fixes:
+        show = lambda v: "/".join("-" if v[k] is None else f"{v[k]:g}" for k in ("min", "typ", "max"))
+        log(f"최소/보통/최대 칸 바로잡음: {f['page']}쪽 {f['symbol']} {show(f['before'])} -> {show(f['after'])} "
+            f"({str(f['conditions'] or '')[:40]})")
     out = OUT_DIR / f"{name}_hkg.json"
     out.write_text(json.dumps(raw, ensure_ascii=False, indent=1), encoding="utf-8")
     log(f"추출 끝: 스펙 {len(raw.get('electrical_parameters', []))}줄, 핀 {len(raw.get('pins', []))}개 "
