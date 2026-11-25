@@ -584,25 +584,43 @@ class CircuitBuilder:
         }
 
     @staticmethod
-    def schema_guide() -> str:
-        """Returns a Circuit-SAFE block-level + device-level JSON IR schema guide (0-ERC, DC-convergent)."""
+    def schema_guide(device_class: str = "opamp") -> str:
+        """Returns a device-class-aware JSON IR schema guide (prevents 5-pin op-amp block leakage onto 3-pin/special ICs)."""
+        cls_low = str(device_class or "opamp").strip().lower()
+        is_opamp_family = any(k in cls_low for k in ("opamp", "op-amp", "operational", "audio_amp", "amplifier")) and not any(
+            k in cls_low for k in ("inamp", "instrumentation", "ota", "log", "shunt", "ldo", "ref", "timer", "comparator")
+        )
+        if not is_opamp_family:
+            return (
+                f"DEVICE-LEVEL PHYSICAL JSON IR SCHEMA (for `{device_class}` — DO NOT use 5-pin op-amp `blocks`):\n"
+                "Build the exact physical transistor/diode/passive circuit using ONLY `models` and `devices` wired to the EXACT declared pin names.\n"
+                "Supported device kinds:\n"
+                '- bjt:   {"kind":"bjt","name":"Q1","c":"NODE_C","b":"NODE_B","e":"NODE_E","model":"QNPN"}\n'
+                '- mos:   {"kind":"mos","name":"M1","d":"NODE_D","g":"NODE_G","s":"NODE_S","b":"NODE_B","model":"NMOS_MOD","w":"20u","l":"1u"}\n'
+                '- res:   {"kind":"res","name":"R1","p":"NODE_A","n":"NODE_B","value":"10k"}\n'
+                '- cap:   {"kind":"cap","name":"C1","p":"NODE_A","n":"NODE_B","value":"10p"}\n'
+                '- diode: {"kind":"diode","name":"D1","a":"NODE_A","k":"NODE_K","model":"D1N4148"}\n'
+                "JSON FORMAT:\n"
+                '{"models":[{"name":"QNPN","type":"NPN","params":"IS=1e-16 BF=150 VAF=100"},{"name":"QPNP","type":"PNP","params":"IS=1e-16 BF=80 VAF=80"}],'
+                '"devices":[...]}'
+            )
         return (
-            "PREFERRED CIRCUIT-SAFE BLOCKS (valid-by-construction analog stages — prevents polarity/wiring bugs):\n"
-            '- tail_current_mirror:     {"block":"tail_current_mirror","r_bias":"300k","r_e_ref":"2k","r_e_tail":"2k"}\n'
-            '- diff_pair_active_load:   {"block":"diff_pair_active_load","r_mirror_e":"500"}  (HIGH GAIN >95dB, LOW Vos <2mV!)\n'
-            '- diff_pair_res_load:      {"block":"diff_pair_res_load","rc":"15k"}             (moderate gain ~65dB)\n'
-            '- gain_stage_ce:           {"block":"gain_stage_ce","load_type":"active_current_source","r_e_src":"1k","c_comp":"30p","r_zero":"1k"}\n'
-            '- output_class_ab:         {"block":"output_class_ab","r_e_sink":"2k","r_e_out":"25"}  (symmetric +/-13V swing)\n'
+            "PREFERRED CIRCUIT-SAFE BLOCKS (valid-by-construction op-amp stages — prevents polarity/wiring bugs):\n"
+            '- tail_current_mirror:     {"block":"tail_current_mirror","r_bias":"100k","r_e_ref":"2k","r_e_tail":"2k"}\n'
+            '- diff_pair_active_load:   {"block":"diff_pair_active_load","r_mirror_e":"500"}\n'
+            '- diff_pair_res_load:      {"block":"diff_pair_res_load","rc":"15k"}\n'
+            '- gain_stage_ce:           {"block":"gain_stage_ce","load_type":"active_current_source","r_e_src":"1k","c_comp":"20p","r_zero":"1k"}\n'
+            '- output_class_ab:         {"block":"output_class_ab","r_e_sink":"2k","r_e_out":"25"}\n'
             '- output_emitter_follower: {"block":"output_emitter_follower","r_out":"5k"}\n'
-            "COMPLETE HIGH-GAIN CIRCUIT-SAFE EXAMPLE (adapt models/values to target specs):\n"
+            "EXAMPLE JSON STRUCTURE (scale resistor/capacitor/model values to the target datasheet specs and supply voltage):\n"
             '{"models":[\n'
-            '  {"name":"QNPN","type":"NPN","params":"IS=1e-16 BF=250 VAF=120"},\n'
+            '  {"name":"QNPN","type":"NPN","params":"IS=1e-16 BF=200 VAF=100"},\n'
             '  {"name":"QPNP","type":"PNP","params":"IS=1e-16 BF=100 VAF=100"},\n'
             '  {"name":"D1N4148","type":"D","params":"IS=1e-14 RS=1"}\n'
             '],"blocks":[\n'
-            '  {"block":"tail_current_mirror","r_bias":"300k","r_e_ref":"2k","r_e_tail":"2k"},\n'
+            '  {"block":"tail_current_mirror","r_bias":"100k","r_e_ref":"2k","r_e_tail":"2k"},\n'
             '  {"block":"diff_pair_active_load","r_mirror_e":"500"},\n'
-            '  {"block":"gain_stage_ce","load_type":"active_current_source","r_e_src":"1k","c_comp":"30p","r_zero":"1k"},\n'
+            '  {"block":"gain_stage_ce","load_type":"active_current_source","r_e_src":"1k","c_comp":"20p","r_zero":"1k"},\n'
             '  {"block":"output_class_ab","r_e_sink":"2k","r_e_out":"25"}\n'
             '],"devices":[]}\n'
             "Optional extra physical `devices` (bjt/mos/res/cap/diode) may also be included alongside `blocks`."

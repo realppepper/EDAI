@@ -549,7 +549,8 @@ class HermesAnalogTools:
 
         from ..circuit_synthesis.circuit_builder import CircuitBuilder
 
-        schema_guide = CircuitBuilder.schema_guide()
+        dev_cls_for_schema = (self.measurement_plan or {}).get("device_class", "opamp")
+        schema_guide = CircuitBuilder.schema_guide(device_class=dev_cls_for_schema)
         sys_prompt = (
             "You are the dedicated Netlist Synthesis Sub-Agent for pure transistor-level SPICE circuit design.\n"
             "Output ONLY a structured JSON circuit inside <circuit_json>...</circuit_json> tags so CircuitBuilder compiles it into guaranteed-valid SPICE.\n\n"

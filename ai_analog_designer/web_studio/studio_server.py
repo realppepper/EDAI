@@ -337,7 +337,8 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
 
             pdf_path = payload.get("pdf_path")
             user_prompt = payload.get("user_prompt", "").strip()
-            max_iterations = int(payload.get("max_iterations", 20))
+            max_iterations = int(payload.get("max_iterations", 6))
+            max_pages = max(1, min(200, int(payload.get("max_pages", 20))))
 
             if not pdf_path and not user_prompt:
                 self.send_json({"error": "Either a PDF datasheet or a natural language prompt is required."}, status=400)
@@ -368,7 +369,7 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
             # Spawn background execution thread
             thread = threading.Thread(
                 target=self.execute_design_task,
-                args=(task_id, output_dir, pdf_path, user_prompt, max_iterations),
+                args=(task_id, output_dir, pdf_path, user_prompt, max_iterations, max_pages),
                 daemon=True
             )
             thread.start()
@@ -382,8 +383,18 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
             self.send_json({"error": str(e)}, status=500)
 
     @classmethod
-    def execute_design_task(cls, task_id: str, output_dir: str, pdf_path: str | None, user_prompt: str | None, max_iterations: int):
+    def execute_design_task(
+        cls,
+        task_id: str,
+        output_dir: str,
+        pdf_path: str | None,
+        user_prompt: str | None,
+        max_iterations: int,
+        max_pages: int = 20,
+    ):
         """Background worker thread running AutonomousAnalogDesignAgent."""
+        os.environ.setdefault("ANALOG_EVOLVE_VERIFIER", "0")
+
         def progress_cb(phase_num: int, phase_title: str, msg: str):
             with TASKS_LOCK:
                 if task_id in TASKS:
@@ -393,7 +404,7 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
                     TASKS[task_id]["logs"].append(f"[{timestamp}] [Phase {phase_num}] {msg}")
 
         try:
-            progress_cb(1, "Starting Agent", f"Task {task_id} initialized in {output_dir}")
+            progress_cb(1, "Starting Agent", f"Task {task_id} initialized in {output_dir} (max_pages={max_pages})")
             agent = AutonomousAnalogDesignAgent(
                 output_dir=output_dir,
                 max_iterations=max_iterations
@@ -402,6 +413,7 @@ class StudioRequestHandler(SimpleHTTPRequestHandler):
             result = agent.run(
                 datasheet_pdf_path=pdf_path,
                 user_prompt=user_prompt,
+                max_pages=max_pages,
                 progress_callback=progress_cb
             )
 

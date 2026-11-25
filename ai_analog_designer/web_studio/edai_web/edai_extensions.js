@@ -4,6 +4,56 @@ let currentPdgSchedule = {};
 let lastSizedNetlist = '';
 let autoPoller = null;
 let lastAutoNetlist = '';
+let uploadedAutoPdfPath = '';
+
+function getActivePdfPath() {
+  return uploadedAutoPdfPath || $('#sample-select')?.value || null;
+}
+
+async function uploadAutonomousPdf(file) {
+  if (!file) return;
+  const lbl = $('#auto-pdf-label');
+  try {
+    error('');
+    if (lbl) lbl.textContent = `업로드 중: ${file.name}…`;
+    const fd = new FormData();
+    fd.append('file', file);
+    const resp = await fetch('/api/upload', { method: 'POST', body: fd });
+    const data = await resp.json();
+    if (!resp.ok || data.error) throw new Error(data.error || 'PDF 업로드 실패');
+    uploadedAutoPdfPath = data.filepath || '';
+    if ($('#sample-select')) $('#sample-select').value = '';
+    if (lbl) lbl.innerHTML = `✓ 업로드 완료: <span style="color:#0f766e">${esc(data.filename)}</span> (클릭하여 변경)`;
+  } catch (e) {
+    uploadedAutoPdfPath = '';
+    if (lbl) lbl.textContent = '새 데이터시트 PDF 업로드 (클릭 또는 드래그&드롭)';
+    error(e.message);
+  }
+}
+
+if ($('#auto-pdf-file')) {
+  $('#auto-pdf-file').onchange = e => uploadAutonomousPdf(e.target.files?.[0]);
+}
+if ($('#auto-pdf-drop')) {
+  const dz = $('#auto-pdf-drop');
+  dz.addEventListener('dragover', e => { e.preventDefault(); dz.style.borderColor = '#0f766e'; });
+  dz.addEventListener('dragleave', () => { dz.style.borderColor = ''; });
+  dz.addEventListener('drop', e => {
+    e.preventDefault();
+    dz.style.borderColor = '';
+    const f = e.dataTransfer?.files?.[0];
+    if (f) uploadAutonomousPdf(f);
+  });
+}
+if ($('#sample-select')) {
+  $('#sample-select').addEventListener('change', () => {
+    if ($('#sample-select').value) {
+      uploadedAutoPdfPath = '';
+      const lbl = $('#auto-pdf-label');
+      if (lbl) lbl.textContent = '새 데이터시트 PDF 업로드 (클릭 또는 드래그&드롭)';
+    }
+  });
+}
 
 // 1. Sample IC Datasheets (/api/samples) & PDG Extraction (/api/extract_pdg)
 async function loadSampleDatasheets() {
@@ -11,7 +61,7 @@ async function loadSampleDatasheets() {
     const res = await api('/api/samples');
     const sel = $('#sample-select');
     if (!sel || !res.samples) return;
-    sel.innerHTML = '<option value="">-- 샘플 IC 데이터시트 선택 --</option>' +
+    sel.innerHTML = '<option value="">-- 또는 내장 샘플 IC 선택 --</option>' +
       res.samples.map(s => `<option value="${esc(s.path)}">${esc(s.part_name)} (${esc(s.filename)})</option>`).join('');
   } catch (_) {}
 }
@@ -35,8 +85,8 @@ function updatePdgTimeline(tUs) {
 const btnPdg = $('#btn-extract-pdg');
 if (btnPdg) {
   btnPdg.onclick = async () => {
-    const pdfPath = $('#sample-select')?.value;
-    if (!pdfPath) return error('먼저 샘플 IC 데이터시트를 선택해 주세요.');
+    const pdfPath = getActivePdfPath();
+    if (!pdfPath) return error('먼저 데이터시트 PDF를 업로드하거나 샘플 IC를 선택해 주세요.');
     try {
       error('');
       btnPdg.disabled = true; btnPdg.textContent = 'PDG 추출 중…';
@@ -206,10 +256,10 @@ function updateAutonomousPhases(activePhase, failed) {
 
 if ($('#btn-run-autonomous')) {
   $('#btn-run-autonomous').onclick = async () => {
-    const pdfPath = $('#sample-select')?.value || null;
+    const pdfPath = getActivePdfPath();
     const prompt = $('#instruction')?.value.trim() || '';
     if (!pdfPath && !prompt) {
-      return error('자율 폐루프를 실행하려면 샘플 PDF를 선택하거나 설계 요청을 입력해 주세요.');
+      return error('자율 폐루프를 실행하려면 데이터시트 PDF를 업로드하거나 샘플 선택 / 설계 요청을 입력해 주세요.');
     }
     try {
       error('');
@@ -220,7 +270,8 @@ if ($('#btn-run-autonomous')) {
       const res = await api('/api/generate', {
         pdf_path: pdfPath,
         user_prompt: prompt,
-        max_iterations: Number($('#hermes-max-iters').value || 20)
+        max_iterations: Number($('#hermes-max-iters')?.value || 6),
+        max_pages: Number($('#hermes-max-pages')?.value || 20)
       });
       const taskId = res.task_id;
       clearInterval(autoPoller);
