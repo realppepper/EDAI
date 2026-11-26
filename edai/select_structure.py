@@ -66,9 +66,9 @@ EXTRA_SCALES = (20.0, 50.0)
 SELECT_VARIANTS = tuple(label_dataset.VARIANTS) + tuple((label_dataset.VARIANTS[0][0], s) for s in EXTRA_SCALES)
 
 
-def evaluate_variant(table: dict, unit_current: float, output_scale: float, spec: dict) -> dict:
-    """크기 정하기 한 번과 스펙 판정."""
-    record = label_dataset.label(table, None, unit_current, output_scale, measure_failed=False)
+def evaluate_variant(table: dict, unit_current: float, output_scale: float, spec: dict, passives: dict = None) -> dict:
+    """크기 정하기 한 번과 스펙 판정. passives: {소자 이름: {"value": ..}} 저항·커패시터 값 (튜닝 단계에서 씀)."""
+    record = label_dataset.label(table, passives, unit_current, output_scale, measure_failed=False)
     variant = {"output_scale": output_scale, "op_ok": record["op_ok"], "valid": record["valid"],
                "reason": record["reason"], "off": record.get("off"), "triode": record.get("triode"),
                "startup": record.get("startup"), "sizes": record.get("sizes"), "subckt": record.get("subckt"),

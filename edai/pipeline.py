@@ -11,9 +11,11 @@
     candidates.json   2. 모델(FLAN-T5)이 만든 구조 후보
     selection_dev.json 3. 후보마다 바이어스 채우기·크기 정하기·측정 결과
     selection.json    4. 순위 규칙 v4 로 고른 결과
-    final.json        5. 규칙(상보 뒤집기, 캐스코드)을 해 본 결과와 하네스에 넘긴 회로
-    harness/          6. 하네스 (LLM 으로 값 조정, 반복 HARNESS_ITERATIONS 번)
-    schematic/        7. 회로도 PNG·SVG (하네스 전 우리 회로, 하네스 후 최종 회로)
+    final.json        6. 규칙(상보 뒤집기, 캐스코드)을 해 본 결과와 하네스에 넘긴 회로 (7단계가 튜닝한 회로로 바꿈)
+    final_rules.json  7. 튜닝 전 6단계 회로 (튜닝을 다시 돌릴 때 이것에서 시작)
+    tune.json         7. 스펙 맞추기 튜닝 기록 (전류·출력단 배율·보상 커패시터를 바꿔 잰 결과)
+    harness/          8. 하네스 (LLM 으로 값 조정, 반복 HARNESS_ITERATIONS 번)
+    schematic/        9. 회로도 PNG·SVG (하네스 전 우리 회로, 하네스 후 최종 회로)
     report.html       결과 화면 (파일 하나, 더블클릭으로 열림)
 
 사용법 (WSL 가상환경, 프로젝트 폴더에서):
@@ -39,8 +41,9 @@ STEPS = [
     ("fix", "4. 실패한 구조 고치기 (규칙·LLM)"),
     ("rank", "5. 구조 고르기"),
     ("rules", "6. 규칙 적용"),
-    ("harness", "7. 하네스"),
-    ("schematic", "8. 최종 회로도"),
+    ("tune", "7. 스펙 맞추기 튜닝"),
+    ("harness", "8. 하네스"),
+    ("schematic", "9. 최종 회로도"),
 ]
 RULE_SCALES = (20.0, 50.0)      # 규칙을 적용한 회로를 잴 때 해 보는 출력단 배율 (구조 선택과 같은 값)
 
@@ -194,10 +197,10 @@ def step_rules(run: Run) -> dict:
     sel = run.read("selection.json")
     entry = sel["entries"][sel["summary"]["selected"]]
     base_v = next(v for v in entry["variants"] if v["valid"] and v["output_scale"] == entry["best"]["output_scale"])
-    tried = [{"label": "모델 구조 그대로", "rules": [], "table": entry["table"], "variant": base_v}]
     unit_current = base_v.get("unit_current_a") or auto_size.UNIT_CURRENT   # 4단계에서 LLM 이 바꿨으면 그 값
     # 4단계에서 LLM 이 바꾼 소자 목표(gm/ID, 길이)도 이어서 쓴다. 상보 뒤집기 뒤에는 이름 앞글자(NM/PM)가 바뀐다
     overrides = {k: tuple(v) for k, v in (base_v.get("target_overrides") or {}).items()}
+    tried = [{"label": "모델 구조 그대로", "rules": [], "table": entry["table"], "variant": base_v, "overrides": overrides}]
     auto_size.TARGET_OVERRIDES = dict(overrides)
     table = ss.to_table(entry["table"])
     table, flipped = complement.fit_input_range(table)
@@ -223,6 +226,7 @@ def step_rules(run: Run) -> dict:
     final = {"label": chosen["label"], "rules": chosen["rules"], "table": chosen["table"],
              "output_scale": v["output_scale"], "subckt": v["subckt"], "sizes": v.get("sizes"), "bias": v.get("bias"),
              "spec": v["spec"], "passed": v["passed"], "judged": v["judged"],
+             "unit_current": unit_current, "target_overrides": chosen.get("overrides") or {},   # 7단계 튜닝이 이어 씀
              "tried": [{"label": t["label"], "scale": t["variant"]["output_scale"], "valid": t["variant"]["valid"],
                         "reason": t["variant"].get("reason"), "passed": t["variant"].get("passed"),
                         "judged": t["variant"].get("judged"), "spec": t["variant"].get("spec")} for t in tried]}
@@ -231,14 +235,62 @@ def step_rules(run: Run) -> dict:
 
 
 def evaluate(run: Run, ss, unit_current: float, table: dict, spec: dict, label: str, rules: list) -> list:
+    import auto_size
     import netlist_table as nt
     out = []
     for scale in RULE_SCALES:
         v = ss.evaluate_variant(table, unit_current, scale, spec)
         run.log(f"  {label} x{scale:g}: " + (f"{v['passed']}/{v['judged']}" if v["valid"] else f"실패 ({v['reason'][:50]})"))
-        out.append({"label": label, "rules": rules, "variant": v,
+        out.append({"label": label, "rules": rules, "variant": v, "overrides": dict(auto_size.TARGET_OVERRIDES),
                     "table": " ; ".join(nt.table_text(table).splitlines())})
     return out
+
+
+def step_tune(run: Run) -> dict:
+    """6단계 회로의 전류·출력단 배율·보상 커패시터를 바꿔 통과 항목을 늘린다 (tune_sizing.py).
+    나아졌을 때만 final.json 을 튜닝한 회로로 바꾸고, 튜닝 전 회로는 final_rules.json 에 둔다."""
+    import auto_size
+    import netlist_table as nt
+    import run_sim
+    import select_structure as ss
+    import tune_sizing
+    rules_file = run.dir / "final_rules.json"
+    final = run.read("final.json")
+    if final.get("tuned") and rules_file.exists():
+        final = json.loads(rules_file.read_text(encoding="utf-8"))      # 튜닝을 다시 돌림: 6단계 회로에서 시작
+    else:
+        rules_file.write_text(json.dumps(final, ensure_ascii=False, indent=1), encoding="utf-8")
+    auto_size.BIAS_MODE = "devices"
+    auto_size.TARGET_OVERRIDES = {k: tuple(v) for k, v in (final.get("target_overrides") or {}).items()}
+    try:
+        spec = run_sim.load_spec(run.dir / "spec.json")
+        table = tune_sizing.table_from_text(final["table"])
+        unit_current = final.get("unit_current") or auto_size.UNIT_CURRENT
+        result = tune_sizing.tune(table, spec, unit_current, final["output_scale"], log=run.log)
+    finally:
+        auto_size.TARGET_OVERRIDES = {}
+    start, best = result["start"]["variant"], result["best"]["variant"]
+    improved = bool(best.get("valid")) and tune_sizing.score(best) < tune_sizing.score(start)
+    current, scale, cap = result["best"]["point"]
+    record = {"stopped": result["stopped"], "seconds": result["seconds"], "miller_nodes": result["miller_nodes"],
+              "start": {"passed": start.get("passed"), "judged": start.get("judged"), "spec": start.get("spec")},
+              "best": {"unit_current_ua": current * 1e6, "scale": scale, "cap_pf": cap * 1e12,
+                       "passed": best.get("passed"), "judged": best.get("judged"), "spec": best.get("spec")},
+              "improved": bool(improved), "trials": result["trials"]}
+    (run.dir / "tune.json").write_text(json.dumps(record, ensure_ascii=False, indent=1), encoding="utf-8")
+    if improved:
+        tuned = dict(final, label=final["label"] + " + 튜닝", tuned=True,
+                     table=" ; ".join(nt.table_text(result["best"]["table"]).splitlines()),
+                     unit_current=current, output_scale=scale, compensation_pf=cap * 1e12,
+                     subckt=best["subckt"], sizes=best.get("sizes"), bias=best.get("bias"),
+                     spec=best["spec"], passed=best["passed"], judged=best["judged"])
+        run.dir.joinpath("final.json").write_text(json.dumps(tuned, ensure_ascii=False, indent=1), encoding="utf-8")
+    else:
+        run.dir.joinpath("final.json").write_text(json.dumps(final, ensure_ascii=False, indent=1), encoding="utf-8")
+    before = f"{start.get('passed')}/{start.get('judged')}" if start.get("valid") else "다시 재기 실패"
+    return {"before": before, "after": f"{best.get('passed')}/{best.get('judged')}" if improved else before,
+            "improved": bool(improved), "trials": len(result["trials"]), "stopped": result["stopped"],
+            "unit_current_ua": current * 1e6, "scale": scale, "cap_pf": cap * 1e12}
 
 
 def step_harness(run: Run) -> dict:
@@ -344,6 +396,10 @@ def check_step(run: Run, key: str) -> list:
         final = run.read("final.json") if has("final.json") else {}
         if ".subckt" not in (final.get("subckt") or ""):
             out.append("하네스에 넘길 회로(final.json)에 .subckt 가 없음")
+    elif key == "tune":
+        final = run.read("final.json") if has("final.json") else {}
+        if ".subckt" not in (final.get("subckt") or ""):
+            out.append("튜닝 뒤 하네스에 넘길 회로(final.json)에 .subckt 가 없음")
     elif key == "harness":
         result = run.read("harness/result.json") if has("harness/result.json") else None
         if result is None:
@@ -375,7 +431,7 @@ def check_step(run: Run, key: str) -> list:
 
 
 STEP_FUNCS = {"extract": step_extract, "candidates": step_candidates, "select": step_select, "fix": step_fix, "rank": step_rank,
-              "rules": step_rules, "harness": step_harness, "schematic": step_schematic}
+              "rules": step_rules, "tune": step_tune, "harness": step_harness, "schematic": step_schematic}
 
 
 def main() -> None:

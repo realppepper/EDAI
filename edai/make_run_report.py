@@ -213,15 +213,40 @@ def body_rank(run_dir: Path, s: dict) -> str:
 
 
 def body_rules(run_dir: Path, s: dict) -> str:
-    final = read(run_dir, "final.json")
+    final = read(run_dir, "final_rules.json") or read(run_dir, "final.json")   # 7단계가 final.json 을 바꾸므로 그 전 것
     if not final:
         return ""
     out = ["<table><tr><th>해 본 회로</th><th>출력단 배율</th><th>결과</th></tr>"]
     for t in final["tried"]:
         res = f"{t['passed']}/{t['judged']}" if t["valid"] else f"<span class='failc'>실패</span> {esc((t.get('reason') or '')[:60])}"
-        mark = " ← 하네스로 넘김" if t["label"] == final["label"] and t["scale"] == final["output_scale"] else ""
+        mark = " ← 고름" if t["label"] == final["label"] and t["scale"] == final["output_scale"] else ""
         out.append(f"<tr><td>{esc(t['label'])}</td><td>x{num(t['scale'], 0)}</td><td>{res}<b>{mark}</b></td></tr>")
-    out.append("</table><p class='sub'>하네스로 넘긴 회로의 판정</p>" + spec_table(final["spec"]))
+    out.append("</table><p class='sub'>고른 회로의 판정</p>" + spec_table(final["spec"]))
+    return "".join(out)
+
+
+def body_tune(run_dir: Path, s: dict) -> str:
+    tune = read(run_dir, "tune.json")
+    if not tune:
+        return ""
+    best = tune["best"]
+    out = [f"<p>구조는 그대로 두고 전류원 전류, 출력단 배율, 보상 커패시터(출력 트랜지스터 게이트 "
+           f"{esc(', '.join(tune.get('miller_nodes') or []) or '없음')} ↔ OUT)를 바꿔 가며 {len(tune['trials'])}번 쟀어요 "
+           f"({esc(tune['stopped'])}, {tune['seconds']} s).</p>"]
+    if tune["improved"]:
+        out.append(f"<p>통과 {tune['start']['passed']}/{tune['start']['judged']} → <b>{best['passed']}/{best['judged']}</b>: "
+                   f"전류 {num(best['unit_current_ua'], 1)} µA, 출력단 x{num(best['scale'], 0)}, 보상 {num(best['cap_pf'], 1)} pF. "
+                   "이 회로를 하네스로 넘겼어요.</p>")
+    else:
+        out.append("<p>더 나아진 조합이 없어 6단계 회로를 그대로 하네스로 넘겼어요.</p>")
+    out.append("<table><tr><th>전류 (µA)</th><th>출력단 배율</th><th>보상 (pF)</th><th>결과</th><th>못 맞춘 항목</th><th>걸린 시간 (s)</th></tr>")
+    for t in tune["trials"]:
+        res = f"{t['passed']}/{t['judged']}" if t["valid"] else f"<span class='failc'>실패</span> {esc((t.get('reason') or '')[:60])}"
+        out.append(f"<tr><td>{num(t['unit_current_ua'], 1)}</td><td>x{num(t['scale'], 0)}</td><td>{num(t['cap_pf'], 1)}</td>"
+                   f"<td>{res}</td><td>{esc(', '.join(t.get('failed') or []))}</td><td>{num(t['seconds'], 0)}</td></tr>")
+    out.append("</table>")
+    if tune["improved"]:
+        out.append("<p class='sub'>하네스로 넘긴 회로의 판정</p>" + spec_table(best["spec"]))
     return "".join(out)
 
 
@@ -386,7 +411,7 @@ def body_fix(run_dir: Path, s: dict) -> str:
 
 
 BODIES = {"extract": body_extract, "candidates": body_candidates, "select": body_select, "fix": body_fix, "rank": body_rank,
-          "rules": body_rules, "harness": body_harness, "schematic": body_schematic}
+          "rules": body_rules, "tune": body_tune, "harness": body_harness, "schematic": body_schematic}
 
 
 def render(run_dir: Path) -> str:
