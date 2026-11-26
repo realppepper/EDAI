@@ -54,6 +54,11 @@ def supply_rank(row: dict) -> int:
     if TEST_SUPPLY in supplies:
         return 0
     return 1 if not supplies else 2
+# 작을수록 좋은 항목. 데이터시트에 보통값만 있으면 "보통값 x max_ratio 이하"로 판정한다 (나머지는 "보통값 x min_ratio 이상").
+# 전에는 모두 "이상"으로 판정해 공급 전류가 "104 µA 이상"이 되어 528 µA 회로가 통과했다 (LMV321, 2026-11-26)
+# 출력 스윙(voh/vol)은 레일에서 떨어진 거리로 바꿔 두므로 작을수록 좋다
+LOWER_IS_BETTER = {"idd", "ts", "voh_1ma", "voh_5ma", "vol_1ma", "vol_5ma", "vio", "vio_drift", "iio", "iib",
+                   "cic", "vn_1k", "vn_10k", "in_1k", "thd_av1"}
 TEMPERATURE_NOTE = "Full-temperature"
 # 조건에 적힌 온도 범위 (예: "TA = –40°C to 125°C", "Full range") -> 25°C 줄이 아니므로 뺀다
 TEMPERATURE_RANGE = re.compile(r"[–−-]?\d+\s*°?\s*C\s*to\s*\+?\d+|Full range|Temperature\s*\(", re.I)
@@ -183,7 +188,7 @@ def build(plan: dict, hkg: dict, part: str, fix: dict | None = None, whole: bool
         low, typ, high = (spec_from_hkg.rounded(v) for v in to_ours(measure, row))
         item.update({k: v for k, v in (("min", low), ("typ", typ), ("max", high)) if v is not None})
         if low is None and high is None:
-            item["typ_rule"] = "higher"
+            item["typ_rule"] = "lower" if measure in LOWER_IS_BETTER else "higher"
         item.update(symbol=row["symbol"], condition=row.get("conditions"), extracted=evidence,
                     plan={"kind": kind, "fixture": row["fixture"], "row": i})
         if i in changed:
