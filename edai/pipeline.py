@@ -48,6 +48,54 @@ STEPS = [
 RULE_SCALES = (20.0, 50.0)      # 규칙을 적용한 회로를 잴 때 해 보는 출력단 배율 (구조 선택과 같은 값)
 
 
+# ---------------------------------------------------------------- LLM 공급자와 호출 기록
+# input.json 의 "llm" (nim / openrouter / groq) 으로 이 실행의 LLM 공급자를 정한다. 없으면 NVIDIA(nim).
+# "llm_model" 을 주면 1단계(스펙 뽑기·측정 계획)에서 그 모델을 쓴다. 키는 .env (extract_datasheet.ENV_KEYS)
+LLM_CALLS = []          # 이 실행에서 부른 LLM 호출 (박준석 LLMClient._log 를 감싸서 모음)
+
+
+def setup_llm(run) -> None:
+    import os
+    provider = (run.input.get("llm") or "nim").lower()
+    os.environ["LLM_PROVIDER"] = provider
+    if run.input.get("llm_model"):
+        os.environ["LLM_MODEL"] = run.input["llm_model"]
+        os.environ["LLM_CAPABLE_MODEL"] = run.input["llm_model"]     # 1단계 스펙 뽑기는 capable 등급 모델을 부른다
+    try:
+        import extract_datasheet
+        extract_datasheet.load_keys()
+        sys.path.insert(0, str(extract_datasheet.AV_DIR))
+        from ai_analog_designer.llm_client import LLMClient
+    except Exception as error:                      # 기록만 못 할 뿐 실행은 그대로
+        run.log(f"LLM 호출 기록 준비 실패: {error}")
+        return
+    original = LLMClient._log
+    if getattr(original, "_edai_wrapped", False):
+        return
+
+    def _log(self, tag, model, attempt, status, res, error=None):
+        LLM_CALLS.append({"provider": self.provider, "model": model, "tag": tag, "status": status,
+                          "seconds": res.get("total_s") or 0, "tokens": res.get("completion_tokens"),
+                          "cost_usd": res.get("cost_usd")})
+        return original(self, tag, model, attempt, status, res, error)
+    _log._edai_wrapped = True
+    LLMClient._log = _log
+    run.status["llm"] = {"provider": provider, "model": run.input.get("llm_model")}
+    run.log(f"LLM 공급자: {provider}" + (f", 모델 {run.input['llm_model']}" if run.input.get("llm_model") else ""))
+
+
+def llm_summary(calls: list) -> dict:
+    """단계 하나의 LLM 호출 요약 (호출들이 동시에 돌기도 해서 seconds 합은 단계 시간보다 클 수 있음)."""
+    if not calls:
+        return None
+    models = {}
+    for c in calls:
+        models[c["model"]] = models.get(c["model"], 0) + 1
+    return {"calls": len(calls), "ok": sum(c["status"] == "ok" for c in calls),
+            "seconds": round(sum(c["seconds"] for c in calls), 1),
+            "cost_usd": round(sum(c["cost_usd"] or 0 for c in calls), 4), "models": models}
+
+
 # ---------------------------------------------------------------- 실행 폴더 상태
 class Run:
     def __init__(self, run_dir: Path):
@@ -444,9 +492,11 @@ def main() -> None:
     for key in keys:
         if key in todo:
             run.step(key).update(state="wait", summary=None, error=None)
+    setup_llm(run)
     run.save()
     for key in todo:
         step = run.step(key)
+        calls_before = len(LLM_CALLS)
         step.update(state="run", started=time.strftime("%H:%M:%S"))
         run.save()
         run.log(f"== {step['title']}")
@@ -462,6 +512,8 @@ def main() -> None:
             run.log(traceback.format_exc())
             run.status["state"] = "failed"
         step["seconds"] = round(time.time() - t0)
+        step["llm"] = llm_summary(LLM_CALLS[calls_before:])
+        run.status["total_seconds"] = sum(s.get("seconds") or 0 for s in run.status["steps"])   # 단계 시간 합
         run.save()
         if step["state"] == "fail":
             return

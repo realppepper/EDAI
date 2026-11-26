@@ -27,7 +27,7 @@ HERE = Path(__file__).resolve().parent
 AV_DIR = Path(os.environ.get("EDAI_AV_DIR") or HERE.parent)
 OUT_DIR = HERE / "data" / "extraction"
 ENV_FILES = (HERE / ".env", AV_DIR / ".env")      # 키 파일: edai/.env 먼저, 없으면 저장소 루트 .env
-ENV_KEYS = ("NVIDIA_API_KEY", "IEEE_API_KEY")
+ENV_KEYS = ("NVIDIA_API_KEY", "IEEE_API_KEY", "OPENROUTER_API_KEY", "GROQ_API_KEY")   # LLM 공급자는 LLM_PROVIDER (pipeline 이 실행마다 정함)
 MAX_PAGES = 30                 # 박준석 시스템 Studio 기본값과 같게
 
 

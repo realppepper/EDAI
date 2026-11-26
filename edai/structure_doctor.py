@@ -41,8 +41,21 @@ CURRENT_RANGE = (5e-6, 100e-6)     # 전류원 하나의 전류 [A]
 SCALE_RANGE = (1.0, 100.0)         # 출력단 배율
 LLM_TAG = "edai_structure_doctor"
 # 진단은 큰 모델로 (태그만 주면 4B 짜리 빠른 모델로 가서 답이 약했음, 2026-11-22). 쉼표로 바꿀 수 있음
-DOCTOR_MODELS = [m.strip() for m in os.environ.get(
-    "EDAI_DOCTOR_MODELS", "nvidia/nemotron-3-ultra-550b-a55b,nvidia/nemotron-3.5-lightning-30b-a3b").split(",") if m.strip()]
+# 공급자(LLM_PROVIDER)마다 큰 모델 먼저, 안 되면 작은 모델. EDAI_DOCTOR_MODELS 를 주면 그것을 쓴다
+PROVIDER_DOCTOR_MODELS = {
+    "nim": "nvidia/nemotron-3-ultra-550b-a55b,nvidia/nemotron-3.5-lightning-30b-a3b",
+    "openrouter": "anthropic/claude-haiku-5.5,deepseek/deepseek-v4.1-flash",
+    "groq": "openai/gpt-oss-120b,qwen/qwen3.8-27b",
+}
+
+
+def doctor_models() -> list:
+    provider = (os.environ.get("LLM_PROVIDER") or "nim").lower()
+    text = os.environ.get("EDAI_DOCTOR_MODELS") or PROVIDER_DOCTOR_MODELS.get(provider, PROVIDER_DOCTOR_MODELS["nim"])
+    return [m.strip() for m in text.split(",") if m.strip()]
+
+
+DOCTOR_MODELS = doctor_models()
 NET_NAME = re.compile(r"^(N\d+|IN1|IN2|OUT|VDD|VSS|VB\d+|IB\d+)$")   # 구조 표에 쓸 수 있는 노드 이름
 RAIL_VOLTS = {"VDD": 5.0, "VSS": 0.0}
 # 실패 이유의 무게 (작을수록 고치기 쉬움): 동작점은 나왔고 소자 몇 개만 문제인 경우부터
@@ -348,6 +361,8 @@ class Doctor:
         extract_datasheet.load_keys()
         sys.path.insert(0, str(extract_datasheet.AV_DIR))
         from ai_analog_designer.llm_client import LLMClient
+        global DOCTOR_MODELS
+        DOCTOR_MODELS = doctor_models()             # pipeline 이 실행마다 LLM_PROVIDER 를 정한 뒤라 여기서 다시 고른다
         self.llm, self.raw_dir, self.report = LLMClient(), raw_dir, report
         report["llm"] = {"provider": getattr(self.llm, "provider", None), "models": DOCTOR_MODELS, "used": {}}
 
