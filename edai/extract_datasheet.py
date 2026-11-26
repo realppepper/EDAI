@@ -162,7 +162,9 @@ def plan_specs(hkg_file: Path, name: str, log=print) -> Path:
     ev_file = OUT_DIR / f"{name}_SPEC_EVALUATION.json"
     ev_file.write_text(json.dumps(ev, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
     part = str(hkg["ic_device"].get("name") or name).upper()
-    spec = spec_from_plan.build(ev, hkg, part, whole=True)
+    pages_file = OUT_DIR / f"{name}_pages.json"           # 표 제목의 전원 조건을 읽는 데 쓴다
+    pages = json.loads(pages_file.read_text(encoding="utf-8")) if pages_file.exists() else None
+    spec = spec_from_plan.build(ev, hkg, part, whole=True, pages=pages)
     spec["extraction"]["file"] = hkg_file.name
     spec["plan"]["file"] = ev_file.name
     spec_file = HERE / f"spec_{name}.json"

@@ -46,14 +46,43 @@ def same_part(name: str, part: str) -> bool:
     return name == part or name == part + "I"
 
 
-def supply_rank(row: dict) -> int:
+def supply_rank(row: dict, table_supply: float | None = None) -> int:
     """같은 측정 항목이 여러 전원 조건으로 있을 때 고르는 순서 (작을수록 먼저).
     0: 우리 측정 전원(TEST_SUPPLY)과 같은 줄, 1: 전원이 안 적힌 줄, 2: 다른 전원 줄 (예: 5 V 로 재는데 2.7 V 표).
-    데이터시트는 낮은 전원 표가 먼저 나오는 일이 많아, 먼저 나온 줄을 쓰면 2.7 V 값이 목표가 됐다 (LMV321, 2026-11-25)."""
+    데이터시트는 낮은 전원 표가 먼저 나오는 일이 많아, 먼저 나온 줄을 쓰면 2.7 V 값이 목표가 됐다 (LMV321, 2026-11-25).
+    줄에 전원이 안 적혀 있으면 그 줄이 있는 쪽의 표 제목 전원(table_supply)을 쓴다 (page_supplies)."""
     supplies = {float(v) for v in SUPPLY_IN_COND.findall(row.get("conditions") or "")}
+    if not supplies and table_supply is not None:
+        supplies = {table_supply}
     if TEST_SUPPLY in supplies:
         return 0
     return 1 if not supplies else 2
+
+
+def has_limit(row: dict) -> bool:
+    """데이터시트가 보장하는 값(최소나 최대)이 있는 줄인지. 보통값만 있으면 판정 기준을 팀 규칙으로 정해야 한다."""
+    return row.get("min_target") is not None or row.get("max_target") is not None
+
+
+# 표 제목 줄: "6.8 Electrical Characteristics: VCC+ = 5 V", "VCC+ = 5 V, TA = 25°C (unless otherwise noted)"
+TABLE_TITLE = re.compile(r"electrical characteristics|unless otherwise noted", re.I)
+
+
+def page_supplies(pages: dict | None) -> dict:
+    """쪽 번호 -> 그 쪽 표 제목에 적힌 전원 [V]. 제목에 전원이 하나만 있는 쪽만 (둘 이상이면 어느 줄이 어느 표인지 몰라 뺀다).
+    추출 LLM 이 표 제목 조건을 줄마다 붙이기도 하고 안 붙이기도 해서 (LMV321 2026-11-26: 2.7 V 표는 붙이고
+    5 V 표는 안 붙임) 5 V 표 줄을 5 V 로 알아보지 못하고 1쪽 요약표 줄(보통값만 있음)을 골랐다."""
+    found = {}
+    for key, text in (pages or {}).items():
+        if not isinstance(text, str):
+            continue
+        supplies = {float(v) for line in text.splitlines() if TABLE_TITLE.search(line)
+                    for v in SUPPLY_IN_COND.findall(line)}
+        if len(supplies) == 1:
+            found[int(key)] = supplies.pop()
+    return found
+
+
 # 작을수록 좋은 항목. 데이터시트에 보통값만 있으면 "보통값 x max_ratio 이하"로 판정한다 (나머지는 "보통값 x min_ratio 이상").
 # 전에는 모두 "이상"으로 판정해 공급 전류가 "104 µA 이상"이 되어 528 µA 회로가 통과했다 (LMV321, 2026-11-26)
 # 출력 스윙(voh/vol)은 레일에서 떨어진 거리로 바꿔 두므로 작을수록 좋다
@@ -151,8 +180,11 @@ def apply_fix(rows: list, fix: dict) -> dict:
     return changed
 
 
-def build(plan: dict, hkg: dict, part: str, fix: dict | None = None, whole: bool = False) -> dict:
-    """whole=True: 한 부품(채널 수 변형만 있는) 데이터시트라 부품 구간을 자르지 않고 계획 전체를 쓴다."""
+def build(plan: dict, hkg: dict, part: str, fix: dict | None = None, whole: bool = False,
+          pages: dict | None = None) -> dict:
+    """whole=True: 한 부품(채널 수 변형만 있는) 데이터시트라 부품 구간을 자르지 않고 계획 전체를 쓴다.
+    pages: 쪽 번호 -> 쪽 글 (extract_datasheet 의 *_pages.json). 있으면 표 제목의 전원 조건을 줄에 이어 붙여 고른다.
+    고르는 순서: 우리 측정 전원(5 V) 줄 -> 보장값(최소·최대)이 있는 줄 -> 먼저 나온 줄."""
     rows, extracted = [dict(r) for r in plan["spec_evaluations"]], hkg["electrical_parameters"]
     template = {s["measure"]: s for s in json.loads(TEMPLATE_SPEC.read_text(encoding="utf-8"))["specs"]}
     changed = apply_fix(rows, fix) if fix else {}
@@ -161,7 +193,13 @@ def build(plan: dict, hkg: dict, part: str, fix: dict | None = None, whole: bool
     else:
         section = range(*fix["section"]["rows"]) if fix and fix.get("section") else part_rows(rows, part)
     specs, missing, seen = [], [], set()
-    planned = sorted((i for i in section if rows[i].get("fixture")), key=lambda i: supply_rank(rows[i]))
+    titles = page_supplies(pages)
+
+    def table_supply(i):
+        return titles.get(extracted[i].get("page")) if i < len(extracted) else None
+
+    planned = sorted((i for i in section if rows[i].get("fixture")),
+                     key=lambda i: (supply_rank(rows[i], table_supply(i)), not has_limit(rows[i])))
     for i in planned:
         row = rows[i]
         named = set(PART_NAME.findall(row.get("conditions") or ""))
@@ -191,6 +229,8 @@ def build(plan: dict, hkg: dict, part: str, fix: dict | None = None, whole: bool
             item["typ_rule"] = "lower" if measure in LOWER_IS_BETTER else "higher"
         item.update(symbol=row["symbol"], condition=row.get("conditions"), extracted=evidence,
                     plan={"kind": kind, "fixture": row["fixture"], "row": i})
+        if table_supply(i) is not None and not SUPPLY_IN_COND.search(row.get("conditions") or ""):
+            item["table_supply_v"] = table_supply(i)          # 줄에 없고 표 제목에서 읽은 전원
         if i in changed:
             item["corrected"] = changed[i]
         specs.append(item)
