@@ -111,6 +111,27 @@ def use_verify_only(agent, seed_code: str, seed_name: str) -> None:
     runner.run_design_flow = seed_only_flow
 
 
+def target_rows_only(hkg: dict) -> tuple:
+    """대상 칩 줄만 남긴 hkg 와 뺀 줄 수.
+
+    한 데이터시트에 여러 칩이 있으면(LMV321/LMV358/LMV324) 하네스는 우리 회로 하나의 측정값을 모든 칩 줄과 비교했다.
+    LMV321 2026-11-26: 공급 전류 525.6 µA 를 LMV358(앰프 2개)·LMV324(4개) 줄과도 비교해 실패 3개·통과 4개가 잘못 셈.
+    조건이나 이름에 다른 칩 이름만 적힌 줄을 뺀다. 칩 이름이 없는 줄은 그대로 둔다 (스펙 고르기 spec_from_plan 과 같은 규칙)."""
+    import spec_from_plan
+    part = str(hkg.get("ic_device", {}).get("name") or "").upper()
+    if not part:
+        return hkg, 0
+    kept = []
+    for row in hkg.get("electrical_parameters", []):
+        text = f"{row.get('test_conditions') or ''} {row.get('conditions') or ''} {row.get('name') or ''}"
+        named = set(spec_from_plan.PART_NAME.findall(text))     # 대문자로 바꾸지 않는다: "LM324xx"(계열 전체)는 LM324 로 읽혀야 함
+        if named and not any(spec_from_plan.same_part(n, part) for n in named):
+            continue
+        kept.append(row)
+    dropped = len(hkg.get("electrical_parameters", [])) - len(kept)
+    return {**hkg, "electrical_parameters": kept}, dropped
+
+
 def make_subckt_name(part: str) -> str:
     """하네스와 같은 규칙의 subckt 이름 (hermes_workflow: 영숫자·_ 외는 _ , 대문자)."""
     import re
@@ -144,6 +165,10 @@ def main() -> None:
     out_dir = run_dir / "harness"
     out_dir.mkdir(exist_ok=True)
     (out_dir / "blueprint.json").write_text(json.dumps(experience, ensure_ascii=False, indent=1), encoding="utf-8")
+    target_hkg, dropped = target_rows_only(hkg)
+    hkg_file = out_dir / "hkg_target.json"
+    hkg_file.write_text(json.dumps(target_hkg, ensure_ascii=False, indent=1), encoding="utf-8")
+    print(f"하네스에 넘기는 항목: {len(target_hkg['electrical_parameters'])}줄 (다른 칩 줄 {dropped}개 뺌)", flush=True)
 
     sys.path.insert(0, str(AV_DIR))
     os.chdir(AV_DIR)                    # 하네스는 harness2_library 를 현재 폴더 기준으로 찾는다
@@ -157,7 +182,7 @@ def main() -> None:
     (seed_dir / "EXPERIENCE.json").write_text(json.dumps(experience, ensure_ascii=False, indent=2), encoding="utf-8")
     try:
         agent = AutonomousAnalogDesignAgent(output_dir=str(out_dir), max_iterations=ITERATIONS,
-                                            reuse_hkg_path=str(run_dir / "hkg.json"))
+                                            reuse_hkg_path=str(hkg_file))
         mode = os.environ.get("EDAI_HARNESS_MODE", "verify")
         print(f"하네스 방식: {mode} ({'우리 회로 채점만' if mode == 'verify' else '하네스 LLM 합성·개선 포함'})", flush=True)
         if mode == "verify":
@@ -175,7 +200,7 @@ def main() -> None:
               "iterations": [{k: it.get(k) for k in ("iteration", "pass_rate_percent", "status") if k in it}
                              for it in iterations if isinstance(it, dict)],
               "final_netlist": netlist, "pin_map": {k: v for k, v in mapping.items() if isinstance(v, str)},
-              "seed": seed_name, "seconds": round(time.time() - t0)}
+              "seed": seed_name, "seconds": round(time.time() - t0), "other_part_rows_dropped": dropped}
     (out_dir / "result.json").write_text(json.dumps(record, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
     print(f"하네스 끝: 통과율 {record['pass_rate_percent']}%, 반복 {record['iterations_count']}번, {record['seconds']} s", flush=True)
 
