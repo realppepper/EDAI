@@ -15,6 +15,7 @@ FLAN-T5 가 만든 TLV271 후보 구조를 하나씩 검사하고, 크기를 정
 """
 
 import json
+import os
 import sys
 import time
 from collections import Counter
@@ -128,6 +129,10 @@ REPAIR_RULES = 2                 # 후보 하나에 적용해 보는 규칙 수
 # 3분을 넘긴 후보 8개는 하나도 뽑히지 않았는데 오래 걸린 것은 몇 시간 (LMV321: 3단계 4시간 34분)
 CANDIDATE_LIMIT_S = 180          # 후보 하나 (모든 모양 포함). 넘으면 '시간 초과'로 남기고 다음 후보
 STAGE_LIMIT_S = 45 * 60          # 3단계 전체. 넘으면 남은 후보는 '시간 부족으로 건너뜀'
+# 후보를 동시에 재는 일꾼 수 (2026-11-26). 후보끼리는 서로 상관없어서 나눠 재도 결과는 같고 시간만 준다.
+# 일꾼마다 임시 회로 이름(label_dataset.DESIGN_NAME)을 따로 써서 시뮬레이션 파일이 겹치지 않게 한다.
+# 1 이면 예전처럼 한 줄로. EDAI_SELECT_WORKERS 로 바꿀 수 있다
+SELECT_WORKERS = int(os.environ.get("EDAI_SELECT_WORKERS") or min(4, os.cpu_count() or 1))
 
 
 def evaluate_form(table: dict, spec: dict) -> list:
@@ -346,6 +351,47 @@ def main() -> None:
         print(f"선택: 후보 {s['selected'] + 1}, {part.upper()} {best['passed']}/{best['judged']} 통과 -> {out_file.name}")
 
 
+_JOB = {}                         # 일꾼 프로세스가 물려받는 값 (spec, rules, stage_end)
+
+
+def _worker_init() -> None:
+    """일꾼마다 임시 회로 이름을 따로 (opamp_p<프로세스 번호>_). run_sim 이 opamp 로 시작하는 이름을 OP-Amp 로 본다."""
+    label_dataset.DESIGN_NAME = f"opamp_p{os.getpid()}_"
+
+
+def _measure_one(job: tuple) -> tuple:
+    """후보 하나를 잰다 (일꾼 프로세스 안). 돌려주는 값: (번호, 기록들, 이 후보에서 쓴 규칙 결과)."""
+    number, candidate = job
+    spec, rules, stage_end = _JOB["spec"], _JOB["rules"], _JOB["stage_end"]
+    t0 = time.time()
+    rule_results = {}
+    if t0 >= stage_end:
+        return number, [cut_entry(candidate, number, f"시간 부족으로 건너뜀 (3단계 {STAGE_LIMIT_S // 60}분 제한)")], {}
+    run_sim.CANDIDATE_DEADLINE = min(t0 + CANDIDATE_LIMIT_S, stage_end)
+    try:
+        entries = repair_candidate(candidate, number, spec, rules, rule_results)
+    except run_sim.CandidateTimeout:
+        entries = [cut_entry(candidate, number, f"시간 초과 ({time.time() - t0:.0f} s, 후보당 {CANDIDATE_LIMIT_S // 60}분 제한)")]
+    except Exception as error:                    # 한 후보의 예상 못 한 오류로 전체가 멈추지 않게
+        entries = [cut_entry(candidate, number, f"오류: {type(error).__name__}: {str(error)[:150]}")]
+    finally:
+        run_sim.CANDIDATE_DEADLINE = None
+    return number, entries, rule_results
+
+
+def _measure_all(candidates: list, workers: int):
+    """(번호, 기록들, 규칙 결과)를 끝나는 대로 내놓는다. 일꾼이 1명이면 한 줄로."""
+    jobs = list(enumerate(candidates, 1))
+    if workers <= 1:
+        _worker_init()                            # 한 줄로 재도 이름은 따로 (다른 실행과 겹치지 않게)
+        for job in jobs:
+            yield _measure_one(job)
+        return
+    import multiprocessing
+    with multiprocessing.get_context("fork").Pool(workers, initializer=_worker_init) as pool:
+        yield from pool.imap_unordered(_measure_one, jobs)
+
+
 def repair_main(part: str, data: dict, spec: dict, result: dict, out_file: Path, started: float) -> None:
     """--repair: 후보마다 여러 모양을 재고, 쓴 규칙의 결과를 규칙 모음에 한 번씩 반영한다."""
     import structure_rules
@@ -359,20 +405,16 @@ def repair_main(part: str, data: dict, spec: dict, result: dict, out_file: Path,
     print(f"고쳐 보기: 원래 / 바이어스 정리 / 상보 뒤집기, 다 실패하면 규칙 {len(rules)}개 중 맞는 것. "
           f"출력단 배율 {', '.join(f'x{s:g}' for s in REPAIR_SCALES)}", flush=True)
     stage_end = started + STAGE_LIMIT_S
-    for number, candidate in enumerate(data["candidates"], 1):
-        t0 = time.time()
-        if t0 >= stage_end:
-            entries = [cut_entry(candidate, number, f"시간 부족으로 건너뜀 (3단계 {STAGE_LIMIT_S // 60}분 제한)")]
-        else:
-            run_sim.CANDIDATE_DEADLINE = min(t0 + CANDIDATE_LIMIT_S, stage_end)
-            try:
-                entries = repair_candidate(candidate, number, spec, rules, rule_results)
-            except run_sim.CandidateTimeout:
-                entries = [cut_entry(candidate, number,
-                                     f"시간 초과 ({time.time() - t0:.0f} s, 후보당 {CANDIDATE_LIMIT_S // 60}분 제한)")]
-            finally:
-                run_sim.CANDIDATE_DEADLINE = None
-        result["entries"] += entries
+    workers = max(1, min(SELECT_WORKERS, len(data["candidates"])))
+    print(f"후보 {len(data['candidates'])}개를 일꾼 {workers}명이 나눠 잰다", flush=True)
+    _JOB.update(spec=spec, rules=rules, stage_end=stage_end)
+    finished = {}                                 # 번호 -> 기록들. 결과 파일에는 번호 순서로 쓴다
+    for number, entries, used in _measure_all(data["candidates"], workers):
+        candidate = data["candidates"][number - 1]
+        for rule_id, worked in used.items():
+            rule_results[rule_id] = rule_results.get(rule_id, False) or worked
+        finished[number] = entries
+        result["entries"] = [e for n in sorted(finished) for e in finished[n]]
         first = entries[0]
         if first["steps"].get("cut"):
             note = first["steps"]["cut"]
@@ -383,7 +425,8 @@ def repair_main(part: str, data: dict, spec: dict, result: dict, out_file: Path,
         good = [e for e in entries if e.get("best")]
         best = max(good, key=lambda e: e["best"]["passed"], default=None)
         head = f"동작 {best['best']['passed']}/{best['best']['judged']} ({best['form']})" if best else "실패"
-        print(f"  후보 {number}/{len(data['candidates'])} ({candidate.get('how')}) {head} :: {note}"[:400], flush=True)
+        print(f"  후보 {number}/{len(data['candidates'])} ({candidate.get('how')}) {head} :: {note}"[:400]
+              + f"  [{len(finished)}/{len(data['candidates'])} 끝]", flush=True)
         result["summary"] = summarize(result["entries"])
         out_file.write_text(json.dumps(result, ensure_ascii=False, indent=1), encoding="utf-8")
     for rule in rules:                            # 규칙마다 이번 칩에서 한 번만 반영 (후보가 많아도 한 칩 = 한 번)
