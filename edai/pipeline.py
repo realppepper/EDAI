@@ -344,7 +344,7 @@ def step_tune(run: Run) -> dict:
 def step_harness(run: Run) -> dict:
     sh(run, [PY, HERE / "run_harness.py", run.dir])
     result = run.read("harness/result.json")
-    return {"pass_rate": result.get("pass_rate_percent"), "iterations": result.get("iterations_count"),
+    return {"pass_rate": result.get("pass_rate_percent"), "counts": result.get("counts"),
             "has_netlist": bool(result.get("final_netlist"))}
 
 
@@ -453,22 +453,29 @@ def check_step(run: Run, key: str) -> list:
         if result is None:
             out.append("하네스 결과 파일(harness/result.json)이 없음")
         else:
-            if result.get("pass_rate_percent") is None:
+            counts = result.get("counts") or {}
+            if counts and counts.get("judged") == 0:
+                out.append(f"하네스가 판정할 항목이 없음: 데이터시트 {counts.get('total')}줄 중 전원 조건이 공정 한계(5 V)를 넘는 줄 "
+                           f"{counts.get('supply')}개, 시뮬레이션으로 확인할 수 없는 줄 {counts.get('not_testable')}개")
+            elif result.get("pass_rate_percent") is None:
                 out.append("하네스 통과율이 기록되지 않음")
             if (result.get("pass_rate_percent") or 0) > 0 and ".subckt" not in (result.get("final_netlist") or "").lower():
                 out.append("통과율은 있는데 최종 회로를 못 찾음 (파일 이름·경로 문제일 가능성)")
             if result.get("pass_rate_percent") == 0:
                 out.append("하네스 통과율 0%: 넘긴 회로가 동작하는데 0% 면 하네스가 회로를 시뮬레이션하지 못했을 수 있음")
-            # 하네스가 돌린 시뮬레이션의 오류 (ngspice 출력 *.ng.out). 같은 오류가 여러 번이면 연결 문제일 가능성이 큼
-            errors = {}
-            for f in (d / "harness").rglob("*.ng.out"):
+            # 하네스가 돌린 시뮬레이션의 오류 (ngspice 출력 *.ng.out): 어느 측정 회로에서 무슨 오류인지 첫 줄을 보여 준다.
+            # 이름에 _dyn 이 붙은 것은 하네스 LLM 이 쓴 동적 테스트벤치(왜곡 등), 나머지는 정해진 테스트벤치
+            failed = []
+            for f in sorted((d / "harness").rglob("*.ng.out")):
                 for line in f.read_text(encoding="utf-8", errors="ignore").splitlines():
-                    m = re.search(r"(unknown subckt|could not find|Undefined parameter|fatal error)", line, re.I)
-                    if m:
-                        errors[m.group(1).lower()] = errors.get(m.group(1).lower(), 0) + 1
-            if errors:
-                out.append("하네스 시뮬레이션 오류: " + ", ".join(f"{k} {v}번" for k, v in errors.items())
-                           + " (하네스 LLM 이 쓴 회로의 문법 오류일 수도, 연결 코드 문제일 수도 있음)")
+                    if re.search(r"unknown subckt|could not find|Undefined parameter|fatal error|shorted|"
+                                 r"not supported|simulation\(s\) aborted", line, re.I):
+                        kind = "동적 측정(LLM 이 쓴 회로)" if "_dyn" in f.name else "정해진 측정"
+                        failed.append(f"{kind} {f.name}: {line.strip()[:120]}")
+                        break
+            if failed:
+                out.append(f"하네스 시뮬레이션이 멈춘 측정 회로 {len(failed)}개 (동적 측정 항목은 실패가 아니라 못 잼으로 셈): "
+                           + " / ".join(failed[:3]) + (" ..." if len(failed) > 3 else ""))
     elif key == "schematic":
         if not has("schematic/before_harness.png"):
             out.append("하네스 전 회로도가 없음")

@@ -132,6 +132,73 @@ def target_rows_only(hkg: dict) -> tuple:
     return {**hkg, "electrical_parameters": kept}, dropped
 
 
+# 하네스 판정 결과(status) -> 결과 화면에 보여 줄 묶음
+COUNT_GROUPS = {
+    "PASS": "passed", "PASS_TYP": "passed", "FAIL": "failed", "FAIL_TYP": "failed",
+    "NOT_TESTABLE_SUPPLY": "supply", "NOT_MEASURED_SIM_ERROR": "sim_error",
+    "NO_NUMERIC_LIMIT": "no_limit", "UNSUPPORTED_KIND": "no_method",
+}
+
+
+def spec_counts(out_dir: Path) -> dict:
+    """하네스 채점 파일(*_SPEC_EVALUATION.json)의 줄을 묶음별로 센다. judged = 통과 + 실패 (통과율의 분모).
+    not_testable 은 열·ESD·절대최대·권장 조건처럼 시뮬레이션으로 확인할 수 없는 줄, supply 는 전원 조건이 공정 한계를 넘는 줄."""
+    from file_find import find_files
+    files = find_files(out_dir, "*_SPEC_EVALUATION.json")
+    if not files:
+        return {}
+    rows = json.loads(files[0].read_text(encoding="utf-8")).get("spec_evaluations") or []
+    counts = {"total": len(rows), "passed": 0, "failed": 0, "not_testable": 0, "supply": 0, "sim_error": 0,
+              "no_limit": 0, "no_method": 0}
+    for row in rows:
+        status = str(row.get("status") or "")
+        group = COUNT_GROUPS.get(status, "not_testable" if status.startswith("NOT_TESTABLE") else "no_method")
+        counts[group] += 1
+    counts["judged"] = counts["passed"] + counts["failed"]
+    return counts
+
+
+TABLE_TITLE = r"electrical characteristics|unless otherwise noted"
+LISTED_SUPPLIES = r"=\s*±?\d+(?:\.\d+)?\s*V\s*,\s*±?\d"      # "VDD = 2.7 V, 5 V, and ±5 V" 처럼 표 하나에 전원 여러 개
+
+
+def page_title_supplies(pages: dict | None) -> dict:
+    """쪽 번호 -> 그 쪽 표 제목의 전체 전원 [V]. 제목 전원이 하나로 분명한 쪽만 (여러 개면 줄마다 어느 것인지 몰라 뺀다)."""
+    import re
+    sys.path.insert(0, str(AV_DIR))
+    from ai_analog_designer.neuro_symbolic_verifier.spec_planner import condition_supply
+    found = {}
+    for key, text in (pages or {}).items():
+        if not isinstance(text, str):
+            continue
+        titles = [line for line in text.splitlines() if re.search(TABLE_TITLE, line, re.I)]
+        if any(re.search(LISTED_SUPPLIES, line) for line in titles):
+            continue
+        values = {condition_supply(line) for line in titles} - {None}
+        if len(values) == 1:
+            found[int(key)] = values.pop()
+    return found
+
+
+def with_title_supply(hkg: dict, pages: dict | None) -> tuple:
+    """조건에 전원이 없는 줄에 그 쪽 표 제목의 전원을 붙인다. 붙인 줄 수도 돌려준다.
+
+    하네스는 전원이 안 적힌 줄을 기본 전원(공정 한계 5 V)으로 재고 데이터시트 기준과 비교했다.
+    LM6172 2026-11-27: '±15 V 표' 줄 다수가 조건에 전원이 없어 5 V 로 재고 ±15 V 기준과 비교됨.
+    전원이 붙으면 하네스가 그 전원으로 재거나(5 V 이하), 공정 한계를 넘으면 잴 수 없음으로 뺀다 (spec_planner)."""
+    sys.path.insert(0, str(AV_DIR))
+    from ai_analog_designer.neuro_symbolic_verifier.spec_planner import condition_supply
+    titles = page_title_supplies(pages)
+    rows, added = [], 0
+    for row in hkg.get("electrical_parameters", []):
+        supply = titles.get(row.get("page"))
+        if supply is not None and condition_supply(row.get("test_conditions") or "") is None:
+            row = {**row, "test_conditions": f"{row.get('test_conditions') or ''}, VS = {supply:g} V (table title)".lstrip(", ")}
+            added += 1
+        rows.append(row)
+    return {**hkg, "electrical_parameters": rows}, added
+
+
 def make_subckt_name(part: str) -> str:
     """하네스와 같은 규칙의 subckt 이름 (hermes_workflow: 영숫자·_ 외는 _ , 대문자)."""
     import re
@@ -166,9 +233,13 @@ def main() -> None:
     out_dir.mkdir(exist_ok=True)
     (out_dir / "blueprint.json").write_text(json.dumps(experience, ensure_ascii=False, indent=1), encoding="utf-8")
     target_hkg, dropped = target_rows_only(hkg)
+    pages_file = run_dir / "pages.json"
+    pages = json.loads(pages_file.read_text(encoding="utf-8")) if pages_file.exists() else None
+    target_hkg, titled = with_title_supply(target_hkg, pages)
     hkg_file = out_dir / "hkg_target.json"
     hkg_file.write_text(json.dumps(target_hkg, ensure_ascii=False, indent=1), encoding="utf-8")
-    print(f"하네스에 넘기는 항목: {len(target_hkg['electrical_parameters'])}줄 (다른 칩 줄 {dropped}개 뺌)", flush=True)
+    print(f"하네스에 넘기는 항목: {len(target_hkg['electrical_parameters'])}줄 (다른 칩 줄 {dropped}개 뺌, "
+          f"표 제목 전원을 붙인 줄 {titled}개)", flush=True)
 
     sys.path.insert(0, str(AV_DIR))
     os.chdir(AV_DIR)                    # 하네스는 harness2_library 를 현재 폴더 기준으로 찾는다
@@ -200,7 +271,11 @@ def main() -> None:
               "iterations": [{k: it.get(k) for k in ("iteration", "pass_rate_percent", "status") if k in it}
                              for it in iterations if isinstance(it, dict)],
               "final_netlist": netlist, "pin_map": {k: v for k, v in mapping.items() if isinstance(v, str)},
-              "seed": seed_name, "seconds": round(time.time() - t0), "other_part_rows_dropped": dropped}
+              "seed": seed_name, "seconds": round(time.time() - t0), "other_part_rows_dropped": dropped,
+              "title_supply_rows": titled}
+    record["counts"] = spec_counts(out_dir)
+    if record["counts"] and record["counts"]["judged"] == 0:
+        record["pass_rate_percent"] = None      # 판정할 항목이 없으면 0% 가 아니라 '판정 없음' (LM6172: 전부 ±15 V·±5 V 조건)
     (out_dir / "result.json").write_text(json.dumps(record, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
     print(f"하네스 끝: 통과율 {record['pass_rate_percent']}%, 반복 {record['iterations_count']}번, {record['seconds']} s", flush=True)
 

@@ -208,11 +208,21 @@ Return ONLY valid JSON.
                 target_specs=dynamic_specs
             )
 
-            # Unified metrics merging
+            # EDAI: 측정값이 없는 동적 항목(시뮬레이션이 멈춤)은 실패로 세지 않고 '못 잼'으로 따로 센다.
+            # 전에는 측정값 없이 실패로 세어 통과율이 깎였다 (LM6172 2026-11-26: 왜곡 14개, 60개 중 24 통과 = 40%).
+            # 결정적 항목과 같은 모양이 되게 status 도 붙인다 (전에는 없어서 status 로 세는 코드가 멈춤)
+            dyn_rows = dyn_eval.get("spec_evaluations", [])
+            for row in dyn_rows:
+                if row.get("measured") is None:
+                    row["status"] = "NOT_MEASURED_SIM_ERROR"
+                    row["passed"] = False
+                else:
+                    row.setdefault("status", "PASS" if row.get("passed") else "FAIL")
             det_passed = det_eval.get("passed_specs", 0)
             det_failed = det_eval.get("failed_specs", 0)
-            dyn_passed = dyn_eval.get("passed_count", 0)
-            dyn_failed = dyn_eval.get("failed_count", 0)
+            dyn_passed = sum(1 for r in dyn_rows if r["status"] == "PASS")
+            dyn_failed = sum(1 for r in dyn_rows if r["status"] == "FAIL")
+            det_eval["unmeasured_sim_error"] = sum(1 for r in dyn_rows if r["status"] == "NOT_MEASURED_SIM_ERROR")
 
             total_passed = det_passed + dyn_passed
             total_measured = det_passed + det_failed + dyn_passed + dyn_failed
