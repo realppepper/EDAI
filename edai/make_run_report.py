@@ -215,9 +215,10 @@ def _body_select_text(run_dir: Path, s: dict) -> str:
            f"가장 많이 통과한 것 {esc(s.get('best_passed'))}</p>")
     if s.get("forms") is not None:              # 고쳐 보기 (--repair)
         forms = s.get("forms_working") or {}
-        out += ("<p class='sub'>후보마다 모델 구조 그대로 말고도 정해진 변환을 한 모양을 같이 쟀어요: 자체 바이어스 회로를 검증된 "
+        out += ("<details class='sub'><summary>후보마다 같이 잰 변환 모양</summary>"
+                "<p>후보마다 모델 구조 그대로 말고도 정해진 변환을 한 모양을 같이 쟀어요: 자체 바이어스 회로를 검증된 "
                 "바이어스로 바꾼 것(바이어스 정리), 입력쌍이 공통모드 범위를 못 덮으면 상보 뒤집기, 그래도 안 되면 쌓인 구조 규칙. "
-                "동작한 모양: " + (", ".join(f"{esc(k)} {v}개" for k, v in forms.items()) or "없음") + "</p>")
+                "동작한 모양: " + (", ".join(f"{esc(k)} {v}개" for k, v in forms.items()) or "없음") + "</p></details>")
     return out
 
 
