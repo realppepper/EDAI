@@ -81,9 +81,21 @@ DEVICE_TABLE = _load_device_table()
 
 
 def lookup(kind: str, length_um: float, gm_id: float, field: str) -> float:
-    """특성표에서 gm/ID 에 해당하는 값을 읽는다 (j: 정사각형 하나의 전류, vgs, vdsat)."""
-    data = DEVICE_TABLE["n" if kind == "nmos" else "p"][str(float(length_um))]
-    return float(np.interp(gm_id, data["gm_id"], data[field]))
+    """특성표에서 gm/ID 에 해당하는 값을 읽는다 (j: 정사각형 하나의 전류, vgs, vdsat).
+    표에 없는 길이(길이를 늘린 소자, size_text)는 가까운 두 길이의 값을 log(L) 로 보간한다. 표 범위 밖은 끝 값."""
+    tables = DEVICE_TABLE["n" if kind == "nmos" else "p"]
+    exact = tables.get(str(float(length_um)))
+    if exact is not None:
+        return float(np.interp(gm_id, exact["gm_id"], exact[field]))
+    lengths = sorted(float(k) for k in tables)
+    lo = max([x for x in lengths if x <= length_um] or [lengths[0]])
+    hi = min([x for x in lengths if x >= length_um] or [lengths[-1]])
+    v_lo = float(np.interp(gm_id, tables[str(lo)]["gm_id"], tables[str(lo)][field]))
+    if hi == lo:
+        return v_lo
+    v_hi = float(np.interp(gm_id, tables[str(hi)]["gm_id"], tables[str(hi)][field]))
+    w = (np.log(length_um) - np.log(lo)) / (np.log(hi) - np.log(lo))
+    return v_lo + w * (v_hi - v_lo)
 
 
 def input_cascode_level(kind: str) -> float:
@@ -386,8 +398,47 @@ def saturation_report(op: dict, table: dict) -> dict:
 
 
 # ---------------------------------------------------------------- 전체
+STARTUP_SERIES_BELOW = 2e-6   # 전류원 전류가 이보다 작으면 startup 약한 소자를 직렬로 (bias_reference.startup_weak)
+STARTUP_SERIES_LOW = 4
+LOW_CURRENT_SHARE = 0.25     # 회로에서 가장 작은 가지 전류 ≈ 전류원 전류 x 이 비율 (차동쌍 한쪽, 기준 회로 등)
+
+
+def low_current_lengths(unit_current: float) -> dict:
+    """전류원 전류가 작을 때 역할별 (gm/ID, 길이). 가장 작은 가지도 폭이 W_MIN_UM 이상이 되는 길이 하나를
+    모든 역할에 같이 쓴다 (짧은 역할만 늘림). 소자마다 따로 늘리면(size_text) 바이어스 전압 계산은 원래 길이로 하고
+    실제 소자는 긴 길이라 어긋났다 (LMV321 캐스코드, 전류원 0.1 µA, 2026-11-27)."""
+    current = unit_current * LOW_CURRENT_SHARE
+    need = max(W_MIN_UM * lookup(kind, length, gm_id, "j") / current
+               for gm_id, length in ROLE_TARGETS.values() for kind in ("nmos", "pmos"))
+    common = min(L_MAX_UM, math.ceil(need * 10) / 10)
+    return {role: (gm_id, max(length, common)) for role, (gm_id, length) in ROLE_TARGETS.items()}
+
+
 def auto_size(table: dict, passive_values: dict = None, unit_current: float = UNIT_CURRENT,
               output_scale: float = 1.0, bias_mode: str = None) -> dict:
+    """_auto_size 를 부른다. 전류원 전류가 작으면 역할별 길이를 늘린 채로 (low_current_lengths)."""
+    if unit_current >= UNIT_CURRENT:
+        return _auto_size(table, passive_values, unit_current, output_scale, bias_mode)
+    import bias_reference
+    saved, saved_ref_l = dict(ROLE_TARGETS), bias_reference.L_UM
+    ROLE_TARGETS.update(low_current_lengths(unit_current))
+    # 기준 전류 회로와 거기서 전류를 복사하는 거울 소자도 같은 길이로. 기준 회로만 폭이 최소값에 걸려 길어지고 거울 소자는
+    # 짧은 채로 두면 길이가 달라 복사 비율이 틀어졌다 (캐스코드 게이트 가지 전류가 1.4 배, 2026-11-27)
+    bias_reference.L_UM = max(saved_ref_l, max(length for _, length in ROLE_TARGETS.values()))
+    saved_series = bias_reference.STARTUP_SERIES
+    if unit_current < STARTUP_SERIES_BELOW:
+        bias_reference.STARTUP_SERIES = STARTUP_SERIES_LOW      # 늘 켜진 startup 소자 전류도 줄임
+    try:
+        return _auto_size(table, passive_values, unit_current, output_scale, bias_mode)
+    finally:
+        ROLE_TARGETS.clear()
+        ROLE_TARGETS.update(saved)
+        bias_reference.L_UM = saved_ref_l
+        bias_reference.STARTUP_SERIES = saved_series
+
+
+def _auto_size(table: dict, passive_values: dict = None, unit_current: float = UNIT_CURRENT,
+               output_scale: float = 1.0, bias_mode: str = None) -> dict:
     """구조 표 하나에 동작하는 크기를 찾는다.
 
     passive_values : {소자 이름: {"value": ..}} 저항·커패시터 값 (없으면 netlist_table 기본값)

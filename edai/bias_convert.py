@@ -256,9 +256,8 @@ def startup_lines(p_node: str, q_node: str) -> list:
     """회로 자체 바이어스 고리용 startup (bias_reference 와 같은 방식).
     p_node: PMOS 다이오드 노드 (끌어내리면 고리가 켜짐), q_node: 켜지면 올라가는 NMOS 다이오드 노드."""
     return ["* startup (bias_convert.py)",
-            f"XSU_MS1 SU_SX VSS VDD VDD pfet_06v0 {bias_reference.STARTUP_WEAK}",
             f"XSU_MS2 {p_node} SU_SX VSS VSS nfet_06v0 {bias_reference.STARTUP_PULL}",
-            f"XSU_MS3 SU_SX {q_node} VSS VSS nfet_06v0 {bias_reference.STARTUP_OFF}"]
+            f"XSU_MS3 SU_SX {q_node} VSS VSS nfet_06v0 {bias_reference.STARTUP_OFF}"] + bias_reference.startup_weak("SU_MS1", "SU_SX")
 
 
 def startup_candidates(table: dict) -> list:

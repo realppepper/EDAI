@@ -39,6 +39,18 @@ K = 4                       # MN2 / MN1 폭 비
 L_UM = 2.0                  # 기준 회로 소자 길이 [um] (짝 맞춤을 위해 긴 채널)
 GM_ID = 10.0                # MN1, MP3 의 gm/ID [1/V]
 STARTUP_WEAK = "w=0.5u l=20u"     # MS1: 늘 켜진 아주 약한 PMOS (정상 동작 때 전류 무시할 만큼)
+# 초저전력에서는 MS1 의 늘 흐르는 전류(약 3 µA)가 회로 전체 공급 전류보다 커서, 길이 50 µm 소자를 여러 개 직렬로 둔다
+# (auto_size.auto_size 가 전류원 전류가 작을 때 정함. 1 이면 위 STARTUP_WEAK 하나, 2026-11-27)
+STARTUP_SERIES = 1
+STARTUP_SERIES_SIZE = "w=0.5u l=50u"
+
+
+def startup_weak(name: str, sx: str) -> list:
+    """늘 켜진 약한 PMOS (VDD -> sx). STARTUP_SERIES 개를 직렬로."""
+    if STARTUP_SERIES <= 1:
+        return [f"X{name} {sx} VSS VDD VDD pfet_06v0 {STARTUP_WEAK}"]
+    nodes = ["VDD"] + [f"{name}_K{k}" for k in range(1, STARTUP_SERIES)] + [sx]
+    return [f"X{name}_{k} {nodes[k + 1]} VSS {nodes[k]} VDD pfet_06v0 {STARTUP_SERIES_SIZE}" for k in range(STARTUP_SERIES)]
 STARTUP_PULL = "w=2u l=1u"        # MS2
 STARTUP_OFF = "w=5u l=1u"         # MS3 (MS1 보다 훨씬 강해 SX 를 확실히 내림)
 VDD_NOMINAL = run_sim.OPAMP_VDD
@@ -70,10 +82,10 @@ def cell(prefix: str = "REF", rs: float = None, current: float = IREF) -> tuple:
         f"R{prefix}_S {ns} VSS {rs:.6g}",
         f"X{prefix}_MP3 {pb} {pb} VDD VDD {p} {width('pmos', current)}",
         f"X{prefix}_MP4 {nb} {pb} VDD VDD {p} {width('pmos', current)}",
-        f"X{prefix}_MS1 {sx} VSS VDD VDD {p} {STARTUP_WEAK}",
         f"X{prefix}_MS2 {pb} {sx} VSS VSS {n} {STARTUP_PULL}",
         f"X{prefix}_MS3 {sx} {nb} VSS VSS {n} {STARTUP_OFF}",
     ]
+    lines += startup_weak(f"{prefix}_MS1", sx)
     return lines, {"NB": nb, "PB": pb}
 
 
