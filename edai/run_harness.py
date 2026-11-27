@@ -46,10 +46,16 @@ def use_verify_only(agent, seed_code: str, seed_name: str) -> None:
     하네스 원래 흐름은 1) LLM 직접 합성(최대 10번) 2) 설계도(우리 회로) 채점 3) LLM 개선 라운드인데, LM358·TLV271
     실행에서 1)·3)은 모두 0% 였고 최종 회로는 늘 우리 회로였다 (7단계 10분 중 실제 점수는 2) 의 1분 남짓).
     그래서 1) 자리에 '우리 회로를 칩 핀에 맞추고 하네스 검증기로 채점' 만 넣고, 3)·검증기 진화·하네스 FLAN-T5 씨앗은 끈다.
-    채점(결정적 테스트벤치 + PDG 관문 + 동적 테스트벤치), 리포트, 하네스 기록 저장은 하네스 코드 그대로 쓴다.
+    채점(결정적 테스트벤치 + PDG 관문), 리포트, 하네스 기록 저장은 하네스 코드 그대로 쓴다.
+
+    동적 테스트벤치(왜곡·채널 분리 등, LLM 이 측정 회로를 씀)도 끈다. 그런 줄은 '측정 방법 없음'(UNSUPPORTED_KIND)으로 남는다.
+    LM358·LM324·LM6172 에서 한 번도 끝까지 돌지 못했고, 고쳐 돌려 보니 LLM 이 쓴 회로가 틀려 있었다
+    (전원 줄 문법 오류로 0 V, GND 단락, 피드백 없는 개루프: 2026-11-27). 다시 켜려면 EDAI_HARNESS_DYNAMIC=1
     """
     os.environ["ANALOG_HARNESS2_ROUNDS"] = "0"        # 3) LLM 개선 라운드 끔
     os.environ["ANALOG_EVOLVE_VERIFIER"] = "0"        # 검증 항목 제안 LLM (Golden Oracle Gatekeeper) 끔
+    if os.environ.get("EDAI_HARNESS_DYNAMIC") != "1":
+        agent.dynamic_harness.identify_dynamic_specs = lambda *args, **kwargs: []
     from ai_analog_designer.circuit_synthesis import flan_t5_topology
     flan_t5_topology.synthesize_flan_t5_seed = lambda **kw: {"ok": False}   # 하네스 쪽 FLAN-T5 씨앗: 우리 회로만 잰다
     from ai_analog_designer.hermes_core.hermes_tools import HermesAnalogTools

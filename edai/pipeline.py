@@ -14,7 +14,7 @@
     final.json        6. 규칙(상보 뒤집기, 캐스코드)을 해 본 결과와 하네스에 넘긴 회로 (7단계가 튜닝한 회로로 바꿈)
     final_rules.json  7. 튜닝 전 6단계 회로 (튜닝을 다시 돌릴 때 이것에서 시작)
     tune.json         7. 스펙 맞추기 튜닝 기록 (전류·출력단 배율·보상 커패시터를 바꿔 잰 결과)
-    harness/          8. 하네스 (LLM 으로 값 조정, 반복 HARNESS_ITERATIONS 번)
+    harness/          8. 하네스 (우리 회로를 데이터시트 전체 줄로 채점만 함, LLM 없음. result.json 의 counts 가 묶음별 개수)
     schematic/        9. 회로도 PNG·SVG (하네스 전 우리 회로, 하네스 후 최종 회로)
     report.html       결과 화면 (파일 하나, 더블클릭으로 열림)
 
