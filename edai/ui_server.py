@@ -46,6 +46,35 @@ def suggest_from(steps: list) -> str:
     return failed["key"]
 
 
+WAITING_REFRESH_S = 3
+
+
+def waiting_page(run_dir: Path) -> str:
+    """결과 화면 파일(report.html)이 아직 없을 때 보여 줄 화면. 단계 목록이 있으면 그대로 그리고, 3초마다 다시 읽는다.
+    실행을 시작한 직후 화면이 파일보다 먼저 열려 'not found' 가 1단계 내내(약 6분) 남던 문제 (2026-11-27)."""
+    try:
+        if not (run_dir / "status.json").exists():
+            raise FileNotFoundError("단계 기록이 아직 없음")
+        return make_run_report.render(run_dir).replace(
+            "<head>", f"<head><meta http-equiv='refresh' content='{WAITING_REFRESH_S}'>", 1)
+    except Exception:
+        pass
+    return f"""<!doctype html><html lang="ko"><head><meta charset="utf-8">
+<meta http-equiv="refresh" content="{WAITING_REFRESH_S}"><meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+:root {{ --bg:#fff; --fg:#1d2330; --muted:#6b7280; --accent:#2856c7; }}
+@media (prefers-color-scheme: dark) {{ :root {{ --bg:#15181e; --fg:#e7e9ee; --muted:#9aa3b2; --accent:#7aa2ff; }} }}
+body {{ margin:0; background:var(--bg); color:var(--fg); font:15px/1.6 "Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+  display:grid; place-items:center; min-height:100vh; }}
+.box {{ text-align:center; }} .sub {{ color:var(--muted); font-size:13px; }}
+.spin {{ width:28px; height:28px; border:3px solid var(--muted); border-top-color:var(--accent); border-radius:50%;
+  margin:0 auto 12px; animation:r 1s linear infinite; }}
+@keyframes r {{ to {{ transform:rotate(360deg); }} }}
+@media (prefers-reduced-motion: reduce) {{ .spin {{ animation:none; }} }}
+</style></head><body><div class="box"><div class="spin" aria-hidden="true"></div>
+<div>설계를 시작하는 중이에요</div><div class="sub">데이터시트를 읽기 시작하면 단계별 진행이 여기에 나와요</div></div></body></html>"""
+
+
 def datasheet_catalog() -> list:
     """datasheets/catalog.json 의 묶음 목록. 파일이 없는 항목은 뺀다."""
     catalog = DATASHEET_DIR / "catalog.json"
@@ -176,6 +205,9 @@ class Handler(BaseHTTPRequestHandler):
             target = (RUNS_DIR / path[len("/runs/"):]).resolve()
             if RUNS_DIR.resolve() in target.parents and target.is_file():
                 return self.send(200, target.read_bytes(), CONTENT_TYPES.get(target.suffix.lower(), "application/octet-stream"))
+            # 실행을 막 시작해 결과 화면 파일이 아직 없으면 'not found' 대신 진행 중 화면 (몇 초 뒤 다시 읽음)
+            if target.name == "report.html" and target.parent.parent == RUNS_DIR.resolve() and target.parent.is_dir():
+                return self.send(200, waiting_page(target.parent).encode("utf-8"), CONTENT_TYPES[".html"])
         self.send(404, b"not found", "text/plain")
 
     def do_POST(self) -> None:
