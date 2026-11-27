@@ -13,6 +13,7 @@ import re
 from pathlib import Path
 
 GALLERY_FIRST = 6           # 후보 그림 모음에서 처음에 보여 줄 개수 (나머지는 '더보기')
+GRID_FIRST = 10             # 후보 x 스펙 표에서 처음에 보여 줄 회로 수 (나머지는 '더보기')
 CANDIDATE_DIR = "candidates"
 
 CSS = """
@@ -53,6 +54,8 @@ table.spec-grid td.v.no { color:var(--bad); background:color-mix(in srgb, var(--
 table.spec-grid td.v .mk { font-size:10px; margin-right:4px; }
 table.spec-grid tr.picked th, table.spec-grid tr.picked td { box-shadow:inset 0 2px 0 var(--accent), inset 0 -2px 0 var(--accent); }
 table.spec-grid th.row small { display:block; color:var(--muted); font-weight:400; }
+.more-btn { font:inherit; font-size:13px; color:var(--accent); background:none; border:0; padding:4px 0; cursor:pointer; }
+.more-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
 /* 튜닝 그래프 */
 .multiples { display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:12px; margin:10px 0; }
 .mini { border:1px solid var(--line); border-radius:8px; background:var(--bg); padding:8px 10px 4px; min-width:0; }
@@ -237,9 +240,16 @@ def spec_grid_html(run_dir: Path) -> str:
         picked = " class='picked'" if picked_index in g["index"] else ""
         body.append(f"<tr{picked}><th class='row'>{who}</th>{''.join(cells)}"
                     f"<td class='v'><b>{g['v'].get('passed')}/{g['v'].get('judged')}</b></td></tr>")
+    first, rest = body[:GRID_FIRST], body[GRID_FIRST:]
+    more = ""
+    if rest:                                         # 10가지가 넘으면 나머지는 '더보기' 로 펼친다
+        more = (f"<tbody class='grid-more' hidden>{''.join(rest)}</tbody>"
+                f"<tbody><tr><td colspan='{len(columns) + 2}'><button type='button' class='more-btn' "
+                f"onclick=\"const b=this.closest('table').querySelector('.grid-more');b.hidden=!b.hidden;"
+                f"this.textContent=b.hidden?'더보기 ({len(rest)}가지)':'접기'\">더보기 ({len(rest)}가지)</button></td></tr></tbody>")
     return (f"<div class='gridwrap'><table class='spec-grid'><thead><tr><th>동작한 회로 {len(groups)}가지</th>{head}"
             f"<th>통과</th></tr></thead><tbody><tr class='count'><td>통과한 회로 수</td>{count_row}<td></td></tr>"
-            f"{''.join(body)}</tbody></table></div>"
+            f"{''.join(first)}</tbody>{more}</table></div>"
             "<div class='fig-note'>파란 테두리 줄이 채택된 후보예요 (5단계). 열마다 통과한 회로 수를 보면 다 같이 막힌 항목이 보여요.</div>")
 
 
