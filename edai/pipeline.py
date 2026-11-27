@@ -455,7 +455,7 @@ def check_step(run: Run, key: str) -> list:
         else:
             counts = result.get("counts") or {}
             if counts and counts.get("judged") == 0:
-                out.append(f"하네스가 판정할 항목이 없음: 데이터시트 {counts.get('total')}줄 중 전원 조건이 공정 한계(5 V)를 넘는 줄 "
+                out.append(f"하네스가 판정할 항목이 없음: 데이터시트 {counts.get('total')}줄 중 전원 조건이 설계 전원(4.5~5.5 V)과 다른 줄 "
                            f"{counts.get('supply')}개, 시뮬레이션으로 확인할 수 없는 줄 {counts.get('not_testable')}개")
             elif result.get("pass_rate_percent") is None:
                 out.append("하네스 통과율이 기록되지 않음")

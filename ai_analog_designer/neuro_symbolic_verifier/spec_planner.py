@@ -385,26 +385,45 @@ def classify_spec(device_class: str, spec: dict[str, Any]) -> tuple[str | None, 
     return None, None, False, "UNSUPPORTED_KIND"
 
 
-def condition_supply(text: str) -> float | None:
-    """조건 글에 적힌 전체 전원 [V] (V+ 와 V- 의 차). 범위면 아래 끝. 없으면 None.
-    "VS = ±15 V" -> 30, "VCC+ = 15V, VCC− = −15V" -> 30, "VCC+ = 5 V" -> 5, "VS = 2.7 V to 5.5 V" -> 2.7.
-    "VCC = 2.7 V to 5 V" 같은 PSRR 시험 범위도 아래 끝(2.7)이라 한계 안으로 본다."""
+def condition_supply_range(text: str) -> tuple[float, float] | None:
+    """조건 글에 적힌 전체 전원 범위 [V] (V+ 와 V- 의 차) = (아래 끝, 위 끝). 하나면 같은 값 둘. 없으면 None.
+    "VS = ±15 V" -> (30, 30), "VCC+ = 15V, VCC− = −15V" -> (30, 30), "VCC+ = 5 V" -> (5, 5),
+    "VS = 2.7 V to 5.5 V" -> (2.7, 5.5), "VS = ±5V to ±15V" -> (10, 30)."""
     t = (text or "").replace("−", "-").replace("–", "-").replace("±", "+-")
     rail = r"V\s*(?:S|CC|DD|EE)?"
+    m = re.search(rf"{rail}\s*\+?\s*=\s*\+-\s*(\d+\.?\d*)\s*V?\s*(?:to|-)\s*\+-\s*(\d+\.?\d*)\s*V", t, re.IGNORECASE)
+    if m:
+        return 2 * float(m.group(1)), 2 * float(m.group(2))
     m = re.search(rf"{rail}\s*\+?\s*=\s*\+-\s*(\d+\.?\d*)\s*V", t, re.IGNORECASE)
     if m:
-        return 2 * float(m.group(1))
+        return 2 * float(m.group(1)), 2 * float(m.group(1))
     pos = re.search(rf"{rail}\s*\+\s*=\s*\+?(\d+\.?\d*)\s*V", t, re.IGNORECASE)
     neg = re.search(rf"{rail}\s*-\s*=\s*-\s*(\d+\.?\d*)\s*V", t, re.IGNORECASE)
     if pos and neg:
-        return float(pos.group(1)) + float(neg.group(1))
+        total = float(pos.group(1)) + float(neg.group(1))
+        return total, total
+    if pos:         # "VCC+ = 2.7 V" 는 표 전원. 같은 줄의 "VCC = 2.7 V to 5 V" 는 PSRR 시험 범위라 이것을 먼저 본다
+        return float(pos.group(1)), float(pos.group(1))
     m = re.search(rf"\b{rail}\s*\+?\s*=\s*(\d+\.?\d*)\s*V?\s*(?:to|-)\s*\+?(\d+\.?\d*)\s*V", t, re.IGNORECASE)
     if m:
-        return float(m.group(1))
-    if pos:
-        return float(pos.group(1))
+        return float(m.group(1)), float(m.group(2))
     m = re.search(rf"\bV\s*(?:S|CC|DD)\s*=\s*(\d+\.?\d*)\s*V", t, re.IGNORECASE)
-    return float(m.group(1)) if m else None
+    return (float(m.group(1)), float(m.group(1))) if m else None
+
+
+def condition_supply(text: str) -> float | None:
+    """조건 글에 적힌 전체 전원 [V]. 범위면 아래 끝 (condition_supply_range)."""
+    r = condition_supply_range(text)
+    return r[0] if r else None
+
+
+def supply_band() -> tuple[float, float] | None:
+    """EDAI: 판정할 전원 범위 (AV_SUPPLY_BAND_V="4.5,5.5"). 회로를 5 V 로 설계하므로 그 근처 조건의 줄만 판정한다."""
+    raw = os.environ.get("AV_SUPPLY_BAND_V")
+    if not raw:
+        return None
+    lo, hi = (float(x) for x in raw.split(","))
+    return lo, hi
 
 
 def default_vs(device_class: str, specs: list[dict[str, Any]]) -> float:
@@ -621,18 +640,21 @@ def build_plan(ic_info: dict[str, Any], pins: list[dict[str, Any]], specs: list[
                     except (ValueError, TypeError):
                         pass
 
-    # EDAI: 시험 조건의 전원이 공정 한계(supply_cap)를 넘는 줄은 잴 수 없음으로 뺀다.
-    # 전에는 5 V 로 재고 ±15 V 기준과 비교했다 (LM6172 2026-11-27: 이득·대역폭·왜곡 등). 왜곡처럼 동적 테스트벤치로
-    # 가는 줄(UNSUPPORTED_KIND)도 여기서 빠진다. 전원이 범위로 적혀 있으면 아래 끝이 한계 이하일 때만 잰다
-    if supply_cap:
+    # EDAI: 시험 조건의 전원이 판정 범위(AV_SUPPLY_BAND_V, 예: 4.5~5.5 V) 밖인 줄은 '다른 전원 조건'으로 뺀다.
+    # 회로를 5 V 로 설계하고 측정도 5 V 로 하므로, ±15 V 줄(LM6172)이나 2.7 V 줄(LMV321)을 5 V 측정값과 비교하지 않는다.
+    # 전원이 범위로 적혀 있으면(예: "VS = 2.7 V to 5.5 V", PSRR 의 "VCC = 2.7 V to 5 V") 판정 범위와 겹칠 때 판정한다.
+    # 범위가 없으면 예전처럼 공정 한계(supply_cap)를 넘는 줄만 뺀다
+    band = supply_band() or ((0.0, supply_cap) if supply_cap else None)
+    if band:
         for item in items:
             if item["status"] not in ("PLANNED", "UNSUPPORTED_KIND"):
                 continue
-            total = condition_supply(item.get("test_conditions") or "")
-            if total is not None and total > supply_cap + 1e-9:
+            rng = condition_supply_range(item.get("test_conditions") or "")
+            if rng is not None and (rng[1] < band[0] - 1e-9 or rng[0] > band[1] + 1e-9):
                 item["status"] = "NOT_TESTABLE_SUPPLY"
-                item["note"] = (f"Datasheet supply {total:g} V exceeds the process supply cap {supply_cap:g} V "
-                                f"(not comparable at a lower supply).")
+                shown = f"{rng[0]:g} V" if rng[0] == rng[1] else f"{rng[0]:g}~{rng[1]:g} V"
+                item["note"] = (f"Datasheet supply {shown} is outside the judged supply band {band[0]:g}~{band[1]:g} V "
+                                f"(circuit designed and measured at {supply_cap or band[1]:g} V).")
 
     seen_keys: dict[tuple, int] = {}
     for item in items:

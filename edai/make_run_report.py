@@ -253,7 +253,7 @@ def body_tune(run_dir: Path, s: dict) -> str:
 # 하네스 채점 묶음 (run_harness.spec_counts) -> 결과 화면에 쓰는 설명. 이 줄들은 통과율 계산에서 빠진다
 EXCLUDED_GROUPS = [
     ("not_testable", "시뮬레이션으로 확인할 수 없는 줄 (열 저항·ESD·절대 최대·권장 조건 등)"),
-    ("supply", "전원 조건이 공정 한계(5 V)를 넘는 줄"),
+    ("supply", "전원 조건이 설계 전원(5 V, 4.5~5.5 V)과 다른 줄 (예: 2.7 V 표, ±15 V 표)"),
     ("no_method", "측정 방법이 없는 줄 (왜곡·잡음·임피던스 등)"),
     ("no_limit", "숫자 기준이 없는 줄"),
     ("sim_error", "시뮬레이션이 멈춰 못 잰 줄"),

@@ -148,7 +148,7 @@ COUNT_GROUPS = {
 
 def spec_counts(out_dir: Path) -> dict:
     """하네스 채점 파일(*_SPEC_EVALUATION.json)의 줄을 묶음별로 센다. judged = 통과 + 실패 (통과율의 분모).
-    not_testable 은 열·ESD·절대최대·권장 조건처럼 시뮬레이션으로 확인할 수 없는 줄, supply 는 전원 조건이 공정 한계를 넘는 줄."""
+    not_testable 은 열·ESD·절대최대·권장 조건처럼 시뮬레이션으로 확인할 수 없는 줄, supply 는 전원 조건이 판정 범위(AV_SUPPLY_BAND_V, 4.5~5.5 V) 밖인 줄."""
     from file_find import find_files
     files = find_files(out_dir, "*_SPEC_EVALUATION.json")
     if not files:
@@ -191,7 +191,7 @@ def with_title_supply(hkg: dict, pages: dict | None) -> tuple:
 
     하네스는 전원이 안 적힌 줄을 기본 전원(공정 한계 5 V)으로 재고 데이터시트 기준과 비교했다.
     LM6172 2026-11-27: '±15 V 표' 줄 다수가 조건에 전원이 없어 5 V 로 재고 ±15 V 기준과 비교됨.
-    전원이 붙으면 하네스가 그 전원으로 재거나(5 V 이하), 공정 한계를 넘으면 잴 수 없음으로 뺀다 (spec_planner)."""
+    전원이 붙으면 판정 범위(4.5~5.5 V) 밖인 줄은 다른 전원 조건으로 빠진다 (spec_planner)."""
     sys.path.insert(0, str(AV_DIR))
     from ai_analog_designer.neuro_symbolic_verifier.spec_planner import condition_supply
     titles = page_title_supplies(pages)
