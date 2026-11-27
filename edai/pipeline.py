@@ -182,8 +182,17 @@ def step_extract(run: Run) -> dict:
         inp["title"] = target or part
         inp["extracted_part"] = part
         (run.dir / "input.json").write_text(json.dumps(inp, ensure_ascii=False, indent=1), encoding="utf-8")
+    other = spec.get("other_supply") or {}
+    if not spec["specs"] and other.get("rows"):
+        # 판정할 5 V 근처 조건 줄이 없음 (예: LM6172 는 ±5 V = 10 V, ±15 V = 30 V 표뿐). 2~9단계를 돌려도 비교할 기준이 없다
+        volts = ", ".join(f"{v:g} V" for v in other.get("supplies_v") or [])
+        raise Unsupported(f"전압 조건 때문에 생성 불가 (데이터시트 조건 {volts})")
     return {"part": hkg["ic_device"].get("name"), "rows": len(hkg["electrical_parameters"]), "pins": len(hkg["pins"]),
             "judged": len(spec["specs"]), "model_input": run.read("model_input.json")["input"]}
+
+
+class Unsupported(Exception):
+    """이 칩은 우리 공정·전원으로 설계할 수 없음 (실패가 아니라 '생성 불가'로 멈춘다)."""
 
 
 def step_candidates(run: Run) -> dict:
@@ -515,6 +524,10 @@ def main() -> None:
             step["warnings"] = check_step(run, key)
             for w in step["warnings"]:
                 run.log(f"점검: {w}")
+        except Unsupported as error:
+            step.update(state="fail", error=str(error))
+            run.log(str(error))
+            run.status["state"] = "unsupported"
         except Exception as error:
             step.update(state="fail", error=f"{type(error).__name__}: {error}")
             run.log(traceback.format_exc())

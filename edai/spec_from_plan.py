@@ -27,6 +27,7 @@ spec_from_hkg.py 는 우리가 정해 둔 15개 항목에 맞는 줄을 찾아 �
 """
 
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -37,8 +38,32 @@ HERE = Path(__file__).resolve().parent
 TEST_SUPPLY = spec_from_hkg.TEST_SUPPLY
 TEMPLATE_SPEC = spec_from_hkg.TEMPLATE_SPEC
 PART_NAME = re.compile(r"\b(LMV?\d{3,4}[A-Z]*|TL[V]?\d{3,4}[A-Z]*|OPA\d+[A-Z]*)\b")
-# 조건에 적힌 전원 하나 (예: "VCC+ = 2.7 V", "VDD = 5 V", "VS = ±15 V"). "VCC = 2.7 V to 5 V" 같은 범위는 PSRR 시험 조건이라 뺀다
-SUPPLY_IN_COND = re.compile(r"\bV\s*(?:CC|DD|S)\s*\+?\s*=\s*±?\s*(\d+(?:\.\d+)?)\s*V\b(?!\s*to)", re.I)
+# 판정할 전원 범위: 칩 양 끝 전압(V+ - V-) [V]. 회로를 GF180 6 V 소자·5 V 전원으로 만들고 재므로 그 근처 조건 줄만 쓴다.
+# 하네스와 같은 값 (extract_datasheet 가 AV_SUPPLY_BAND_V 로 둠). ±5 V 는 10 V 라 빠진다 (2026-11-27 결정)
+DEFAULT_SUPPLY_BAND = (4.5, 5.5)
+# 표 제목 하나에 전원이 여러 개 (예: "VDD = 2.7 V, 5 V, and ±5 V") -> 줄마다 어느 전원인지 몰라 쓰지 않는다
+LISTED_SUPPLIES = re.compile(r"=\s*±?\d+(?:\.\d+)?\s*V\s*,\s*±?\d")
+
+
+def supply_band() -> tuple:
+    raw = os.environ.get("AV_SUPPLY_BAND_V")
+    return tuple(float(x) for x in raw.split(",")) if raw else DEFAULT_SUPPLY_BAND
+
+
+def supply_range(text: str):
+    """조건 글의 칩 양 끝 전압 범위 (아래, 위) [V] 또는 None. 하네스(spec_planner.condition_supply_range)와 같은 읽기:
+    'VCC+ = 5 V, VCC- = -5 V' -> (10, 10), 'VS = ±15 V' -> (30, 30), 'VS = 2.7 V to 5.5 V' -> (2.7, 5.5).
+    전에는 앞의 '+5 V' 만 보고 5 V 로 읽어 LM6172 의 ±5 V 표 목표를 골랐다 (2026-11-27)."""
+    from extract_datasheet import AV_DIR
+    if str(AV_DIR) not in sys.path:
+        sys.path.insert(0, str(AV_DIR))
+    from ai_analog_designer.neuro_symbolic_verifier.spec_planner import condition_supply_range
+    return condition_supply_range(text or "")
+
+
+def in_band(rng) -> bool:
+    lo, hi = supply_band()
+    return rng[1] >= lo - 1e-9 and rng[0] <= hi + 1e-9
 
 
 def same_part(name: str, part: str) -> bool:
@@ -46,17 +71,19 @@ def same_part(name: str, part: str) -> bool:
     return name == part or name == part + "I"
 
 
-def supply_rank(row: dict, table_supply: float | None = None) -> int:
+def row_supply(row: dict, table_rng=None):
+    """줄의 전원 범위. 줄에 없으면 그 쪽 표 제목의 전원 (page_supplies)."""
+    return supply_range(row.get("conditions") or "") or table_rng
+
+
+def supply_rank(row: dict, table_rng=None) -> int:
     """같은 측정 항목이 여러 전원 조건으로 있을 때 고르는 순서 (작을수록 먼저).
-    0: 우리 측정 전원(TEST_SUPPLY)과 같은 줄, 1: 전원이 안 적힌 줄, 2: 다른 전원 줄 (예: 5 V 로 재는데 2.7 V 표).
-    데이터시트는 낮은 전원 표가 먼저 나오는 일이 많아, 먼저 나온 줄을 쓰면 2.7 V 값이 목표가 됐다 (LMV321, 2026-11-25).
-    줄에 전원이 안 적혀 있으면 그 줄이 있는 쪽의 표 제목 전원(table_supply)을 쓴다 (page_supplies)."""
-    supplies = {float(v) for v in SUPPLY_IN_COND.findall(row.get("conditions") or "")}
-    if not supplies and table_supply is not None:
-        supplies = {table_supply}
-    if TEST_SUPPLY in supplies:
-        return 0
-    return 1 if not supplies else 2
+    0: 판정 전원 범위(5 V 근처) 줄, 1: 전원을 모르는 줄, 2: 다른 전원 줄 (build 에서 뺀다).
+    데이터시트는 낮은 전원 표가 먼저 나오는 일이 많아, 먼저 나온 줄을 쓰면 2.7 V 값이 목표가 됐다 (LMV321, 2026-11-25)."""
+    rng = row_supply(row, table_rng)
+    if rng is None:
+        return 1
+    return 0 if in_band(rng) else 2
 
 
 def has_limit(row: dict) -> bool:
@@ -69,17 +96,20 @@ TABLE_TITLE = re.compile(r"electrical characteristics|unless otherwise noted", r
 
 
 def page_supplies(pages: dict | None) -> dict:
-    """쪽 번호 -> 그 쪽 표 제목에 적힌 전원 [V]. 제목에 전원이 하나만 있는 쪽만 (둘 이상이면 어느 줄이 어느 표인지 몰라 뺀다).
+    """쪽 번호 -> 그 쪽 표 제목의 전원 범위 (아래, 위) [V]. 제목 전원이 하나로 분명한 쪽만
+    (둘 이상이거나 '2.7 V, 5 V, ±5 V' 처럼 나열되면 어느 줄이 어느 표인지 몰라 뺀다).
     추출 LLM 이 표 제목 조건을 줄마다 붙이기도 하고 안 붙이기도 해서 (LMV321 2026-11-26: 2.7 V 표는 붙이고
-    5 V 표는 안 붙임) 5 V 표 줄을 5 V 로 알아보지 못하고 1쪽 요약표 줄(보통값만 있음)을 골랐다."""
+    5 V 표는 안 붙임) 5 V 표 줄을 5 V 로 알아보지 못하고 1쪽 요약표 줄(보통값만 있음)을 골랐다. 하네스(run_harness)도 쓴다."""
     found = {}
     for key, text in (pages or {}).items():
         if not isinstance(text, str):
             continue
-        supplies = {float(v) for line in text.splitlines() if TABLE_TITLE.search(line)
-                    for v in SUPPLY_IN_COND.findall(line)}
-        if len(supplies) == 1:
-            found[int(key)] = supplies.pop()
+        titles = [line for line in text.splitlines() if TABLE_TITLE.search(line)]
+        if any(LISTED_SUPPLIES.search(line) for line in titles):
+            continue
+        values = {supply_range(line) for line in titles} - {None}
+        if len(values) == 1:
+            found[int(key)] = values.pop()
     return found
 
 
@@ -184,7 +214,9 @@ def build(plan: dict, hkg: dict, part: str, fix: dict | None = None, whole: bool
           pages: dict | None = None) -> dict:
     """whole=True: 한 부품(채널 수 변형만 있는) 데이터시트라 부품 구간을 자르지 않고 계획 전체를 쓴다.
     pages: 쪽 번호 -> 쪽 글 (extract_datasheet 의 *_pages.json). 있으면 표 제목의 전원 조건을 줄에 이어 붙여 고른다.
-    고르는 순서: 우리 측정 전원(5 V) 줄 -> 보장값(최소·최대)이 있는 줄 -> 먼저 나온 줄."""
+    고르는 순서: 판정 전원 범위(5 V 근처) 줄 -> 보장값(최소·최대)이 있는 줄 -> 먼저 나온 줄.
+    전원이 판정 범위 밖인 줄(±5 V = 10 V, ±15 V, 2.7 V 표 등)은 고르지 않고 other_supply 에 센다.
+    판정 항목이 0개이고 other_supply 가 있으면 '전압 조건 때문에 생성 불가' (pipeline.step_extract)."""
     rows, extracted = [dict(r) for r in plan["spec_evaluations"]], hkg["electrical_parameters"]
     template = {s["measure"]: s for s in json.loads(TEMPLATE_SPEC.read_text(encoding="utf-8"))["specs"]}
     changed = apply_fix(rows, fix) if fix else {}
@@ -198,7 +230,13 @@ def build(plan: dict, hkg: dict, part: str, fix: dict | None = None, whole: bool
     def table_supply(i):
         return titles.get(extracted[i].get("page")) if i < len(extracted) else None
 
-    planned = sorted((i for i in section if rows[i].get("fixture")),
+    other_supply = {}                                   # 판정 범위 밖 전원 [V] -> 줄 수
+    for i in section:
+        if rows[i].get("fixture") or rows[i].get("status") == "NOT_TESTABLE_SUPPLY":
+            rng = row_supply(rows[i], table_supply(i))
+            if rng is not None and not in_band(rng):
+                other_supply[rng[0]] = other_supply.get(rng[0], 0) + 1
+    planned = sorted((i for i in section if rows[i].get("fixture") and supply_rank(rows[i], table_supply(i)) < 2),
                      key=lambda i: (supply_rank(rows[i], table_supply(i)), not has_limit(rows[i])))
     for i in planned:
         row = rows[i]
@@ -229,8 +267,8 @@ def build(plan: dict, hkg: dict, part: str, fix: dict | None = None, whole: bool
             item["typ_rule"] = "lower" if measure in LOWER_IS_BETTER else "higher"
         item.update(symbol=row["symbol"], condition=row.get("conditions"), extracted=evidence,
                     plan={"kind": kind, "fixture": row["fixture"], "row": i})
-        if table_supply(i) is not None and not SUPPLY_IN_COND.search(row.get("conditions") or ""):
-            item["table_supply_v"] = table_supply(i)          # 줄에 없고 표 제목에서 읽은 전원
+        if table_supply(i) is not None and supply_range(row.get("conditions") or "") is None:
+            item["table_supply_v"] = list(table_supply(i))    # 줄에 없고 표 제목에서 읽은 전원 범위
         if i in changed:
             item["corrected"] = changed[i]
         specs.append(item)
@@ -251,7 +289,9 @@ def build(plan: dict, hkg: dict, part: str, fix: dict | None = None, whole: bool
                                                           "rows": len(changed)},
                      "not_planned": [{"measure": m, "label": template[m]["label"],
                                       "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"} for m in not_planned]},
-            "unused": []}
+            "unused": [],
+            "supply_band_v": list(supply_band()),
+            "other_supply": {"rows": sum(other_supply.values()), "supplies_v": sorted(other_supply)}}
 
 
 def main() -> None:
