@@ -45,6 +45,10 @@ SAT_MARGIN = 0.05           # |Vds| >= |Vdsat| + 이 값이면 포화 영역으�
 OFF_CURRENT = 1e-9          # 이보다 작은 전류는 꺼진 것으로 본다 [A]
 OUTPUT_TOLERANCE = 0.5      # 전압 팔로워로 묶었을 때 출력이 VCM 에서 이만큼 안에 있어야 한다 [V]
 W_MIN_UM, W_MAX_UM = 0.5, 100.0   # 이보다 넓으면 같은 소자를 여러 개(m) 병렬로 둔다
+# 계산한 폭이 W_MIN_UM 보다 좁으면 W/L 을 그대로 두고 길이를 늘린다 (같은 전류 밀도, 긴 채널 근사). 초저전력 튜닝에서
+# 전류원 100 nA 쯤이면 폭이 0.1 µm 로 계산되는데 0.5 µm 로 묶여 전류 밀도가 틀어지고 캐스코드가 포화 영역을 벗어났다
+# (2026-11-27). 길이는 모델(nfet/pfet_06v0, BSIM 0.7~50 µm 구간)이 맞는 L_MAX_UM 까지
+L_MAX_UM = 50.0
 INITIAL_WIDTH_UM = 10.0
 MAX_ITERATIONS = 8
 CONVERGED_CHANGE = 0.05     # 폭 변화가 모두 5% 안이면 멈춘다
@@ -213,6 +217,9 @@ def bias_lines(table: dict, targets: dict, unit_current: float = UNIT_CURRENT) -
 
 # ---------------------------------------------------------------- 크기
 def size_text(width_um: float, length_um: float) -> dict:
+    if width_um < W_MIN_UM:
+        length_um = min(L_MAX_UM, math.ceil(length_um * W_MIN_UM / max(width_um, 1e-6) * 10) / 10)
+        width_um = W_MIN_UM
     count = max(1, math.ceil(width_um / W_MAX_UM))
     width = min(max(width_um / count, W_MIN_UM), W_MAX_UM)
     size = {"w": f"{width:.3g}u", "l": f"{length_um:g}u"}
@@ -223,6 +230,11 @@ def size_text(width_um: float, length_um: float) -> dict:
 
 def total_width(size: dict) -> float:
     return float(size["w"].rstrip("u")) * int(size.get("m", 1))
+
+
+def nominal_width(size: dict, length_um: float) -> float:
+    """길이를 늘린 소자(size_text)의 폭을 원래 길이 기준 폭으로 (같은 W/L). 크기 반복의 수렴 비교에 쓴다."""
+    return total_width(size) * length_um / float(size["l"].rstrip("u"))
 
 
 def width_for_current(kind: str, current: float, gm_id: float, length_um: float) -> float:
@@ -431,8 +443,8 @@ def auto_size(table: dict, passive_values: dict = None, unit_current: float = UN
             if name in fixed or info is None or info["id"] < OFF_CURRENT:
                 continue
             gm_id, length = targets[name]
-            width = min(max(width_for_current(kinds[name], info["id"], gm_id, length), W_MIN_UM), 20 * W_MAX_UM)
-            old = total_width(sizes[name])
+            width = min(max(width_for_current(kinds[name], info["id"], gm_id, length), 1e-3), 20 * W_MAX_UM)
+            old = nominal_width(sizes[name], length)
             change = max(change, abs(width - old) / old)
             sizes[name] = size_text(width, length)
         op = run_op(build(polarity), table, polarity)
