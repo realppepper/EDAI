@@ -385,6 +385,28 @@ def classify_spec(device_class: str, spec: dict[str, Any]) -> tuple[str | None, 
     return None, None, False, "UNSUPPORTED_KIND"
 
 
+def condition_supply(text: str) -> float | None:
+    """조건 글에 적힌 전체 전원 [V] (V+ 와 V- 의 차). 범위면 아래 끝. 없으면 None.
+    "VS = ±15 V" -> 30, "VCC+ = 15V, VCC− = −15V" -> 30, "VCC+ = 5 V" -> 5, "VS = 2.7 V to 5.5 V" -> 2.7.
+    "VCC = 2.7 V to 5 V" 같은 PSRR 시험 범위도 아래 끝(2.7)이라 한계 안으로 본다."""
+    t = (text or "").replace("−", "-").replace("–", "-").replace("±", "+-")
+    rail = r"V\s*(?:S|CC|DD|EE)?"
+    m = re.search(rf"{rail}\s*\+?\s*=\s*\+-\s*(\d+\.?\d*)\s*V", t, re.IGNORECASE)
+    if m:
+        return 2 * float(m.group(1))
+    pos = re.search(rf"{rail}\s*\+\s*=\s*\+?(\d+\.?\d*)\s*V", t, re.IGNORECASE)
+    neg = re.search(rf"{rail}\s*-\s*=\s*-\s*(\d+\.?\d*)\s*V", t, re.IGNORECASE)
+    if pos and neg:
+        return float(pos.group(1)) + float(neg.group(1))
+    m = re.search(rf"\b{rail}\s*\+?\s*=\s*(\d+\.?\d*)\s*V?\s*(?:to|-)\s*\+?(\d+\.?\d*)\s*V", t, re.IGNORECASE)
+    if m:
+        return float(m.group(1))
+    if pos:
+        return float(pos.group(1))
+    m = re.search(rf"\bV\s*(?:S|CC|DD)\s*=\s*(\d+\.?\d*)\s*V", t, re.IGNORECASE)
+    return float(m.group(1)) if m else None
+
+
 def default_vs(device_class: str, specs: list[dict[str, Any]]) -> float:
     """Chooses the fixture supply voltage: most frequent explicit VS in conditions, else class default."""
     votes: dict[float, int] = {}
@@ -598,6 +620,19 @@ def build_plan(ic_info: dict[str, Any], pins: list[dict[str, Any]], specs: list[
                         items[idx]["conditions"][ck] = float(llm_cond[ck]) if ck not in ("rail", "state") else str(llm_cond[ck])
                     except (ValueError, TypeError):
                         pass
+
+    # EDAI: 시험 조건의 전원이 공정 한계(supply_cap)를 넘는 줄은 잴 수 없음으로 뺀다.
+    # 전에는 5 V 로 재고 ±15 V 기준과 비교했다 (LM6172 2026-11-27: 이득·대역폭·왜곡 등). 왜곡처럼 동적 테스트벤치로
+    # 가는 줄(UNSUPPORTED_KIND)도 여기서 빠진다. 전원이 범위로 적혀 있으면 아래 끝이 한계 이하일 때만 잰다
+    if supply_cap:
+        for item in items:
+            if item["status"] not in ("PLANNED", "UNSUPPORTED_KIND"):
+                continue
+            total = condition_supply(item.get("test_conditions") or "")
+            if total is not None and total > supply_cap + 1e-9:
+                item["status"] = "NOT_TESTABLE_SUPPLY"
+                item["note"] = (f"Datasheet supply {total:g} V exceeds the process supply cap {supply_cap:g} V "
+                                f"(not comparable at a lower supply).")
 
     seen_keys: dict[tuple, int] = {}
     for item in items:
