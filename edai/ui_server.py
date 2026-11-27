@@ -26,6 +26,7 @@ RUNS_DIR = HERE / "runs"
 UI_FILE = HERE / "ui" / "index.html"
 HOST, PORT = "127.0.0.1", 8765
 MAX_PDF_BYTES = 50 * 1024 * 1024
+DATASHEET_DIR = HERE / "datasheets"              # 준비된 데이터시트 (catalog.json 이 목록과 설명)
 import make_run_report                           # noqa: E402  실행 이름 형식 (run_info)
 from pipeline import STEPS                       # noqa: E402  단계 이름표
 STEP_KEYS = tuple(k for k, _ in STEPS)
@@ -43,6 +44,16 @@ def suggest_from(steps: list) -> str:
     if failed["key"] == "rank" and "동작한 후보" in (failed.get("error") or ""):
         return "fix"
     return failed["key"]
+
+
+def datasheet_catalog() -> list:
+    """datasheets/catalog.json 의 묶음 목록. 파일이 없는 항목은 뺀다."""
+    catalog = DATASHEET_DIR / "catalog.json"
+    if not catalog.exists():
+        return []
+    groups = json.loads(catalog.read_text(encoding="utf-8")).get("groups", [])
+    return [{"title": g["title"], "items": [x for x in g["items"] if (DATASHEET_DIR / x["file"]).is_file()]}
+            for g in groups]
 
 
 def run_list() -> list:
@@ -155,6 +166,12 @@ class Handler(BaseHTTPRequestHandler):
             return self.send(200, UI_FILE.read_bytes(), CONTENT_TYPES[".html"])
         if path == "/api/runs":
             return self.send_json(run_list())
+        if path == "/api/datasheets":              # 준비된 데이터시트 목록 (파일이 있는 것만)
+            return self.send_json(datasheet_catalog())
+        if path.startswith("/datasheets/"):         # 고른 데이터시트 PDF (화면이 받아서 /api/run 으로 다시 올림)
+            target = (DATASHEET_DIR / path[len("/datasheets/"):]).resolve()
+            if target.parent == DATASHEET_DIR.resolve() and target.suffix.lower() == ".pdf" and target.is_file():
+                return self.send(200, target.read_bytes(), CONTENT_TYPES[".pdf"])
         if path.startswith("/runs/"):
             target = (RUNS_DIR / path[len("/runs/"):]).resolve()
             if RUNS_DIR.resolve() in target.parents and target.is_file():

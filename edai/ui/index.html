@@ -19,6 +19,7 @@ h1 { font-size:18px; margin:0 0 2px; } h2 { font-size:15px; margin:0 0 10px; }
 .sub { color:var(--muted); font-size:12px; }
 label { display:block; font-size:12px; color:var(--muted); margin:8px 0 4px; }
 input[type=text], input[type=file] { width:100%; font:inherit; color:inherit; }
+select { width:100%; font:inherit; color:inherit; padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--bg); }
 input[type=text] { padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--bg); }
 button { font:inherit; border:1px solid var(--accent); background:var(--accent); color:#fff; border-radius:6px;
          padding:6px 12px; cursor:pointer; margin-top:10px; }
@@ -52,6 +53,9 @@ iframe { flex:1; width:100%; border:0; border-radius:0 0 10px 10px; background:#
         <span id="dropText">데이터시트 PDF를 끌어다 놓거나<br><u>클릭해서 고르세요</u></span>
         <input type="file" id="pdf" accept="application/pdf" hidden>
       </label>
+      <label for="preset">또는 준비된 데이터시트에서 고르기</label>
+      <select id="preset"><option value="">고르세요</option></select>
+      <div class="sub" id="presetNote"></div>
       <button id="start" disabled>설계 시작</button>
       <div class="msg" id="msg"></div>
     </div>
@@ -144,6 +148,7 @@ function choose(file) {
   const msg = document.getElementById("msg");
   if (!file || !/\.pdf$/i.test(file.name)) { msg.className = "msg bad"; msg.textContent = "PDF 파일만 넣을 수 있어요"; return; }
   chosen = file;
+  document.getElementById("preset").value = ""; document.getElementById("presetNote").textContent = "";
   msg.textContent = "";
   document.getElementById("dropText").textContent = file.name;  document.getElementById("drop").classList.add("has");
   document.getElementById("start").disabled = false;
@@ -153,6 +158,37 @@ document.getElementById("pdf").onchange = e => choose(e.target.files[0]);
 drop.ondragover = e => { e.preventDefault(); drop.classList.add("over"); };
 drop.ondragleave = () => drop.classList.remove("over");
 drop.ondrop = e => { e.preventDefault(); drop.classList.remove("over"); choose(e.dataTransfer.files[0]); };
+
+// 준비된 데이터시트: 목록은 /api/datasheets, 고르면 PDF 를 받아 올린 파일처럼 쓴다
+let presets = {};
+async function loadPresets() {
+  let groups = [];
+  try { groups = await (await fetch("/api/datasheets")).json(); } catch (e) { return; }
+  const sel = document.getElementById("preset");
+  for (const g of groups) {
+    if (!g.items.length) continue;
+    const og = document.createElement("optgroup"); og.label = g.title;
+    for (const it of g.items) {
+      presets[it.file] = it;
+      const o = document.createElement("option"); o.value = it.file; o.textContent = `${it.part} — ${it.note}`;
+      og.appendChild(o);
+    }
+    sel.appendChild(og);
+  }
+}
+document.getElementById("preset").onchange = async e => {
+  const it = presets[e.target.value], msg = document.getElementById("msg");
+  document.getElementById("presetNote").textContent = it ? it.note : "";
+  if (!it) return;
+  msg.className = "msg"; msg.textContent = "데이터시트 받는 중…";
+  try {
+    const blob = await (await fetch("/datasheets/" + encodeURIComponent(it.file))).blob();
+    chosen = new File([blob], it.file, { type: "application/pdf" });
+    document.getElementById("dropText").textContent = it.file; document.getElementById("drop").classList.add("has");
+    document.getElementById("start").disabled = false; msg.textContent = "";
+  } catch (err) { msg.className = "msg bad"; msg.textContent = "받기 실패: " + err.message; }
+};
+loadPresets();
 
 document.getElementById("start").onclick = async () => {
   const file = chosen;
