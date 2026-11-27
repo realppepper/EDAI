@@ -561,8 +561,10 @@ def render(run_dir: Path) -> str:
     log = log.replace(" (박준석 시스템)", "")       # 예전 단계 이름이 남은 기록
     refresh = f"<meta http-equiv='refresh' content='{REFRESH_SECONDS}'>" if running else ""
     info = run_info(run_dir)
-    times = " · ".join(esc(x) for x in (info["when"], info["memo"]) if x)
-    times += f" · 끝 {esc(status.get('finished'))}" if status.get("finished") else ""
+    # 시간: '11/27 09:11 ~ 11/27 09:29' (연도·초 없이). 끝나지 않았으면 시작만
+    end = re.match(r"\d{4}-(\d\d)-(\d\d) (\d\d:\d\d)", status.get("finished") or "")
+    when = info["when"] + (f" ~ {end.group(1)}/{end.group(2)} {end.group(3)}" if end else "")
+    times = " · ".join(esc(x) for x in (when, info["memo"]) if x)
     inp = read(run_dir, "input.json") or {}
     if (run_dir / "datasheet.pdf").exists():      # 같은 폴더의 파일이라 폴더만 받아도 열린다
         pdf_name = esc(inp.get("pdf_name") or "datasheet.pdf")
