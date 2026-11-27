@@ -169,7 +169,8 @@ def translate(text: str) -> tuple[str, dict[str, str]]:
             m = re.match(r'^\.(?:include|inc|lib)\s+"?([^"\s]+)"?\s*(\S*)', s, re.I)
             path = m.group(1) if m else ""
             if _LTSPICE_GF180_LIB.search(os.path.basename(path)):
-                out += _pdk_lines()                      # the LTspice conversion -> original PDK models
+                if not pdk_added:                        # 펼쳐 넣은 회로 파일에도 같은 줄이 있으면 한 번만
+                    out += _pdk_lines()                  # the LTspice conversion -> original PDK models
                 pdk_added = True
                 continue
             section = m.group(2) if m else ""
@@ -280,6 +281,32 @@ def _write_log(log_path: str, stdout: str, special: dict[str, str]) -> None:
         f.write("\n".join(lines) + "\n")
 
 
+_NETLIST_EXT = (".cir", ".sp", ".spi", ".spice", ".net", ".inc", ".subckt")
+
+
+def inline_includes(text: str, base_dir: str, depth: int = 3) -> str:
+    """``.include`` 로 불러오는 같은 폴더의 회로 파일 내용을 그 자리에 펼쳐 넣는다 (모델 파일 .lib 은 그대로).
+
+    translate 는 덱에 직접 적힌 줄만 바꾼다. 동적 테스트벤치(*_dyn.cir)는 우리 회로 파일을 .include 로 불러오는데,
+    그 파일 안의 '.include gf180_6v_typical.lib'(LTspice 판 모델 이름)은 바뀌지 않아 ngspice 가 모델을 못 찾고 멈췄다
+    (LM358·LM324·LM6172, 2026-11-23~26: 'Could not find include file gf180_6v_typical.lib'). 펼쳐 넣으면 같이 바뀐다."""
+    out = []
+    for raw in text.splitlines():
+        s = raw.strip()
+        m = re.match(r'^\.(?:include|inc)\s+"?([^"\s]+)"?\s*$', s, re.I)
+        target = os.path.join(base_dir, m.group(1)) if m and not os.path.isabs(m.group(1)) else (m.group(1) if m else "")
+        if (m and depth > 0 and target.lower().endswith(_NETLIST_EXT) and os.path.isfile(target)
+                and not _LTSPICE_GF180_LIB.search(os.path.basename(target))):
+            with open(target, "r", encoding="utf-8", errors="ignore") as f:
+                inner = [ln for ln in f.read().splitlines() if ln.strip().lower() != ".end"]
+            out.append(f"* ---- inlined {os.path.basename(target)}")
+            out.append(inline_includes("\n".join(inner), os.path.dirname(target), depth - 1))
+            out.append(f"* ---- end {os.path.basename(target)}")
+            continue
+        out.append(raw)
+    return "\n".join(out)
+
+
 def run_spice(path: str, timeout: float, ltspice_exe: str | None = None) -> None:
     """Runs one deck. Writes ``<deck>.log`` in LTspice format. Raises subprocess.TimeoutExpired like before."""
     if SIMULATOR != "ngspice":
@@ -288,7 +315,7 @@ def run_spice(path: str, timeout: float, ltspice_exe: str | None = None) -> None
     path = os.path.abspath(path)
     with open(path, "r", encoding="utf-8", errors="ignore") as f:
         text = f.read()
-    ng_text, special = translate(text)
+    ng_text, special = translate(inline_includes(text, os.path.dirname(path)))
     ng_path = path[:-4] + ".ng.cir"
     with open(ng_path, "w", encoding="utf-8") as f:
         f.write(ng_text)
