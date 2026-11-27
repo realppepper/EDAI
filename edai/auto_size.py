@@ -172,8 +172,9 @@ def mirror_groups(table: dict, roles: dict) -> dict:
 
 
 # ---------------------------------------------------------------- 바이어스
-def bias_lines(table: dict, targets: dict) -> tuple:
-    """바이어스 단자를 회로 안에서 만드는 줄과, 전류가 단자 전압으로 정해지는 소자 목록을 돌려준다."""
+def bias_lines(table: dict, targets: dict, unit_current: float = UNIT_CURRENT) -> tuple:
+    """바이어스 단자를 회로 안에서 만드는 줄과, 전류가 단자 전압으로 정해지는 소자 목록을 돌려준다.
+    IB# 단자 전류는 전류원 하나의 전류에 맞춘다 (BIAS_CURRENT x unit_current / UNIT_CURRENT, 기본 20 µA)."""
     lines, fixed = [], set()
     rows = mos_rows(table)
     for port in table["ports"]:
@@ -204,9 +205,9 @@ def bias_lines(table: dict, targets: dict) -> tuple:
             sinks = any((row["kind"] == "nmos" and pin == "S") or (row["kind"] == "pmos" and pin == "D")
                         for row, pin in touching)
             if sinks:
-                lines.append(f"IBIAS_{port} {port} VSS dc {BIAS_CURRENT}")
+                lines.append(f"IBIAS_{port} {port} VSS dc {BIAS_CURRENT * unit_current / UNIT_CURRENT:.4g}")
             else:
-                lines.append(f"IBIAS_{port} VDD {port} dc {BIAS_CURRENT}")
+                lines.append(f"IBIAS_{port} VDD {port} dc {BIAS_CURRENT * unit_current / UNIT_CURRENT:.4g}")
     return lines, fixed
 
 
@@ -396,9 +397,9 @@ def auto_size(table: dict, passive_values: dict = None, unit_current: float = UN
     roles = assign_roles(table)
     targets = mirror_groups(table, roles)
     if bias_mode == "devices":
-        _, fixed = bias_lines(table, targets)       # 전원 줄은 버리고, 게이트 전압으로 전류가 정해지는 소자 목록만 씀
+        _, fixed = bias_lines(table, targets, unit_current)       # 전원 줄은 버리고, 게이트 전압으로 전류가 정해지는 소자 목록만 씀
     else:
-        extra, fixed = bias_lines(table, targets)
+        extra, fixed = bias_lines(table, targets, unit_current)
     at_output = {row["name"] for row in mos_rows(table) if row["pins"]["D"] == "OUT"}
     scale = {name: output_scale if name in at_output else 1.0 for name in targets}
     sizes = {name: size_text(INITIAL_WIDTH_UM * scale[name], targets[name][1]) for name in targets}

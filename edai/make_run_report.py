@@ -233,16 +233,23 @@ def body_tune(run_dir: Path, s: dict) -> str:
     out = [f"<p>구조는 그대로 두고 전류원 전류, 출력단 배율, 보상 커패시터(출력 트랜지스터 게이트 "
            f"{esc(', '.join(tune.get('miller_nodes') or []) or '없음')} ↔ OUT)를 바꿔 가며 {len(tune['trials'])}번 쟀어요 "
            f"({esc(tune['stopped'])}, {tune['seconds']} s).</p>"]
+    if tune.get("jump_ua") is not None:
+        out.append(f"<p class='sub'>공급 전류가 목표를 넘어, 전류원 전류를 목표에 맞을 값({tune['jump_ua']:.3g} µA)으로 "
+                   "건너뛴 점에서도 한 번 더 찾았어요.</p>")
+    loads = tune.get("measure_loads") or {}
+    if loads:
+        out.append(f"<p class='sub'>측정 부하 (데이터시트 조건): 이득 RL {esc(loads.get('avd_rl'))}, "
+                   f"대역폭·위상 여유 RL {esc(loads.get('ac_rl'))} · CL {esc(loads.get('ac_cl'))}</p>")
     if tune["improved"]:
         out.append(f"<p>통과 {tune['start']['passed']}/{tune['start']['judged']} → <b>{best['passed']}/{best['judged']}</b>: "
-                   f"전류 {num(best['unit_current_ua'], 1)} µA, 출력단 x{num(best['scale'], 0)}, 보상 {num(best['cap_pf'], 1)} pF. "
+                   f"전류 {best['unit_current_ua']:.3g} µA, 출력단 x{num(best['scale'], 0)}, 보상 {num(best['cap_pf'], 1)} pF. "
                    "이 회로를 하네스로 넘겼어요.</p>")
     else:
         out.append("<p>더 나아진 조합이 없어 6단계 회로를 그대로 하네스로 넘겼어요.</p>")
     out.append("<table><tr><th>전류 (µA)</th><th>출력단 배율</th><th>보상 (pF)</th><th>결과</th><th>못 맞춘 항목</th><th>걸린 시간 (s)</th></tr>")
     for t in tune["trials"]:
         res = f"{t['passed']}/{t['judged']}" if t["valid"] else f"<span class='failc'>실패</span> {esc((t.get('reason') or '')[:60])}"
-        out.append(f"<tr><td>{num(t['unit_current_ua'], 1)}</td><td>x{num(t['scale'], 0)}</td><td>{num(t['cap_pf'], 1)}</td>"
+        out.append(f"<tr><td>{t['unit_current_ua']:.3g}</td><td>x{num(t['scale'], 0)}</td><td>{num(t['cap_pf'], 1)}</td>"
                    f"<td>{res}</td><td>{esc(', '.join(t.get('failed') or []))}</td><td>{num(t['seconds'], 0)}</td></tr>")
     out.append("</table>")
     if tune["improved"]:

@@ -98,7 +98,8 @@ def convert(table: dict, unit_current: float) -> tuple:
     need_ref = any(v["kind"] in ("gate_only", "current") for v in nodes.values())
     ref_nodes = {}
     if need_ref:
-        lines, ref_nodes = bias_reference.cell(REF_PREFIX)
+        # 기준 전류도 전류원 전류에 맞춘다 (기본: 전류원 20 µA 일 때 기준 10 µA)
+        lines, ref_nodes = bias_reference.cell(REF_PREFIX, current=bias_reference.IREF * unit_current / 20e-6)
         extra += lines
 
     def feed(kind, node, current):
@@ -149,7 +150,7 @@ def convert(table: dict, unit_current: float) -> tuple:
         elif kind == "current":
             links = _links(table, port)
             sinks = any((r["kind"] == "nmos" and p == "S") or (r["kind"] == "pmos" and p == "D") for r, p in links)
-            feed("nmos" if sinks else "pmos", port, IB_CURRENT)
+            feed("nmos" if sinks else "pmos", port, IB_CURRENT * unit_current / 20e-6)   # 전류원 전류에 맞춰 (초저전력 튜닝)
     new = dict(table, rows=rows)
     unresolved = [p for p, v in nodes.items() if v["kind"] == "unresolved"]
     loops = free_loops(new)

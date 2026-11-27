@@ -250,6 +250,24 @@ OPAMP_SLEW_FALL_TIME = 12e-6           # 테스트벤치의 펄스가 내려오�
 OPAMP_SETTLE_RL, OPAMP_SETTLE_CL = "2k", "47p"
 OPAMP_SETTLE_BAND = 1e-3               # 0.1% x 1 V 계단
 OPAMP_STEP_TIME = 2e-6                 # 테스트벤치의 계단 시작 시각
+# 시간 배율: 전류를 줄이면(초저전력 칩 튜닝) 회로가 느려져 µs 단위 측정 창 안에 계단 응답이 끝나지 않는다.
+# 슬루율·정착시간의 시간 창과 AC 해석 시작 주파수를 이 배율로 늘린다. 1 이면 예전과 같음 (tune_sizing 이 정함)
+TIME_SCALE = 1.0
+AC_START_HZ = 1.0                      # AC 해석 시작 주파수 (TIME_SCALE 로 나눔)
+# 측정 부하의 기본값. 스펙 파일의 항목 조건(예: 'RL = 2 kΩ', 'CL = 200 pF')이 있으면 그것으로 바뀐다 (set_loads_from_spec)
+_DEFAULT_LOADS = {"avd_rl": "10k", "ac_rl": "2k", "ac_cl": "10p", "slew_rl": "10k", "slew_cl": "50p",
+                  "settle_rl": "2k", "settle_cl": "47p"}
+
+
+def ac_start() -> str:
+    """AC 해석 시작 주파수 (느린 회로는 더 낮은 주파수부터 봐야 저주파 이득이 보임)."""
+    return f"{AC_START_HZ / max(TIME_SCALE, 1.0):.4g}"
+
+
+def _times(delay: float, width: float, period: float, stop: float) -> dict:
+    s = max(TIME_SCALE, 1.0)
+    return {"t_delay": f"{delay * s:.4g}", "t_width": f"{width * s:.4g}", "t_period": f"{period * s:.4g}",
+            "t_stop": f"{stop * s:.4g}", "t_step": f"{5e-9 * s:.4g}"}
 OPAMP_OVERDRIVE = 0.5                  # 출력 구동 시험에서 두 입력을 벌리는 전압
 OPAMP_RAIL_OFFSET = 0.5                # 출력 전류: 레일에서 0.5 V 떨어진 지점
 
@@ -308,7 +326,7 @@ def measure_opamp(name: str) -> dict:
     result["psrr"] = _ratio_db(v_high - v_low, input_offset(raw))
 
     # 개방루프 주파수 응답: 단위이득 대역폭, 위상여유, 이득여유
-    raw = run(build_netlist(name, "ac", vdd=vdd, rl=OPAMP_AC_RL, cl=OPAMP_AC_CL))
+    raw = run(build_netlist(name, "ac", vdd=vdd, rl=OPAMP_AC_RL, cl=OPAMP_AC_CL, f_start=ac_start()))
     freq = np.real(np.array(raw.get_axis()))
     gain = np.array(raw.get_trace("v(out)").get_wave())
     mag_db = 20 * np.log10(np.abs(gain))
@@ -322,10 +340,11 @@ def measure_opamp(name: str) -> dict:
 
     # 슬루율: 단위이득 버퍼, 출력 계단의 10% ~ 90% 구간 기울기 (오르내림 중 느린 쪽)
     low, high = OPAMP_SLEW_LEVELS
-    raw = run(build_netlist(name, "slew", vdd=vdd, rl=OPAMP_SLEW_RL, cl=OPAMP_SLEW_CL, v_low=low, v_high=high))
+    raw = run(build_netlist(name, "slew", vdd=vdd, rl=OPAMP_SLEW_RL, cl=OPAMP_SLEW_CL, v_low=low, v_high=high,
+                            **_times(2e-6, 10e-6, 20e-6, 22e-6)))
     t, out = np.real(np.array(raw.get_axis())), _wave(raw, "v(out)")
     lo10, hi90 = low + 0.1 * (high - low), low + 0.9 * (high - low)
-    up = t < OPAMP_SLEW_FALL_TIME
+    up = t < OPAMP_SLEW_FALL_TIME * max(TIME_SCALE, 1.0)
     result.update(slew_t=t, slew_out=out, sr_rise=None, sr_fall=None, sr=None)
     rise_edges = (_crossing(t[up], out[up], lo10), _crossing(t[up], out[up], hi90))
     fall_edges = (_crossing(t[~up], out[~up], hi90), _crossing(t[~up], out[~up], lo10))
@@ -335,11 +354,12 @@ def measure_opamp(name: str) -> dict:
         result["sr"] = min(result["sr_rise"], result["sr_fall"])
 
     # 정착시간: 반전 증폭기에 1 V 계단, 최종값의 ±0.1% 안으로 들어와 머무는 시각
-    raw = run(build_netlist(name, "settle", vdd=vdd, rl=OPAMP_SETTLE_RL, cl=OPAMP_SETTLE_CL))
+    raw = run(build_netlist(name, "settle", vdd=vdd, rl=OPAMP_SETTLE_RL, cl=OPAMP_SETTLE_CL,
+                            **_times(2e-6, 20e-6, 40e-6, 20e-6)))
     t, out = np.real(np.array(raw.get_axis())), _wave(raw, "v(out)")
     final = float(out[t > 0.9 * t[-1]].mean())
     outside = np.where(np.abs(out - final) > OPAMP_SETTLE_BAND)[0]
-    result["ts"] = float(t[min(outside[-1] + 1, len(t) - 1)] - OPAMP_STEP_TIME)
+    result["ts"] = float(t[min(outside[-1] + 1, len(t) - 1)] - OPAMP_STEP_TIME * max(TIME_SCALE, 1.0))
     result.update(settle_t=t, settle_out=out)
 
     # 출력 구동: 입력을 벌려 출력을 레일로 몰고 부하를 건다
@@ -383,7 +403,47 @@ def load_spec(path: Path) -> dict:
     spec = json.loads(Path(path).read_text(encoding="utf-8"))
     if spec.get("circuit") == "opamp":
         set_cm_range_from_spec(spec)
+        set_loads_from_spec(spec)
     return spec
+
+
+def _spice_value(number: str, prefix: str) -> str:
+    """'2', 'k' -> '2k'. SPICE 에서 M 은 밀리라서 메가는 'meg' 로 쓴다."""
+    return number + {"M": "meg", "µ": "u", "μ": "u"}.get(prefix, prefix.lower() if prefix in "kKpPnNuU" else prefix)
+
+
+def parse_load(condition: str) -> tuple:
+    """항목 조건 문장 -> (RL, CL) SPICE 값. 없으면 None. 'RL = 2 kΩ' -> '2k', 'RL ≥ 10kΩ' -> '10k', 'CL = 200 pF' -> '200p'."""
+    c = (condition or "").replace("Ω", "ohm")
+    rl = re.search(r"R\s*L(?:OAD)?\s*(?:=|≥|>=|>)\s*([\d.]+)\s*([kKM]?)\s*(?:ohm)?", c)
+    cl = re.search(r"C\s*L(?:OAD)?\s*(?:=|≥|>=|>|≤|<=)?\s*([\d.]+)\s*([pnuµμ]?)\s*F", c)
+    return (_spice_value(*rl.groups()) if rl else None, _spice_value(*cl.groups()) if cl else None)
+
+
+def set_loads_from_spec(spec: dict) -> dict:
+    """스펙 항목 조건의 부하로 측정 부하를 정한다 (없으면 기본값 _DEFAULT_LOADS).
+    이득은 avd 조건의 RL, 대역폭·위상여유는 ugbw/pm 조건의 RL·CL (CL 만 있으면 RL 은 무부하), 슬루율 sr, 정착시간 ts.
+    전에는 모든 칩에 고정 부하를 써서 LMV321 이득을 데이터시트 조건(RL = 2 kΩ)이 아닌 10 kΩ 으로 쟀다
+    (우리 85 dB, 하네스 73 dB, 2026-11-27). 초저전력 칩은 2 kΩ 을 구동 못 하므로 데이터시트 부하로 재야 한다."""
+    global OPAMP_AVD_RL, OPAMP_AC_RL, OPAMP_AC_CL, OPAMP_SLEW_RL, OPAMP_SLEW_CL, OPAMP_SETTLE_RL, OPAMP_SETTLE_CL
+    loads = dict(_DEFAULT_LOADS)
+    conds = {s.get("measure"): s.get("condition") or "" for s in spec.get("specs", [])}
+    for measure, prefix in (("avd", "avd"), ("ugbw", "ac"), ("pm", "ac"), ("sr", "slew"), ("ts", "settle")):
+        if measure not in conds:
+            continue
+        rl, cl = parse_load(conds[measure])
+        if rl is None and cl is None:
+            continue
+        if prefix == "avd":
+            loads["avd_rl"] = rl or loads["avd_rl"]
+        elif (rl or cl) and loads[f"{prefix}_rl"] == _DEFAULT_LOADS[f"{prefix}_rl"]:   # ugbw 와 pm 이 다르면 먼저 것
+            loads[f"{prefix}_rl"] = rl or OPAMP_NO_LOAD
+            loads[f"{prefix}_cl"] = cl or _DEFAULT_LOADS[f"{prefix}_cl"]
+    OPAMP_AVD_RL, OPAMP_AC_RL, OPAMP_AC_CL = loads["avd_rl"], loads["ac_rl"], loads["ac_cl"]
+    OPAMP_SLEW_RL, OPAMP_SLEW_CL = loads["slew_rl"], loads["slew_cl"]
+    OPAMP_SETTLE_RL, OPAMP_SETTLE_CL = loads["settle_rl"], loads["settle_cl"]
+    spec["measure_loads"] = loads           # 결과 화면·기록용
+    return loads
 
 
 _V = r"([-+−–]?\s*[\d.]+)\s*V?"

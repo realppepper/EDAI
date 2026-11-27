@@ -63,7 +63,8 @@ def measure(subckt: str) -> dict:
 def unloaded_gain() -> float:
     """부하 없이 잰 저주파 개방루프 이득 [dB]. 회로 구조 자체가 증폭하는지 볼 때 쓴다."""
     raw = run_sim.run(run_sim.build_netlist(DESIGN_NAME, "ac", "noload", vdd=run_sim.OPAMP_VDD,
-                                            rl=run_sim.OPAMP_NO_LOAD, cl=run_sim.OPAMP_AC_CL))
+                                            rl=run_sim.OPAMP_NO_LOAD, cl=run_sim.OPAMP_AC_CL,
+                                            f_start=run_sim.ac_start()))
     return float(20 * np.log10(abs(np.array(raw.get_trace("v(out)").get_wave())[0])))
 
 

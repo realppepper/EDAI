@@ -13,6 +13,10 @@
        전류나 배율을 한 칸 낮추면서 보상을 한 칸 키우는 대각선 이동도 같이 본다: 전류를 줄이면 출력단 gm 이 줄어
        위상 여유가 떨어지므로 보상을 같이 늘려야 한다 (LMV321 2026-11-26: x20 -> x10 만 하면 PM 실패로 4/6 에서 멈춤)
     3. 더 나아지지 않거나, 모두 통과하거나, 시간 TUNE_LIMIT_S 를 넘으면 멈춘다
+    4. 공급 전류가 목표 상한을 넘으면, 공급 전류가 전류원 전류에 비례한다고 보고 목표에 맞을 전류로 건너뛴 점에서도
+       언덕 오르기를 한 번 더 한다 (idd_jump). 전류 후보는 10 nA ~ 40 µA. 전류를 줄이면 회로가 느려지므로
+       슬루율·정착시간 측정 시간 창을 REFERENCE_CURRENT_A / 전류 배로 늘린다 (run_sim.TIME_SCALE).
+       바이어스 기준 전류(bias_reference, bias_convert)도 전류원 전류에 맞춰 줄어든다 (2026-11-27)
     "나음" = 통과 개수가 많고, 같으면 모자란 정도(rank_v2.shortfall)가 작은 것 (5·6단계와 같은 기준)
     보상 커패시터는 출력 트랜지스터 중 게이트가 내부 신호 노드인 것의 게이트와 OUT 사이에 넣는다 (밀러 보상).
 """
@@ -25,7 +29,11 @@ import rank_v2
 import run_sim
 import select_structure as ss
 
-CURRENTS_A = (2.5e-6, 5e-6, 10e-6, 20e-6, 40e-6)       # 전류원 하나의 전류 후보 [A]
+# 전류원 하나의 전류 후보 [A]. 초저전력 칩(공급 전류 1 µA 안팎)도 맞출 수 있게 10 nA 까지 (2026-11-27, 전에는 2.5 µA 부터)
+CURRENTS_A = (10e-9, 25e-9, 50e-9, 100e-9, 250e-9, 500e-9, 1e-6, 2.5e-6, 5e-6, 10e-6, 20e-6, 40e-6)
+REFERENCE_CURRENT_A = 20e-6  # 측정 시간 창(run_sim 테스트벤치)이 맞춰진 전류. 이보다 작으면 그 비율만큼 시간 창을 늘린다
+IDD_MARGIN = 0.8             # 공급 전류를 목표로 건너뛸 때 목표 상한의 이 비율을 노린다
+MAX_TIME_SCALE = 2000.0
 SCALES = (1.0, 2.0, 5.0, 10.0, 20.0, 50.0)            # 출력단 전류 배율 후보
 CAPS_F = (0.0, 0.5e-12, 1e-12, 2e-12, 4e-12, 8e-12)   # 밀러 보상 커패시터 후보 [F] (0 = 없음)
 CASCODE_BIAS = ("VBCN", "VBCP")
@@ -105,9 +113,26 @@ def table_from_text(text: str) -> dict:
     return {"ports": ports, "rows": rows}
 
 
+def idd_jump(variant: dict, spec: dict, current: float):
+    """공급 전류가 목표 상한을 넘으면, 목표에 맞을 전류원 전류(후보 목록에서 그 이하 중 가장 큰 값). 아니면 None.
+    공급 전류는 전류원 전류에 거의 비례한다 (가지마다 같은 전류를 거울로 복사하고, 출력단은 그 배율).
+    한 칸씩 내려가면 초저전력 칩(목표 1 µA 안팎, 시작 20 µA)까지 10번 넘게 걸려 시간 제한에 걸린다."""
+    item = next((s for s in spec.get("specs", []) if s.get("measure") == "idd"), None)
+    row = next((r for r in (variant.get("spec") or []) if r["measure"] == "idd"), None)
+    if not item or not row or row.get("value") in (None, 0) or row["status"] == run_sim.STATUS_PASS:
+        return None
+    _, high, _ = run_sim.effective_bounds(item, spec)
+    if high is None or row["value"] <= high:
+        return None
+    want = current * high * IDD_MARGIN / row["value"]
+    below = [c for c in CURRENTS_A if c <= want]
+    return below[-1] if below else CURRENTS_A[0]
+
+
 def tune(table: dict, spec: dict, unit_current: float, output_scale: float, log=print) -> dict:
     """언덕 오르기로 (전류, 배율, 커패시터)를 고른다. 돌려주는 값: {"start", "best", "trials", "stopped"}.
-    start/best 는 {"point": (전류, 배율, 커패시터), "variant": ss.evaluate_variant 결과, "table"}."""
+    start/best 는 {"point": (전류, 배율, 커패시터), "variant": ss.evaluate_variant 결과, "table"}.
+    공급 전류가 목표를 넘으면 목표에 맞을 전류로 건너뛴 점에서도 언덕 오르기를 한 번 더 하고 둘 중 나은 것을 고른다."""
     nodes = miller_nodes(table)
     started = time.time()
     end = started + TUNE_LIMIT_S
@@ -121,6 +146,7 @@ def tune(table: dict, spec: dict, unit_current: float, output_scale: float, log=
             return None
         t, values = with_caps(table, nodes, cap)
         run_sim.CANDIDATE_DEADLINE = min(time.time() + TRIAL_LIMIT_S, end)
+        run_sim.TIME_SCALE = min(MAX_TIME_SCALE, max(1.0, REFERENCE_CURRENT_A / current))   # 느린 회로는 시간 창을 늘림
         t0 = time.time()
         try:
             v = ss.evaluate_variant(t, current, scale, spec, values)
@@ -128,6 +154,7 @@ def tune(table: dict, spec: dict, unit_current: float, output_scale: float, log=
             v = {"valid": False, "reason": f"시간 초과 ({time.time() - t0:.0f} s)"}
         finally:
             run_sim.CANDIDATE_DEADLINE = None
+            run_sim.TIME_SCALE = 1.0
         result = {"point": point, "variant": v, "table": t}
         seen[point] = result
         trials.append({"unit_current_ua": current * 1e6, "scale": scale, "cap_pf": cap * 1e12,
@@ -149,8 +176,31 @@ def tune(table: dict, spec: dict, unit_current: float, output_scale: float, log=
         start_cap = float(nt.DEFAULT_VALUE["cap"].rstrip("p")) * 1e-12
         caps = tuple(c for c in CAPS_F if c > 0)
     start = measure((unit_current, output_scale, start_cap))
-    best, stopped = start, "더 나아지지 않음"
     axes = [(0, CURRENTS_A), (1, SCALES)] + ([(2, caps)] if nodes else [])
+    # 공급 전류가 목표를 넘으면 목표에 맞을 전류로 건너뛴 점부터 찾는다. 원래 점부터 찾으면 전류를 키우는 쪽(이득·대역폭)으로
+    # 가며 시간을 다 써서 건너뛴 점을 거의 못 봤다 (LMV321 2026-11-27: 10분 중 9.5분). 원래 점은 남은 시간에 찾는다
+    jump = idd_jump(start["variant"], spec, unit_current) if start["variant"].get("valid") else None
+    best, stopped = start, "더 나아지지 않음"
+    if jump is not None:
+        log(f"  공급 전류가 목표를 넘어 전류원 전류를 {unit_current * 1e6:g} µA -> {jump * 1e6:g} µA 로 건너뛰어 먼저 찾음")
+        other = measure((jump, output_scale, start_cap))
+        if other is not None:
+            other_best, other_stopped = climb(other, axes, caps, nodes, measure, better, end)
+            if better(other_best, best):
+                best, stopped = other_best, other_stopped
+    if stopped != "모두 통과" and time.time() < end:
+        start_best, start_stopped = climb(start, axes, caps, nodes, measure, better, end)
+        if better(start_best, best) or best is start:
+            best, stopped = start_best, start_stopped
+    log(f"  튜닝 끝 ({stopped}, {len(trials)}번, {time.time() - started:.0f} s): "
+        f"전류 {best['point'][0] * 1e6:g} µA, 출력단 x{best['point'][1]:g}, 보상 {best['point'][2] * 1e12:g} pF")
+    return {"start": start, "best": best, "trials": trials, "stopped": stopped, "miller_nodes": nodes,
+            "seconds": round(time.time() - started), "jump_ua": None if jump is None else jump * 1e6}
+
+
+def climb(best, axes, caps, nodes, measure, better, end) -> tuple:
+    """best 에서 시작하는 언덕 오르기. (가장 나은 점, 멈춘 이유)."""
+    stopped = "더 나아지지 않음"
     while True:
         v = best["variant"]
         if v.get("valid") and v["passed"] == v["judged"]:
@@ -192,7 +242,4 @@ def tune(table: dict, spec: dict, unit_current: float, output_scale: float, log=
             if not better(trial, best):
                 break
             best = trial
-    log(f"  튜닝 끝 ({stopped}, {len(trials)}번, {time.time() - started:.0f} s): "
-        f"전류 {best['point'][0] * 1e6:g} µA, 출력단 x{best['point'][1]:g}, 보상 {best['point'][2] * 1e12:g} pF")
-    return {"start": start, "best": best, "trials": trials, "stopped": stopped, "miller_nodes": nodes,
-            "seconds": round(time.time() - started)}
+    return best, stopped

@@ -53,19 +53,23 @@ def width(kind: str, current: float, scale: float = 1.0) -> str:
     return " ".join(f"{k}={v}" for k, v in s.items())
 
 
-def cell(prefix: str = "REF", rs: float = None) -> tuple:
-    """(줄 목록, {"NB": 노드, "PB": 노드}). rs 를 안 주면 data/bias_reference.json 의 맞춘 값을 쓴다."""
+def cell(prefix: str = "REF", rs: float = None, current: float = IREF) -> tuple:
+    """(줄 목록, {"NB": 노드, "PB": 노드}). rs 를 안 주면 data/bias_reference.json 의 맞춘 값을 쓴다.
+    current: 기준 전류 [A]. IREF 와 다르면 소자 폭을 그 전류로 다시 정하고 RS 를 IREF / current 배로 키운다
+    (gm/ID 가 같으면 gm = GM_ID x I 이고 I 는 RS 에 반비례: gm1 = 2(1 - 1/√K) / RS). 초저전력 칩 튜닝에서
+    기준 회로가 10 µA x 2 가지로 고정이면 회로 전체 공급 전류가 20 µA 아래로 못 내려갔다 (2026-11-27)."""
     if rs is None:
         rs = json.loads((HERE / "data" / "bias_reference.json").read_text(encoding="utf-8"))["rs_ohm"]
+        rs *= IREF / current
     nb, pb, ns, sx = (f"{prefix}_{n}" for n in ("NB", "PB", "NS", "SX"))
     n, p = "nfet_06v0", "pfet_06v0"
     lines = [
-        f"* 기준 전류 {IREF * 1e6:g} uA: beta-multiplier + startup (bias_reference.py)",
-        f"X{prefix}_MN1 {nb} {nb} VSS VSS {n} {width('nmos', IREF)}",
-        f"X{prefix}_MN2 {pb} {nb} {ns} VSS {n} {width('nmos', IREF, K)}",
+        f"* 기준 전류 {current * 1e6:g} uA: beta-multiplier + startup (bias_reference.py)",
+        f"X{prefix}_MN1 {nb} {nb} VSS VSS {n} {width('nmos', current)}",
+        f"X{prefix}_MN2 {pb} {nb} {ns} VSS {n} {width('nmos', current, K)}",
         f"R{prefix}_S {ns} VSS {rs:.6g}",
-        f"X{prefix}_MP3 {pb} {pb} VDD VDD {p} {width('pmos', IREF)}",
-        f"X{prefix}_MP4 {nb} {pb} VDD VDD {p} {width('pmos', IREF)}",
+        f"X{prefix}_MP3 {pb} {pb} VDD VDD {p} {width('pmos', current)}",
+        f"X{prefix}_MP4 {nb} {pb} VDD VDD {p} {width('pmos', current)}",
         f"X{prefix}_MS1 {sx} VSS VDD VDD {p} {STARTUP_WEAK}",
         f"X{prefix}_MS2 {pb} {sx} VSS VSS {n} {STARTUP_PULL}",
         f"X{prefix}_MS3 {sx} {nb} VSS VSS {n} {STARTUP_OFF}",

@@ -321,6 +321,7 @@ def step_tune(run: Run) -> dict:
     improved = bool(best.get("valid")) and tune_sizing.score(best) < tune_sizing.score(start)
     current, scale, cap = result["best"]["point"]
     record = {"stopped": result["stopped"], "seconds": result["seconds"], "miller_nodes": result["miller_nodes"],
+              "jump_ua": result.get("jump_ua"), "measure_loads": spec.get("measure_loads"),
               "start": {"passed": start.get("passed"), "judged": start.get("judged"), "spec": start.get("spec")},
               "best": {"unit_current_ua": current * 1e6, "scale": scale, "cap_pf": cap * 1e12,
                        "passed": best.get("passed"), "judged": best.get("judged"), "spec": best.get("spec")},
