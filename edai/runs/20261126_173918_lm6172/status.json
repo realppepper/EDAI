@@ -1,0 +1,243 @@
+{
+ "title": "LM6172",
+ "name": "ui_20261126_173918_lm6172",
+ "steps": [
+  {
+   "key": "extract",
+   "title": "1. 데이터시트 분석",
+   "state": "done",
+   "summary": {
+    "part": "LM6172",
+    "rows": 110,
+    "pins": 8,
+    "judged": 8,
+    "model_input": "op-amp spec: avd 82 dB; cmrr 105 dB; psrr 95 dB; idd 4.4e+03 uA; ugbw 70 MHz; sr 750 V/us; pm 41 deg; io_sink 24 mA"
+   },
+   "error": null,
+   "started": "17:39:20",
+   "warnings": [],
+   "seconds": 110,
+   "llm": {
+    "calls": 13,
+    "ok": 11,
+    "seconds": 215.3,
+    "cost_usd": 0,
+    "models": {
+     "nvidia/nemotron-3.5-lightning-30b-a3b": 3,
+     "nvidia/nemotron-3.5-bolt-e4b": 10
+    }
+   }
+  },
+  {
+   "key": "candidates",
+   "title": "2. 모델 구조 후보",
+   "state": "done",
+   "summary": {
+    "total": 25,
+    "rule_ok": 21,
+    "new": 18
+   },
+   "error": null,
+   "started": "17:41:10",
+   "warnings": [],
+   "seconds": 326,
+   "llm": null
+  },
+  {
+   "key": "select",
+   "title": "3. 바이어스 채우기·크기 정하기·측정",
+   "state": "done",
+   "summary": {
+    "evaluated": 25,
+    "forms": 44,
+    "working": 28,
+    "forms_working": {
+     "원래": 9,
+     "바이어스 정리": 9,
+     "원래 + 상보 뒤집기": 5,
+     "바이어스 정리 + 상보 뒤집기": 5
+    },
+    "timed_out": 0,
+    "skipped": 0,
+    "best_passed": "3/8"
+   },
+   "error": null,
+   "started": "17:46:37",
+   "warnings": [],
+   "seconds": 195,
+   "llm": null
+  },
+  {
+   "key": "fix",
+   "title": "4. 실패한 구조 고치기 (규칙·LLM)",
+   "state": "done",
+   "summary": {
+    "needed": true,
+    "working_before": 28,
+    "llm_calls": 15,
+    "fixed": 3,
+    "rules_tried": 0,
+    "rules_written": 3
+   },
+   "error": null,
+   "started": "17:49:52",
+   "warnings": [],
+   "seconds": 243,
+   "llm": {
+    "calls": 15,
+    "ok": 15,
+    "seconds": 125.3,
+    "cost_usd": 0,
+    "models": {
+     "nvidia/nemotron-3-ultra-550b-a55b": 15
+    }
+   }
+  },
+  {
+   "key": "rank",
+   "title": "5. 구조 고르기",
+   "state": "done",
+   "summary": {
+    "rule": "v4",
+    "top": [
+     {
+      "index": 44,
+      "passed": 3,
+      "judged": 8,
+      "scale": 20.0,
+      "gain_nodes": 4,
+      "input_ok": true,
+      "avd": 100.11546730686885,
+      "shortfall": 7.41840251340443,
+      "how": "llm_fix"
+     },
+     {
+      "index": 45,
+      "passed": 3,
+      "judged": 8,
+      "scale": 20.0,
+      "gain_nodes": 4,
+      "input_ok": true,
+      "avd": 100.11546730686885,
+      "shortfall": 7.41840251340443,
+      "how": "llm_fix"
+     },
+     {
+      "index": 46,
+      "passed": 3,
+      "judged": 8,
+      "scale": 20.0,
+      "gain_nodes": 4,
+      "input_ok": true,
+      "avd": 100.11546730686885,
+      "shortfall": 7.41840251340443,
+      "how": "llm_fix"
+     },
+     {
+      "index": 42,
+      "passed": 3,
+      "judged": 8,
+      "scale": 50.0,
+      "gain_nodes": 1,
+      "input_ok": true,
+      "avd": 37.11031206708841,
+      "shortfall": 4.961045866663104,
+      "how": "sample"
+     },
+     {
+      "index": 4,
+      "passed": 3,
+      "judged": 8,
+      "scale": 50.0,
+      "gain_nodes": 1,
+      "input_ok": true,
+      "avd": 36.170061211390376,
+      "shortfall": 6.02053774385153,
+      "how": "beam"
+     }
+    ]
+   },
+   "error": null,
+   "started": "17:53:56",
+   "warnings": [],
+   "seconds": 0,
+   "llm": null
+  },
+  {
+   "key": "rules",
+   "title": "6. 규칙 적용",
+   "state": "done",
+   "summary": {
+    "chosen": "상보 뒤집기",
+    "passed": "6/8",
+    "tried": 3
+   },
+   "error": null,
+   "started": "17:53:57",
+   "warnings": [],
+   "seconds": 27,
+   "llm": null
+  },
+  {
+   "key": "tune",
+   "title": "7. 스펙 맞추기 튜닝",
+   "state": "done",
+   "summary": {
+    "before": "6/8",
+    "after": "6/8",
+    "improved": true,
+    "trials": 11,
+    "stopped": "더 나아지지 않음",
+    "unit_current_ua": 20.0,
+    "scale": 50.0,
+    "cap_pf": 0.5
+   },
+   "error": null,
+   "started": "17:54:25",
+   "warnings": [],
+   "seconds": 160,
+   "llm": null
+  },
+  {
+   "key": "harness",
+   "title": "8. 하네스",
+   "state": "done",
+   "summary": {
+    "pass_rate": 40.0,
+    "iterations": 1,
+    "has_netlist": true
+   },
+   "error": null,
+   "started": "17:57:05",
+   "warnings": [
+    "하네스 시뮬레이션 오류: could not find 1번, fatal error 1번 (하네스 LLM 이 쓴 회로의 문법 오류일 수도, 연결 코드 문제일 수도 있음)"
+   ],
+   "seconds": 57,
+   "llm": null
+  },
+  {
+   "key": "schematic",
+   "title": "9. 최종 회로도",
+   "state": "done",
+   "summary": {
+    "made": [
+     "before_harness",
+     "after_harness"
+    ]
+   },
+   "error": null,
+   "started": "17:58:02",
+   "warnings": [],
+   "seconds": 2,
+   "llm": null
+  }
+ ],
+ "state": "done",
+ "started": "2026-11-26 17:39:18",
+ "llm": {
+  "provider": "nim",
+  "model": null
+ },
+ "total_seconds": 1120,
+ "finished": "2026-11-26 17:58:05"
+}

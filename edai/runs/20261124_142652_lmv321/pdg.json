@@ -1,0 +1,247 @@
+{
+ "nodes": [
+  {
+   "name": "VCC_P",
+   "role": "POWER"
+  },
+  {
+   "name": "GND",
+   "role": "GROUND"
+  },
+  {
+   "name": "1IN_P",
+   "role": "SIGNAL"
+  },
+  {
+   "name": "1IN_N",
+   "role": "SIGNAL"
+  },
+  {
+   "name": "2IN_P",
+   "role": "SIGNAL"
+  },
+  {
+   "name": "2IN_N",
+   "role": "SIGNAL"
+  },
+  {
+   "name": "1OUT",
+   "role": "OUTPUT"
+  },
+  {
+   "name": "2OUT",
+   "role": "OUTPUT"
+  }
+ ],
+ "edges": [
+  {
+   "from": "VCC_P",
+   "to": "1OUT",
+   "weight": 1e-06,
+   "delay_us": 1.0,
+   "dependency_type": "POWER_FEED",
+   "condition": "VCC+ = 2.7 V to 5.5 V",
+   "origin": "datasheet",
+   "delay_source": "Unity-gain bandwidth",
+   "kind": "causal"
+  },
+  {
+   "from": "VCC_P",
+   "to": "1IN_P",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "VCC_P",
+   "to": "1IN_N",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "VCC_P",
+   "to": "2IN_P",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "VCC_P",
+   "to": "2IN_N",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "VCC_P",
+   "to": "2OUT",
+   "weight": 1e-06,
+   "delay_us": 1.0,
+   "dependency_type": "POWER_FEED",
+   "condition": "5 tau of GBW (1MHz)",
+   "origin": "rule",
+   "delay_source": "Unity-gain bandwidth",
+   "kind": "causal"
+  },
+  {
+   "from": "GND",
+   "to": "1OUT",
+   "weight": 1e-06,
+   "delay_us": 1.0,
+   "dependency_type": "POWER_FEED",
+   "condition": "GND referenced to network ground",
+   "origin": "datasheet",
+   "delay_source": "Unity-gain bandwidth",
+   "kind": "causal"
+  },
+  {
+   "from": "GND",
+   "to": "1IN_P",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "GND",
+   "to": "1IN_N",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "GND",
+   "to": "2IN_P",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "GND",
+   "to": "2IN_N",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "GND",
+   "to": "2OUT",
+   "weight": 1e-06,
+   "delay_us": 1.0,
+   "dependency_type": "POWER_FEED",
+   "condition": "5 tau of GBW (1MHz)",
+   "origin": "rule",
+   "delay_source": "Unity-gain bandwidth",
+   "kind": "causal"
+  },
+  {
+   "from": "1IN_P",
+   "to": "1OUT",
+   "weight": 1e-06,
+   "delay_us": 1.0,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Own channel only",
+   "origin": "datasheet",
+   "delay_source": "Unity-gain bandwidth",
+   "kind": "causal"
+  },
+  {
+   "from": "1IN_N",
+   "to": "1OUT",
+   "weight": 1e-06,
+   "delay_us": 1.0,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Own channel only",
+   "origin": "datasheet",
+   "delay_source": "Unity-gain bandwidth",
+   "kind": "causal"
+  },
+  {
+   "from": "2IN_P",
+   "to": "2OUT",
+   "weight": 1e-06,
+   "delay_us": 1.0,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Own channel only",
+   "origin": "datasheet",
+   "delay_source": "Unity-gain bandwidth",
+   "kind": "causal"
+  },
+  {
+   "from": "2IN_N",
+   "to": "2OUT",
+   "weight": 1e-06,
+   "delay_us": 1.0,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Own channel only",
+   "origin": "datasheet",
+   "delay_source": "Unity-gain bandwidth",
+   "kind": "causal"
+  }
+ ],
+ "schedule_us": {
+  "VCC_P": 0.0,
+  "GND": 0.0,
+  "1IN_P": 2e-06,
+  "1IN_N": 2e-06,
+  "2IN_P": 2e-06,
+  "2IN_N": 2e-06,
+  "1OUT": 3e-06,
+  "2OUT": 3e-06
+ },
+ "levels": [
+  [
+   "VCC_P",
+   "GND"
+  ],
+  [
+   "1IN_P",
+   "1IN_N",
+   "2IN_P",
+   "2IN_N"
+  ],
+  [
+   "1OUT",
+   "2OUT"
+  ]
+ ],
+ "audit": {
+  "mode": "groundtruth_free_provenance",
+  "benchmark_framework": "ParseBench (https://github.com/run-llama/ParseBench.git)",
+  "fidelity_score_pct": 52.6,
+  "status": "UNRELIABLE"
+ },
+ "audit_with_pages": true
+}

@@ -1,0 +1,26 @@
+{
+ "candidate": 36,
+ "purpose": "write_rule",
+ "model": "nvidia/nemotron-3-ultra-550b-a55b",
+ "system": "You write concise, general analog design rules. Answer JSON only.",
+ "prompt": "A structural fix just made a failing op-amp work. Turn it into a reusable rule for OTHER chips.\nPick only the features that explain WHY the fix was needed (a rule with too many conditions never matches again,\na rule with too few conditions fires where it does not help). Use the exact feature values given.\n\nFEATURES OF THE FAILING STRUCTURE:\n{\n \"failure\": \"출력이 VCM\",\n \"input_pair\": \"pmos\",\n \"input_covers_range\": true,\n \"input_stage\": \"symmetric\",\n \"output_stage\": \"none\",\n \"gain_nodes\": 1,\n \"has_compensation\": true,\n \"own_bias\": true,\n \"failed_blocks\": [\n  \"bias\",\n  \"tail\"\n ]\n}\n\nFEATURE MEANINGS:\n  failure: failure kind\n  input_pair: input pair type (nmos / pmos / both)\n  input_covers_range: whether the input pair type covers the datasheet common-mode range\n  input_stage: input stage type (five_transistor / folded_cascode / telescopic / symmetric / rail_to_rail / other)\n  output_stage: output stage type (none / common_source_nmos / common_source_pmos / push_pull / other)\n  gain_nodes: number of high-impedance gain nodes from input to OUT\n  has_compensation: whether a compensation capacitor exists\n  own_bias: whether the model drew its own bias network\n  failed_blocks: blocks that contain OFF/TRIODE devices (rule matches if all listed blocks are among them)\n\nTHE FIX THAT WORKED (in order):\n  replace_bias {}\n\nDIAGNOSIS AT THE TIME: 출력 스테이지(NM7, PM5)가 VDD 레일 근처에서 포화되어 VOUT이 4.93V로 고정됨. NM7 게이트(N1=0.02V)가 VSS 근처라 NMOS 풀다운이 꺼지고, PM5 게이트(VB4=3.89V)가 VDD에 가까워 PMOS 풀업만 강하게 켜져 출력을 VDD로 밀어올림. 입력 스테이지 출력 노드 N1이 VSS 레일(0.02V)까지 내려가 NM7을 구동할 수 없는 구조적 문제.\n\nAnswer JSON: {\"if\": {\"<feature>\": <value>, ...}, \"text\": \"<one Korean sentence: when this happens, do this, because ...>\"}",
+ "answer": {
+  "if": {
+   "failure": "출력이 VCM",
+   "input_pair": "pmos",
+   "input_covers_range": true,
+   "input_stage": "symmetric",
+   "output_stage": "none",
+   "gain_nodes": 1,
+   "has_compensation": true,
+   "own_bias": true,
+   "failed_blocks": [
+    "bias",
+    "tail"
+   ]
+  },
+  "text": "PMOS 입력쌍 대칭 구조에서 바이어스/테일 블록이 실패해 출력 스테이지 게이트가 레일 근처로 고정되면 바이어스 회로를 교체해 게이트 전압을 정상 범위로 복구하라."
+ },
+ "error": null,
+ "seconds": 4.4
+}

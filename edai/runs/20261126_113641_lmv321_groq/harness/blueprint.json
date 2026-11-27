@@ -1,0 +1,28 @@
+{
+ "task_id": "EDAI_LMV321",
+ "category": "operational_amplifier",
+ "cue": "Initial transistor-level topology for LMV321 proposed by EDAI (FLAN-T5 + rules: none)",
+ "lesson": "Start from blueprint 'EDAI_LMV321': GF180MCU 6V transistor-level op-amp sized by gm/ID (ngspice pre-check 2/3 specs). Keep the .include model line; devices use nfet_06v0_bsim0 / pfet_06v0_bsim0.",
+ "evidence": {
+  "table": "NM2 D=OUT G=N1 S=VSS B=VSS ; NM5 D=N4 G=N5 S=VSS B=VSS ; NM6 D=N1 G=N1 S=VSS B=VSS ; NM7 D=N5 G=N5 S=VSS B=VSS ; PM2 D=OUT G=N4 S=VDD B=VDD ; PM3 D=N5 G=VB1 S=VDD B=VDD ; PM5 D=N1 G=IN1 S=N6 B=VDD ; PM6 D=N5 G=IN2 S=N6 B=VDD ; PM7 D=N6 G=N4 S=VDD B=VDD ; PM8 D=N4 G=N4 S=VDD B=VDD",
+  "pin_map": {
+   "VDD": "VCC_P",
+   "VSS": "GND",
+   "INP": "1IN_P",
+   "INN": "1IN_N",
+   "OUT": "OUT"
+  },
+  "output_scale": 20.0
+ },
+ "score_before": 0.0,
+ "score_after": 0.0,
+ "delta_score": 0.0,
+ "harness_tree": {
+  "c5_skills": {
+   "EDAI_LMV321": {
+    "description": "EDAI FLAN-T5 initial op-amp core for LMV321 (GF180 6V)",
+    "subckt_code": ".include \"gf180_6v_typical.lib\"\n.subckt LMV321 1IN_P GND 1IN_N OUT VCC_P\nMNM2 OUT N1 GND GND nfet_06v0_bsim0 w=100u l=2u m=20\nMNM5 N4 N5 GND GND nfet_06v0_bsim0 w=100u l=2u m=20\nMNM6 N1 N1 GND GND nfet_06v0_bsim0 w=98.5u l=2u m=11\nMNM7 N5 N5 GND GND nfet_06v0_bsim0 w=100u l=2u m=20\nMPM2 OUT N4 VCC_P VCC_P pfet_06v0_bsim0 w=100u l=2u m=20\nMPM3 N5 VB1 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u\nMPM5 N1 1IN_P N6 VCC_P pfet_06v0_bsim0 w=100u l=1u m=20\nMPM6 N5 1IN_N N6 VCC_P pfet_06v0_bsim0 w=100u l=1u m=20\nMPM7 N6 N4 VCC_P VCC_P pfet_06v0_bsim0 w=100u l=2u m=20\nMPM8 N4 N4 VCC_P VCC_P pfet_06v0_bsim0 w=100u l=2u m=20\nMPMB1 VB1 VB1 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u\nMNMF1 VB1 REF_NB GND GND nfet_06v0_bsim0 w=24u l=2u\nMREF_MN1 REF_NB REF_NB GND GND nfet_06v0_bsim0 w=12u l=2u\nMREF_MN2 REF_PB REF_NB REF_NS GND nfet_06v0_bsim0 w=48u l=2u\nRREF_S REF_NS GND 8353.6\nMREF_MP3 REF_PB REF_PB VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MP4 REF_NB REF_PB VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MS1 REF_SX GND VCC_P VCC_P pfet_06v0_bsim0 w=0.5u l=20u\nMREF_MS2 REF_PB REF_SX GND GND nfet_06v0_bsim0 w=2u l=1u\nMREF_MS3 REF_SX REF_NB GND GND nfet_06v0_bsim0 w=5u l=1u\n.ends LMV321\n"
+   }
+  }
+ }
+}

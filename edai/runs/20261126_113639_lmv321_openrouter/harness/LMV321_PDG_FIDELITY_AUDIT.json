@@ -1,0 +1,220 @@
+{
+  "mode": "groundtruth_free_provenance",
+  "benchmark_framework": "ParseBench (https://github.com/run-llama/ParseBench.git)",
+  "fidelity_score_pct": 83.9,
+  "status": "ACCEPTABLE",
+  "pin_provenance": {
+    "pins": 5,
+    "grounded": 5,
+    "grounded_pct": 100.0,
+    "ungrounded": []
+  },
+  "spec_provenance": {
+    "specs": 76,
+    "grounded": 65,
+    "grounded_pct": 85.5,
+    "by_category": {
+      "RECOMMENDED": 5,
+      "ELECTRICAL": 53,
+      "ESD": 4,
+      "ABS_MAX": 6,
+      "THERMAL": 8
+    },
+    "ungrounded_examples": [
+      {
+        "symbol": "Duration of output short circuit (one amplifier) to ground",
+        "category": "ABS_MAX",
+        "page": 5,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "R\u03b8JA",
+        "category": "THERMAL",
+        "page": 6,
+        "numbers_on_page": false,
+        "evidence_overlap": 0.8,
+        "grounded": false
+      },
+      {
+        "symbol": "R\u03b8JA",
+        "category": "THERMAL",
+        "page": 6,
+        "numbers_on_page": false,
+        "evidence_overlap": 0.8,
+        "grounded": false
+      },
+      {
+        "symbol": "R\u03b8JA",
+        "category": "THERMAL",
+        "page": 6,
+        "numbers_on_page": false,
+        "evidence_overlap": 0.8,
+        "grounded": false
+      },
+      {
+        "symbol": "R\u03b8JA",
+        "category": "THERMAL",
+        "page": 6,
+        "numbers_on_page": false,
+        "evidence_overlap": 0.8,
+        "grounded": false
+      },
+      {
+        "symbol": "VO",
+        "category": "ELECTRICAL",
+        "page": 6,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VO",
+        "category": "ELECTRICAL",
+        "page": 7,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VO",
+        "category": "ELECTRICAL",
+        "page": 7,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VO",
+        "category": "ELECTRICAL",
+        "page": 7,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VO",
+        "category": "ELECTRICAL",
+        "page": 7,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "Vn",
+        "category": "ELECTRICAL",
+        "page": 7,
+        "numbers_on_page": false,
+        "evidence_overlap": 0.0,
+        "grounded": false
+      }
+    ]
+  },
+  "topological_validity": {
+    "is_dag": true,
+    "unreachable_outputs": [],
+    "isolated_pins": []
+  },
+  "edge_origin": {
+    "edges": 8,
+    "datasheet_derived": 4,
+    "rule_injected": 4,
+    "datasheet_pct": 50.0
+  },
+  "timing_grounding": {
+    "delay_grounded_edges": 4,
+    "grounded_pct": 50.0,
+    "timing_specs_used": {
+      "turnon_settling_us": null,
+      "propagation_delay_us": null,
+      "slew_rate_v_us": null,
+      "bandwidth_mhz": 1.0,
+      "sources": {
+        "bandwidth_mhz": "B1"
+      }
+    }
+  },
+  "edge_details": [
+    {
+      "from": "1IN_P",
+      "to": "OUT",
+      "delay_us": 1.0,
+      "type": "SIGNAL_PATH",
+      "origin": "datasheet",
+      "delay_source": "B1",
+      "condition": "Noninverting input; common-mode input range 0 to VCC - 1.7 V range per CMRR spec (VICR min 0 V)"
+    },
+    {
+      "from": "GND",
+      "to": "OUT",
+      "delay_us": 1.0,
+      "type": "POWER_FEED",
+      "origin": "datasheet",
+      "delay_source": "B1",
+      "condition": "Negative supply / network ground reference for all voltages"
+    },
+    {
+      "from": "GND",
+      "to": "1IN_P",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "GND",
+      "to": "1IN_N",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "1IN_N",
+      "to": "OUT",
+      "delay_us": 1.0,
+      "type": "SIGNAL_PATH",
+      "origin": "datasheet",
+      "delay_source": "B1",
+      "condition": "Inverting input; differential input voltage max +/-5.5 V"
+    },
+    {
+      "from": "VCC_P",
+      "to": "OUT",
+      "delay_us": 1.0,
+      "type": "POWER_FEED",
+      "origin": "datasheet",
+      "delay_source": "B1",
+      "condition": "Supply 2.7 V to 5.5 V (single-supply operation) required for output operation"
+    },
+    {
+      "from": "VCC_P",
+      "to": "1IN_P",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "VCC_P",
+      "to": "1IN_N",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    }
+  ],
+  "pin_coverage": {
+    "coverage_pct": 100.0
+  },
+  "parsebench_audit": {
+    "engine": "ParseBench Content Faithfulness",
+    "grounded_ratio": 0.928,
+    "is_dag": true
+  }
+}

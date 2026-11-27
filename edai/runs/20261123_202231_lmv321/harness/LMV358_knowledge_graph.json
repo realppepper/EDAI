@@ -1,0 +1,1156 @@
+{
+  "ic_device": {
+    "name": "LMV358",
+    "category": "Operational Amplifier",
+    "description": "Dual low-voltage (2.7 V to 5.5 V) operational amplifier with rail-to-rail output swing.",
+    "package": "D (SOIC, 8)"
+  },
+  "pins": [
+    {
+      "name": "VCC_P",
+      "pin_number": "8",
+      "role": "POWER",
+      "direction": "POWER",
+      "description": "Positive supply",
+      "page": 5,
+      "evidence": "VCC Supply voltage (single-supply operation) 2.7 to 5.5 V",
+      "raw_name": "VCC+"
+    },
+    {
+      "name": "GND",
+      "pin_number": "4",
+      "role": "GROUND",
+      "direction": "GROUND",
+      "description": "Negative supply",
+      "page": 5,
+      "evidence": "GND Negative supply",
+      "raw_name": "GND"
+    },
+    {
+      "name": "1IN_P",
+      "pin_number": "3",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Noninverting input",
+      "page": 5,
+      "evidence": "1IN+ Noninverting input",
+      "raw_name": "1IN+"
+    },
+    {
+      "name": "1IN_N",
+      "pin_number": "2",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Inverting input",
+      "page": 5,
+      "evidence": "1IN- Inverting input",
+      "raw_name": "1IN-"
+    },
+    {
+      "name": "2IN_P",
+      "pin_number": "5",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Noninverting input",
+      "page": 5,
+      "evidence": "2IN+ Noninverting input",
+      "raw_name": "2IN+"
+    },
+    {
+      "name": "2IN_N",
+      "pin_number": "6",
+      "role": "SIGNAL",
+      "direction": "INPUT",
+      "description": "Inverting input",
+      "page": 5,
+      "evidence": "2IN- Inverting input",
+      "raw_name": "2IN-"
+    },
+    {
+      "name": "1OUT",
+      "pin_number": "1",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "description": "Output",
+      "page": 5,
+      "evidence": "1OUT Output",
+      "raw_name": "1OUT"
+    },
+    {
+      "name": "2OUT",
+      "pin_number": "7",
+      "role": "OUTPUT",
+      "direction": "OUTPUT",
+      "description": "Output",
+      "page": 5,
+      "evidence": "2OUT Output",
+      "raw_name": "2OUT"
+    }
+  ],
+  "port_dependencies": [
+    {
+      "source": "VCC_P",
+      "target": "1OUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "VCC+ = 2.7 V to 5.5 V"
+    },
+    {
+      "source": "GND",
+      "target": "1OUT",
+      "dependency_type": "POWER_FEED",
+      "settling_delay_us": null,
+      "condition": "GND referenced to network ground"
+    },
+    {
+      "source": "1IN_P",
+      "target": "1OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "Own channel only"
+    },
+    {
+      "source": "1IN_N",
+      "target": "1OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "Own channel only"
+    },
+    {
+      "source": "2IN_P",
+      "target": "2OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "Own channel only"
+    },
+    {
+      "source": "2IN_N",
+      "target": "2OUT",
+      "dependency_type": "SIGNAL_PATH",
+      "settling_delay_us": null,
+      "condition": "Own channel only"
+    }
+  ],
+  "functional_blocks": [
+    {
+      "name": "Amplifier Channel 1",
+      "type": "Operational Amplifier",
+      "description": "Dual operational amplifier with rail-to-rail output swing.",
+      "input_ports": [
+        "1IN+",
+        "1IN-"
+      ],
+      "output_ports": [
+        "1OUT"
+      ]
+    },
+    {
+      "name": "Amplifier Channel 2",
+      "type": "Operational Amplifier",
+      "description": "Dual operational amplifier with rail-to-rail output swing.",
+      "input_ports": [
+        "2IN+",
+        "2IN-"
+      ],
+      "output_ports": [
+        "2OUT"
+      ]
+    }
+  ],
+  "electrical_parameters": [
+    {
+      "symbol": "VCC",
+      "name": "Supply voltage",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 5.5,
+      "unit": "V",
+      "test_conditions": "over operating free-air temperature range (unless otherwise noted)",
+      "page": 5,
+      "evidence": "VCC Supply voltage MIN MAX UNIT",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "VID",
+      "name": "Differential input voltage",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 5.5,
+      "unit": "V",
+      "test_conditions": "over operating free-air temperature range (unless otherwise noted)",
+      "page": 5,
+      "evidence": "VID Differential input voltage MIN MAX UNIT",
+      "related_pins": [
+        "VID"
+      ]
+    },
+    {
+      "symbol": "VI",
+      "name": "Input voltage range (either input)",
+      "category": "ABS_MAX",
+      "min": -0.2,
+      "typ": null,
+      "max": 5.7,
+      "unit": "",
+      "test_conditions": "over operating free-air temperature range (unless otherwise noted)",
+      "page": 5,
+      "evidence": "VI Input voltage range (either input) MIN MAX UNIT",
+      "related_pins": [
+        "VI"
+      ]
+    },
+    {
+      "symbol": "Duration of output short circuit (one amplifier) to ground",
+      "name": "Duration of output short circuit (one amplifier) to ground",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "Unlimited",
+      "test_conditions": "At or below TA = 25\u00b0C, VCC \u2264 5.5 V",
+      "page": 5,
+      "evidence": "Duration of output short circuit (one amplifier) to ground At or below TA = 25\u00b0C, VCC \u2264 5.5 V",
+      "related_pins": [
+        "output"
+      ]
+    },
+    {
+      "symbol": "TJ",
+      "name": "Operating virtual junction temperature",
+      "category": "ABS_MAX",
+      "min": null,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": "over operating free-air temperature range (unless otherwise noted)",
+      "page": 5,
+      "evidence": "TJ Operating virtual junction temperature MIN MAX UNIT",
+      "related_pins": [
+        "TJ"
+      ]
+    },
+    {
+      "symbol": "Tstg",
+      "name": "Storage temperature range",
+      "category": "ABS_MAX",
+      "min": -65,
+      "typ": null,
+      "max": 150,
+      "unit": "\u00b0C",
+      "test_conditions": "over operating free-air temperature range (unless otherwise noted)",
+      "page": 5,
+      "evidence": "Tstg Storage temperature range MIN MAX UNIT",
+      "related_pins": [
+        "Tstg"
+      ]
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge",
+      "category": "ESD",
+      "min": 0,
+      "typ": null,
+      "max": 2000,
+      "unit": "V",
+      "test_conditions": "Human body model (HBM), per ANSI/ESDA/JEDEC JS-001, all pins",
+      "page": 5,
+      "evidence": "V(ESD) Electrostatic discharge Human body model (HBM), per ANSI/ESDA/JEDEC JS-001, all pins",
+      "related_pins": [
+        "all pins"
+      ]
+    },
+    {
+      "symbol": "V(ESD)",
+      "name": "Electrostatic discharge",
+      "category": "ESD",
+      "min": 0,
+      "typ": null,
+      "max": 1000,
+      "unit": "V",
+      "test_conditions": "Charged device model (CDM), per JEDEC specification JESD22-C101, all pins",
+      "page": 5,
+      "evidence": "V(ESD) Electrostatic discharge Charged device model (CDM), per JEDEC specification JESD22-C101, all pins",
+      "related_pins": [
+        "all pins"
+      ]
+    },
+    {
+      "symbol": "VCC",
+      "name": "Supply voltage (single-supply operation)",
+      "category": "RECOMMENDED",
+      "min": 2.7,
+      "typ": null,
+      "max": 5.5,
+      "unit": "V",
+      "test_conditions": "single-supply operation",
+      "page": 5,
+      "evidence": "VCC Supply voltage (single-supply operation) MIN MAX UNIT",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating free-air temperature",
+      "category": "RECOMMENDED",
+      "min": -40,
+      "typ": null,
+      "max": 125,
+      "unit": "\u00b0C",
+      "test_conditions": "I temperature (LMV321, LMV358, LMV324, LMV321IDCK)",
+      "page": 5,
+      "evidence": "TA Operating free-air temperature I temperature (LMV321, LMV358, LMV324, LMV321IDCK) MIN MAX UNIT",
+      "related_pins": [
+        "TA"
+      ]
+    },
+    {
+      "symbol": "TA",
+      "name": "Operating free-air temperature",
+      "category": "RECOMMENDED",
+      "min": -40,
+      "typ": null,
+      "max": 125,
+      "unit": "\u00b0C",
+      "test_conditions": "Q temperature",
+      "page": 5,
+      "evidence": "TA Operating free-air temperature Q temperature MIN MAX UNIT",
+      "related_pins": [
+        "TA"
+      ]
+    },
+    {
+      "symbol": "R9JA Junction-to-ambient thermal resistance",
+      "name": "R9JA Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMV321, DBV (SOT-23) 5 PINS",
+      "page": 5,
+      "evidence": "R9JA Junction-to-ambient thermal resistance 232.9 239.6 \u00b0C/W",
+      "related_pins": [
+        "LMV321"
+      ]
+    },
+    {
+      "symbol": "R9JA Junction-to-ambient thermal resistance",
+      "name": "R9JA Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMV321, DCK (SC-70) 5 PINS",
+      "page": 5,
+      "evidence": "R9JA Junction-to-ambient thermal resistance 232.9 239.6 \u00b0C/W",
+      "related_pins": [
+        "LMV321"
+      ]
+    },
+    {
+      "symbol": "R9JA Junction-to-ambient thermal resistance",
+      "name": "R9JA Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMV324, D (SOIC) 14 PINS",
+      "page": 5,
+      "evidence": "R9JA Junction-to-ambient thermal resistance 102.1 148.3 \u00b0C/W",
+      "related_pins": [
+        "LMV324"
+      ]
+    },
+    {
+      "symbol": "R9JA Junction-to-ambient thermal resistance",
+      "name": "R9JA Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMV324, PW (TSSOP) 14 PINS",
+      "page": 5,
+      "evidence": "R9JA Junction-to-ambient thermal resistance 102.1 148.3 \u00b0C/W",
+      "related_pins": [
+        "LMV324"
+      ]
+    },
+    {
+      "symbol": "R_BJA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMV358, D (SOIC), 8 PINS",
+      "page": 6,
+      "evidence": "R_BJA Junction-to-ambient thermal resistance 207.9",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "R_BJA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMV358, **DGK** **(VSSOP)**, 8 PINS",
+      "page": 6,
+      "evidence": "R_BJA Junction-to-ambient thermal resistance 201.2",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "R_BJA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMV358, DDU (VSSOP), 8 PINS",
+      "page": 6,
+      "evidence": "R_BJA Junction-to-ambient thermal resistance 210",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "R_BJA",
+      "name": "Junction-to-ambient thermal resistance",
+      "category": "THERMAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "\u00b0C/W",
+      "test_conditions": "LMV358, PW (TSSOP), 8 PINS",
+      "page": 6,
+      "evidence": "R_BJA Junction-to-ambient thermal resistance 200.7",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": 1.7,
+      "typ": 7,
+      "max": 7,
+      "unit": "mV",
+      "test_conditions": "VCC+ = 2.7 V, TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "VIO Input offset voltage 1.7 7 mV",
+      "related_pins": [
+        "IN"
+      ]
+    },
+    {
+      "symbol": "aVIO",
+      "name": "Average temperature coefficient of input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 5,
+      "max": null,
+      "unit": "\u03bcV/\u00b0C",
+      "test_conditions": "VCC+ = 2.7 V, TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "aVIO Average temperature coefficient of input offset voltage 5 \u03bcV/\u00b0C",
+      "related_pins": [
+        "IN"
+      ]
+    },
+    {
+      "symbol": "IIB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": 11,
+      "typ": 250,
+      "max": 250,
+      "unit": "nA",
+      "test_conditions": "VCC+ = 2.7 V, TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "IIB Input bias current 11 250 nA",
+      "related_pins": [
+        "IN"
+      ]
+    },
+    {
+      "symbol": "IIO",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": 5,
+      "typ": 50,
+      "max": 50,
+      "unit": "nA",
+      "test_conditions": "VCC+ = 2.7 V, TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "IIO Input offset current 5 50 nA",
+      "related_pins": [
+        "IN"
+      ]
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "category": "ELECTRICAL",
+      "min": 50,
+      "typ": 63,
+      "max": 63,
+      "unit": "dB",
+      "test_conditions": "VCC+ = 2.7 V, TA = 25\u00b0C, VCM = 0 to 1.7 V",
+      "page": 6,
+      "evidence": "CMRR Common-mode rejection ratio 50 63 dB",
+      "related_pins": [
+        "IN"
+      ]
+    },
+    {
+      "symbol": "kSVR",
+      "name": "Supply-voltage rejection ratio",
+      "category": "ELECTRICAL",
+      "min": 50,
+      "typ": 60,
+      "max": 60,
+      "unit": "dB",
+      "test_conditions": "VCC+ = 2.7 V, TA = 25\u00b0C, VCC = 2.7 V to 5 V, VO = 1 V",
+      "page": 6,
+      "evidence": "kSVR Supply-voltage rejection ratio 50 60 dB",
+      "related_pins": [
+        "VCC",
+        "VO"
+      ]
+    },
+    {
+      "symbol": "VICR",
+      "name": "Common-mode input voltage range",
+      "category": "ELECTRICAL",
+      "min": 0,
+      "typ": -0.2,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VCC+ = 2.7 V, TA = 25\u00b0C, CMRR \u2265 50 dB",
+      "page": 6,
+      "evidence": "VICR Common-mode input voltage range 0 -0.2 V",
+      "related_pins": [
+        "IN"
+      ]
+    },
+    {
+      "symbol": "VO",
+      "name": "Output swing",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "mV",
+      "test_conditions": "VCC+ = 2.7 V, TA = 25\u00b0C, RL = 10 k\u03a9 to 1.35 V, High level",
+      "page": 6,
+      "evidence": "VO Output swing High level VCC - 100 mV",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "VO",
+      "name": "Output swing",
+      "category": "ELECTRICAL",
+      "min": 60,
+      "typ": null,
+      "max": 180,
+      "unit": "mV",
+      "test_conditions": "VCC+ = 2.7 V, TA = 25\u00b0C, RL = 10 k\u03a9 to 1.35 V, Low level",
+      "page": 6,
+      "evidence": "VO Output swing Low level 60 180 mV",
+      "related_pins": [
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": 80,
+      "typ": 170,
+      "max": 170,
+      "unit": "\u03bcA",
+      "test_conditions": "VCC+ = 2.7 V, TA = 25\u00b0C, LMV321I",
+      "page": 6,
+      "evidence": "ICC Supply current LMV321I 80 170 \u03bcA",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": 140,
+      "typ": 340,
+      "max": 340,
+      "unit": "\u03bcA",
+      "test_conditions": "VCC+ = 2.7 V, TA = 25\u00b0C, LMV358I (both amplifiers)",
+      "page": 6,
+      "evidence": "ICC Supply current LMV358I (both amplifiers) 140 340 \u03bcA",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": 260,
+      "typ": 680,
+      "max": 680,
+      "unit": "\u03bcA",
+      "test_conditions": "VCC+ = 2.7 V, TA = 25\u00b0C, LMV324I (all four amplifiers)",
+      "page": 6,
+      "evidence": "ICC Supply current LMV324I (all four amplifiers) 260 680 \u03bcA",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "B1",
+      "name": "Unity-gain bandwidth",
+      "category": "ELECTRICAL",
+      "min": 1,
+      "typ": null,
+      "max": null,
+      "unit": "MHz",
+      "test_conditions": "VCC+ = 2.7 V, TA = 25\u00b0C, CL = 200 pF",
+      "page": 6,
+      "evidence": "B1 Unity-gain bandwidth 1 MHz",
+      "related_pins": [
+        "IN",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "\u03a6m",
+      "name": "Phase margin",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 60,
+      "max": null,
+      "unit": "deg",
+      "test_conditions": "VCC+ = 2.7 V, TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "\u03a6m Phase margin 60 deg",
+      "related_pins": [
+        "IN",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "Gm",
+      "name": "Gain margin",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 10,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "VCC+ = 2.7 V, TA = 25\u00b0C",
+      "page": 6,
+      "evidence": "Gm Gain margin 10 dB",
+      "related_pins": [
+        "IN",
+        "OUT"
+      ]
+    },
+    {
+      "symbol": "Vn",
+      "name": "Equivalent input noise voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 46,
+      "max": null,
+      "unit": "nV/\u221a Hz",
+      "test_conditions": "VCC+ = 2.7 V, TA = 25\u00b0C, f = 1 kHz",
+      "page": 6,
+      "evidence": "Vn Equivalent input noise voltage 46 nV/\u221a Hz",
+      "related_pins": [
+        "IN"
+      ]
+    },
+    {
+      "symbol": "In",
+      "name": "Equivalent input noise current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 0.17,
+      "max": null,
+      "unit": "pA/\u221a Hz",
+      "test_conditions": "VCC+ = 2.7 V, TA = 25\u00b0C, f = 1 kHz",
+      "page": 6,
+      "evidence": "In Equivalent input noise current 0.17 pA/\u221a Hz",
+      "related_pins": [
+        "IN"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 1.7,
+      "max": 7,
+      "unit": "mV",
+      "test_conditions": "VCC+ = 5 V, TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "VIO Input offset voltage TA = 25\u00b0C",
+      "related_pins": [
+        "VIO"
+      ]
+    },
+    {
+      "symbol": "VIO",
+      "name": "Input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 9,
+      "unit": "mV",
+      "test_conditions": "VCC+ = 5 V, TA = -40\u00b0C to +125\u00b0C",
+      "page": 7,
+      "evidence": "VIO Input offset voltage TA = -40\u00b0C to +125\u00b0C",
+      "related_pins": [
+        "VIO"
+      ]
+    },
+    {
+      "symbol": "\u03b1VIO",
+      "name": "Average temperature coefficient of input offset voltage",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 5,
+      "max": null,
+      "unit": "\u00b5V/^\u00b0C",
+      "test_conditions": "VCC+ = 5 V, TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "\u03b1VIO Average temperature coefficient of input offset voltage TA = 25\u00b0C",
+      "related_pins": [
+        "VIO"
+      ]
+    },
+    {
+      "symbol": "IIB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 15,
+      "max": 250,
+      "unit": "nA",
+      "test_conditions": "VCC+ = 5 V, TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "IIB Input bias current TA = 25\u00b0C",
+      "related_pins": [
+        "IIB"
+      ]
+    },
+    {
+      "symbol": "IIB",
+      "name": "Input bias current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 500,
+      "unit": "nA",
+      "test_conditions": "VCC+ = 5 V, TA = -40\u00b0C to +125\u00b0C",
+      "page": 7,
+      "evidence": "IIB Input bias current TA = -40\u00b0C to +125\u00b0C",
+      "related_pins": [
+        "IIB"
+      ]
+    },
+    {
+      "symbol": "IIO",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 5,
+      "max": 50,
+      "unit": "nA",
+      "test_conditions": "VCC+ = 5 V, TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "IIO Input offset current TA = 25\u00b0C",
+      "related_pins": [
+        "IIO"
+      ]
+    },
+    {
+      "symbol": "IIO",
+      "name": "Input offset current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 150,
+      "unit": "nA",
+      "test_conditions": "VCC+ = 5 V, TA = -40\u00b0C to +125\u00b0C",
+      "page": 7,
+      "evidence": "IIO Input offset current TA = -40\u00b0C to +125\u00b0C",
+      "related_pins": [
+        "IIO"
+      ]
+    },
+    {
+      "symbol": "CMRR",
+      "name": "Common-mode rejection ratio",
+      "category": "ELECTRICAL",
+      "min": 50,
+      "typ": 65,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "VCC+ = 5 V, VCM = 0 to 4 V, TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "CMRR Common-mode rejection ratio VCM = 0 to 4 V TA = 25\u00b0C",
+      "related_pins": [
+        "VCM"
+      ]
+    },
+    {
+      "symbol": "kSVR",
+      "name": "Supply-voltage rejection ratio",
+      "category": "ELECTRICAL",
+      "min": 50,
+      "typ": 60,
+      "max": null,
+      "unit": "dB",
+      "test_conditions": "VCC+ = 5 V, VCC = 2.7 V to 5 V, VO = 1 V, VCM = 1 V, TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "kSVR Supply-voltage rejection ratio VCC = 2.7 V to 5 V, VO = 1 V, VCM = 1 V TA = 25\u00b0C",
+      "related_pins": [
+        "VCC",
+        "VO",
+        "VCM"
+      ]
+    },
+    {
+      "symbol": "VICR",
+      "name": "Common-mode input voltage range",
+      "category": "ELECTRICAL",
+      "min": 0,
+      "typ": -0.2,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VCC+ = 5 V, CMRR \u2265 50 dB, TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "VICR Common-mode input voltage range CMRR \u2265 50 dB TA = 25\u00b0C",
+      "related_pins": [
+        "VCM"
+      ]
+    },
+    {
+      "symbol": "VICR",
+      "name": "Common-mode input voltage range",
+      "category": "ELECTRICAL",
+      "min": 4.2,
+      "typ": 4,
+      "max": null,
+      "unit": "V",
+      "test_conditions": "VCC+ = 5 V, CMRR \u2265 50 dB, TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "VICR Common-mode input voltage range CMRR \u2265 50 dB TA = 25\u00b0C",
+      "related_pins": [
+        "VCM"
+      ]
+    },
+    {
+      "symbol": "VO Output swing",
+      "name": "Output swing",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "mV",
+      "test_conditions": "VCC+ = 5 V, RL = 2 k\u03a9 to 2.5 V, high level, TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "VO Output swing Output swing RL = 2 k\u03a9 to 2.5 V, high level TA = 25\u00b0C",
+      "related_pins": [
+        "VO"
+      ]
+    },
+    {
+      "symbol": "VO Output swing",
+      "name": "Output swing",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 120,
+      "max": 300,
+      "unit": "mV",
+      "test_conditions": "VCC+ = 5 V, TA = 25\u00b0C, low level",
+      "page": 7,
+      "evidence": "VO Output swing Output swing TA = 25\u00b0C, low level",
+      "related_pins": [
+        "VO"
+      ]
+    },
+    {
+      "symbol": "VO Output swing",
+      "name": "Output swing",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 400,
+      "unit": "mV",
+      "test_conditions": "VCC+ = 5 V, TA = -40\u00b0C to +125\u00b0C, low level",
+      "page": 7,
+      "evidence": "VO Output swing Output swing TA = -40\u00b0C to +125\u00b0C, low level",
+      "related_pins": [
+        "VO"
+      ]
+    },
+    {
+      "symbol": "VO Output swing",
+      "name": "Output swing",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": null,
+      "unit": "mV",
+      "test_conditions": "VCC+ = 5 V, RL = 10 k\u03a9 to 2.5 V, high level, TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "VO Output swing Output swing RL = 10 k\u03a9 to 2.5 V, high level TA = 25\u00b0C",
+      "related_pins": [
+        "VO"
+      ]
+    },
+    {
+      "symbol": "VO Output swing",
+      "name": "Output swing",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 65,
+      "max": 180,
+      "unit": "mV",
+      "test_conditions": "VCC+ = 5 V, TA = 25\u00b0C, low level",
+      "page": 7,
+      "evidence": "VO Output swing Output swing TA = 25\u00b0C, low level",
+      "related_pins": [
+        "VO"
+      ]
+    },
+    {
+      "symbol": "VO Output swing",
+      "name": "Output swing",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 280,
+      "unit": "mV",
+      "test_conditions": "VCC+ = 5 V, TA = -40\u00b0C to +125\u00b0C, low level",
+      "page": 7,
+      "evidence": "VO Output swing Output swing TA = -40\u00b0C to +125\u00b0C, low level",
+      "related_pins": [
+        "VO"
+      ]
+    },
+    {
+      "symbol": "AVD",
+      "name": "Large-signal differential voltage gain",
+      "category": "ELECTRICAL",
+      "min": 15,
+      "typ": 100,
+      "max": null,
+      "unit": "V/mV",
+      "test_conditions": "VCC+ = 5 V, RL = 2 k\u03a9, TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "AVD Large-signal differential voltage gain RL = 2 k\u03a9 TA = 25\u00b0C",
+      "related_pins": [
+        "RL"
+      ]
+    },
+    {
+      "symbol": "AVD",
+      "name": "Large-signal differential voltage gain",
+      "category": "ELECTRICAL",
+      "min": 10,
+      "typ": null,
+      "max": null,
+      "unit": "V/mV",
+      "test_conditions": "VCC+ = 5 V, RL = 2 k\u03a9, TA = -40\u00b0C to +125\u00b0C",
+      "page": 7,
+      "evidence": "AVD Large-signal differential voltage gain RL = 2 k\u03a9 TA = -40\u00b0C to +125\u00b0C",
+      "related_pins": [
+        "RL"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Output short-circuit current",
+      "category": "ELECTRICAL",
+      "min": 5,
+      "typ": 40,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "VCC+ = 5 V, Sourcing, VO = 0 V, TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "IOS Output short-circuit current Sourcing VO = 0 V TA = 25\u00b0C",
+      "related_pins": [
+        "VO"
+      ]
+    },
+    {
+      "symbol": "IOS",
+      "name": "Output short-circuit current",
+      "category": "ELECTRICAL",
+      "min": 10,
+      "typ": 40,
+      "max": null,
+      "unit": "mA",
+      "test_conditions": "VCC+ = 5 V, Sinking, VO = 5 V, TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "IOS Output short-circuit current Sinking VO = 5 V TA = 25\u00b0C",
+      "related_pins": [
+        "VO"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 130,
+      "max": 250,
+      "unit": "\u00b5A",
+      "test_conditions": "VCC+ = 5 V, LMV321I, TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "ICC Supply current LMV321I TA = 25\u00b0C",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 350,
+      "unit": "\u00b5A",
+      "test_conditions": "VCC+ = 5 V, LMV321I, TA = -40\u00b0C to +125\u00b0C",
+      "page": 7,
+      "evidence": "ICC Supply current LMV321I TA = -40\u00b0C to +125\u00b0C",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 210,
+      "max": 440,
+      "unit": "\u00b5A",
+      "test_conditions": "VCC+ = 5 V, LMV358I (both amplifiers), TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "ICC Supply current LMV358I (both amplifiers) TA = 25\u00b0C",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 615,
+      "unit": "\u00b5A",
+      "test_conditions": "VCC+ = 5 V, LMV358I (both amplifiers), TA = -40\u00b0C to +125\u00b0C",
+      "page": 7,
+      "evidence": "ICC Supply current LMV358I (both amplifiers) TA = -40\u00b0C to +125\u00b0C",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": 410,
+      "max": 830,
+      "unit": "\u00b5A",
+      "test_conditions": "VCC+ = 5 V, LMV324I (all four amplifiers), TA = 25\u00b0C",
+      "page": 7,
+      "evidence": "ICC Supply current LMV324I (all four amplifiers) TA = 25\u00b0C",
+      "related_pins": [
+        "VCC"
+      ]
+    },
+    {
+      "symbol": "ICC",
+      "name": "Supply current",
+      "category": "ELECTRICAL",
+      "min": null,
+      "typ": null,
+      "max": 1160,
+      "unit": "\u00b5A",
+      "test_conditions": "VCC+ = 5 V, LMV324I (all four amplifiers), TA =",
+      "page": 7
+    }
+  ],
+  "provenance": {
+    "pin_pages": [
+      3,
+      4,
+      1,
+      5,
+      6,
+      16,
+      17,
+      7,
+      8,
+      9,
+      10,
+      11,
+      12,
+      13,
+      14,
+      15,
+      19,
+      20,
+      23,
+      24,
+      25,
+      27,
+      28,
+      29,
+      30
+    ],
+    "spec_pages": [
+      7,
+      6,
+      5,
+      19,
+      1,
+      3,
+      4,
+      20,
+      23,
+      24
+    ],
+    "func_pages": [
+      16,
+      17
+    ],
+    "failed_spec_pages": [],
+    "source_file": "datasheet.pdf"
+  }
+}

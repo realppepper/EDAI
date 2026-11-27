@@ -1,0 +1,88 @@
+{
+  "target_name": "LM6172",
+  "total_duration_ms": 55243.06,
+  "status": "COMPLETED",
+  "span_count": 3,
+  "spans": [
+    {
+      "phase": 1,
+      "name": "Phase 1: Knowledge Ingestion & HKG Construction",
+      "start_time": 1795683426.7688947,
+      "end_time": 1795683439.6141016,
+      "duration_ms": 12845.21,
+      "status": "SUCCESS",
+      "inputs": {
+        "datasheet_pdf_path": "/mnt/d/edai_jiyun2/edai/runs/20261126_173918_lm6172/datasheet.pdf",
+        "user_prompt": null,
+        "max_pages": 12
+      },
+      "outputs": {
+        "part_name": "LM6172",
+        "pins_count": 8,
+        "specifications_count": 110,
+        "pins": [
+          "1IN_N",
+          "1IN_P",
+          "1OUT",
+          "2IN_N",
+          "2IN_P",
+          "2OUT",
+          "VCC_N",
+          "VCC_P"
+        ]
+      },
+      "events": [],
+      "error": null
+    },
+    {
+      "phase": 2,
+      "name": "Phase 2: Port Dependency Graph (PDG) & Timing Schedule",
+      "start_time": 1795683439.614341,
+      "end_time": 1795683439.689779,
+      "duration_ms": 75.44,
+      "status": "SUCCESS",
+      "inputs": {
+        "pins_count": 8
+      },
+      "outputs": {
+        "pin_schedule_us": {
+          "VCC_N": 0.0,
+          "VCC_P": 0.0,
+          "1IN_N": 2.0,
+          "1IN_P": 2.0,
+          "2IN_N": 2.0,
+          "2IN_P": 2.0,
+          "1OUT": 2.07,
+          "2OUT": 2.07
+        },
+        "levels_count": 3,
+        "fidelity_score_pct": 63.6,
+        "fidelity_status": "UNRELIABLE"
+      },
+      "events": [],
+      "error": null
+    },
+    {
+      "phase": 3,
+      "name": "Phase 3: Hermes Autonomous Synthesis & Verification",
+      "start_time": 1795683439.7351305,
+      "end_time": 1795683481.990926,
+      "duration_ms": 42255.8,
+      "status": "SUCCESS",
+      "inputs": {
+        "subckt_name": "LM6172",
+        "category": "Dual, High-Speed, Low-Power, Low-Distortion, Voltage-Feedback Amplifier",
+        "user_prompt": null,
+        "turns_budget": 5
+      },
+      "outputs": {
+        "pass_rate_percent": 40.0,
+        "passed_specs": 24,
+        "turns_executed": 1,
+        "final_netlist_path": "/mnt/d/edai_jiyun2/edai/runs/20261126_173918_lm6172/harness/LM6172_FINAL_HERMES_HARNESS2.cir"
+      },
+      "events": [],
+      "error": null
+    }
+  ]
+}

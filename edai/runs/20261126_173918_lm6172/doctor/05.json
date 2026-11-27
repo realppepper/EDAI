@@ -1,0 +1,24 @@
+{
+ "candidate": 42,
+ "purpose": "write_rule",
+ "model": "nvidia/nemotron-3-ultra-550b-a55b",
+ "system": "You write concise, general analog design rules. Answer JSON only.",
+ "prompt": "A structural fix just made a failing op-amp work. Turn it into a reusable rule for OTHER chips.\nPick only the features that explain WHY the fix was needed (a rule with too many conditions never matches again,\na rule with too few conditions fires where it does not help). Use the exact feature values given.\n\nFEATURES OF THE FAILING STRUCTURE:\n{\n \"failure\": \"포화 영역\",\n \"input_pair\": \"pmos\",\n \"input_covers_range\": true,\n \"input_stage\": \"symmetric\",\n \"output_stage\": \"none\",\n \"gain_nodes\": 1,\n \"has_compensation\": true,\n \"own_bias\": true,\n \"failed_blocks\": [\n  \"bias\"\n ]\n}\n\nFEATURE MEANINGS:\n  failure: failure kind\n  input_pair: input pair type (nmos / pmos / both)\n  input_covers_range: whether the input pair type covers the datasheet common-mode range\n  input_stage: input stage type (five_transistor / folded_cascode / telescopic / symmetric / rail_to_rail / other)\n  output_stage: output stage type (none / common_source_nmos / common_source_pmos / push_pull / other)\n  gain_nodes: number of high-impedance gain nodes from input to OUT\n  has_compensation: whether a compensation capacitor exists\n  own_bias: whether the model drew its own bias network\n  failed_blocks: blocks that contain OFF/TRIODE devices (rule matches if all listed blocks are among them)\n\nTHE FIX THAT WORKED (in order):\n  replace_bias {}\n  rebuild {\"input_stage\": \"folded_cascode\", \"input_pair\": \"nmos\", \"output_stage\": \"common_source_pmos\", \"compensation\": \"miller\"}\n\nDIAGNOSIS AT THE TIME: 출력 스테이지(NM7, PM5)가 VCM(2.5V)에서 바이어스되지 않음. NM7 게이트(N1)가 0.02V로 NM7 OFF, PM5는 Vds 0.074V로 트라이오드. 입력 스테이지 출력 노드 N1이 VSS 근처로 고정되어 NMOS 출력 디바이스를 구동할 수 없는 구조적 문제.\n\nAnswer JSON: {\"if\": {\"<feature>\": <value>, ...}, \"text\": \"<one Korean sentence: when this happens, do this, because ...>\"}",
+ "answer": {
+  "if": {
+   "failure": "포화 영역",
+   "input_pair": "pmos",
+   "input_stage": "symmetric",
+   "output_stage": "none",
+   "gain_nodes": 1,
+   "has_compensation": true,
+   "own_bias": true,
+   "failed_blocks": [
+    "bias"
+   ]
+  },
+  "text": "PMOS 입력 대칭 스테이지에 출력 스테이지가 없고 바이어스 블록이 실패하면, NMOS 입력 폴디드 캐스코드와 PMOS 공통 소스 출력 스테이지 및 밀러 보상으로 재구성하라. 입력 스테이지 출력 노드가 VSS 근처로 고정되어 NMOS 출력 디바이스를 구동할 수 없기 때문이다."
+ },
+ "error": null,
+ "seconds": 4.2
+}

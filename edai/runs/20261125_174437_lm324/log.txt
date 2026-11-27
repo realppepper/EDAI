@@ -1,0 +1,157 @@
+[17:44:38] == 1. 데이터시트 분석
+[17:44:38] 대상 칩: LM324 (파일 이름)
+[17:44:47] PDF 읽기 1/30 (쪽 3)
+[17:44:49] PDF 읽기 2/30 (쪽 2)
+[17:44:50] PDF 읽기 3/30 (쪽 1)
+[17:44:50] PDF 읽기 4/30 (쪽 4)
+[17:44:55] PDF 읽기 5/30 (쪽 5)
+[17:44:55] PDF 읽기 6/30 (쪽 6)
+[17:44:55] PDF 읽기 7/30 (쪽 7)
+[17:44:58] PDF 읽기 8/30 (쪽 8)
+[17:44:59] PDF 읽기 9/30 (쪽 10)
+[17:44:59] PDF 읽기 10/30 (쪽 9)
+[17:45:04] PDF 읽기 11/30 (쪽 12)
+[17:45:05] PDF 읽기 12/30 (쪽 11)
+[17:45:06] PDF 읽기 13/30 (쪽 13)
+[17:45:08] PDF 읽기 14/30 (쪽 15)
+[17:45:08] PDF 읽기 15/30 (쪽 16)
+[17:45:09] PDF 읽기 16/30 (쪽 14)
+[17:45:12] PDF 읽기 17/30 (쪽 19)
+[17:45:12] PDF 읽기 18/30 (쪽 18)
+[17:45:13] PDF 읽기 19/30 (쪽 17)
+[17:45:14] PDF 읽기 20/30 (쪽 21)
+[17:45:15] PDF 읽기 21/30 (쪽 22)
+[17:45:17] PDF 읽기 22/30 (쪽 20)
+[17:45:19] PDF 읽기 23/30 (쪽 23)
+[17:45:19] PDF 읽기 24/30 (쪽 25)
+[17:45:19] PDF 읽기 25/30 (쪽 24)
+[17:45:22] PDF 읽기 26/30 (쪽 26)
+[17:45:23] PDF 읽기 27/30 (쪽 28)
+[17:45:23] PDF 읽기 28/30 (쪽 27)
+[17:45:25] PDF 읽기 29/30 (쪽 29)
+[17:45:28] PDF 읽기 30/30 (쪽 30)
+[17:45:38] PDF 읽기 끝 (58 s)
+[17:46:13] 스펙 표 추출 1/10 (쪽 11)
+[17:46:33] 스펙 표 추출 2/10 (쪽 9)
+[17:46:50] 스펙 표 추출 3/10 (쪽 7)
+[17:47:00] 스펙 표 추출 4/10 (쪽 12)
+[17:47:16] 스펙 표 추출 5/10 (쪽 8)
+[17:47:33] 스펙 표 추출 6/10 (쪽 10)
+[17:47:35] 스펙 표 추출 7/10 (쪽 6)
+[17:47:36] 스펙 표 추출 8/10 (쪽 3)
+[17:47:36] 스펙 표 추출 9/10 (쪽 13)
+[17:48:02] 스펙 표 추출 10/10 (쪽 5)
+[17:48:02] 최소/보통/최대 칸 바로잡음: 9쪽 Channel separation -/-/120 -> -/120/- (LM2902B/LM2902BA, f = 1kHz to 20kHz, VS )
+[17:48:02] 최소/보통/최대 칸 바로잡음: 10쪽 IQ 240/-/300 -> -/240/300 (Vs = 5V, IQ = 0A, TA = -40°C to +125°C)
+[17:48:02] 추출 끝: 스펙 195줄, 핀 15개 (203 s) -> /mnt/d/edai_jiyun2/edai/data/extraction/ui_20261125_174437_lm324_hkg.json
+[17:48:02] 측정 계획: 114줄 계획 / 전기 사양 162줄 (0 s)
+[17:48:02] 판정 항목 9개 -> spec_ui_20261125_174437_lm324.json
+[17:48:02] PDG: 핀 15개, 의존 관계 32개, 순서 단계 3
+[17:48:03] == 2. 모델 구조 후보
+[17:48:03] 실행: /home/jiyun/.venvs/edai/bin/python generate_candidates.py ui_20261125_174437_lm324
+[17:50:00]     빔 탐색 10개: 113 s
+[17:51:53]     무작위 10개: 225 s
+[17:53:45]     무작위 20개: 337 s
+[17:54:59]     무작위 30개: 411 s
+[17:54:59]   모델이 쓴 글 40개 -> 서로 다른 후보 29개, 규칙 통과 25개, 그중 학습 데이터에 없던 구조 20개 -> data/train/ui_20261125_174437_lm324_candidates.json
+[17:55:01] == 3. 바이어스 채우기·크기 정하기·측정
+[17:55:01] 실행: /home/jiyun/.venvs/edai/bin/python select_structure.py ui_20261125_174437_lm324 --bias-devices --repair
+[17:55:02]   고쳐 보기: 원래 / 바이어스 정리 / 상보 뒤집기, 다 실패하면 규칙 3개 중 맞는 것. 출력단 배율 x20, x50
+[17:55:02]     후보 1/29 (beam) 실패 :: 규칙 검사 탈락: 한 곳에만 붙은 노드: N7
+[17:56:03]     후보 2/29 (beam) 동작 5/9 (바이어스 정리 + 상보 뒤집기) :: 원래: 포화 영역 밖 소자 NM2 | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 포화 영역 밖 소자 PM2 | 바이어스 정리 + 상보 뒤집기: 동작
+[17:56:29]     후보 3/29 (beam) 동작 5/9 (바이어스 정리) :: 원래: 포화 영역 밖 소자 PM3, PM7, NM2, NM6, NM7 | 바이어스 정리: 동작
+[17:57:32]     후보 4/29 (beam) 동작 5/9 (바이어스 정리 + 상보 뒤집기) :: 원래: 포화 영역 밖 소자 PM5, NM2, NM3, NM9 | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 포화 영역 밖 소자 NM5, PM2, PM3, PM9 | 바이어스 정리 + 상보 뒤집기: 동작
+[17:58:12]     후보 5/29 (beam) 동작 5/9 (바이어스 정리) :: 원래: 포화 영역 밖 소자 PM3, PM7, NM2, NM6, NM7 | 바이어스 정리: 동작
+[17:59:16]     후보 6/29 (beam) 동작 5/9 (바이어스 정리 + 상보 뒤집기) :: 원래: 포화 영역 밖 소자 NM2 | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 포화 영역 밖 소자 PM2 | 바이어스 정리 + 상보 뒤집기: 동작
+[18:00:14]     후보 7/29 (beam) 동작 5/9 (바이어스 정리 + 상보 뒤집기) :: 원래: 포화 영역 밖 소자 PM5, NM2, NM3, NM9 | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 포화 영역 밖 소자 NM5, PM2, PM3, PM9 | 바이어스 정리 + 상보 뒤집기: 동작
+[18:00:51]     후보 8/29 (beam) 동작 5/9 (바이어스 정리) :: 원래: 포화 영역 밖 소자 PM4, NM8 | 바이어스 정리: 동작
+[18:01:21]     후보 9/29 (beam) 동작 5/9 (바이어스 정리) :: 원래: 포화 영역 밖 소자 PM4, NM8 | 바이어스 정리: 동작
+[18:02:16]     후보 10/29 (beam) 동작 5/9 (바이어스 정리 + 상보 뒤집기) :: 원래: 포화 영역 밖 소자 PM5, NM2, NM3, NM9 | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 포화 영역 밖 소자 NM5, PM2, PM3, PM9 | 바이어스 정리 + 상보 뒤집기: 동작
+[18:03:53]     후보 11/29 (sample) 동작 6/9 (바이어스 정리) :: 원래: 포화 영역 밖 소자 NM2 | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 포화 영역 밖 소자 NM4, PM2 | 바이어스 정리 + 상보 뒤집기: 동작
+[18:05:31]     후보 12/29 (sample) 동작 5/9 (바이어스 정리 + 상보 뒤집기) :: 원래: 포화 영역 밖 소자 NM2 | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 포화 영역 밖 소자 PM2 | 바이어스 정리 + 상보 뒤집기: 동작
+[18:05:32]     후보 13/29 (sample) 실패 :: 원래: 꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, | 원래 + 상보 뒤집기: 꺼진 소자 NM1, NM2, NM3, NM4, NM5, NM6, NM7,
+[18:05:32]     후보 14/29 (sample) 실패 :: 규칙 검사 탈락: 한 곳에만 붙은 노드: N7
+[18:06:51]     후보 15/29 (sample) 동작 5/9 (바이어스 정리 + 상보 뒤집기) :: 원래: 꺼진 소자 PM5 | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 꺼진 소자 NM5 | 바이어스 정리 + 상보 뒤집기: 동작
+[18:07:16]     후보 16/29 (sample) 동작 6/9 (바이어스 정리) :: 원래: 출력이 VCM 에서 벗어남 | 바이어스 정리: 동작
+[18:07:16]     후보 17/29 (sample) 실패 :: 규칙 검사 탈락: 한 곳에만 붙은 노드: N8
+[18:08:13]     후보 18/29 (sample) 동작 5/9 (바이어스 정리 + 상보 뒤집기) :: 원래: 꺼진 소자 PM3, PM4, NMB1 | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 꺼진 소자 NM3, NM4, PMB1 | 바이어스 정리 + 상보 뒤집기: 동작
+[18:08:13]     후보 19/29 (sample) 실패 :: 규칙 검사 탈락: 한 곳에만 붙은 노드: N3
+[18:08:14]     후보 20/29 (sample) 실패 :: 원래: 바이어스 미해결: 전류를 정하는 소자가 없는 고리 (N2-VB1) | 바이어스 정리: 꺼진 소자 PM3, PM6, PM7, PM8, PM9, PM10, NM2
+[18:09:31]     후보 21/29 (sample) 동작 5/9 (바이어스 정리 + 상보 뒤집기) :: 원래: 포화 영역 밖 소자 PM4, NM2, NM4, NM8 | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 꺼진 소자 NM1, NM2, NM3, NM4, NM5, NM6, NM7, | 바이어스 정리 + 상보 뒤집기: 동작
+[18:09:36]     후보 22/29 (sample) 실패 :: 원래: 꺼진 소자 PM1, PM3, PM4, PM7, PM8, NM1, NM2, | 원래 + 상보 뒤집기: 꺼진 소자 NM1, NM3, NM4, NM7, NM8, PM1, PM2,
+[18:10:49]     후보 23/29 (sample) 동작 5/9 (바이어스 정리 + 상보 뒤집기) :: 원래: 꺼진 소자 PM4, PM8, PM9, NM1 | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 꺼진 소자 NM4, NM8, NM9, PM1 | 바이어스 정리 + 상보 뒤집기: 동작
+[18:11:25]     후보 24/29 (sample) 동작 6/9 (바이어스 정리) :: 원래: 포화 영역 밖 소자 PM2, PM3, PM4, NM2, NM5, NM6 | 바이어스 정리: 동작
+[18:12:15]     후보 25/29 (sample) 동작 6/9 (바이어스 정리) :: 원래: 바이어스 미해결: 전류를 정하는 소자가 없는 고리 (N2-N4-N5-VB | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 바이어스 미해결: 전류를 정하는 소자가 없는 고리 (N2-N4-N5-VB | 바이어스 정리 + 상보 뒤집기: 동작
+[18:12:17]     후보 26/29 (sample) 실패 :: 원래: 바이어스 미해결: 전류를 정하는 소자가 없는 고리 (N2-N5-N6-VB | 바이어스 정리: 출력이 VCM 에서 벗어남 | 원래 + 상보 뒤집기: 바이어스 미해결: 전류를 정하는 소자가 없는 고리 (N2-N5-N6-VB | 바이어스 정리 + 상보 뒤집기: 출력이 VCM 에서 벗어남
+[18:12:18]     후보 27/29 (sample) 실패 :: 원래: 꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, | 바이어스 정리: 꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, | 원래 + 상보 뒤집기: 꺼진 소자 NM1, NM2, NM3, NM4, NM5, NM6, NM7, | 바이어스 정리 + 상보 뒤집기: 꺼진 소자 NM1, NM2, NM3, NM4, NM5, NM6, NM7,
+[18:12:20]     후보 28/29 (sample) 실패 :: 원래: 출력이 VCM 에서 벗어남 | 바이어스 정리: 출력이 VCM 에서 벗어남 | 원래 + 상보 뒤집기: 출력이 VCM 에서 벗어남 | 바이어스 정리 + 상보 뒤집기: 출력이 VCM 에서 벗어남
+[18:13:21]     후보 29/29 (sample) 동작 5/9 (바이어스 정리 + 상보 뒤집기) :: 원래: 꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 꺼진 소자 NM1, NM2, NM3, NM4, NM5, NM6, NM7, | 바이어스 정리 + 상보 뒤집기: 동작
+[18:13:22]   후보 29개 -> 동작한 모양 32개 (바이어스 정리 19, 바이어스 정리 + 상보 뒤집기 13)  1100 s
+[18:13:22] == 4. 실패한 구조 고치기 (규칙·LLM)
+[18:13:22] 스펙을 절반 이상 통과하는 후보가 있어 고치기 필요 없음 (동작한 후보 32개)
+[18:13:23] == 5. 구조 고르기
+[18:13:24] == 6. 규칙 적용
+[18:13:24] AVD 82.8 dB < 목표 93.98 dB -> 이득 노드 ['N3', 'N4'] 캐스코드
+[18:13:51]   캐스코드 x20: 6/9
+[18:14:13]   캐스코드 x50: 6/9
+[18:14:14] == 7. 하네스
+[18:14:14] 실행: /home/jiyun/.venvs/edai/bin/python /mnt/d/edai_jiyun2/edai/run_harness.py /mnt/d/edai_jiyun2/edai/runs/20261125_174437_lm324
+[18:14:16]   2026-11-25 18:14:16,775 [INFO] Loaded 21 classifier rules and 13 fixtures from verifier experience.
+[18:14:16]   2026-11-25 18:14:16,776 [INFO] [Dual-Harness² Verifier] Injected 15 evolved classification rules into active spec_planner.
+[18:14:16]   하네스 방식: verify (우리 회로 채점만)
+[18:14:16]   2026-11-25 18:14:16,950 [INFO] === Starting Autonomous Analog Design (PDF: /mnt/d/edai_jiyun2/edai/runs/20261125_174437_lm324/datasheet.pdf, Prompt: None) ===
+[18:14:16]   2026-11-25 18:14:16,950 [INFO] [Trace:Phase 1] START: Phase 1: Knowledge Ingestion & HKG Construction
+[18:14:16]   [하네스 1] Phase 1: Knowledge Ingestion: Parsing datasheet and natural language requirements...
+[18:14:16]   2026-11-25 18:14:16,952 [INFO] Phase 1: Parsing PDF layout, tables, and text sections from: /mnt/d/edai_jiyun2/edai/runs/20261125_174437_lm324/datasheet.pdf
+[18:14:22]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 1/12 (page 4).
+[18:14:22]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 2/12 (page 1).
+[18:14:22]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 3/12 (page 3).
+[18:14:25]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 4/12 (page 5).
+[18:14:25]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 5/12 (page 7).
+[18:14:25]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 6/12 (page 6).
+[18:14:27]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 7/12 (page 8).
+[18:14:27]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 8/12 (page 10).
+[18:14:27]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 9/12 (page 9).
+[18:14:30]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 10/12 (page 11).
+[18:14:30]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 11/12 (page 12).
+[18:14:31]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 12/12 (page 13).
+[18:14:33]   2026-11-25 18:14:33,661 [INFO] Reusing cached HKG extraction: /mnt/d/edai_jiyun2/edai/runs/20261125_174437_lm324/hkg.json (no LLM calls in Phase 1)
+[18:14:33]   2026-11-25 18:14:33,668 [INFO] Target IC: LM324 | Pins Extracted: 15 | Specs Extracted: 195
+[18:14:33]   2026-11-25 18:14:33,697 [INFO]   [Measurement Plan Baseline] class=opamp electrical_rows=162 planned_fixtures=114 unsupported=37 not_testable=44
+[18:14:33]   2026-11-25 18:14:33,714 [INFO] [Trace:Phase 1] END: Phase 1: Knowledge Ingestion & HKG Construction (16763.7ms - SUCCESS)
+[18:14:33]   2026-11-25 18:14:33,714 [INFO] [Trace:Phase 2] START: Phase 2: Port Dependency Graph (PDG) & Timing Schedule
+[18:14:33]   Consider using the pymupdf_layout package for a greatly improved page layout analysis.
+[18:14:33]   [하네스 2] Phase 2: Port Dependency Graph: Extracting PDG & topological settling sequence for 15 pins...
+[18:14:33]   2026-11-25 18:14:33,714 [INFO] Phase 2: Constructing Port Dependency Graph & Activation Schedule...
+[18:14:33]   2026-11-25 18:14:33,952 [INFO]   [PDG Fidelity Audit] Score: 86.0% | Status: TRUSTWORTHY
+[18:14:33]   2026-11-25 18:14:33,959 [INFO]   [PDG Schedule] Pin NC         -> Activation Delay: 0.00 us
+[18:14:33]   2026-11-25 18:14:33,959 [INFO]   [PDG Schedule] Pin VCC_N      -> Activation Delay: 0.00 us
+[18:14:33]   2026-11-25 18:14:33,959 [INFO]   [PDG Schedule] Pin VCC_P      -> Activation Delay: 0.00 us
+[18:14:33]   2026-11-25 18:14:33,959 [INFO]   [PDG Schedule] Pin 1IN_N      -> Activation Delay: 2.00 us
+[18:14:33]   2026-11-25 18:14:33,959 [INFO]   [PDG Schedule] Pin 1IN_P      -> Activation Delay: 2.00 us
+[18:14:33]   2026-11-25 18:14:33,959 [INFO]   [PDG Schedule] Pin 2IN_N      -> Activation Delay: 2.00 us
+[18:14:33]   2026-11-25 18:14:33,959 [INFO]   [PDG Schedule] Pin 2IN_P      -> Activation Delay: 2.00 us
+[18:14:33]   2026-11-25 18:14:33,959 [INFO]   [PDG Schedule] Pin 3IN_N      -> Activation Delay: 2.00 us
+[18:14:33]   2026-11-25 18:14:33,959 [INFO]   [PDG Schedule] Pin 3IN_P      -> Activation Delay: 2.00 us
+[18:14:33]   2026-11-25 18:14:33,959 [INFO]   [PDG Schedule] Pin 4IN_N      -> Activation Delay: 2.00 us
+[18:14:33]   2026-11-25 18:14:33,959 [INFO]   [PDG Schedule] Pin 4IN_P      -> Activation Delay: 2.00 us
+[18:14:33]   2026-11-25 18:14:33,959 [INFO]   [PDG Schedule] Pin 1OUT       -> Activation Delay: 12.00 us
+[18:14:33]   2026-11-25 18:14:33,959 [INFO]   [PDG Schedule] Pin 2OUT       -> Activation Delay: 12.00 us
+[18:14:33]   2026-11-25 18:14:33,959 [INFO]   [PDG Schedule] Pin 3OUT       -> Activation Delay: 12.00 us
+[18:14:33]   2026-11-25 18:14:33,959 [INFO]   [PDG Schedule] Pin 4OUT       -> Activation Delay: 12.00 us
+[18:14:34]   2026-11-25 18:14:33,959 [INFO] [Trace:Phase 2] END: Phase 2: Port Dependency Graph (PDG) & Timing Schedule (245.2ms - SUCCESS)
+[18:14:34]   2026-11-25 18:14:34,020 [INFO] Harness² bootstrapped for LM324 (Quadruple Operational Amplifiers) with accumulated library lessons.
+[18:14:34]   [하네스 3] Phase 3: Hermes Agent Autonomous Synthesis: Synthesizing circuit via Hermes Agent tuned by Harness² (C1-C8)...
+[18:14:34]   2026-11-25 18:14:34,020 [INFO] [Trace:Phase 3] START: Phase 3: Hermes Autonomous Synthesis & Verification
+[18:14:34]   [하네스 3] EDAI 회로 검증: 우리 회로를 칩 핀에 맞추고 데이터시트 전체 항목으로 채점 (LLM 합성 없음)
+[18:16:22]   [EDAI 검증] 우리 회로 통과율 50.5% (48/195), 관문 SIMULATION_COMPLETE, 108 s
+[18:16:22]   2026-11-25 18:16:22,245 [INFO] [Trace:Phase 3] END: Phase 3: Hermes Autonomous Synthesis & Verification (108225.3ms - SUCCESS)
+[18:16:22]   2026-11-25 18:16:22,271 [INFO] Coverage report: /mnt/d/edai_jiyun2/edai/runs/20261125_174437_lm324/harness/LM324_SPEC_COVERAGE.md
+[18:16:22]   2026-11-25 18:16:22,305 [INFO] Execution trace inspector generated at: /mnt/d/edai_jiyun2/edai/runs/20261125_174437_lm324/harness/LM324_TRACE_INSPECTOR.html
+[18:16:22]   2026-11-25 18:16:22,373 [INFO] Visual dashboard exported to: /mnt/d/edai_jiyun2/edai/runs/20261125_174437_lm324/harness/LM324_VISUAL_DASHBOARD.html
+[18:16:22]   2026-11-25 18:16:22,373 [INFO] Visual process dashboard generated at: /mnt/d/edai_jiyun2/edai/runs/20261125_174437_lm324/harness/LM324_VISUAL_DASHBOARD.html
+[18:16:22]   2026-11-25 18:16:22,373 [INFO] Design completed! Final report saved to: /mnt/d/edai_jiyun2/edai/runs/20261125_174437_lm324/harness/LM324_DESIGN_VERIFICATION_REPORT.md
+[18:16:22]   하네스 끝: 통과율 50.5%, 반복 1번, 126 s
+[18:16:23] 점검: 하네스 시뮬레이션 오류: could not find 1번, fatal error 1번 (하네스 LLM 이 쓴 회로의 문법 오류일 수도, 연결 코드 문제일 수도 있음)
+[18:16:23] == 8. 최종 회로도
+[18:16:30] 끝

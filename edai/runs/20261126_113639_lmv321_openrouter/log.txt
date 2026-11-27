@@ -1,0 +1,153 @@
+[11:36:47] LLM 공급자: openrouter
+[11:36:48] == 1. 데이터시트 분석
+[11:36:49] 대상 칩: LMV321 (파일 이름)
+[11:36:55] PDF 읽기 1/30 (쪽 3)
+[11:36:56] PDF 읽기 2/30 (쪽 2)
+[11:36:56] PDF 읽기 3/30 (쪽 1)
+[11:36:57] PDF 읽기 4/30 (쪽 4)
+[11:36:58] PDF 읽기 5/30 (쪽 6)
+[11:36:59] PDF 읽기 6/30 (쪽 5)
+[11:37:00] PDF 읽기 7/30 (쪽 7)
+[11:37:02] PDF 읽기 8/30 (쪽 8)
+[11:37:02] PDF 읽기 9/30 (쪽 9)
+[11:37:03] PDF 읽기 10/30 (쪽 10)
+[11:37:04] PDF 읽기 11/30 (쪽 13)
+[11:37:05] PDF 읽기 12/30 (쪽 11)
+[11:37:06] PDF 읽기 13/30 (쪽 12)
+[11:37:06] PDF 읽기 14/30 (쪽 15)
+[11:37:07] PDF 읽기 15/30 (쪽 14)
+[11:37:07] PDF 읽기 16/30 (쪽 16)
+[11:37:08] PDF 읽기 17/30 (쪽 17)
+[11:37:10] PDF 읽기 18/30 (쪽 18)
+[11:37:11] PDF 읽기 19/30 (쪽 20)
+[11:37:11] PDF 읽기 20/30 (쪽 21)
+[11:37:12] PDF 읽기 21/30 (쪽 19)
+[11:37:13] PDF 읽기 22/30 (쪽 22)
+[11:37:15] PDF 읽기 23/30 (쪽 25)
+[11:37:15] PDF 읽기 24/30 (쪽 23)
+[11:37:16] PDF 읽기 25/30 (쪽 24)
+[11:37:16] PDF 읽기 26/30 (쪽 26)
+[11:37:18] PDF 읽기 27/30 (쪽 28)
+[11:37:19] PDF 읽기 28/30 (쪽 27)
+[11:37:19] PDF 읽기 29/30 (쪽 29)
+[11:37:20] PDF 읽기 30/30 (쪽 30)
+[11:37:32] PDF 읽기 끝 (43 s)
+[11:37:37] 스펙 표 추출 1/10 (쪽 6)
+[11:37:38] 스펙 표 추출 2/10 (쪽 19)
+[11:37:40] 스펙 표 추출 3/10 (쪽 1)
+[11:37:41] 스펙 표 추출 4/10 (쪽 3)
+[11:37:41] 스펙 표 추출 5/10 (쪽 4)
+[11:37:44] 스펙 표 추출 6/10 (쪽 20)
+[11:37:44] 스펙 표 추출 7/10 (쪽 7)
+[11:37:44] 스펙 표 추출 8/10 (쪽 23)
+[11:37:44] 스펙 표 추출 9/10 (쪽 5)
+[11:37:45] 스펙 표 추출 10/10 (쪽 24)
+[11:37:45] 추출 끝: 스펙 76줄, 핀 5개 (56 s) -> /mnt/d/edai_jiyun2/edai/data/extraction/ui_20261126_113639_lmv321_openrouter_hkg.json
+[11:37:45] 측정 계획: 43줄 계획 / 전기 사양 53줄 (0 s)
+[11:37:45] 판정 항목 6개 -> spec_ui_20261126_113639_lmv321_openrouter.json
+[11:37:45] PDG: 핀 5개, 의존 관계 8개, 순서 단계 3
+[11:37:45] == 2. 모델 구조 후보
+[11:37:45] 실행: /home/jiyun/.venvs/edai/bin/python generate_candidates.py ui_20261126_113639_lmv321_openrouter
+[11:39:28]     빔 탐색 10개: 96 s
+[11:40:24]     무작위 10개: 152 s
+[11:41:24]     무작위 20개: 212 s
+[11:42:24]     무작위 30개: 272 s
+[11:42:24]   모델이 쓴 글 40개 -> 서로 다른 후보 34개, 규칙 통과 22개, 그중 학습 데이터에 없던 구조 18개 -> data/train/ui_20261126_113639_lmv321_openrouter_candidates.json
+[11:42:26] == 3. 바이어스 채우기·크기 정하기·측정
+[11:42:26] 실행: /home/jiyun/.venvs/edai/bin/python select_structure.py ui_20261126_113639_lmv321_openrouter --bias-devices --repair
+[11:42:27]   고쳐 보기: 원래 / 바이어스 정리 / 상보 뒤집기, 다 실패하면 규칙 3개 중 맞는 것. 출력단 배율 x20, x50
+[11:43:52]     후보 1/34 (beam) 동작 5/6 (바이어스 정리 + 상보 뒤집기) :: 원래: 포화 영역 밖 소자 PM4, NM2, NM4, NM8 | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 꺼진 소자 NM1, NM2, NM3, NM4, NM5, NM6, NM7, | 바이어스 정리 + 상보 뒤집기: 동작
+[11:43:52]     후보 2/34 (beam) 실패 :: 규칙 검사 탈락: 한 곳에만 붙은 노드: N6
+[11:43:52]     후보 3/34 (beam) 실패 :: 규칙 검사 탈락: 한 곳에만 붙은 노드: N7
+[11:44:55]     후보 4/34 (beam) 동작 5/6 (바이어스 정리 + 상보 뒤집기) :: 원래: 꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 꺼진 소자 NM1, NM2, NM3, NM4, NM5, NM6, NM7, | 바이어스 정리 + 상보 뒤집기: 동작
+[11:45:55]     후보 5/34 (beam) 동작 5/6 (바이어스 정리 + 상보 뒤집기) :: 원래: 꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 꺼진 소자 NM1, NM2, NM3, NM4, NM5, NM6, NM7, | 바이어스 정리 + 상보 뒤집기: 동작
+[11:45:57]     후보 6/34 (beam) 실패 :: 원래: 출력이 VCM 에서 벗어남 | 바이어스 정리: 출력이 VCM 에서 벗어남 | 원래 + 상보 뒤집기: 출력이 VCM 에서 벗어남 | 바이어스 정리 + 상보 뒤집기: 출력이 VCM 에서 벗어남
+[11:47:16]     후보 7/34 (beam) 동작 5/6 (바이어스 정리 + 상보 뒤집기) :: 원래: 꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 꺼진 소자 NM1, NM2, NM3, NM4, NM5, NM6, NM7, | 바이어스 정리 + 상보 뒤집기: 동작
+[11:47:17]     후보 8/34 (beam) 실패 :: 규칙 검사 탈락: 한 곳에만 붙은 노드: N9
+[11:48:42]     후보 9/34 (beam) 동작 5/6 (바이어스 정리 + 상보 뒤집기) :: 원래: 꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 꺼진 소자 NM1, NM2, NM3, NM4, NM5, NM6, NM7, | 바이어스 정리 + 상보 뒤집기: 동작
+[11:48:42]     후보 10/34 (beam) 실패 :: 규칙 검사 탈락: 한 곳에만 붙은 노드: N6
+[11:49:19]     후보 11/34 (sample) 실패 :: 원래: 출력이 VCM 에서 벗어남 | 바이어스 정리: 무부하 이득 부족 (-208.7 dB) | 원래 + 상보 뒤집기: 출력이 VCM 에서 벗어남 | 바이어스 정리 + 상보 뒤집기: 무부하 이득 부족 (-198.7 dB)
+[11:49:21]     후보 12/34 (sample) 실패 :: 원래: 출력이 VCM 에서 벗어남 | 바이어스 정리: 꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, | 원래 + 상보 뒤집기: 포화 영역 밖 소자 PM2 | 바이어스 정리 + 상보 뒤집기: 꺼진 소자 NM1, NM2, NM3, NM4, NM5, NM6, NM7,
+[11:49:21]     후보 13/34 (sample) 실패 :: 규칙 검사 탈락: 한 곳에만 붙은 노드: N9
+[11:50:23]     후보 14/34 (sample) 동작 5/6 (바이어스 정리 + 상보 뒤집기) :: 원래: 꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 꺼진 소자 NM1, NM2, NM3, NM4, NM5, NM6, NM7, | 바이어스 정리 + 상보 뒤집기: 동작
+[11:50:23]     후보 15/34 (sample) 실패 :: 규칙 검사 탈락: 한 곳에만 붙은 노드: N7
+[11:51:09]     후보 16/34 (sample) 동작 5/6 (바이어스 정리) :: 원래: 포화 영역 밖 소자 PM2, PM3, NM3 | 바이어스 정리: 동작
+[11:51:12]     후보 17/34 (sample) 실패 :: 원래: 출력이 VCM 에서 벗어남 | 바이어스 정리: 출력이 VCM 에서 벗어남 | 원래 + 상보 뒤집기: 출력이 VCM 에서 벗어남 | 바이어스 정리 + 상보 뒤집기: 출력이 VCM 에서 벗어남
+[11:53:09]     후보 18/34 (sample) 동작 5/6 (바이어스 정리 + 상보 뒤집기) :: 원래: 무부하 이득 부족 (-13.4 dB) | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 동작 | 바이어스 정리 + 상보 뒤집기: 동작
+[11:53:52]     후보 19/34 (sample) 실패 :: 원래: 출력이 VCM 에서 벗어남 | 바이어스 정리: 무부하 이득 부족 (-208.7 dB) | 원래 + 상보 뒤집기: 출력이 VCM 에서 벗어남 | 바이어스 정리 + 상보 뒤집기: 무부하 이득 부족 (-198.7 dB)
+[11:54:47]     후보 20/34 (sample) 동작 5/6 (바이어스 정리 + 상보 뒤집기) :: 원래: 꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 꺼진 소자 NM1, NM2, NM3, NM4, NM5, NM6, NM7, | 바이어스 정리 + 상보 뒤집기: 동작
+[11:55:22]     후보 21/34 (sample) 동작 5/6 (바이어스 정리) :: 원래: 포화 영역 밖 소자 PM3, PM7, NM2, NM6, NM7 | 바이어스 정리: 동작
+[11:55:23]     후보 22/34 (sample) 실패 :: 원래: 꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, | 원래 + 상보 뒤집기: 꺼진 소자 NM1, NM2, NM3, NM4, NM5, NM6, NM7,
+[11:55:24]     후보 23/34 (sample) 실패 :: 원래: 꺼진 소자 PM1, PM2, PM3, PM4, PM5, PM6, PM7, | 바이어스 정리: 꺼진 소자 PM5, PM6, NM3, NM4
+[11:55:26]     후보 24/34 (sample) 실패 :: 원래: 출력이 VCM 에서 벗어남 | 바이어스 정리: 출력이 VCM 에서 벗어남 | 원래 + 상보 뒤집기: 출력이 VCM 에서 벗어남 | 바이어스 정리 + 상보 뒤집기: 출력이 VCM 에서 벗어남
+[11:55:26]     후보 25/34 (sample) 실패 :: 규칙 검사 탈락: 한 곳에만 붙은 노드: N6
+[11:55:28]     후보 26/34 (sample) 실패 :: 원래: 포화 영역 밖 소자 PM3, NM1 | 원래 + 상보 뒤집기: 포화 영역 밖 소자 NM3, PM1
+[11:55:28]     후보 27/34 (sample) 실패 :: 규칙 검사 탈락: 한 곳에만 붙은 노드: N5
+[11:55:29]     후보 28/34 (sample) 실패 :: 원래: 꺼진 소자 PM2, PM3, PM4, PM5, PM6, PM7, PM8,
+[11:56:04]     후보 29/34 (sample) 동작 4/6 (바이어스 정리) :: 원래: 꺼진 소자 NM1 | 바이어스 정리: 동작
+[11:56:04]     후보 30/34 (sample) 실패 :: 규칙 검사 탈락: 한 곳에만 붙은 노드: N8
+[11:56:04]     후보 31/34 (sample) 실패 :: 규칙 검사 탈락: 한 곳에만 붙은 노드: N7
+[11:58:14]     후보 32/34 (sample) 동작 4/6 (원래) :: 원래: 동작 | 바이어스 정리: 동작 | 원래 + 상보 뒤집기: 동작 | 바이어스 정리 + 상보 뒤집기: 동작
+[11:58:14]     후보 33/34 (sample) 실패 :: 규칙 검사 탈락: 한 곳에만 붙은 노드: N8
+[11:58:14]     후보 34/34 (sample) 실패 :: 규칙 검사 탈락: 한 곳에만 붙은 노드: N6
+[11:58:14]   후보 34개 -> 동작한 모양 24개 (바이어스 정리 12, 바이어스 정리 + 상보 뒤집기 9, 원래 + 상보 뒤집기 2, 원래 1)  947 s
+[11:58:15] == 4. 실패한 구조 고치기 (규칙·LLM)
+[11:58:15] 스펙을 절반 이상 통과하는 후보가 있어 고치기 필요 없음 (동작한 후보 24개)
+[11:58:16] == 5. 구조 고르기
+[11:58:16] == 6. 규칙 적용
+[11:58:16] AVD 82.8 dB < 목표 83.52 dB -> 이득 노드 ['N4', 'N5'] 캐스코드
+[11:58:33]   캐스코드 x20: 6/6
+[11:58:53]   캐스코드 x50: 6/6
+[11:58:53] == 7. 스펙 맞추기 튜닝
+[11:59:12]   튜닝 전류 20 µA, 출력단 x20, 보상 1 pF: 6/6 (19 s)
+[11:59:12]   튜닝 끝 (모두 통과, 1번, 19 s): 전류 20 µA, 출력단 x20, 보상 1 pF
+[11:59:13] == 8. 하네스
+[11:59:13] 실행: /home/jiyun/.venvs/edai/bin/python /mnt/d/edai_jiyun2/edai/run_harness.py /mnt/d/edai_jiyun2/edai/runs/20261126_113639_lmv321_openrouter
+[11:59:17]   2026-11-26 11:59:17,539 [INFO] Loaded 21 classifier rules and 13 fixtures from verifier experience.
+[11:59:17]   2026-11-26 11:59:17,539 [INFO] [Dual-Harness² Verifier] Injected 15 evolved classification rules into active spec_planner.
+[11:59:17]   하네스 방식: verify (우리 회로 채점만)
+[11:59:17]   2026-11-26 11:59:17,693 [INFO] === Starting Autonomous Analog Design (PDF: /mnt/d/edai_jiyun2/edai/runs/20261126_113639_lmv321_openrouter/datasheet.pdf, Prompt: None) ===
+[11:59:17]   2026-11-26 11:59:17,693 [INFO] [Trace:Phase 1] START: Phase 1: Knowledge Ingestion & HKG Construction
+[11:59:17]   [하네스 1] Phase 1: Knowledge Ingestion: Parsing datasheet and natural language requirements...
+[11:59:17]   2026-11-26 11:59:17,696 [INFO] Phase 1: Parsing PDF layout, tables, and text sections from: /mnt/d/edai_jiyun2/edai/runs/20261126_113639_lmv321_openrouter/datasheet.pdf
+[11:59:24]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 1/12 (page 3).
+[11:59:24]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 2/12 (page 2).
+[11:59:25]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 3/12 (page 1).
+[11:59:25]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 4/12 (page 4).
+[11:59:27]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 5/12 (page 5).
+[11:59:28]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 6/12 (page 6).
+[11:59:28]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 7/12 (page 7).
+[11:59:31]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 8/12 (page 9).
+[11:59:31]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 9/12 (page 8).
+[11:59:31]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 10/12 (page 10).
+[11:59:34]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 11/12 (page 11).
+[11:59:34]   [하네스 1] Phase 1: PDF Layout Parsing: Parsed datasheet page 12/12 (page 12).
+[11:59:38]   2026-11-26 11:59:38,389 [INFO] Reusing cached HKG extraction: /mnt/d/edai_jiyun2/edai/runs/20261126_113639_lmv321_openrouter/hkg.json (no LLM calls in Phase 1)
+[11:59:38]   2026-11-26 11:59:38,395 [INFO] Target IC: LMV321 | Pins Extracted: 5 | Specs Extracted: 76
+[11:59:38]   2026-11-26 11:59:38,410 [INFO]   [Measurement Plan Baseline] class=opamp electrical_rows=53 planned_fixtures=43 unsupported=7 not_testable=26
+[11:59:38]   2026-11-26 11:59:38,424 [INFO] [Trace:Phase 1] END: Phase 1: Knowledge Ingestion & HKG Construction (20730.1ms - SUCCESS)
+[11:59:38]   2026-11-26 11:59:38,424 [INFO] [Trace:Phase 2] START: Phase 2: Port Dependency Graph (PDG) & Timing Schedule
+[11:59:38]   Consider using the pymupdf_layout package for a greatly improved page layout analysis.
+[11:59:38]   [하네스 2] Phase 2: Port Dependency Graph: Extracting PDG & topological settling sequence for 5 pins...
+[11:59:38]   2026-11-26 11:59:38,424 [INFO] Phase 2: Constructing Port Dependency Graph & Activation Schedule...
+[11:59:38]   2026-11-26 11:59:38,484 [INFO]   [PDG Fidelity Audit] Score: 83.9% | Status: ACCEPTABLE
+[11:59:38]   2026-11-26 11:59:38,489 [INFO]   [PDG Schedule] Pin GND        -> Activation Delay: 0.00 us
+[11:59:38]   2026-11-26 11:59:38,489 [INFO]   [PDG Schedule] Pin VCC_P      -> Activation Delay: 0.00 us
+[11:59:38]   2026-11-26 11:59:38,490 [INFO]   [PDG Schedule] Pin 1IN_P      -> Activation Delay: 2.00 us
+[11:59:38]   2026-11-26 11:59:38,490 [INFO]   [PDG Schedule] Pin 1IN_N      -> Activation Delay: 2.00 us
+[11:59:38]   2026-11-26 11:59:38,490 [INFO]   [PDG Schedule] Pin OUT        -> Activation Delay: 3.00 us
+[11:59:38]   2026-11-26 11:59:38,490 [INFO] [Trace:Phase 2] END: Phase 2: Port Dependency Graph (PDG) & Timing Schedule (66.0ms - SUCCESS)
+[11:59:38]   2026-11-26 11:59:38,551 [INFO] Harness² bootstrapped for LMV321 (Analog - Operational Amplifier (single, rail-to-rail output, low-voltage)) with accumulated library lessons.
+[11:59:38]   [하네스 3] Phase 3: Hermes Agent Autonomous Synthesis: Synthesizing circuit via Hermes Agent tuned by Harness² (C1-C8)...
+[11:59:38]   2026-11-26 11:59:38,551 [INFO] [Trace:Phase 3] START: Phase 3: Hermes Autonomous Synthesis & Verification
+[11:59:38]   [하네스 3] EDAI 회로 검증: 우리 회로를 칩 핀에 맞추고 데이터시트 전체 항목으로 채점 (LLM 합성 없음)
+[11:59:51]   [EDAI 검증] 우리 회로 통과율 71.1% (27/76), 관문 SIMULATION_COMPLETE, 13 s
+[11:59:51]   2026-11-26 11:59:51,593 [INFO] [Trace:Phase 3] END: Phase 3: Hermes Autonomous Synthesis & Verification (13042.0ms - SUCCESS)
+[11:59:51]   2026-11-26 11:59:51,610 [INFO] Coverage report: /mnt/d/edai_jiyun2/edai/runs/20261126_113639_lmv321_openrouter/harness/LMV321_SPEC_COVERAGE.md
+[11:59:51]   2026-11-26 11:59:51,637 [INFO] Execution trace inspector generated at: /mnt/d/edai_jiyun2/edai/runs/20261126_113639_lmv321_openrouter/harness/LMV321_TRACE_INSPECTOR.html
+[11:59:51]   2026-11-26 11:59:51,691 [INFO] Visual dashboard exported to: /mnt/d/edai_jiyun2/edai/runs/20261126_113639_lmv321_openrouter/harness/LMV321_VISUAL_DASHBOARD.html
+[11:59:51]   2026-11-26 11:59:51,691 [INFO] Visual process dashboard generated at: /mnt/d/edai_jiyun2/edai/runs/20261126_113639_lmv321_openrouter/harness/LMV321_VISUAL_DASHBOARD.html
+[11:59:51]   2026-11-26 11:59:51,691 [INFO] Design completed! Final report saved to: /mnt/d/edai_jiyun2/edai/runs/20261126_113639_lmv321_openrouter/harness/LMV321_DESIGN_VERIFICATION_REPORT.md
+[11:59:51]   하네스 끝: 통과율 71.1%, 반복 1번, 34 s
+[11:59:52] == 9. 최종 회로도
+[11:59:55] 끝

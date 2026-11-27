@@ -1,0 +1,82 @@
+{
+  "target_name": "LMV321",
+  "total_duration_ms": 33935.56,
+  "status": "COMPLETED",
+  "span_count": 3,
+  "spans": [
+    {
+      "phase": 1,
+      "name": "Phase 1: Knowledge Ingestion & HKG Construction",
+      "start_time": 1795661957.6939518,
+      "end_time": 1795661978.42402,
+      "duration_ms": 20730.07,
+      "status": "SUCCESS",
+      "inputs": {
+        "datasheet_pdf_path": "/mnt/d/edai_jiyun2/edai/runs/20261126_113639_lmv321_openrouter/datasheet.pdf",
+        "user_prompt": null,
+        "max_pages": 12
+      },
+      "outputs": {
+        "part_name": "LMV321",
+        "pins_count": 5,
+        "specifications_count": 76,
+        "pins": [
+          "1IN_P",
+          "GND",
+          "1IN_N",
+          "OUT",
+          "VCC_P"
+        ]
+      },
+      "events": [],
+      "error": null
+    },
+    {
+      "phase": 2,
+      "name": "Phase 2: Port Dependency Graph (PDG) & Timing Schedule",
+      "start_time": 1795661978.4242365,
+      "end_time": 1795661978.4901917,
+      "duration_ms": 65.96,
+      "status": "SUCCESS",
+      "inputs": {
+        "pins_count": 5
+      },
+      "outputs": {
+        "pin_schedule_us": {
+          "GND": 0.0,
+          "VCC_P": 0.0,
+          "1IN_P": 2.0,
+          "1IN_N": 2.0,
+          "OUT": 3.0
+        },
+        "levels_count": 3,
+        "fidelity_score_pct": 83.9,
+        "fidelity_status": "ACCEPTABLE"
+      },
+      "events": [],
+      "error": null
+    },
+    {
+      "phase": 3,
+      "name": "Phase 3: Hermes Autonomous Synthesis & Verification",
+      "start_time": 1795661978.5514357,
+      "end_time": 1795661991.5934196,
+      "duration_ms": 13041.98,
+      "status": "SUCCESS",
+      "inputs": {
+        "subckt_name": "LMV321",
+        "category": "Analog - Operational Amplifier (single, rail-to-rail output, low-voltage)",
+        "user_prompt": null,
+        "turns_budget": 5
+      },
+      "outputs": {
+        "pass_rate_percent": 71.1,
+        "passed_specs": 27,
+        "turns_executed": 1,
+        "final_netlist_path": "/mnt/d/edai_jiyun2/edai/runs/20261126_113639_lmv321_openrouter/harness/LMV321_FINAL_HERMES_HARNESS2.cir"
+      },
+      "events": [],
+      "error": null
+    }
+  ]
+}

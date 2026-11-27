@@ -1,0 +1,512 @@
+{
+ "description": "LM6172 측정 계획(팀원 spec_planner 결과)에서 판정 항목과 목표값을 가져온 것 (spec_from_plan.py 가 만듦)",
+ "circuit": "opamp",
+ "source": "LM6172",
+ "category": "Dual, High-Speed, Low-Power, Low-Distortion, Voltage-Feedback Amplifier",
+ "conditions": "VDD = 5 V 단일 전원 (공통 측정 조건). 계획의 측정 전원(예: 15 V)과 다를 수 있음",
+ "typ_rule": {
+  "min_ratio": 0.8,
+  "max_ratio": 1.2,
+  "note": "데이터시트가 보장하는 값이 아니라 팀이 정한 기준 (2026-10-12)"
+ },
+ "specs": [
+  {
+   "measure": "avd",
+   "label": "대신호 차동 전압이득",
+   "unit": "dB",
+   "plain": "신호를 얼마나 키우나",
+   "headline": true,
+   "min": 70.0,
+   "typ": 82.0,
+   "symbol": 70,
+   "condition": "RL = 1 kΩ, VOUT = ±1V",
+   "extracted": {
+    "symbol": 70,
+    "name": "Large-signal voltage gain",
+    "min": 70,
+    "typ": 82,
+    "max": null,
+    "unit": "dB",
+    "test_conditions": "RL = 1 kΩ, VOUT = ±1V",
+    "page": 7,
+    "evidence": "AV Large-signal voltage gain 70 82 dB"
+   },
+   "plan": {
+    "kind": "aol_db",
+    "fixture": "aol_db_1fd2fc",
+    "row": 73
+   },
+   "table_supply_v": 5.0
+  },
+  {
+   "measure": "cmrr",
+   "label": "공통모드 제거비",
+   "unit": "dB",
+   "plain": "두 입력에 함께 실린 잡음을 얼마나 걸러내나",
+   "min": 70.0,
+   "typ": 105.0,
+   "symbol": 70,
+   "condition": "VCM = ±2.5V",
+   "extracted": {
+    "symbol": 70,
+    "name": "Common-mode rejection ratio",
+    "min": 70,
+    "typ": 105,
+    "max": null,
+    "unit": "dB",
+    "test_conditions": "VCM = ±2.5V",
+    "page": 7,
+    "evidence": "CMRR Common-mode rejection ratio 70 105 dB"
+   },
+   "plan": {
+    "kind": "cmrr_db",
+    "fixture": "cmrr_db_d831a0",
+    "row": 70
+   },
+   "table_supply_v": 5.0
+  },
+  {
+   "measure": "psrr",
+   "label": "전원 제거비",
+   "unit": "dB",
+   "plain": "전원이 흔들려도 얼마나 버티나",
+   "min": 75.0,
+   "typ": 95.0,
+   "symbol": 75,
+   "condition": "VS = ±15V to ±5V",
+   "extracted": {
+    "symbol": 75,
+    "name": "Power supply rejection ratio",
+    "min": 75,
+    "typ": 95,
+    "max": null,
+    "unit": "dB",
+    "test_conditions": "VS = ±15V to ±5V",
+    "page": 7,
+    "evidence": "PSRR Power supply rejection ratio 75 95 dB"
+   },
+   "plan": {
+    "kind": "psrr_db",
+    "fixture": "psrr_db_768c7d",
+    "row": 71
+   },
+   "table_supply_v": 5.0
+  },
+  {
+   "measure": "idd",
+   "label": "공급 전류",
+   "unit": "µA",
+   "scale": 1000000.0,
+   "plain": "전기를 얼마나 쓰나",
+   "headline": true,
+   "typ": 4400.0,
+   "max": 6000.0,
+   "symbol": 4.4,
+   "condition": "VCC+ = 5V, VCC– = −5V",
+   "extracted": {
+    "symbol": 4.4,
+    "name": "Supply current",
+    "min": 4.4,
+    "typ": 6,
+    "max": null,
+    "unit": "mA",
+    "test_conditions": "VCC+ = 5V, VCC– = −5V",
+    "page": 7,
+    "evidence": "IS Supply current 4.4 6 mA"
+   },
+   "plan": {
+    "kind": "iq",
+    "fixture": "iq_c82511",
+    "row": 91
+   }
+  },
+  {
+   "measure": "ugbw",
+   "label": "단위이득 대역폭",
+   "unit": "MHz",
+   "scale": 1e-06,
+   "plain": "얼마나 빠른 신호까지 다루나",
+   "headline": true,
+   "min": 70.0,
+   "symbol": 70,
+   "condition": "",
+   "extracted": {
+    "symbol": 70,
+    "name": "Unity-gain bandwidth",
+    "min": 70,
+    "typ": null,
+    "max": null,
+    "unit": "MHz",
+    "test_conditions": "",
+    "page": 7,
+    "evidence": "Unity-gain bandwidth 70 MHz"
+   },
+   "plan": {
+    "kind": "gbw",
+    "fixture": "gbw_705c1b",
+    "row": 93
+   },
+   "table_supply_v": 5.0
+  },
+  {
+   "measure": "sr",
+   "label": "슬루율 (단위이득)",
+   "unit": "V/µs",
+   "scale": 1e-06,
+   "plain": "출력이 얼마나 빨리 변하나",
+   "headline": true,
+   "min": 750.0,
+   "symbol": 750,
+   "condition": "Av = +2, VIN = 3.5VPP",
+   "extracted": {
+    "symbol": 750,
+    "name": "Slew rate",
+    "min": 750,
+    "typ": null,
+    "max": null,
+    "unit": "V/us",
+    "test_conditions": "Av = +2, VIN = 3.5VPP",
+    "page": 7,
+    "evidence": "SR Slew rate 750 V/us"
+   },
+   "plan": {
+    "kind": "sr",
+    "fixture": "sr_a64534",
+    "row": 92
+   },
+   "table_supply_v": 5.0
+  },
+  {
+   "measure": "pm",
+   "label": "위상여유",
+   "unit": "°",
+   "plain": "얼마나 안정적으로 동작하나",
+   "min": 41.0,
+   "symbol": 41,
+   "condition": "D Package",
+   "extracted": {
+    "symbol": 41,
+    "name": "Phase margin",
+    "min": 41,
+    "typ": null,
+    "max": null,
+    "unit": "Deg",
+    "test_conditions": "D Package",
+    "page": 7,
+    "evidence": "Phase margin 41 Deg"
+   },
+   "plan": {
+    "kind": "pm",
+    "fixture": "pm_6e62e5",
+    "row": 96
+   },
+   "table_supply_v": 5.0
+  },
+  {
+   "measure": "io_sink",
+   "label": "출력 전류 (-레일에서 0.5 V)",
+   "unit": "mA",
+   "scale": 1000.0,
+   "plain": "전류를 얼마나 받아들일 수 있나",
+   "min": 27.0,
+   "typ": 24.0,
+   "symbol": -27,
+   "condition": "Sinking, RL = 100Ω",
+   "extracted": {
+    "symbol": -27,
+    "name": "Continuous output current (open loop, sinking)",
+    "min": -27,
+    "typ": -24,
+    "max": null,
+    "unit": "mA",
+    "test_conditions": "Sinking, RL = 100Ω",
+    "page": 7,
+    "evidence": "Continuous output current -27 -24 mA"
+   },
+   "plan": {
+    "kind": "iout",
+    "fixture": "iout_07bfc8",
+    "row": 85
+   },
+   "table_supply_v": 5.0
+  }
+ ],
+ "extraction": {
+  "total_rows": 110,
+  "electrical_rows": 89,
+  "used_rows": 8,
+  "pins": 8,
+  "file": "ui_20261126_173918_lm6172_hkg.json"
+ },
+ "plan": {
+  "file": "ui_20261126_173918_lm6172_SPEC_EVALUATION.json",
+  "planned_rows": 50,
+  "part_rows": [
+   0,
+   110
+  ],
+  "part_planned": 50,
+  "used": 8,
+  "not_measured": [
+   {
+    "kind": "vos",
+    "symbol": 0.1,
+    "name": "Input offset voltage",
+    "condition": "VCC+ = 5V, VCC– = −5V, VCM = 0V, and RL = 1kΩ",
+    "min": null,
+    "typ": 0.0001,
+    "max": 0.003,
+    "unit": "V",
+    "page": 7,
+    "reason": "입력 오프셋 전압: 소자 편차 통계 해석이 필요해 아직 재지 않음"
+   },
+   {
+    "kind": "ib",
+    "symbol": 1.4,
+    "name": "Input bias current",
+    "condition": "VCC+ = 5V, VCC– = −5V, VCM = 0V, and RL = 1kΩ",
+    "min": null,
+    "typ": 1.4e-06,
+    "max": 2.4999999999999998e-06,
+    "unit": "A",
+    "page": 7,
+    "reason": "입력 바이어스 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ios",
+    "symbol": 0.02,
+    "name": "Input offset current",
+    "condition": "VCC+ = 5V, VCC– = −5V, VCM = 0V, and RL = 1kΩ",
+    "min": null,
+    "typ": 2e-08,
+    "max": 1.5e-06,
+    "unit": "A",
+    "page": 7,
+    "reason": "입력 오프셋 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "vswing",
+    "symbol": 3.1,
+    "name": "Output swing (sourcing, RL=1kΩ)",
+    "condition": "RL = 1kΩ, sourcing",
+    "min": 3.1,
+    "typ": 3.4,
+    "max": null,
+    "unit": "V",
+    "page": 7,
+    "reason": "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
+   },
+   {
+    "kind": "vswing",
+    "symbol": -3.3,
+    "name": "Output swing (sinking, RL=1kΩ)",
+    "condition": "RL = 1kΩ, sinking",
+    "min": -3.3,
+    "typ": -3.1,
+    "max": null,
+    "unit": "V",
+    "page": 7,
+    "reason": "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
+   },
+   {
+    "kind": "vswing",
+    "symbol": 2.5,
+    "name": "Output swing (sourcing, RL=100Ω)",
+    "condition": "RL = 100Ω, sourcing",
+    "min": 2.5,
+    "typ": 2.9,
+    "max": null,
+    "unit": "V",
+    "page": 7,
+    "reason": "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
+   },
+   {
+    "kind": "vswing",
+    "symbol": -2.7,
+    "name": "Output swing (sinking, RL=100Ω)",
+    "condition": "RL = 100Ω, sinking",
+    "min": -2.7,
+    "typ": -2.4,
+    "max": null,
+    "unit": "V",
+    "page": 7,
+    "reason": "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
+   },
+   {
+    "kind": "iout",
+    "symbol": 25,
+    "name": "Continuous output current (open loop, sourcing)",
+    "condition": "Sourcing, RL = 100Ω",
+    "min": 0.025,
+    "typ": 0.029,
+    "max": null,
+    "unit": "A",
+    "page": 7,
+    "reason": "출력 전류 (출력 200 mV): 우리 측정 조건과 다름"
+   },
+   {
+    "kind": "isc",
+    "symbol": 155,
+    "name": "Output short-circuit current (D package, sourcing)",
+    "condition": "D package, Sourcing",
+    "min": null,
+    "typ": 0.155,
+    "max": null,
+    "unit": "A",
+    "page": 7,
+    "reason": "단락 전류: 출력 단락 측정을 아직 만들지 않음 (LM358B 는 ±10 V 조건이라 6 V 소자로 잴 수도 없음)"
+   },
+   {
+    "kind": "isc",
+    "symbol": -158,
+    "name": "Output short-circuit current (D package, sinking)",
+    "condition": "D package, Sinking",
+    "min": null,
+    "typ": -0.158,
+    "max": null,
+    "unit": "A",
+    "page": 7,
+    "reason": "단락 전류: 출력 단락 측정을 아직 만들지 않음 (LM358B 는 ±10 V 조건이라 6 V 소자로 잴 수도 없음)"
+   },
+   {
+    "kind": "isc",
+    "symbol": 93,
+    "name": "Output short-circuit current (P package, sourcing)",
+    "condition": "P package, Sourcing",
+    "min": null,
+    "typ": 0.093,
+    "max": null,
+    "unit": "A",
+    "page": 7,
+    "reason": "단락 전류: 출력 단락 측정을 아직 만들지 않음 (LM358B 는 ±10 V 조건이라 6 V 소자로 잴 수도 없음)"
+   },
+   {
+    "kind": "isc",
+    "symbol": -72,
+    "name": "Output short-circuit current (P package, sinking)",
+    "condition": "P package, Sinking",
+    "min": null,
+    "typ": -0.07200000000000001,
+    "max": null,
+    "unit": "A",
+    "page": 7,
+    "reason": "단락 전류: 출력 단락 측정을 아직 만들지 않음 (LM358B 는 ±10 V 조건이라 6 V 소자로 잴 수도 없음)"
+   },
+   {
+    "kind": "vos",
+    "symbol": "VOS",
+    "name": "Input offset voltage",
+    "condition": "at TJ = 25C, VCC+ = 15V, VCC- = -15V, VCM = 0V, and RL = 1kOhm",
+    "min": null,
+    "typ": 0.0004,
+    "max": 0.003,
+    "unit": "V",
+    "page": 5,
+    "reason": "입력 오프셋 전압: 소자 편차 통계 해석이 필요해 아직 재지 않음"
+   },
+   {
+    "kind": "ib",
+    "symbol": "IB",
+    "name": "Input bias current",
+    "condition": "at TJ = 25C, VCC+ = 15V, VCC- = -15V, VCM = 0V, and RL = 1kOhm",
+    "min": null,
+    "typ": 1.2e-06,
+    "max": 3e-06,
+    "unit": "A",
+    "page": 5,
+    "reason": "입력 바이어스 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "ios",
+    "symbol": "IOS",
+    "name": "Input offset current",
+    "condition": "at TJ = 25C, VCC+ = 15V, VCC- = -15V, VCM = 0V, and RL = 1kOhm",
+    "min": null,
+    "typ": 2e-08,
+    "max": 2e-06,
+    "unit": "A",
+    "page": 5,
+    "reason": "입력 오프셋 전류: MOS 입력이라 시뮬레이션에서 거의 0이 되어 의미 없음"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Output swing",
+    "condition": "RL = 1kOhm, sourcing",
+    "min": 12.0,
+    "typ": null,
+    "max": null,
+    "unit": "V",
+    "page": 5,
+    "reason": "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Output swing",
+    "condition": "RL = 1kOhm, sinking",
+    "min": -12.0,
+    "typ": null,
+    "max": null,
+    "unit": "V",
+    "page": 5,
+    "reason": "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Output swing",
+    "condition": "RL = 100Ohm, sourcing",
+    "min": 6.0,
+    "typ": 9.0,
+    "max": null,
+    "unit": "V",
+    "page": 5,
+    "reason": "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
+   },
+   {
+    "kind": "vswing",
+    "symbol": "VO",
+    "name": "Output swing",
+    "condition": "RL = 100Ohm, sinking",
+    "min": -8.5,
+    "typ": null,
+    "max": null,
+    "unit": "V",
+    "page": 5,
+    "reason": "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
+   },
+   {
+    "kind": "isc",
+    "symbol": "ISC",
+    "name": "Output short-circuit current",
+    "condition": "D package; Sourcing",
+    "min": null,
+    "typ": 0.17300000000000001,
+    "max": null,
+    "unit": "A",
+    "page": 5,
+    "reason": "단락 전류: 출력 단락 측정을 아직 만들지 않음 (LM358B 는 ±10 V 조건이라 6 V 소자로 잴 수도 없음)"
+   }
+  ],
+  "corrections": null,
+  "not_planned": [
+   {
+    "measure": "ts",
+    "label": "정착시간 (0.1%)",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   },
+   {
+    "measure": "gm",
+    "label": "이득여유",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   },
+   {
+    "measure": "vol_5ma",
+    "label": "Low 출력 전압 (IOL = 5 mA)",
+    "reason": "측정 계획에 없음 (계획이 이 데이터시트 줄을 측정 대상으로 정하지 않음)"
+   }
+  ]
+ },
+ "unused": []
+}

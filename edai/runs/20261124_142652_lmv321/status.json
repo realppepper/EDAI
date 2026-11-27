@@ -1,0 +1,189 @@
+{
+ "title": "LMV321",
+ "name": "ui_20261124_142652_lmv321",
+ "steps": [
+  {
+   "key": "extract",
+   "title": "1. 데이터시트 분석",
+   "state": "done",
+   "summary": {
+    "part": "LMV358",
+    "rows": 58,
+    "pins": 8,
+    "judged": 6,
+    "model_input": "op-amp spec: avd 100 dB; cmrr 63 dB; psrr 60 dB; idd 80 uA; ugbw 1 MHz; pm 60 deg"
+   },
+   "error": null,
+   "started": "14:26:58",
+   "warnings": [],
+   "seconds": 170
+  },
+  {
+   "key": "candidates",
+   "title": "2. 모델 구조 후보",
+   "state": "done",
+   "summary": {
+    "total": 31,
+    "rule_ok": 25,
+    "new": 21
+   },
+   "error": null,
+   "started": "14:29:51",
+   "warnings": [],
+   "seconds": 483
+  },
+  {
+   "key": "select",
+   "title": "3. 바이어스 채우기·크기 정하기·측정",
+   "state": "done",
+   "summary": {
+    "evaluated": 31,
+    "forms": 59,
+    "working": 29,
+    "forms_working": {
+     "바이어스 정리": 16,
+     "바이어스 정리 + 상보 뒤집기": 9,
+     "원래 + 상보 뒤집기": 3,
+     "원래": 1
+    },
+    "best_passed": "4/6"
+   },
+   "error": null,
+   "started": "14:37:56",
+   "warnings": [],
+   "seconds": 16451
+  },
+  {
+   "key": "fix",
+   "title": "4. 실패한 구조 고치기 (규칙·LLM)",
+   "state": "done",
+   "summary": {
+    "needed": false,
+    "working_before": 29,
+    "llm_calls": 0,
+    "fixed": 0,
+    "rules_tried": 0,
+    "rules_written": 0
+   },
+   "error": null,
+   "started": "19:12:08",
+   "warnings": [],
+   "seconds": 1
+  },
+  {
+   "key": "rank",
+   "title": "5. 구조 고르기",
+   "state": "done",
+   "summary": {
+    "rule": "v4",
+    "top": [
+     {
+      "index": 53,
+      "passed": 4,
+      "judged": 6,
+      "scale": 50.0,
+      "gain_nodes": 4,
+      "input_ok": true,
+      "avd": 110.29850749178762,
+      "shortfall": 1.4690594332722555,
+      "how": "sample"
+     },
+     {
+      "index": 32,
+      "passed": 3,
+      "judged": 6,
+      "scale": 50.0,
+      "gain_nodes": 2,
+      "input_ok": true,
+      "avd": 82.78143937348851,
+      "shortfall": 1.2710347376231423,
+      "how": "sample"
+     },
+     {
+      "index": 17,
+      "passed": 4,
+      "judged": 6,
+      "scale": 20.0,
+      "gain_nodes": 1,
+      "input_ok": true,
+      "avd": 31.748065301176528,
+      "shortfall": 2.9974629466241156,
+      "how": "beam"
+     },
+     {
+      "index": 2,
+      "passed": 3,
+      "judged": 6,
+      "scale": 20.0,
+      "gain_nodes": 1,
+      "input_ok": true,
+      "avd": 31.748065301176528,
+      "shortfall": 3.0163764744568353,
+      "how": "beam"
+     },
+     {
+      "index": 5,
+      "passed": 3,
+      "judged": 6,
+      "scale": 20.0,
+      "gain_nodes": 1,
+      "input_ok": true,
+      "avd": 31.748065301176528,
+      "shortfall": 3.0163764744568353,
+      "how": "beam"
+     }
+    ]
+   },
+   "error": null,
+   "started": "19:12:09",
+   "warnings": [],
+   "seconds": 0
+  },
+  {
+   "key": "rules",
+   "title": "6. 규칙 적용",
+   "state": "done",
+   "summary": {
+    "chosen": "모델 구조 그대로",
+    "passed": "4/6",
+    "tried": 1
+   },
+   "error": null,
+   "started": "19:12:10",
+   "warnings": [],
+   "seconds": 0
+  },
+  {
+   "key": "harness",
+   "title": "7. 하네스",
+   "state": "done",
+   "summary": {
+    "pass_rate": 71.4,
+    "iterations": 1,
+    "has_netlist": true
+   },
+   "error": null,
+   "started": "19:12:11",
+   "warnings": [],
+   "seconds": 50
+  },
+  {
+   "key": "schematic",
+   "title": "8. 최종 회로도",
+   "state": "done",
+   "summary": {
+    "made": [
+     "before_harness",
+     "after_harness"
+    ]
+   },
+   "error": null,
+   "started": "19:13:02",
+   "warnings": [],
+   "seconds": 5
+  }
+ ],
+ "state": "done",
+ "started": "2026-11-24 14:26:54",
+ "finished": "2026-11-24 19:13:08"
+}

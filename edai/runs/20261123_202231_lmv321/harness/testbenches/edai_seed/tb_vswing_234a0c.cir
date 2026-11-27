@@ -1,0 +1,91 @@
+* output swing pos rail RL=2000 VS=5.0
+.temp 25
+.options plotwinsize=0 numdgt=7
+* Default Physical Device Models for AI Analog Synthesis
+
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=120u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model QNPN NPN (IS=1e-14 BF=150 VAF=100 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=100 TF=0.3n TR=10n CJE=2p CJC=1p VJC=0.75 MJC=0.33)
+
+.model QPNP PNP (IS=1e-14 BF=80 VAF=80 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=80 TF=0.5n TR=20n CJE=2p CJC=1.5p VJC=0.75 MJC=0.33)
+
+.model D1N4148 D (IS=2.52n RS=0.568 N=1.752 CJO=4p VJ=0.5 M=0.333 BV=100 IBV=100u TT=4n)
+
+.model D_ESD D (IS=1e-15 RS=10 CJO=1p BV=50)
+
+
+* Default Physical Device Models for AI Analog Synthesis
+
+
+* Default Physical Device Models for AI Analog Synthesis
+
+
+.include "gf180_6v_typical.lib"
+
+
+
+
+* --- Globally Hoisted Models for Multi-Subcircuit Visibility ---
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=120u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+.model QNPN NPN (IS=1e-14 BF=150 VAF=100 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=100 TF=0.3n TR=10n CJE=2p CJC=1p VJC=0.75 MJC=0.33)
+.model QPNP PNP (IS=1e-14 BF=80 VAF=80 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=80 TF=0.5n TR=20n CJE=2p CJC=1.5p VJC=0.75 MJC=0.33)
+.model D1N4148 D (IS=2.52n RS=0.568 N=1.752 CJO=4p VJ=0.5 M=0.333 BV=100 IBV=100u TT=4n)
+.model D_ESD D (IS=1e-15 RS=10 CJO=1p BV=50)
+
+.subckt LMV358 VCC_P GND 1IN_P 1IN_N 2IN_P 2IN_N 1OUT 2OUT
+MPM1 VB1 VB1 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u
+MPM2 1OUT N1 VCC_P VCC_P pfet_06v0_bsim0 w=97.2u l=2u m=17
+MPM3 N2 VB1 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u
+MPM4 N1 N1 VCC_P VCC_P pfet_06v0_bsim0 w=28.3u l=2u
+MPM5 N3 1IN_P N4 VCC_P pfet_06v0_bsim0 w=32.8u l=1u
+MPM6 N5 1IN_N N4 VCC_P pfet_06v0_bsim0 w=19.5u l=1u
+MPM7 N4 N6 VCC_P VCC_P pfet_06v0_bsim0 w=44.8u l=2u
+MPM8 N6 N6 VCC_P VCC_P pfet_06v0_bsim0 w=45.6u l=2u
+MNM1 1OUT N3 GND GND nfet_06v0_bsim0 w=89.8u l=2u m=4
+MNM2 N1 N5 GND GND nfet_06v0_bsim0 w=6.15u l=2u
+MNM3 N3 N3 GND GND nfet_06v0_bsim0 w=6.13u l=2u
+MNM4 N5 N5 GND GND nfet_06v0_bsim0 w=3.64u l=2u
+MNM5 N6 N2 GND GND nfet_06v0_bsim0 w=9.91u l=2u
+MNM6 N2 N2 GND GND nfet_06v0_bsim0 w=5.78u l=2u
+MNM7 VB1 N2 N7 GND nfet_06v0_bsim0 w=6.37u l=1u
+R1 N7 GND 10k
+C1 1OUT N1 1p
+MSU_MS1 SU_SX GND VCC_P VCC_P pfet_06v0_bsim0 w=0.5u l=20u
+MSU_MS2 VB1 SU_SX GND GND nfet_06v0_bsim0 w=2u l=1u
+MSU_MS3 SU_SX N2 GND GND nfet_06v0_bsim0 w=5u l=1u
+MPM1_2 VB1_2 VB1_2 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u
+MPM2_2 2OUT N1_2 VCC_P VCC_P pfet_06v0_bsim0 w=97.2u l=2u m=17
+MPM3_2 N2_2 VB1_2 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u
+MPM4_2 N1_2 N1_2 VCC_P VCC_P pfet_06v0_bsim0 w=28.3u l=2u
+MPM5_2 N3_2 2IN_P N4_2 VCC_P pfet_06v0_bsim0 w=32.8u l=1u
+MPM6_2 N5_2 2IN_N N4_2 VCC_P pfet_06v0_bsim0 w=19.5u l=1u
+MPM7_2 N4_2 N6_2 VCC_P VCC_P pfet_06v0_bsim0 w=44.8u l=2u
+MPM8_2 N6_2 N6_2 VCC_P VCC_P pfet_06v0_bsim0 w=45.6u l=2u
+MNM1_2 2OUT N3_2 GND GND nfet_06v0_bsim0 w=89.8u l=2u m=4
+MNM2_2 N1_2 N5_2 GND GND nfet_06v0_bsim0 w=6.15u l=2u
+MNM3_2 N3_2 N3_2 GND GND nfet_06v0_bsim0 w=6.13u l=2u
+MNM4_2 N5_2 N5_2 GND GND nfet_06v0_bsim0 w=3.64u l=2u
+MNM5_2 N6_2 N2_2 GND GND nfet_06v0_bsim0 w=9.91u l=2u
+MNM6_2 N2_2 N2_2 GND GND nfet_06v0_bsim0 w=5.78u l=2u
+MNM7_2 VB1_2 N2_2 N7_2 GND nfet_06v0_bsim0 w=6.37u l=1u
+R1_2 N7_2 GND 10k
+C1_2 2OUT N1_2 1p
+MSU_MS1_2 SU_SX_2 GND VCC_P VCC_P pfet_06v0_bsim0 w=0.5u l=20u
+MSU_MS2_2 VB1_2 SU_SX_2 GND GND nfet_06v0_bsim0 w=2u l=1u
+MSU_MS3_2 SU_SX_2 N2_2 GND GND nfet_06v0_bsim0 w=5u l=1u
+.ends LMV358
+
+VPOS vp 0 5
+VMID mid 0 2.5
+VIN inp mid 0.2
+RL out mid 2000
+Rpark1 park1 mid 100k
+XDUT vp 0 inp mid mid park1 out park1 LMV358
+
+.tran 0 0.00015 0 7.5e-08
+.meas tran m_out AVG V(out) FROM 0.0001 TO 0.00015
+.meas tran m_vp AVG V(vp) FROM 0.0001 TO 0.00015
+.end

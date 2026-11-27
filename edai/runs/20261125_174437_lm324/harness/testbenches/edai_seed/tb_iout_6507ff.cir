@@ -1,0 +1,144 @@
+* output current at VO=neg rail VS=5.0
+.temp 25
+.options plotwinsize=0 numdgt=7
+* Default Physical Device Models for AI Analog Synthesis
+
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=120u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model QNPN NPN (IS=1e-14 BF=150 VAF=100 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=100 TF=0.3n TR=10n CJE=2p CJC=1p VJC=0.75 MJC=0.33)
+
+.model QPNP PNP (IS=1e-14 BF=80 VAF=80 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=80 TF=0.5n TR=20n CJE=2p CJC=1.5p VJC=0.75 MJC=0.33)
+
+.model D1N4148 D (IS=2.52n RS=0.568 N=1.752 CJO=4p VJ=0.5 M=0.333 BV=100 IBV=100u TT=4n)
+
+.model D_ESD D (IS=1e-15 RS=10 CJO=1p BV=50)
+
+
+* Default Physical Device Models for AI Analog Synthesis
+
+
+* Default Physical Device Models for AI Analog Synthesis
+
+
+.include "gf180_6v_typical.lib"
+
+
+
+
+* --- Globally Hoisted Models for Multi-Subcircuit Visibility ---
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=120u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+.model QNPN NPN (IS=1e-14 BF=150 VAF=100 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=100 TF=0.3n TR=10n CJE=2p CJC=1p VJC=0.75 MJC=0.33)
+.model QPNP PNP (IS=1e-14 BF=80 VAF=80 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=80 TF=0.5n TR=20n CJE=2p CJC=1.5p VJC=0.75 MJC=0.33)
+.model D1N4148 D (IS=2.52n RS=0.568 N=1.752 CJO=4p VJ=0.5 M=0.333 BV=100 IBV=100u TT=4n)
+.model D_ESD D (IS=1e-15 RS=10 CJO=1p BV=50)
+
+.subckt LM324 1IN_N 1IN_P 1OUT 2IN_N 2IN_P 2OUT 3IN_N 3IN_P 3OUT 4IN_N 4IN_P 4OUT NC VCC_N VCC_P
+MPM1 1OUT VB2 VCC_P VCC_P pfet_06v0_bsim0 w=98.2u l=2u m=35
+MPM3 N2 VB2 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u
+MPM4 N3 1IN_P N2 VCC_P pfet_06v0_bsim0 w=43.4u l=1u
+MPM5 N4 1IN_N N2 VCC_P pfet_06v0_bsim0 w=43.4u l=1u
+MNM2 1OUT N3 VCC_N VCC_N nfet_06v0_bsim0 w=88u l=1u m=7
+MNM3 N3_NM3 N4 VCC_N VCC_N nfet_06v0_bsim0 w=6.03u l=1u
+MNM4 N4_NM4 N4 VCC_N VCC_N nfet_06v0_bsim0 w=6.03u l=1u
+C1 1OUT N3 1p
+MNMC1 N3 VBCN N3_NM3 VCC_N nfet_06v0_bsim0 w=9.32u l=1u
+MNMC2 N4 VBCN N4_NM4 VCC_N nfet_06v0_bsim0 w=9.32u l=1u
+MPMB1 VB2 VB2 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u
+MNMF1 VB2 REF_NB VCC_N VCC_N nfet_06v0_bsim0 w=24u l=2u
+MNMB2 VBCN VBCN VBCN_S1 VCC_N nfet_06v0_bsim0 w=14.9u l=2u
+RBCVBCN VBCN_S1 VCC_N 28174.6
+MPMF2 VBCN REF_PB VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u m=2
+MREF_MN1 REF_NB REF_NB VCC_N VCC_N nfet_06v0_bsim0 w=12u l=2u
+MREF_MN2 REF_PB REF_NB REF_NS VCC_N nfet_06v0_bsim0 w=48u l=2u
+RREF_S REF_NS VCC_N 8353.6
+MREF_MP3 REF_PB REF_PB VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u
+MREF_MP4 REF_NB REF_PB VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u
+MREF_MS1 REF_SX VCC_N VCC_P VCC_P pfet_06v0_bsim0 w=0.5u l=20u
+MREF_MS2 REF_PB REF_SX VCC_N VCC_N nfet_06v0_bsim0 w=2u l=1u
+MREF_MS3 REF_SX REF_NB VCC_N VCC_N nfet_06v0_bsim0 w=5u l=1u
+MPM1_2 2OUT VB2_2 VCC_P VCC_P pfet_06v0_bsim0 w=98.2u l=2u m=35
+MPM3_2 N2_2 VB2_2 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u
+MPM4_2 N3_2 2IN_P N2_2 VCC_P pfet_06v0_bsim0 w=43.4u l=1u
+MPM5_2 N4_2 2IN_N N2_2 VCC_P pfet_06v0_bsim0 w=43.4u l=1u
+MNM2_2 2OUT N3_2 VCC_N VCC_N nfet_06v0_bsim0 w=88u l=1u m=7
+MNM3_2 N3_NM3_2 N4_2 VCC_N VCC_N nfet_06v0_bsim0 w=6.03u l=1u
+MNM4_2 N4_NM4_2 N4_2 VCC_N VCC_N nfet_06v0_bsim0 w=6.03u l=1u
+C1_2 2OUT N3_2 1p
+MNMC1_2 N3_2 VBCN_2 N3_NM3_2 VCC_N nfet_06v0_bsim0 w=9.32u l=1u
+MNMC2_2 N4_2 VBCN_2 N4_NM4_2 VCC_N nfet_06v0_bsim0 w=9.32u l=1u
+MPMB1_2 VB2_2 VB2_2 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u
+MNMF1_2 VB2_2 REF_NB_2 VCC_N VCC_N nfet_06v0_bsim0 w=24u l=2u
+MNMB2_2 VBCN_2 VBCN_2 VBCN_S1_2 VCC_N nfet_06v0_bsim0 w=14.9u l=2u
+RBCVBCN_2 VBCN_S1_2 VCC_N 28174.6
+MPMF2_2 VBCN_2 REF_PB_2 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u m=2
+MREF_MN1_2 REF_NB_2 REF_NB_2 VCC_N VCC_N nfet_06v0_bsim0 w=12u l=2u
+MREF_MN2_2 REF_PB_2 REF_NB_2 REF_NS_2 VCC_N nfet_06v0_bsim0 w=48u l=2u
+RREF_S_2 REF_NS_2 VCC_N 8353.6
+MREF_MP3_2 REF_PB_2 REF_PB_2 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u
+MREF_MP4_2 REF_NB_2 REF_PB_2 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u
+MREF_MS1_2 REF_SX_2 VCC_N VCC_P VCC_P pfet_06v0_bsim0 w=0.5u l=20u
+MREF_MS2_2 REF_PB_2 REF_SX_2 VCC_N VCC_N nfet_06v0_bsim0 w=2u l=1u
+MREF_MS3_2 REF_SX_2 REF_NB_2 VCC_N VCC_N nfet_06v0_bsim0 w=5u l=1u
+MPM1_3 3OUT VB2_3 VCC_P VCC_P pfet_06v0_bsim0 w=98.2u l=2u m=35
+MPM3_3 N2_3 VB2_3 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u
+MPM4_3 N3_3 3IN_P N2_3 VCC_P pfet_06v0_bsim0 w=43.4u l=1u
+MPM5_3 N4_3 3IN_N N2_3 VCC_P pfet_06v0_bsim0 w=43.4u l=1u
+MNM2_3 3OUT N3_3 VCC_N VCC_N nfet_06v0_bsim0 w=88u l=1u m=7
+MNM3_3 N3_NM3_3 N4_3 VCC_N VCC_N nfet_06v0_bsim0 w=6.03u l=1u
+MNM4_3 N4_NM4_3 N4_3 VCC_N VCC_N nfet_06v0_bsim0 w=6.03u l=1u
+C1_3 3OUT N3_3 1p
+MNMC1_3 N3_3 VBCN_3 N3_NM3_3 VCC_N nfet_06v0_bsim0 w=9.32u l=1u
+MNMC2_3 N4_3 VBCN_3 N4_NM4_3 VCC_N nfet_06v0_bsim0 w=9.32u l=1u
+MPMB1_3 VB2_3 VB2_3 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u
+MNMF1_3 VB2_3 REF_NB_3 VCC_N VCC_N nfet_06v0_bsim0 w=24u l=2u
+MNMB2_3 VBCN_3 VBCN_3 VBCN_S1_3 VCC_N nfet_06v0_bsim0 w=14.9u l=2u
+RBCVBCN_3 VBCN_S1_3 VCC_N 28174.6
+MPMF2_3 VBCN_3 REF_PB_3 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u m=2
+MREF_MN1_3 REF_NB_3 REF_NB_3 VCC_N VCC_N nfet_06v0_bsim0 w=12u l=2u
+MREF_MN2_3 REF_PB_3 REF_NB_3 REF_NS_3 VCC_N nfet_06v0_bsim0 w=48u l=2u
+RREF_S_3 REF_NS_3 VCC_N 8353.6
+MREF_MP3_3 REF_PB_3 REF_PB_3 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u
+MREF_MP4_3 REF_NB_3 REF_PB_3 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u
+MREF_MS1_3 REF_SX_3 VCC_N VCC_P VCC_P pfet_06v0_bsim0 w=0.5u l=20u
+MREF_MS2_3 REF_PB_3 REF_SX_3 VCC_N VCC_N nfet_06v0_bsim0 w=2u l=1u
+MREF_MS3_3 REF_SX_3 REF_NB_3 VCC_N VCC_N nfet_06v0_bsim0 w=5u l=1u
+MPM1_4 4OUT VB2_4 VCC_P VCC_P pfet_06v0_bsim0 w=98.2u l=2u m=35
+MPM3_4 N2_4 VB2_4 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u
+MPM4_4 N3_4 4IN_P N2_4 VCC_P pfet_06v0_bsim0 w=43.4u l=1u
+MPM5_4 N4_4 4IN_N N2_4 VCC_P pfet_06v0_bsim0 w=43.4u l=1u
+MNM2_4 4OUT N3_4 VCC_N VCC_N nfet_06v0_bsim0 w=88u l=1u m=7
+MNM3_4 N3_NM3_4 N4_4 VCC_N VCC_N nfet_06v0_bsim0 w=6.03u l=1u
+MNM4_4 N4_NM4_4 N4_4 VCC_N VCC_N nfet_06v0_bsim0 w=6.03u l=1u
+C1_4 4OUT N3_4 1p
+MNMC1_4 N3_4 VBCN_4 N3_NM3_4 VCC_N nfet_06v0_bsim0 w=9.32u l=1u
+MNMC2_4 N4_4 VBCN_4 N4_NM4_4 VCC_N nfet_06v0_bsim0 w=9.32u l=1u
+MPMB1_4 VB2_4 VB2_4 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u
+MNMF1_4 VB2_4 REF_NB_4 VCC_N VCC_N nfet_06v0_bsim0 w=24u l=2u
+MNMB2_4 VBCN_4 VBCN_4 VBCN_S1_4 VCC_N nfet_06v0_bsim0 w=14.9u l=2u
+RBCVBCN_4 VBCN_S1_4 VCC_N 28174.6
+MPMF2_4 VBCN_4 REF_PB_4 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u m=2
+MREF_MN1_4 REF_NB_4 REF_NB_4 VCC_N VCC_N nfet_06v0_bsim0 w=12u l=2u
+MREF_MN2_4 REF_PB_4 REF_NB_4 REF_NS_4 VCC_N nfet_06v0_bsim0 w=48u l=2u
+RREF_S_4 REF_NS_4 VCC_N 8353.6
+MREF_MP3_4 REF_PB_4 REF_PB_4 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u
+MREF_MP4_4 REF_NB_4 REF_PB_4 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u
+MREF_MS1_4 REF_SX_4 VCC_N VCC_P VCC_P pfet_06v0_bsim0 w=0.5u l=20u
+MREF_MS2_4 REF_PB_4 REF_SX_4 VCC_N VCC_N nfet_06v0_bsim0 w=2u l=1u
+MREF_MS3_4 REF_SX_4 REF_NB_4 VCC_N VCC_N nfet_06v0_bsim0 w=5u l=1u
+.ends LM324
+
+VPOS vp 0 5
+VMID mid 0 2.5
+VIN inp mid 1
+VFORCE out 0 0
+Rpark1 park1 mid 100k
+Rpark2 park2 mid 100k
+Rpark3 park3 mid 100k
+XDUT mid inp out park1 mid park1 park2 mid park2 park3 mid park3 nc_NC 0 vp LM324
+
+.tran 0 0.00015 0 7.5e-08
+.meas tran m_i AVG I(VFORCE) FROM 0.0001 TO 0.00015
+.end

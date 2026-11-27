@@ -1,0 +1,100 @@
+* open-loop AC DM VS=5.0
+.temp 25
+* Default Physical Device Models for AI Analog Synthesis
+
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=120u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+
+.model QNPN NPN (IS=1e-14 BF=150 VAF=100 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=100 TF=0.3n TR=10n CJE=2p CJC=1p VJC=0.75 MJC=0.33)
+
+.model QPNP PNP (IS=1e-14 BF=80 VAF=80 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=80 TF=0.5n TR=20n CJE=2p CJC=1.5p VJC=0.75 MJC=0.33)
+
+.model D1N4148 D (IS=2.52n RS=0.568 N=1.752 CJO=4p VJ=0.5 M=0.333 BV=100 IBV=100u TT=4n)
+
+.model D_ESD D (IS=1e-15 RS=10 CJO=1p BV=50)
+
+
+* Default Physical Device Models for AI Analog Synthesis
+
+
+* Default Physical Device Models for AI Analog Synthesis
+
+
+.include /home/jiyun/pdk/gf180mcu_fd_pr/models/ngspice/design.ngspice
+.lib /home/jiyun/pdk/gf180mcu_fd_pr/models/ngspice/sm141064.ngspice typical
+
+
+
+
+* --- Globally Hoisted Models for Multi-Subcircuit Visibility ---
+.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=120u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)
+.model QNPN NPN (IS=1e-14 BF=150 VAF=100 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=100 TF=0.3n TR=10n CJE=2p CJC=1p VJC=0.75 MJC=0.33)
+.model QPNP PNP (IS=1e-14 BF=80 VAF=80 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=80 TF=0.5n TR=20n CJE=2p CJC=1.5p VJC=0.75 MJC=0.33)
+.model D1N4148 D (IS=2.52n RS=0.568 N=1.752 CJO=4p VJ=0.5 M=0.333 BV=100 IBV=100u TT=4n)
+.model D_ESD D (IS=1e-15 RS=10 CJO=1p BV=50)
+
+.subckt LMV358 VCC_P GND 1IN_P 1IN_N 2IN_P 2IN_N 1OUT 2OUT
+XMPM1 VB1 VB1 VCC_P VCC_P pfet_06v0 w=68.7u l=2u
+XMPM2 1OUT N1 VCC_P VCC_P pfet_06v0 w=97.2u l=2u m=17
+XMPM3 N2 VB1 VCC_P VCC_P pfet_06v0 w=68.7u l=2u
+XMPM4 N1 N1 VCC_P VCC_P pfet_06v0 w=28.3u l=2u
+XMPM5 N3 1IN_P N4 VCC_P pfet_06v0 w=32.8u l=1u
+XMPM6 N5 1IN_N N4 VCC_P pfet_06v0 w=19.5u l=1u
+XMPM7 N4 N6 VCC_P VCC_P pfet_06v0 w=44.8u l=2u
+XMPM8 N6 N6 VCC_P VCC_P pfet_06v0 w=45.6u l=2u
+XMNM1 1OUT N3 GND GND nfet_06v0 w=89.8u l=2u m=4
+XMNM2 N1 N5 GND GND nfet_06v0 w=6.15u l=2u
+XMNM3 N3 N3 GND GND nfet_06v0 w=6.13u l=2u
+XMNM4 N5 N5 GND GND nfet_06v0 w=3.64u l=2u
+XMNM5 N6 N2 GND GND nfet_06v0 w=9.91u l=2u
+XMNM6 N2 N2 GND GND nfet_06v0 w=5.78u l=2u
+XMNM7 VB1 N2 N7 GND nfet_06v0 w=6.37u l=1u
+R1 N7 GND 10k
+C1 1OUT N1 1p
+XMSU_MS1 SU_SX GND VCC_P VCC_P pfet_06v0 w=0.5u l=20u
+XMSU_MS2 VB1 SU_SX GND GND nfet_06v0 w=2u l=1u
+XMSU_MS3 SU_SX N2 GND GND nfet_06v0 w=5u l=1u
+XMPM1_2 VB1_2 VB1_2 VCC_P VCC_P pfet_06v0 w=68.7u l=2u
+XMPM2_2 2OUT N1_2 VCC_P VCC_P pfet_06v0 w=97.2u l=2u m=17
+XMPM3_2 N2_2 VB1_2 VCC_P VCC_P pfet_06v0 w=68.7u l=2u
+XMPM4_2 N1_2 N1_2 VCC_P VCC_P pfet_06v0 w=28.3u l=2u
+XMPM5_2 N3_2 2IN_P N4_2 VCC_P pfet_06v0 w=32.8u l=1u
+XMPM6_2 N5_2 2IN_N N4_2 VCC_P pfet_06v0 w=19.5u l=1u
+XMPM7_2 N4_2 N6_2 VCC_P VCC_P pfet_06v0 w=44.8u l=2u
+XMPM8_2 N6_2 N6_2 VCC_P VCC_P pfet_06v0 w=45.6u l=2u
+XMNM1_2 2OUT N3_2 GND GND nfet_06v0 w=89.8u l=2u m=4
+XMNM2_2 N1_2 N5_2 GND GND nfet_06v0 w=6.15u l=2u
+XMNM3_2 N3_2 N3_2 GND GND nfet_06v0 w=6.13u l=2u
+XMNM4_2 N5_2 N5_2 GND GND nfet_06v0 w=3.64u l=2u
+XMNM5_2 N6_2 N2_2 GND GND nfet_06v0 w=9.91u l=2u
+XMNM6_2 N2_2 N2_2 GND GND nfet_06v0 w=5.78u l=2u
+XMNM7_2 VB1_2 N2_2 N7_2 GND nfet_06v0 w=6.37u l=1u
+R1_2 N7_2 GND 10k
+C1_2 2OUT N1_2 1p
+XMSU_MS1_2 SU_SX_2 GND VCC_P VCC_P pfet_06v0 w=0.5u l=20u
+XMSU_MS2_2 VB1_2 SU_SX_2 GND GND nfet_06v0 w=2u l=1u
+XMSU_MS3_2 SU_SX_2 N2_2 GND GND nfet_06v0 w=5u l=1u
+.ends LMV358
+
+VPOS vp 0 5
+VMID mid 0 2.5
+VIN inp mid AC 1
+LFB out inn 1G
+CFB inn mid 1G
+RL out mid 2000
+CL out mid 2e-11
+Rpark1 park1 mid 100k
+XDUT vp 0 inp inn mid park1 out park1 LMV358
+
+.ac dec 20 0.1 1G
+.meas ac m_a0__db find vdb(out) at=0.1
+.meas ac m_a0__ph find vp(out) at=0.1
+.meas ac m_ugf WHEN vm(out)=1 fall=1
+.meas ac m_ph__db find vdb(out) WHEN vm(out)=1 fall=1
+.meas ac m_ph__ph find vp(out) WHEN vm(out)=1 fall=1
+.control
+run
+.endc
+.end

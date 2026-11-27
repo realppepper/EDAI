@@ -1,0 +1,229 @@
+{
+ "needed": true,
+ "working_before": 28,
+ "attempts": [
+  {
+   "call": 1,
+   "candidate": 42,
+   "attempt": 1,
+   "failure": "포화 영역 밖 소자 PM2",
+   "diagnosis": "모델의 자체 바이어스 네트워크(PM2, PM7, NM5, NM6, R2, R3)에서 PM2가 트라이오드 영역에 진입함. PM2의 드레인(VB1=4.95V)이 소스(VDD=5.0V)와 너무 가까워 Vds(0.053V) < Vdsat(2.242V) 상태. 이는 바이어스 루프가 레퍼런스 미러와 연결되지 않아 전류가 정의되지 않는 'free loop' 문제로, 바이어스 네트워크 전체가 잘못 설계됨.",
+   "why": "PM2가 모델의 자체 바이어스 네트워크에서 트라이오드 상태이며, 이는 바이어스 루프에 레퍼런스 전류 경로(저항 또는 미러)가 없어 전류가 발산했기 때문. replace_bias로 모델의 바이어스를 제거하고 플로우의 검증된 레퍼런스 미러(10uA 베타 멀티플라이어)로 모든 게이트 넷을 바이어스하면 루프가 해결되고 포화 영역 진입 보장.",
+   "action": "replace_bias",
+   "params": {},
+   "result": "여전히 실패: 무부하 이득 부족 (-8.3 dB)"
+  },
+  {
+   "call": 2,
+   "candidate": 42,
+   "attempt": 2,
+   "failure": "무부하 이득 부족 (-8.3 dB)",
+   "diagnosis": "입력 스테이지가 대칭형(symmetric) 구조로 되어 있어 게인 노드가 OUT 하나뿐이며, PMOS 입력 쌍과 NMOS 다이오드 부하(NM3, NM4) 조합으로 인해 전압 게인이 매우 낮음(-8.3 dB). PM5의 전류가 0.02 uA로 거의 꺼져 있어 차동 동작 불능.",
+   "why": "대칭형 단일 스테이지는 게인이 부족하므로 폴디드 캐스코드 입력 스테이지와 PMOS 공통 소스 출력 스테이지, 밀러 보상으로 재구성하여 고이득과 충분한 출력 스윙을 확보해야 함. NMOS 입력 쌍은 VCM=2.5V에서 정상 동작 가능.",
+   "action": "rebuild",
+   "params": {
+    "input_stage": "folded_cascode",
+    "input_pair": "nmos",
+    "output_stage": "common_source_pmos",
+    "compensation": "miller"
+   },
+   "result": "동작함 3/8"
+  },
+  {
+   "call": 3,
+   "candidate": 42,
+   "attempt": 3,
+   "failure": "",
+   "diagnosis": "출력 스테이지(PM5/NM7)가 common_source_pmos 구조로, NM7이 전류 싱크 부하 역할을 함. NM7의 게이트 바이어스 VB4(0.93V)가 낮아 NM7이 깊은 트라이오드 영역 근처에서 동작하여 출력 싱크 전류(io_sink 0.39mA vs 27mA)가 심각하게 부족함. 또한 폴디드 캐스코드 입력단의 출력 노드 N1(3.97V)이 VDD 근처에 있어 PM5의 Vgs가 작아 구동 능력이 제한됨. 이로 인해 UGBW(11.8MHz vs 70MHz), SR(7V/us vs 750V/us)도 미달. CMRR/PSRR 저하는 출력단의 낮은 이득과 불충분한 바이어스 안정성 때문임.",
+   "why": "출력 스테이지를 common_source_nmos로 변경하면 NMOS 구동 소자(게이트 N1 연결)와 PMOS 전류 소스 부하로 구성되어, N1 전압(3.97V)이 NMOS 게이트 바이어스로 적절하고 PMOS 부하가 VDD에서 안정적인 바이어스 가능. 이로써 출력 싱크/소스 전류 대폭 향상, UGBW/SR 개선, CMRR/PSRR 향상 기대됨.",
+   "action": "replace_output_stage",
+   "params": {
+    "block": "common_source_nmos"
+   },
+   "result": "여전히 실패: 출력이 VCM 에서 벗어남"
+  },
+  {
+   "call": 4,
+   "candidate": 42,
+   "attempt": 4,
+   "failure": "출력이 VCM 에서 벗어남",
+   "diagnosis": "출력 스테이지(NM7, PM5)가 VCM(2.5V)에서 바이어스되지 않음. NM7 게이트(N1)가 0.02V로 NM7 OFF, PM5는 Vds 0.074V로 트라이오드. 입력 스테이지 출력 노드 N1이 VSS 근처로 고정되어 NMOS 출력 디바이스를 구동할 수 없는 구조적 문제.",
+   "why": "폴디드 캐스코드 입력 스테이지의 출력 노드 N1은 중간 전압(~2.5V) 근처에서 동작해야 하나 현재 0.02V로 VSS 레일 근처에 고정됨. NMOS 공통 소스 출력 스테이지는 게이트 전압이 VSS 근처면 OFF되어 풀업 전류만 흐르고 출력이 VDD로 포화됨. PMOS 공통 소스 출력 스테이지로 교체하면 N1이 낮을 때 PM5가 강하게 켜져 출력을 아래로 당겨 VCM에서 바이어스 가능. 이전 rebuild 시 folded_cascode + common_source_pmos + miller 조합이 성공한 바 있음.",
+   "action": "replace_output_stage",
+   "params": {
+    "block": "common_source_pmos"
+   },
+   "result": "동작함 2/8"
+  },
+  {
+   "call": 6,
+   "candidate": 36,
+   "attempt": 1,
+   "failure": "출력이 VCM 에서 벗어남",
+   "diagnosis": "PM6(테일 소스)와 NM7(바이어스 스택 하단)이 트라이오드 영역에 있음. PM6의 Vds=0.476V < Vdsat=1.668V로 스택(N4=4.52V)이 VDD에 너무 가까워 헤드룸 부족. NM7의 Vds=0.024V로 N7 노드가 VSS에 붙음. 모델 자체 바이어스 네트워크(PM7, NM7, NM8, R1, R2, R3)가 N6 게이트 전압을 1.77V로 끌어내려 PM6와 NM7을 포화시킨 원인.",
+   "why": "자체 바이어스 네트워크가 게이트 N6을 잘못된 레벨로 고정해 테일 소스 PM6와 바이어스 스택 NM7을 트라이오드로 밀어넣음. replace_bias로 검증된 레퍼런스 미러 기반 VB 포트로 교체하면 게이트 레벨이 적절히 바이어스되어 포화 영역 확보 가능.",
+   "action": "replace_bias",
+   "params": {},
+   "result": "동작함 2/8"
+  },
+  {
+   "call": 7,
+   "candidate": 36,
+   "attempt": 2,
+   "failure": "",
+   "diagnosis": "입력 스테이지가 단일 스테이지 대칭 구조(symmetric)로, 게인 노드가 OUT 하나뿐이라 DC 이득(29 dB), UGBW(8.5 MHz), SR(4.2 V/µs), 출력 싱크 전류(0.35 mA) 모두 목표에 크게 미달함. 출력 스테이지가 없어 OUT에서 부하를 구동할 수 없고, 보상 커패시터 C1만 OUT-N3 사이에 있어 밀러 보상 효과가 없음.",
+   "why": "폴디드 캐스코드 입력 스테이지로 고이득 노드 확보, PMOS 공통 소스 출력 스테이지로 출력 전류 구동력 강화, 밀러 보상으로 위상 마진과 UGBW 동시 개선. NMOS 입력 쌍은 VCM=2.5 V에서 헤드룸 확보에 유리함.",
+   "action": "rebuild",
+   "params": {
+    "input_stage": "folded_cascode",
+    "input_pair": "nmos",
+    "output_stage": "common_source_pmos",
+    "compensation": "miller"
+   },
+   "result": "동작함 3/8"
+  },
+  {
+   "call": 8,
+   "candidate": 36,
+   "attempt": 3,
+   "failure": "",
+   "diagnosis": "입력 스테이지(folded_cascode)의 출력 노드 N1 전압이 3.97V로 VDD(5V)에 너무 가까워 PMOS 출력 스테이지(common_source_pmos)의 게이트 드라이브 전압이 부족함. 이로 인해 PM5의 Vdsat 마진은 충분하지만 NM7 전류원 부하와의 gm 불균형으로 이득/대역폭/슬루레이트/출력 전류가 모두 미달. 또한 폴디드 구조의 공통모드 제거비(CMRR)가 낮아 CMRR/PSRR 스펙 미달의 주원인.",
+   "why": "출력 스테이지를 NMOS 공통소스(common_source_nmos)로 교체하면 입력 스테이지 출력 노드 N1(~4V)가 NMOS 게이트 드라이브에 적합한 전압 레벨이 되어 충분한 게이트 오버드라이브 확보 가능. NMOS 출력 단은 VSS 레퍼런스 전류원 부하(PMOS)와 조합되어 더 높은 gm, 더 큰 출력 전류 싱크 능력, 더 넓은 대역폭과 슬루레이트 달성. 폴디드 캐스코드 입력 스테이지는 유지하여 높은 이득과 전압 헤드룸 이점 유지.",
+   "action": "replace_output_stage",
+   "params": {
+    "block": "common_source_nmos"
+   },
+   "result": "여전히 실패: 출력이 VCM 에서 벗어남"
+  },
+  {
+   "call": 9,
+   "candidate": 36,
+   "attempt": 4,
+   "failure": "출력이 VCM 에서 벗어남",
+   "diagnosis": "출력 스테이지(NM7, PM5)가 VDD 레일 근처에서 포화되어 VOUT이 4.93V로 고정됨. NM7 게이트(N1=0.02V)가 VSS 근처라 NMOS 풀다운이 꺼지고, PM5 게이트(VB4=3.89V)가 VDD에 가까워 PMOS 풀업만 강하게 켜져 출력을 VDD로 밀어올림. 입력 스테이지 출력 노드 N1이 VSS 레일(0.02V)까지 내려가 NM7을 구동할 수 없는 구조적 문제.",
+   "why": "폴디드 캐스코드 입력 스테이지의 출력 노드 N1이 VSS 근처(0.02V)에 형성되므로, 이를 게이트로 쓰는 NMOS 풀다운(NM7)은 구동 불가. 반면 PMOS 풀업(PM5)은 VDD 레일 근처에서 동작 가능하므로, 출력 스테이지를 PMOS 게인 소자 + NMOS 전류원 부하(common_source_pmos)로 교체하여 N1의 낮은 전압 레벨을 활용해 출력을 VCM(2.5V) 근처로 당겨야 함. 이미 common_source_nmos 시도는 실패함.",
+   "action": "replace_output_stage",
+   "params": {
+    "block": "common_source_pmos"
+   },
+   "result": "동작함 2/8"
+  },
+  {
+   "call": 11,
+   "candidate": 40,
+   "attempt": 1,
+   "failure": "출력이 VCM 에서 벗어남",
+   "diagnosis": "입력 스테이지의 PMOS 부하(PM4)가 OFF 상태이며, 출력 노드 N3가 VDD(5V)에 고정되어 있음. 이로 인해 입력 차동쌍(NM3/NM4)의 전류 경로가 차단되고, 출력 단계로 신호가 전달되지 않아 V(OUT)이 0.575V로 VCM(2.5V)에서 크게 벗어남. 모델 자체 바이어스 네트워크(PM5, PM6, NM6~9, R1~3)가 게이트 넷 N4를 구동하나, PM4의 게이트(N1=3.87V)와 소스(VDD=5V) 사이 Vgs가 약 1.13V로 켜져 있어야 하나 드레인 전류가 0인 것으로 보아 바이어스 루프가 제대로 닫히지 않거나 레벨 설정이 잘못됨. 입력 스테이지 구조(five_transistor)와 자체 바이어스가 근본 원인.",
+   "why": "five_transistor 입력 스테이지와 모델 자체 바이어스 네트워크 조합이 바이어스 루프 미해결 및 출력 노드 고정 문제를 야기함. 검증된 폴디드 캐스코드 입력 스테이지(NMOS 쌍)와 PMOS 공통소스 출력 스테이지, 밀러 보상으로 재구성하면 바이어스는 플로우의 레퍼런스 미러로 자동 해결되고, 게인 경로와 출력 스윙이 확보되어 V(OUT)을 VCM 근처로 가져올 수 있음. 과거 동일 실패에서 rebuild로 해결된 선례 있음.",
+   "action": "rebuild",
+   "params": {
+    "input_stage": "folded_cascode",
+    "input_pair": "nmos",
+    "output_stage": "common_source_pmos",
+    "compensation": "miller"
+   },
+   "result": "동작함 3/8"
+  },
+  {
+   "call": 12,
+   "candidate": 40,
+   "attempt": 2,
+   "failure": "",
+   "diagnosis": "입력 스테이지(folded_cascode)의 출력 노드 N1 전압이 3.97V로 VDD(5V)에 너무 가까워 PMOS 출력 스테이지(PM5)의 게이트 드라이브 스윙이 부족함. 이로 인해 UGBW(11.8MHz), SR(7V/µs), io_sink(0.39mA)가 현저히 낮음. 또한 폴디드 구조의 대칭성 부족으로 CMRR(15.6dB)과 PSRR(73.9dB)도 미달.",
+   "why": "출력 스테이지를 NMOS 공통 소스(PMOS 전류원 부하)로 변경하면, 입력 스테이지 출력 노드 N1(~4V)가 NMOS 게이트를 직접 구동하여 충분한 Vgs 스윙(~4V)을 확보할 수 있음. 이는 UGBW, SR, 출력 싱크 전류를 대폭 개선함. 폴디드 캐스코드의 출력 임피던스는 여전히 높아 이득 손실은 없음.",
+   "action": "replace_output_stage",
+   "params": {
+    "block": "common_source_nmos"
+   },
+   "result": "여전히 실패: 출력이 VCM 에서 벗어남"
+  },
+  {
+   "call": 13,
+   "candidate": 40,
+   "attempt": 3,
+   "failure": "출력이 VCM 에서 벗어남",
+   "diagnosis": "출력 스테이지(NM7, PM5)가 VDD 레일 근처에서 포화되어 VOUT이 4.93V로 고정됨. NM7 게이트(N1=0.02V)가 VSS 근처라 NMOS 풀다운이 꺼지고, PM5만 강하게 켜져 출력을 VDD로 밀어올림. 입력 스테이지 출력 노드 N1이 VSS 레일(0.02V)까지 내려가 NM7을 끌 수 없음.",
+   "why": "common_source_nmos 구조에서는 입력 스테이지 출력 X(N1)가 VSS 근처여야 NM7을 켤 수 있으나, 폴디드 캐스코드 출력 N1이 VSS 레일로 내려가 NM7 게이트 전압이 부족함. PMOS 게인 소자(common_source_pmos)로 바꾸면 X가 VDD 근처(~4.3V)에서 동작하여 PMOS를 제어하기 유리함. 과거 동일 실패 시 이 교체로 해결된 선례 있음.",
+   "action": "replace_output_stage",
+   "params": {
+    "block": "common_source_pmos"
+   },
+   "result": "동작함 2/8"
+  },
+  {
+   "call": 14,
+   "candidate": 40,
+   "attempt": 4,
+   "failure": "",
+   "diagnosis": "입력 스테이지(folded_cascode)의 출력 노드 N1 전압이 3.97V로 VDD(5V) 근처에 있어 PMOS 출력 스테이지(common_source_pmos)의 게이트 드라이브가 충분하지 않음. 이로 인해 PM5의 gm이 낮아 UGBW(22.6MHz), SR(7.2V/µs), PM(23.2°), io_sink(0.39mA) 모두 미달. 또한 폴디드 구조의 대칭성 부족으로 CMRR(15.6dB), PSRR(73.9dB)도 낮음.",
+   "why": "입력 스테이지 출력 N1이 이미 VDD 근처 고임피던스 노드이므로 별도 출력 스테이지 없이 N1을 OUT으로 직접 연결(single-stage)하여 게이트 드라이브 문제 해결 및 전류 소모 절감. 폴디드 캐스코드 단일 스테이지로 충분한 이득과 대역폭 확보 가능하며, 보상 커패시터 추가로 위상 마진 개선 기대.",
+   "action": "replace_output_stage",
+   "params": {
+    "block": "none"
+   },
+   "result": "동작함 2/8"
+  }
+ ],
+ "fixed": [
+  {
+   "candidate": 42,
+   "new_index": 45,
+   "how": "llm_fix",
+   "rule": null,
+   "passed": 3,
+   "judged": 8,
+   "good": false
+  },
+  {
+   "candidate": 36,
+   "new_index": 46,
+   "how": "llm_fix",
+   "rule": null,
+   "passed": 3,
+   "judged": 8,
+   "good": false
+  },
+  {
+   "candidate": 40,
+   "new_index": 47,
+   "how": "llm_fix",
+   "rule": null,
+   "passed": 3,
+   "judged": 8,
+   "good": false
+  }
+ ],
+ "llm_calls": 15,
+ "rules_tried": [],
+ "rules_written": [
+  {
+   "rule": "R4",
+   "new": true,
+   "text": "PMOS 입력 대칭 스테이지에 출력 스테이지가 없고 바이어스 블록이 실패하면, NMOS 입력 폴디드 캐스코드와 PMOS 공통 소스 출력 스테이지 및 밀러 보상으로 재구성하라. 입력 스테이지 출력 노드가 VSS 근처로 고정되어 NMOS 출력 디바이스를 구동할 수 없기 때문이다.",
+   "rule_text": "R4 [candidate, 1/1]: IF failure=\"포화 영역\", input_pair=\"pmos\", input_stage=\"symmetric\", output_stage=\"none\", gain_nodes=1, has_compensation=true, own_bias=true, failed_blocks=[\"bias\"] THEN replace_bias {} -> rebuild {\"input_stage\": \"folded_cascode\", \"input_pair\": \"nmos\", \"output_stage\": \"common_source_pmos\", \"compensation\": \"miller\"}"
+  },
+  {
+   "rule": "R5",
+   "new": true,
+   "text": "PMOS 입력쌍 대칭 구조에서 바이어스/테일 블록이 실패해 출력 스테이지 게이트가 레일 근처로 고정되면 바이어스 회로를 교체해 게이트 전압을 정상 범위로 복구하라.",
+   "rule_text": "R5 [candidate, 1/1]: IF failure=\"출력이 VCM\", input_pair=\"pmos\", input_covers_range=true, input_stage=\"symmetric\", output_stage=\"none\", gain_nodes=1, has_compensation=true, own_bias=true, failed_blocks=[\"bias\", \"tail\"] THEN replace_bias {}"
+  },
+  {
+   "rule": "R6",
+   "new": true,
+   "text": "5트랜지스터 NMOS 입력 스테이지와 기타 출력 스테이지 구성에서 입력 쌍과 1단 게인 노드가 실패하면, 폴디드 캐스코드 입력 스테이지와 PMOS 공통 소스 출력 스테이지, 밀러 보상으로 재구성하여 출력 노드 전압 헤드룸을 확보하고 게이트 드라이브 능력을 향상시키십시오.",
+   "rule_text": "R6 [candidate, 1/1]: IF input_stage=\"five_transistor\", input_pair=\"nmos\", output_stage=\"other\", gain_nodes=1, has_compensation=true, own_bias=true, failed_blocks=[\"input_pair\", \"stage1\"], failure=\"출력이 VCM\" THEN rebuild {\"input_stage\": \"folded_cascode\", \"input_pair\": \"nmos\", \"output_stage\": \"common_source_pmos\", \"compensation\": \"miller\"}"
+  }
+ ],
+ "rule_changes": [],
+ "llm": {
+  "provider": "nim",
+  "models": [
+   "nvidia/nemotron-3-ultra-550b-a55b",
+   "nvidia/nemotron-3.5-lightning-30b-a3b"
+  ],
+  "used": {
+   "nvidia/nemotron-3-ultra-550b-a55b": 15
+  }
+ }
+}

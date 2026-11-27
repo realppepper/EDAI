@@ -1,0 +1,317 @@
+{
+  "mode": "groundtruth_free_provenance",
+  "benchmark_framework": "ParseBench (https://github.com/run-llama/ParseBench.git)",
+  "fidelity_score_pct": 52.6,
+  "status": "UNRELIABLE",
+  "pin_provenance": {
+    "pins": 8,
+    "grounded": 0,
+    "grounded_pct": 0.0,
+    "ungrounded": [
+      {
+        "pin": "VCC_P",
+        "page": 5,
+        "name_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "pin": "GND",
+        "page": 5,
+        "name_on_page": true,
+        "evidence_overlap": 0.33,
+        "grounded": false
+      },
+      {
+        "pin": "1IN_P",
+        "page": 5,
+        "name_on_page": false,
+        "evidence_overlap": 0.33,
+        "grounded": false
+      },
+      {
+        "pin": "1IN_N",
+        "page": 5,
+        "name_on_page": false,
+        "evidence_overlap": 0.33,
+        "grounded": false
+      },
+      {
+        "pin": "2IN_P",
+        "page": 5,
+        "name_on_page": false,
+        "evidence_overlap": 0.33,
+        "grounded": false
+      },
+      {
+        "pin": "2IN_N",
+        "page": 5,
+        "name_on_page": false,
+        "evidence_overlap": 0.33,
+        "grounded": false
+      },
+      {
+        "pin": "1OUT",
+        "page": 5,
+        "name_on_page": false,
+        "evidence_overlap": 0.5,
+        "grounded": false
+      },
+      {
+        "pin": "2OUT",
+        "page": 5,
+        "name_on_page": false,
+        "evidence_overlap": 0.5,
+        "grounded": false
+      }
+    ]
+  },
+  "spec_provenance": {
+    "specs": 58,
+    "grounded": 51,
+    "grounded_pct": 87.9,
+    "by_category": {
+      "ABS_MAX": 6,
+      "ESD": 2,
+      "RECOMMENDED": 3,
+      "THERMAL": 4,
+      "ELECTRICAL": 43
+    },
+    "ungrounded_examples": [
+      {
+        "symbol": "Duration of output short circuit (one amplifier) to ground",
+        "category": "ABS_MAX",
+        "page": 5,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "Output swing High level",
+        "category": "ELECTRICAL",
+        "page": 6,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VO Output swing",
+        "category": "ELECTRICAL",
+        "page": 7,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VO Output swing",
+        "category": "ELECTRICAL",
+        "page": 7,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VO Output swing",
+        "category": "ELECTRICAL",
+        "page": 7,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "VO Output swing",
+        "category": "ELECTRICAL",
+        "page": 7,
+        "numbers_on_page": false,
+        "evidence_overlap": 1.0,
+        "grounded": false
+      },
+      {
+        "symbol": "ICC",
+        "category": "ELECTRICAL",
+        "page": 7,
+        "numbers_on_page": false,
+        "evidence_overlap": 0.0,
+        "grounded": false
+      }
+    ]
+  },
+  "topological_validity": {
+    "is_dag": true,
+    "unreachable_outputs": [],
+    "isolated_pins": []
+  },
+  "edge_origin": {
+    "edges": 16,
+    "datasheet_derived": 6,
+    "rule_injected": 10,
+    "datasheet_pct": 37.5
+  },
+  "timing_grounding": {
+    "delay_grounded_edges": 8,
+    "grounded_pct": 50.0,
+    "timing_specs_used": {
+      "turnon_settling_us": null,
+      "propagation_delay_us": null,
+      "slew_rate_v_us": null,
+      "bandwidth_mhz": 1.0,
+      "sources": {
+        "bandwidth_mhz": "Unity-gain bandwidth"
+      }
+    }
+  },
+  "edge_details": [
+    {
+      "from": "VCC_P",
+      "to": "1OUT",
+      "delay_us": 1.0,
+      "type": "POWER_FEED",
+      "origin": "datasheet",
+      "delay_source": "Unity-gain bandwidth",
+      "condition": "VCC+ = 2.7 V to 5.5 V"
+    },
+    {
+      "from": "VCC_P",
+      "to": "1IN_P",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "VCC_P",
+      "to": "1IN_N",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "VCC_P",
+      "to": "2IN_P",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "VCC_P",
+      "to": "2IN_N",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "VCC_P",
+      "to": "2OUT",
+      "delay_us": 1.0,
+      "type": "POWER_FEED",
+      "origin": "rule",
+      "delay_source": "Unity-gain bandwidth",
+      "condition": "5 tau of GBW (1MHz)"
+    },
+    {
+      "from": "GND",
+      "to": "1OUT",
+      "delay_us": 1.0,
+      "type": "POWER_FEED",
+      "origin": "datasheet",
+      "delay_source": "Unity-gain bandwidth",
+      "condition": "GND referenced to network ground"
+    },
+    {
+      "from": "GND",
+      "to": "1IN_P",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "GND",
+      "to": "1IN_N",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "GND",
+      "to": "2IN_P",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "GND",
+      "to": "2IN_N",
+      "delay_us": 2.0,
+      "type": "TO_SIGNAL",
+      "origin": "rule",
+      "delay_source": null,
+      "condition": "Operating point stabilization"
+    },
+    {
+      "from": "GND",
+      "to": "2OUT",
+      "delay_us": 1.0,
+      "type": "POWER_FEED",
+      "origin": "rule",
+      "delay_source": "Unity-gain bandwidth",
+      "condition": "5 tau of GBW (1MHz)"
+    },
+    {
+      "from": "1IN_P",
+      "to": "1OUT",
+      "delay_us": 1.0,
+      "type": "SIGNAL_PATH",
+      "origin": "datasheet",
+      "delay_source": "Unity-gain bandwidth",
+      "condition": "Own channel only"
+    },
+    {
+      "from": "1IN_N",
+      "to": "1OUT",
+      "delay_us": 1.0,
+      "type": "SIGNAL_PATH",
+      "origin": "datasheet",
+      "delay_source": "Unity-gain bandwidth",
+      "condition": "Own channel only"
+    },
+    {
+      "from": "2IN_P",
+      "to": "2OUT",
+      "delay_us": 1.0,
+      "type": "SIGNAL_PATH",
+      "origin": "datasheet",
+      "delay_source": "Unity-gain bandwidth",
+      "condition": "Own channel only"
+    },
+    {
+      "from": "2IN_N",
+      "to": "2OUT",
+      "delay_us": 1.0,
+      "type": "SIGNAL_PATH",
+      "origin": "datasheet",
+      "delay_source": "Unity-gain bandwidth",
+      "condition": "Own channel only"
+    }
+  ],
+  "pin_coverage": {
+    "coverage_pct": 0.0
+  },
+  "parsebench_audit": {
+    "engine": "ParseBench Content Faithfulness",
+    "grounded_ratio": 0.44,
+    "is_dag": true
+  }
+}

@@ -1,0 +1,233 @@
+{
+ "title": "LMV321",
+ "name": "ui_20261126_113639_lmv321_openrouter",
+ "steps": [
+  {
+   "key": "extract",
+   "title": "1. 데이터시트 분석",
+   "state": "done",
+   "summary": {
+    "part": "LMV321",
+    "rows": 76,
+    "pins": 5,
+    "judged": 6,
+    "model_input": "op-amp spec: avd 100 dB; cmrr 65 dB; psrr 60 dB; idd 130 uA; ugbw 1 MHz; pm 60 deg"
+   },
+   "error": null,
+   "started": "11:36:47",
+   "warnings": [],
+   "seconds": 57,
+   "llm": {
+    "calls": 11,
+    "ok": 11,
+    "seconds": 32.1,
+    "cost_usd": 0.0107,
+    "models": {
+     "anthropic/claude-haiku-5.5": 1,
+     "deepseek/deepseek-v4.1-flash": 10
+    }
+   }
+  },
+  {
+   "key": "candidates",
+   "title": "2. 모델 구조 후보",
+   "state": "done",
+   "summary": {
+    "total": 34,
+    "rule_ok": 22,
+    "new": 18
+   },
+   "error": null,
+   "started": "11:37:45",
+   "warnings": [],
+   "seconds": 280,
+   "llm": null
+  },
+  {
+   "key": "select",
+   "title": "3. 바이어스 채우기·크기 정하기·측정",
+   "state": "done",
+   "summary": {
+    "evaluated": 34,
+    "forms": 57,
+    "working": 24,
+    "forms_working": {
+     "바이어스 정리": 12,
+     "바이어스 정리 + 상보 뒤집기": 9,
+     "원래 + 상보 뒤집기": 2,
+     "원래": 1
+    },
+    "timed_out": 0,
+    "skipped": 0,
+    "best_passed": "5/6"
+   },
+   "error": null,
+   "started": "11:42:26",
+   "warnings": [],
+   "seconds": 948,
+   "llm": null
+  },
+  {
+   "key": "fix",
+   "title": "4. 실패한 구조 고치기 (규칙·LLM)",
+   "state": "done",
+   "summary": {
+    "needed": false,
+    "working_before": 24,
+    "llm_calls": 0,
+    "fixed": 0,
+    "rules_tried": 0,
+    "rules_written": 0
+   },
+   "error": null,
+   "started": "11:58:14",
+   "warnings": [],
+   "seconds": 1,
+   "llm": null
+  },
+  {
+   "key": "rank",
+   "title": "5. 구조 고르기",
+   "state": "done",
+   "summary": {
+    "rule": "v4",
+    "top": [
+     {
+      "index": 28,
+      "passed": 5,
+      "judged": 6,
+      "scale": 50.0,
+      "gain_nodes": 2,
+      "input_ok": true,
+      "avd": 82.78143937348851,
+      "shortfall": 0.0369280313255743,
+      "how": "sample"
+     },
+     {
+      "index": 48,
+      "passed": 4,
+      "judged": 6,
+      "scale": 50.0,
+      "gain_nodes": 2,
+      "input_ok": true,
+      "avd": 82.78143937348851,
+      "shortfall": 0.33530437509266325,
+      "how": "sample"
+     },
+     {
+      "index": 51,
+      "passed": 4,
+      "judged": 6,
+      "scale": 20.0,
+      "gain_nodes": 2,
+      "input_ok": true,
+      "avd": 28.201051587775716,
+      "shortfall": 3.9139312084067193,
+      "how": "sample"
+     },
+     {
+      "index": 53,
+      "passed": 4,
+      "judged": 6,
+      "scale": 50.0,
+      "gain_nodes": 2,
+      "input_ok": true,
+      "avd": 25.001797273365614,
+      "shortfall": 4.600030489364611,
+      "how": "sample"
+     },
+     {
+      "index": 52,
+      "passed": 2,
+      "judged": 6,
+      "scale": 20.0,
+      "gain_nodes": 2,
+      "input_ok": true,
+      "avd": 1.5579455233003427,
+      "shortfall": 7.322715385257743,
+      "how": "sample"
+     }
+    ]
+   },
+   "error": null,
+   "started": "11:58:15",
+   "warnings": [],
+   "seconds": 0,
+   "llm": null
+  },
+  {
+   "key": "rules",
+   "title": "6. 규칙 적용",
+   "state": "done",
+   "summary": {
+    "chosen": "캐스코드",
+    "passed": "6/6",
+    "tried": 3
+   },
+   "error": null,
+   "started": "11:58:16",
+   "warnings": [],
+   "seconds": 36,
+   "llm": null
+  },
+  {
+   "key": "tune",
+   "title": "7. 스펙 맞추기 튜닝",
+   "state": "done",
+   "summary": {
+    "before": "6/6",
+    "after": "6/6",
+    "improved": false,
+    "trials": 1,
+    "stopped": "모두 통과",
+    "unit_current_ua": 20.0,
+    "scale": 20.0,
+    "cap_pf": 1.0
+   },
+   "error": null,
+   "started": "11:58:53",
+   "warnings": [],
+   "seconds": 19,
+   "llm": null
+  },
+  {
+   "key": "harness",
+   "title": "8. 하네스",
+   "state": "done",
+   "summary": {
+    "pass_rate": 71.1,
+    "iterations": 1,
+    "has_netlist": true
+   },
+   "error": null,
+   "started": "11:59:13",
+   "warnings": [],
+   "seconds": 38,
+   "llm": null
+  },
+  {
+   "key": "schematic",
+   "title": "9. 최종 회로도",
+   "state": "done",
+   "summary": {
+    "made": [
+     "before_harness",
+     "after_harness"
+    ]
+   },
+   "error": null,
+   "started": "11:59:52",
+   "warnings": [],
+   "seconds": 2,
+   "llm": null
+  }
+ ],
+ "state": "done",
+ "started": "2026-11-26 11:36:46",
+ "llm": {
+  "provider": "openrouter",
+  "model": null
+ },
+ "total_seconds": 1381,
+ "finished": "2026-11-26 11:59:54"
+}

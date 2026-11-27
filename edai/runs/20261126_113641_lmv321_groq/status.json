@@ -1,0 +1,232 @@
+{
+ "title": "LMV321",
+ "name": "ui_20261126_113641_lmv321_groq",
+ "steps": [
+  {
+   "key": "extract",
+   "title": "1. 데이터시트 분석",
+   "state": "done",
+   "summary": {
+    "part": "LMV321",
+    "rows": 27,
+    "pins": 5,
+    "judged": 3,
+    "model_input": "op-amp spec: cmrr 63 dB; psrr 60 dB; idd 80 uA"
+   },
+   "error": null,
+   "started": "11:59:57",
+   "warnings": [],
+   "seconds": 175,
+   "llm": {
+    "calls": 40,
+    "ok": 12,
+    "seconds": 27.7,
+    "cost_usd": 0,
+    "models": {
+     "openai/gpt-oss-120b": 11,
+     "qwen/qwen3.8-27b": 29
+    }
+   }
+  },
+  {
+   "key": "candidates",
+   "title": "2. 모델 구조 후보",
+   "state": "done",
+   "summary": {
+    "total": 35,
+    "rule_ok": 30,
+    "new": 25
+   },
+   "error": null,
+   "started": "12:02:52",
+   "warnings": [],
+   "seconds": 347,
+   "llm": null
+  },
+  {
+   "key": "select",
+   "title": "3. 바이어스 채우기·크기 정하기·측정",
+   "state": "done",
+   "summary": {
+    "evaluated": 35,
+    "forms": 67,
+    "working": 33,
+    "forms_working": {
+     "바이어스 정리": 18,
+     "바이어스 정리 + 상보 뒤집기": 14,
+     "원래": 1
+    },
+    "timed_out": 0,
+    "skipped": 0,
+    "best_passed": "2/3"
+   },
+   "error": null,
+   "started": "12:08:40",
+   "warnings": [],
+   "seconds": 1082,
+   "llm": null
+  },
+  {
+   "key": "fix",
+   "title": "4. 실패한 구조 고치기 (규칙·LLM)",
+   "state": "done",
+   "summary": {
+    "needed": false,
+    "working_before": 33,
+    "llm_calls": 0,
+    "fixed": 0,
+    "rules_tried": 0,
+    "rules_written": 0
+   },
+   "error": null,
+   "started": "12:26:43",
+   "warnings": [],
+   "seconds": 0,
+   "llm": null
+  },
+  {
+   "key": "rank",
+   "title": "5. 구조 고르기",
+   "state": "done",
+   "summary": {
+    "rule": "v4",
+    "top": [
+     {
+      "index": 52,
+      "passed": 2,
+      "judged": 3,
+      "scale": 20.0,
+      "gain_nodes": 1,
+      "input_ok": true,
+      "avd": null,
+      "shortfall": 0.25552848022585145,
+      "how": "sample"
+     },
+     {
+      "index": 2,
+      "passed": 2,
+      "judged": 3,
+      "scale": 20.0,
+      "gain_nodes": 1,
+      "input_ok": true,
+      "avd": null,
+      "shortfall": 0.408866211682942,
+      "how": "beam"
+     },
+     {
+      "index": 5,
+      "passed": 2,
+      "judged": 3,
+      "scale": 20.0,
+      "gain_nodes": 1,
+      "input_ok": true,
+      "avd": null,
+      "shortfall": 0.408866211682942,
+      "how": "beam"
+     },
+     {
+      "index": 12,
+      "passed": 2,
+      "judged": 3,
+      "scale": 20.0,
+      "gain_nodes": 1,
+      "input_ok": true,
+      "avd": null,
+      "shortfall": 0.408866211682942,
+      "how": "beam"
+     },
+     {
+      "index": 17,
+      "passed": 2,
+      "judged": 3,
+      "scale": 20.0,
+      "gain_nodes": 1,
+      "input_ok": true,
+      "avd": null,
+      "shortfall": 0.408866211682942,
+      "how": "beam"
+     }
+    ]
+   },
+   "error": null,
+   "started": "12:26:44",
+   "warnings": [],
+   "seconds": 0,
+   "llm": null
+  },
+  {
+   "key": "rules",
+   "title": "6. 규칙 적용",
+   "state": "done",
+   "summary": {
+    "chosen": "모델 구조 그대로",
+    "passed": "2/3",
+    "tried": 1
+   },
+   "error": null,
+   "started": "12:26:45",
+   "warnings": [],
+   "seconds": 0,
+   "llm": null
+  },
+  {
+   "key": "tune",
+   "title": "7. 스펙 맞추기 튜닝",
+   "state": "done",
+   "summary": {
+    "before": "2/3",
+    "after": "2/3",
+    "improved": false,
+    "trials": 8,
+    "stopped": "더 나아지지 않음",
+    "unit_current_ua": 20.0,
+    "scale": 20.0,
+    "cap_pf": 0.0
+   },
+   "error": null,
+   "started": "12:26:45",
+   "warnings": [],
+   "seconds": 130,
+   "llm": null
+  },
+  {
+   "key": "harness",
+   "title": "8. 하네스",
+   "state": "done",
+   "summary": {
+    "pass_rate": 85.7,
+    "iterations": 1,
+    "has_netlist": true
+   },
+   "error": null,
+   "started": "12:28:55",
+   "warnings": [],
+   "seconds": 31,
+   "llm": null
+  },
+  {
+   "key": "schematic",
+   "title": "9. 최종 회로도",
+   "state": "done",
+   "summary": {
+    "made": [
+     "before_harness",
+     "after_harness"
+    ]
+   },
+   "error": null,
+   "started": "12:29:26",
+   "warnings": [],
+   "seconds": 2,
+   "llm": null
+  }
+ ],
+ "state": "done",
+ "started": "2026-11-26 11:59:55",
+ "llm": {
+  "provider": "groq",
+  "model": null
+ },
+ "total_seconds": 1767,
+ "finished": "2026-11-26 12:29:28"
+}

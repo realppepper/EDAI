@@ -1,0 +1,154 @@
+{
+ "label": "모델 구조 그대로",
+ "rules": [],
+ "table": "NM2 D=OUT G=N1 S=VSS B=VSS ; NM5 D=N4 G=N5 S=VSS B=VSS ; NM6 D=N1 G=N1 S=VSS B=VSS ; NM7 D=N5 G=N5 S=VSS B=VSS ; PM2 D=OUT G=N4 S=VDD B=VDD ; PM3 D=N5 G=VB1 S=VDD B=VDD ; PM5 D=N1 G=IN1 S=N6 B=VDD ; PM6 D=N5 G=IN2 S=N6 B=VDD ; PM7 D=N6 G=N4 S=VDD B=VDD ; PM8 D=N4 G=N4 S=VDD B=VDD",
+ "output_scale": 20.0,
+ "subckt": ".subckt opamp INP INN OUT VDD VSS\nXNM2 OUT N1 VSS VSS nfet_06v0 w=100u l=2u m=20\nXNM5 N4 N5 VSS VSS nfet_06v0 w=100u l=2u m=20\nXNM6 N1 N1 VSS VSS nfet_06v0 w=98.5u l=2u m=11\nXNM7 N5 N5 VSS VSS nfet_06v0 w=100u l=2u m=20\nXPM2 OUT N4 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM3 N5 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXPM5 N1 INP N6 VDD pfet_06v0 w=100u l=1u m=20\nXPM6 N5 INN N6 VDD pfet_06v0 w=100u l=1u m=20\nXPM7 N6 N4 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPM8 N4 N4 VDD VDD pfet_06v0 w=100u l=2u m=20\nXPMB1 VB1 VB1 VDD VDD pfet_06v0 w=68.7u l=2u\nXNMF1 VB1 REF_NB VSS VSS nfet_06v0 w=24u l=2u\n* 기준 전류 10 uA: beta-multiplier + startup (bias_reference.py)\nXREF_MN1 REF_NB REF_NB VSS VSS nfet_06v0 w=12u l=2u\nXREF_MN2 REF_PB REF_NB REF_NS VSS nfet_06v0 w=48u l=2u\nRREF_S REF_NS VSS 8353.6\nXREF_MP3 REF_PB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MP4 REF_NB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MS1 REF_SX VSS VDD VDD pfet_06v0 w=0.5u l=20u\nXREF_MS2 REF_PB REF_SX VSS VSS nfet_06v0 w=2u l=1u\nXREF_MS3 REF_SX REF_NB VSS VSS nfet_06v0 w=5u l=1u\n.ends opamp\n",
+ "sizes": {
+  "NM2": {
+   "w": "100u",
+   "l": "2u",
+   "m": "20"
+  },
+  "NM6": {
+   "w": "98.5u",
+   "l": "2u",
+   "m": "11"
+  },
+  "NM5": {
+   "w": "100u",
+   "l": "2u",
+   "m": "20"
+  },
+  "NM7": {
+   "w": "100u",
+   "l": "2u",
+   "m": "20"
+  },
+  "PM2": {
+   "w": "100u",
+   "l": "2u",
+   "m": "20"
+  },
+  "PM7": {
+   "w": "100u",
+   "l": "2u",
+   "m": "20"
+  },
+  "PM8": {
+   "w": "100u",
+   "l": "2u",
+   "m": "20"
+  },
+  "PM3": {
+   "w": "68.7u",
+   "l": "2u"
+  },
+  "PMB1": {
+   "w": "68.7u",
+   "l": "2u"
+  },
+  "PM5": {
+   "w": "100u",
+   "l": "1u",
+   "m": "20"
+  },
+  "PM6": {
+   "w": "100u",
+   "l": "1u",
+   "m": "20"
+  },
+  "NMF1": {
+   "w": "24u",
+   "l": "2u"
+  }
+ },
+ "bias": {
+  "nodes": {
+   "VB1": {
+    "kind": "gate_only",
+    "why": "게이트에만 붙음"
+   }
+  },
+  "added": [
+   "PMB1",
+   "NMF1"
+  ],
+  "fixed": {
+   "NMF1": {
+    "w": "24u",
+    "l": "2u"
+   }
+  },
+  "reference": true,
+  "free_loops": [],
+  "completed_loops": [],
+  "unresolved": []
+ },
+ "spec": [
+  {
+   "measure": "cmrr",
+   "label": "공통모드 제거비",
+   "unit": "dB",
+   "value": 59.23258585493098,
+   "target": "≥ 50 dB",
+   "status": "PASS"
+  },
+  {
+   "measure": "psrr",
+   "label": "전원 제거비",
+   "unit": "dB",
+   "value": 51.284953603580576,
+   "target": "≥ 50 dB",
+   "status": "PASS"
+  },
+  {
+   "measure": "idd",
+   "label": "공급 전류",
+   "unit": "µA",
+   "value": 306.1804109397003,
+   "target": "≤ 170 µA",
+   "status": "FAIL"
+  }
+ ],
+ "passed": 2,
+ "judged": 3,
+ "unit_current": 2e-05,
+ "target_overrides": {},
+ "tried": [
+  {
+   "label": "모델 구조 그대로",
+   "scale": 20.0,
+   "valid": true,
+   "reason": "",
+   "passed": 2,
+   "judged": 3,
+   "spec": [
+    {
+     "measure": "cmrr",
+     "label": "공통모드 제거비",
+     "unit": "dB",
+     "value": 59.23258585493098,
+     "target": "≥ 50 dB",
+     "status": "PASS"
+    },
+    {
+     "measure": "psrr",
+     "label": "전원 제거비",
+     "unit": "dB",
+     "value": 51.284953603580576,
+     "target": "≥ 50 dB",
+     "status": "PASS"
+    },
+    {
+     "measure": "idd",
+     "label": "공급 전류",
+     "unit": "µA",
+     "value": 306.1804109397003,
+     "target": "≤ 170 µA",
+     "status": "FAIL"
+    }
+   ]
+  }
+ ]
+}

@@ -1,0 +1,24 @@
+{
+ "candidate": 40,
+ "purpose": "write_rule",
+ "model": "nvidia/nemotron-3-ultra-550b-a55b",
+ "system": "You write concise, general analog design rules. Answer JSON only.",
+ "prompt": "A structural fix just made a failing op-amp work. Turn it into a reusable rule for OTHER chips.\nPick only the features that explain WHY the fix was needed (a rule with too many conditions never matches again,\na rule with too few conditions fires where it does not help). Use the exact feature values given.\n\nFEATURES OF THE FAILING STRUCTURE:\n{\n \"failure\": \"출력이 VCM\",\n \"input_pair\": \"nmos\",\n \"input_covers_range\": false,\n \"input_stage\": \"five_transistor\",\n \"output_stage\": \"other\",\n \"gain_nodes\": 1,\n \"has_compensation\": true,\n \"own_bias\": true,\n \"failed_blocks\": [\n  \"input_pair\",\n  \"stage1\"\n ]\n}\n\nFEATURE MEANINGS:\n  failure: failure kind\n  input_pair: input pair type (nmos / pmos / both)\n  input_covers_range: whether the input pair type covers the datasheet common-mode range\n  input_stage: input stage type (five_transistor / folded_cascode / telescopic / symmetric / rail_to_rail / other)\n  output_stage: output stage type (none / common_source_nmos / common_source_pmos / push_pull / other)\n  gain_nodes: number of high-impedance gain nodes from input to OUT\n  has_compensation: whether a compensation capacitor exists\n  own_bias: whether the model drew its own bias network\n  failed_blocks: blocks that contain OFF/TRIODE devices (rule matches if all listed blocks are among them)\n\nTHE FIX THAT WORKED (in order):\n  rebuild {\"input_stage\": \"folded_cascode\", \"input_pair\": \"nmos\", \"output_stage\": \"common_source_pmos\", \"compensation\": \"miller\"}\n\nDIAGNOSIS AT THE TIME: 입력 스테이지(folded_cascode)의 출력 노드 N1 전압이 3.97V로 VDD(5V) 근처에 있어 PMOS 출력 스테이지(common_source_pmos)의 게이트 드라이브가 충분하지 않음. 이로 인해 PM5의 gm이 낮아 UGBW(22.6MHz), SR(7.2V/µs), PM(23.2°), io_sink(0.39mA) 모두 미달. 또한 폴디드 구조의 대칭성 부족으로 CMRR(15.6dB), PSRR(73.9dB)도 낮음.\n\nAnswer JSON: {\"if\": {\"<feature>\": <value>, ...}, \"text\": \"<one Korean sentence: when this happens, do this, because ...>\"}",
+ "answer": {
+  "if": {
+   "input_stage": "five_transistor",
+   "input_pair": "nmos",
+   "output_stage": "other",
+   "gain_nodes": 1,
+   "has_compensation": true,
+   "own_bias": true,
+   "failed_blocks": [
+    "input_pair",
+    "stage1"
+   ]
+  },
+  "text": "5트랜지스터 NMOS 입력 스테이지와 기타 출력 스테이지 구성에서 입력 쌍과 1단 게인 노드가 실패하면, 폴디드 캐스코드 입력 스테이지와 PMOS 공통 소스 출력 스테이지, 밀러 보상으로 재구성하여 출력 노드 전압 헤드룸을 확보하고 게이트 드라이브 능력을 향상시키십시오."
+ },
+ "error": null,
+ "seconds": 3.2
+}

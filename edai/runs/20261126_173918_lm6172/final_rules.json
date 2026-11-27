@@ -1,0 +1,472 @@
+{
+ "label": "상보 뒤집기",
+ "rules": [
+  "상보 뒤집기"
+ ],
+ "table": "PM1 D=N2 G=IN1 S=IB1 B=VDD ; PM2 D=N3 G=IN2 S=IB1 B=VDD ; NM1 D=N2 G=VB1 S=VSS B=VSS ; NM2 D=N3 G=VB1 S=VSS B=VSS ; NM3 D=N4 G=VB2 S=N2 B=VSS ; NM4 D=N1 G=VB2 S=N3 B=VSS ; PM3 D=N4 G=VB3 S=N5 B=VDD ; PM4 D=N1 G=VB3 S=N6 B=VDD ; PM5 D=N5 G=N4 S=VDD B=VDD ; PM6 D=N6 G=N4 S=VDD B=VDD ; NM5 D=OUT G=N1 S=VSS B=VSS ; PM7 D=OUT G=VB4 S=VDD B=VDD ; C1 P=N1 N=OUT",
+ "output_scale": 50.0,
+ "subckt": ".subckt opamp INP INN OUT VDD VSS\nXPM1 N2 INN IB1 VDD pfet_06v0 w=38.8u l=1u\nXPM2 N3 INP IB1 VDD pfet_06v0 w=38.5u l=1u\nXNM1 N2 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM2 N3 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXNM3 N4 VB2 N2 VSS nfet_06v0 w=8.69u l=1u\nXNM4 N1 VB2 N3 VSS nfet_06v0 w=8.74u l=1u\nXPM3 N4 VB3 N5 VDD pfet_06v0 w=40.5u l=1u\nXPM4 N1 VB3 N6 VDD pfet_06v0 w=40.7u l=1u\nXPM5 N5 N4 VDD VDD pfet_06v0 w=24.9u l=1u\nXPM6 N6 N4 VDD VDD pfet_06v0 w=25u l=1u\nXNM5 OUT N1 VSS VSS nfet_06v0 w=88u l=1u m=7\nXPM7 OUT VB4 VDD VDD pfet_06v0 w=98.2u l=2u m=35\nC1 N1 OUT 1p\nXNMB1 VB1 VB1 VSS VSS nfet_06v0 w=15u l=2u\nXPMF1 VB1 REF_PB VDD VDD pfet_06v0 w=58.6u l=2u m=2\nXNMB2 VB2 VB2 VB2_S1 VSS nfet_06v0 w=14.9u l=2u\nRBCVB2 VB2_S1 VSS 28174.6\nXPMF2 VB2 REF_PB VDD VDD pfet_06v0 w=58.6u l=2u m=2\nXPMB3 VB3 VB3 VB3_S1 VDD pfet_06v0 w=72.9u l=2u\nRBCVB3 VB3_S1 VDD 26473.2\nXNMF3 VB3 REF_NB VSS VSS nfet_06v0 w=24u l=2u\nXPMB4 VB4 VB4 VDD VDD pfet_06v0 w=68.7u l=2u\nXNMF4 VB4 REF_NB VSS VSS nfet_06v0 w=24u l=2u\nXPMF5 IB1 REF_PB VDD VDD pfet_06v0 w=58.6u l=2u m=2\n* 기준 전류 10 uA: beta-multiplier + startup (bias_reference.py)\nXREF_MN1 REF_NB REF_NB VSS VSS nfet_06v0 w=12u l=2u\nXREF_MN2 REF_PB REF_NB REF_NS VSS nfet_06v0 w=48u l=2u\nRREF_S REF_NS VSS 8353.6\nXREF_MP3 REF_PB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MP4 REF_NB REF_PB VDD VDD pfet_06v0 w=58.6u l=2u\nXREF_MS1 REF_SX VSS VDD VDD pfet_06v0 w=0.5u l=20u\nXREF_MS2 REF_PB REF_SX VSS VSS nfet_06v0 w=2u l=1u\nXREF_MS3 REF_SX REF_NB VSS VSS nfet_06v0 w=5u l=1u\n.ends opamp\n",
+ "sizes": {
+  "PM1": {
+   "w": "38.8u",
+   "l": "1u"
+  },
+  "PM2": {
+   "w": "38.5u",
+   "l": "1u"
+  },
+  "NM1": {
+   "w": "15u",
+   "l": "2u"
+  },
+  "NM2": {
+   "w": "15u",
+   "l": "2u"
+  },
+  "NMB1": {
+   "w": "15u",
+   "l": "2u"
+  },
+  "NM3": {
+   "w": "8.69u",
+   "l": "1u"
+  },
+  "NM4": {
+   "w": "8.74u",
+   "l": "1u"
+  },
+  "PM3": {
+   "w": "40.5u",
+   "l": "1u"
+  },
+  "PM4": {
+   "w": "40.7u",
+   "l": "1u"
+  },
+  "PM5": {
+   "w": "24.9u",
+   "l": "1u"
+  },
+  "PM6": {
+   "w": "25u",
+   "l": "1u"
+  },
+  "NM5": {
+   "w": "88u",
+   "l": "1u",
+   "m": "7"
+  },
+  "PM7": {
+   "w": "98.2u",
+   "l": "2u",
+   "m": "35"
+  },
+  "PMB4": {
+   "w": "68.7u",
+   "l": "2u"
+  },
+  "PMF1": {
+   "w": "58.6u",
+   "l": "2u",
+   "m": "2"
+  },
+  "PMF2": {
+   "w": "58.6u",
+   "l": "2u",
+   "m": "2"
+  },
+  "PMF5": {
+   "w": "58.6u",
+   "l": "2u",
+   "m": "2"
+  },
+  "NMB2": {
+   "w": "14.9u",
+   "l": "2u"
+  },
+  "PMB3": {
+   "w": "72.9u",
+   "l": "2u"
+  },
+  "NMF3": {
+   "w": "24u",
+   "l": "2u"
+  },
+  "NMF4": {
+   "w": "24u",
+   "l": "2u"
+  },
+  "RBCVB2": {
+   "value": "28174.6"
+  },
+  "RBCVB3": {
+   "value": "26473.2"
+  }
+ },
+ "bias": {
+  "nodes": {
+   "VB1": {
+    "kind": "gate_only",
+    "why": "게이트에만 붙음"
+   },
+   "VB2": {
+    "kind": "gate_only",
+    "why": "게이트에만 붙음"
+   },
+   "VB3": {
+    "kind": "gate_only",
+    "why": "게이트에만 붙음"
+   },
+   "VB4": {
+    "kind": "gate_only",
+    "why": "게이트에만 붙음"
+   },
+   "IB1": {
+    "kind": "current",
+    "why": "전류 단자"
+   }
+  },
+  "added": [
+   "NMB1",
+   "PMF1",
+   "NMB2",
+   "RBCVB2",
+   "PMF2",
+   "PMB3",
+   "RBCVB3",
+   "NMF3",
+   "PMB4",
+   "NMF4",
+   "PMF5"
+  ],
+  "fixed": {
+   "PMF1": {
+    "w": "58.6u",
+    "l": "2u",
+    "m": "2"
+   },
+   "RBCVB2": {
+    "value": "28174.6"
+   },
+   "PMF2": {
+    "w": "58.6u",
+    "l": "2u",
+    "m": "2"
+   },
+   "RBCVB3": {
+    "value": "26473.2"
+   },
+   "NMF3": {
+    "w": "24u",
+    "l": "2u"
+   },
+   "NMF4": {
+    "w": "24u",
+    "l": "2u"
+   },
+   "PMF5": {
+    "w": "58.6u",
+    "l": "2u",
+    "m": "2"
+   }
+  },
+  "reference": true,
+  "free_loops": [],
+  "completed_loops": [],
+  "unresolved": []
+ },
+ "spec": [
+  {
+   "measure": "avd",
+   "label": "대신호 차동 전압이득",
+   "unit": "dB",
+   "value": 109.34515651942716,
+   "target": "≥ 70 dB",
+   "status": "PASS"
+  },
+  {
+   "measure": "cmrr",
+   "label": "공통모드 제거비",
+   "unit": "dB",
+   "value": 102.17098921267683,
+   "target": "≥ 70 dB",
+   "status": "PASS"
+  },
+  {
+   "measure": "psrr",
+   "label": "전원 제거비",
+   "unit": "dB",
+   "value": 76.01574684593439,
+   "target": "≥ 75 dB",
+   "status": "PASS"
+  },
+  {
+   "measure": "idd",
+   "label": "공급 전류",
+   "unit": "µA",
+   "value": 1251.9298022895935,
+   "target": "≤ 6000 µA",
+   "status": "PASS"
+  },
+  {
+   "measure": "ugbw",
+   "label": "단위이득 대역폭",
+   "unit": "MHz",
+   "value": 14.090636617462291,
+   "target": "≥ 70 MHz",
+   "status": "FAIL"
+  },
+  {
+   "measure": "sr",
+   "label": "슬루율 (단위이득)",
+   "unit": "V/µs",
+   "value": 13.41051837565278,
+   "target": "≥ 750 V/µs",
+   "status": "FAIL"
+  },
+  {
+   "measure": "pm",
+   "label": "위상여유",
+   "unit": "°",
+   "value": 75.72037984921553,
+   "target": "≥ 41 °",
+   "status": "PASS"
+  },
+  {
+   "measure": "io_sink",
+   "label": "출력 전류 (-레일에서 0.5 V)",
+   "unit": "mA",
+   "value": 84.40210078179835,
+   "target": "≥ 27 mA",
+   "status": "PASS"
+  }
+ ],
+ "passed": 6,
+ "judged": 8,
+ "unit_current": 2e-05,
+ "target_overrides": {},
+ "tried": [
+  {
+   "label": "모델 구조 그대로",
+   "scale": 20.0,
+   "valid": true,
+   "reason": "",
+   "passed": 3,
+   "judged": 8,
+   "spec": [
+    {
+     "measure": "avd",
+     "label": "대신호 차동 전압이득",
+     "unit": "dB",
+     "value": 100.11546730686885,
+     "target": "≥ 70 dB",
+     "status": "PASS"
+    },
+    {
+     "measure": "cmrr",
+     "label": "공통모드 제거비",
+     "unit": "dB",
+     "value": 15.60029948867304,
+     "target": "≥ 70 dB",
+     "status": "FAIL"
+    },
+    {
+     "measure": "psrr",
+     "label": "전원 제거비",
+     "unit": "dB",
+     "value": 73.91053988226292,
+     "target": "≥ 75 dB",
+     "status": "FAIL"
+    },
+    {
+     "measure": "idd",
+     "label": "공급 전류",
+     "unit": "µA",
+     "value": 561.863141175295,
+     "target": "≤ 6000 µA",
+     "status": "PASS"
+    },
+    {
+     "measure": "ugbw",
+     "label": "단위이득 대역폭",
+     "unit": "MHz",
+     "value": 11.822408970487727,
+     "target": "≥ 70 MHz",
+     "status": "FAIL"
+    },
+    {
+     "measure": "sr",
+     "label": "슬루율 (단위이득)",
+     "unit": "V/µs",
+     "value": 6.989242668209087,
+     "target": "≥ 750 V/µs",
+     "status": "FAIL"
+    },
+    {
+     "measure": "pm",
+     "label": "위상여유",
+     "unit": "°",
+     "value": 62.54593488460952,
+     "target": "≥ 41 °",
+     "status": "PASS"
+    },
+    {
+     "measure": "io_sink",
+     "label": "출력 전류 (-레일에서 0.5 V)",
+     "unit": "mA",
+     "value": 0.3894417313646169,
+     "target": "≥ 27 mA",
+     "status": "FAIL"
+    }
+   ]
+  },
+  {
+   "label": "상보 뒤집기",
+   "scale": 20.0,
+   "valid": true,
+   "reason": "",
+   "passed": 6,
+   "judged": 8,
+   "spec": [
+    {
+     "measure": "avd",
+     "label": "대신호 차동 전압이득",
+     "unit": "dB",
+     "value": 103.71580490100946,
+     "target": "≥ 70 dB",
+     "status": "PASS"
+    },
+    {
+     "measure": "cmrr",
+     "label": "공통모드 제거비",
+     "unit": "dB",
+     "value": 102.17096001703162,
+     "target": "≥ 70 dB",
+     "status": "PASS"
+    },
+    {
+     "measure": "psrr",
+     "label": "전원 제거비",
+     "unit": "dB",
+     "value": 76.01585775641229,
+     "target": "≥ 75 dB",
+     "status": "PASS"
+    },
+    {
+     "measure": "idd",
+     "label": "공급 전류",
+     "unit": "µA",
+     "value": 587.7482533247316,
+     "target": "≤ 6000 µA",
+     "status": "PASS"
+    },
+    {
+     "measure": "ugbw",
+     "label": "단위이득 대역폭",
+     "unit": "MHz",
+     "value": 14.306521297342524,
+     "target": "≥ 70 MHz",
+     "status": "FAIL"
+    },
+    {
+     "measure": "sr",
+     "label": "슬루율 (단위이득)",
+     "unit": "V/µs",
+     "value": 7.952202167395122,
+     "target": "≥ 750 V/µs",
+     "status": "FAIL"
+    },
+    {
+     "measure": "pm",
+     "label": "위상여유",
+     "unit": "°",
+     "value": 69.3221834502489,
+     "target": "≥ 41 °",
+     "status": "PASS"
+    },
+    {
+     "measure": "io_sink",
+     "label": "출력 전류 (-레일에서 0.5 V)",
+     "unit": "mA",
+     "value": 33.74690333458976,
+     "target": "≥ 27 mA",
+     "status": "PASS"
+    }
+   ]
+  },
+  {
+   "label": "상보 뒤집기",
+   "scale": 50.0,
+   "valid": true,
+   "reason": "",
+   "passed": 6,
+   "judged": 8,
+   "spec": [
+    {
+     "measure": "avd",
+     "label": "대신호 차동 전압이득",
+     "unit": "dB",
+     "value": 109.34515651942716,
+     "target": "≥ 70 dB",
+     "status": "PASS"
+    },
+    {
+     "measure": "cmrr",
+     "label": "공통모드 제거비",
+     "unit": "dB",
+     "value": 102.17098921267683,
+     "target": "≥ 70 dB",
+     "status": "PASS"
+    },
+    {
+     "measure": "psrr",
+     "label": "전원 제거비",
+     "unit": "dB",
+     "value": 76.01574684593439,
+     "target": "≥ 75 dB",
+     "status": "PASS"
+    },
+    {
+     "measure": "idd",
+     "label": "공급 전류",
+     "unit": "µA",
+     "value": 1251.9298022895935,
+     "target": "≤ 6000 µA",
+     "status": "PASS"
+    },
+    {
+     "measure": "ugbw",
+     "label": "단위이득 대역폭",
+     "unit": "MHz",
+     "value": 14.090636617462291,
+     "target": "≥ 70 MHz",
+     "status": "FAIL"
+    },
+    {
+     "measure": "sr",
+     "label": "슬루율 (단위이득)",
+     "unit": "V/µs",
+     "value": 13.41051837565278,
+     "target": "≥ 750 V/µs",
+     "status": "FAIL"
+    },
+    {
+     "measure": "pm",
+     "label": "위상여유",
+     "unit": "°",
+     "value": 75.72037984921553,
+     "target": "≥ 41 °",
+     "status": "PASS"
+    },
+    {
+     "measure": "io_sink",
+     "label": "출력 전류 (-레일에서 0.5 V)",
+     "unit": "mA",
+     "value": 84.40210078179835,
+     "target": "≥ 27 mA",
+     "status": "PASS"
+    }
+   ]
+  }
+ ]
+}

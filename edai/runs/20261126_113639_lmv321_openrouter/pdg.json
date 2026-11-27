@@ -1,0 +1,141 @@
+{
+ "nodes": [
+  {
+   "name": "1IN_P",
+   "role": "SIGNAL"
+  },
+  {
+   "name": "GND",
+   "role": "GROUND"
+  },
+  {
+   "name": "1IN_N",
+   "role": "SIGNAL"
+  },
+  {
+   "name": "OUT",
+   "role": "OUTPUT"
+  },
+  {
+   "name": "VCC_P",
+   "role": "POWER"
+  }
+ ],
+ "edges": [
+  {
+   "from": "1IN_P",
+   "to": "OUT",
+   "weight": 1e-06,
+   "delay_us": 1.0,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Noninverting input; common-mode input range 0 to VCC - 1.7 V range per CMRR spec (VICR min 0 V)",
+   "origin": "datasheet",
+   "delay_source": "B1",
+   "kind": "causal"
+  },
+  {
+   "from": "GND",
+   "to": "OUT",
+   "weight": 1e-06,
+   "delay_us": 1.0,
+   "dependency_type": "POWER_FEED",
+   "condition": "Negative supply / network ground reference for all voltages",
+   "origin": "datasheet",
+   "delay_source": "B1",
+   "kind": "causal"
+  },
+  {
+   "from": "GND",
+   "to": "1IN_P",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "GND",
+   "to": "1IN_N",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "1IN_N",
+   "to": "OUT",
+   "weight": 1e-06,
+   "delay_us": 1.0,
+   "dependency_type": "SIGNAL_PATH",
+   "condition": "Inverting input; differential input voltage max +/-5.5 V",
+   "origin": "datasheet",
+   "delay_source": "B1",
+   "kind": "causal"
+  },
+  {
+   "from": "VCC_P",
+   "to": "OUT",
+   "weight": 1e-06,
+   "delay_us": 1.0,
+   "dependency_type": "POWER_FEED",
+   "condition": "Supply 2.7 V to 5.5 V (single-supply operation) required for output operation",
+   "origin": "datasheet",
+   "delay_source": "B1",
+   "kind": "causal"
+  },
+  {
+   "from": "VCC_P",
+   "to": "1IN_P",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  },
+  {
+   "from": "VCC_P",
+   "to": "1IN_N",
+   "weight": 2e-06,
+   "delay_us": 2.0,
+   "dependency_type": "TO_SIGNAL",
+   "condition": "Operating point stabilization",
+   "origin": "rule",
+   "delay_source": null,
+   "kind": "sequencing"
+  }
+ ],
+ "schedule_us": {
+  "GND": 0.0,
+  "VCC_P": 0.0,
+  "1IN_P": 2e-06,
+  "1IN_N": 2e-06,
+  "OUT": 3e-06
+ },
+ "levels": [
+  [
+   "GND",
+   "VCC_P"
+  ],
+  [
+   "1IN_P",
+   "1IN_N"
+  ],
+  [
+   "OUT"
+  ]
+ ],
+ "audit": {
+  "mode": "groundtruth_free_provenance",
+  "benchmark_framework": "ParseBench (https://github.com/run-llama/ParseBench.git)",
+  "fidelity_score_pct": 83.9,
+  "status": "ACCEPTABLE"
+ },
+ "audit_with_pages": true
+}

@@ -1,0 +1,82 @@
+{
+  "target_name": "LMV321",
+  "total_duration_ms": 28597.83,
+  "status": "COMPLETED",
+  "span_count": 3,
+  "spans": [
+    {
+      "phase": 1,
+      "name": "Phase 1: Knowledge Ingestion & HKG Construction",
+      "start_time": 1795663737.3099344,
+      "end_time": 1795663756.9333725,
+      "duration_ms": 19623.44,
+      "status": "SUCCESS",
+      "inputs": {
+        "datasheet_pdf_path": "/mnt/d/edai_jiyun2/edai/runs/20261126_113641_lmv321_groq/datasheet.pdf",
+        "user_prompt": null,
+        "max_pages": 12
+      },
+      "outputs": {
+        "part_name": "LMV321",
+        "pins_count": 5,
+        "specifications_count": 27,
+        "pins": [
+          "1IN_P",
+          "GND",
+          "1IN_N",
+          "OUT",
+          "VCC_P"
+        ]
+      },
+      "events": [],
+      "error": null
+    },
+    {
+      "phase": 2,
+      "name": "Phase 2: Port Dependency Graph (PDG) & Timing Schedule",
+      "start_time": 1795663756.933574,
+      "end_time": 1795663756.9629145,
+      "duration_ms": 29.34,
+      "status": "SUCCESS",
+      "inputs": {
+        "pins_count": 5
+      },
+      "outputs": {
+        "pin_schedule_us": {
+          "GND": 0.0,
+          "VCC_P": 0.0,
+          "1IN_P": 2.0,
+          "1IN_N": 2.0,
+          "OUT": 52.0
+        },
+        "levels_count": 3,
+        "fidelity_score_pct": 81.6,
+        "fidelity_status": "ACCEPTABLE"
+      },
+      "events": [],
+      "error": null
+    },
+    {
+      "phase": 3,
+      "name": "Phase 3: Hermes Autonomous Synthesis & Verification",
+      "start_time": 1795663757.0068328,
+      "end_time": 1795663765.890596,
+      "duration_ms": 8883.76,
+      "status": "SUCCESS",
+      "inputs": {
+        "subckt_name": "LMV321",
+        "category": "Operational Amplifier",
+        "user_prompt": null,
+        "turns_budget": 5
+      },
+      "outputs": {
+        "pass_rate_percent": 85.7,
+        "passed_specs": 6,
+        "turns_executed": 1,
+        "final_netlist_path": "/mnt/d/edai_jiyun2/edai/runs/20261126_113641_lmv321_groq/harness/LMV321_FINAL_HERMES_HARNESS2.cir"
+      },
+      "events": [],
+      "error": null
+    }
+  ]
+}

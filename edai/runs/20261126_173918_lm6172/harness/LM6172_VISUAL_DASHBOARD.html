@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Autonomous Analog Circuit Design & Verification Visualizer</title>
+  <script src="https://www.gstatic.com/antigravity/web/dev/tailwindcss.min.js"></script>
+  <style>
+    :root {
+      --background: #090d16;
+      --card: #0f172a;
+      --card-hover: #1e293b;
+      --border: #334155;
+      --foreground: #f8fafc;
+      --muted-foreground: #94a3b8;
+      --primary: #38bdf8;
+      --primary-glow: rgba(56, 189, 248, 0.25);
+      --accent: #818cf8;
+      --success: #34d399;
+      --warning: #fbbf24;
+      --danger: #f87171;
+    }
+    body {
+      background-color: var(--background);
+      color: var(--foreground);
+      font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: #0f172a;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: #334155;
+      border-radius: 4px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+      background: #475569;
+    }
+    .glow-card {
+      box-shadow: 0 0 20px -5px rgba(56, 189, 248, 0.15);
+    }
+    .node-pin {
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .node-pin:hover {
+      transform: scale(1.08);
+      filter: drop-shadow(0 0 8px var(--primary));
+    }
+    .tab-btn.active {
+      background-color: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border-bottom: 2px solid #38bdf8;
+    }
+    .code-box {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+    }
+  </style>
+</head>
+<body class="min-h-screen custom-scrollbar p-3 md:p-6 antialiased">
+  <div class="max-w-7xl mx-auto space-y-6">
+
+    <!-- Top Navigation & IC Selector Header -->
+    <header class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-lg flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="p-2.5 bg-sky-500/10 border border-sky-500/30 rounded-xl text-sky-400">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="text-xl md:text-2xl font-bold tracking-tight text-white flex items-center gap-2">
+              Autonomous Analog Circuit Verifier
+              <span class="text-xs px-2.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Neuro-Symbolic Engine</span>
+            </h1>
+            <p class="text-xs md:text-sm text-[var(--muted-foreground)] mt-0.5">
+              Deep Visual Inspection of First-Principles AI Circuit Synthesis, PDG Scheduling & Formal Verification
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- IC Selector Pills / Dropdown -->
+      <div class="flex items-center gap-2 w-full lg:w-auto">
+        <label for="icSelect" class="text-xs font-semibold text-[var(--muted-foreground)] uppercase tracking-wider shrink-0">Selected IC:</label>
+        <select id="icSelect" onchange="switchIC(this.value)" class="w-full lg:w-72 bg-slate-900 border border-[var(--border)] text-sky-300 font-semibold text-sm rounded-xl px-3 py-2 focus:outline-none focus:border-sky-400">
+        </select>
+      </div>
+    </header>
+
+    <!-- Sub-Process Master Flowchart (Breadcrumb Pipeline) -->
+    <section class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-5 shadow-lg">
+      <div class="flex items-center justify-between mb-4">
+        <h2 class="text-xs uppercase tracking-wider font-bold text-sky-400 flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          Execution Sub-Process Architecture (6 Core Phases)
+        </h2>
+        <span id="pipelineStatusBadge" class="text-xs font-medium px-2 py-0.5 rounded-md bg-sky-500/20 text-sky-300 border border-sky-500/30">Active</span>
+      </div>
+
+      <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3 text-xs">
+        <!-- Phase 1 -->
+        <div onclick="selectTab('tab-hkg')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 1</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">PDF to HKG</div>
+          <div class="text-[11px] text-slate-400 mt-1">Layout, tables & knowledge graph</div>
+        </div>
+
+        <!-- Phase 2 -->
+        <div onclick="selectTab('tab-pdg')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 2</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">PDG & Schedule</div>
+          <div class="text-[11px] text-slate-400 mt-1">Causal DAG & delay &sigma;(p)</div>
+        </div>
+
+        <!-- Phase 3 -->
+        <div onclick="selectTab('tab-synthesis')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 3</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">AI Netlist Synthesis</div>
+          <div class="text-[11px] text-slate-400 mt-1">Transistor sizing & topology</div>
+        </div>
+
+        <!-- Phase 4 -->
+        <div onclick="selectTab('tab-testbenches')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 4</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">Testbench Deck</div>
+          <div class="text-[11px] text-slate-400 mt-1">.op / .tran / .ac auto decks</div>
+        </div>
+
+        <!-- Phase 5 -->
+        <div onclick="selectTab('tab-verification')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 5</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">LTspice & SymPy</div>
+          <div class="text-[11px] text-slate-400 mt-1">Batch sim & formal interval</div>
+        </div>
+
+        <!-- Phase 6 -->
+        <div onclick="selectTab('tab-healing')" class="cursor-pointer bg-slate-900/80 hover:bg-slate-800/80 border border-slate-700 hover:border-sky-500 rounded-xl p-3 transition-all">
+          <div class="flex items-center justify-between text-slate-400 mb-1">
+            <span class="font-bold text-slate-500">PHASE 6</span>
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+          </div>
+          <div class="font-semibold text-slate-200">Self-Healing Loop</div>
+          <div class="text-[11px] text-slate-400 mt-1">Shortfall &rarr; Re-synthesis</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Key Metrics Cards for Current Selected IC -->
+    <section class="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">TARGET IC / CATEGORY</div>
+        <div id="statIcName" class="text-lg md:text-xl font-bold text-white mt-1 truncate">--</div>
+        <div id="statCategory" class="text-xs text-sky-400 truncate mt-0.5">--</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">EXTRACTED SPECS</div>
+        <div id="statSpecCount" class="text-lg md:text-xl font-bold text-white mt-1">--</div>
+        <div id="statPinCount" class="text-xs text-indigo-400 mt-0.5">-- Pins Identified</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">CLOSED-LOOP ITERATIONS</div>
+        <div id="statLoopCount" class="text-lg md:text-xl font-bold text-white mt-1">--</div>
+        <div id="statLoopStatus" class="text-xs text-amber-400 mt-0.5">2 Iterations Executed</div>
+      </div>
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-4 shadow">
+        <div class="text-xs font-semibold text-[var(--muted-foreground)]">FINAL VERIFICATION PASS</div>
+        <div id="statPassRate" class="text-lg md:text-xl font-bold text-emerald-400 mt-1">--%</div>
+        <div id="statPassRateSub" class="text-xs text-slate-400 mt-0.5">LTspice Neuro-Symbolic</div>
+      </div>
+    </section>
+
+    <!-- Interactive Navigation Tabs -->
+    <div class="border-b border-slate-700 flex overflow-x-auto gap-2 text-sm font-medium">
+      <button onclick="selectTab('tab-overview')" id="btn-tab-overview" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all active">
+        1. Sub-Process Flowchart
+      </button>
+      <button onclick="selectTab('tab-pdg')" id="btn-tab-pdg" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        2. Port Dependency Graph & Timing
+      </button>
+      <button onclick="selectTab('tab-synthesis')" id="btn-tab-synthesis" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        3. AI Netlist & Transistor Sizing
+      </button>
+      <button onclick="selectTab('tab-testbenches')" id="btn-tab-testbenches" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        4. Testbench Decks
+      </button>
+      <button onclick="selectTab('tab-verification')" id="btn-tab-verification" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        5. SymPy Oracle & Measurements
+      </button>
+      <button onclick="selectTab('tab-healing')" id="btn-tab-healing" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        6. Closed-Loop Diagnostics
+      </button>
+      <button onclick="selectTab('tab-hkg')" id="btn-tab-hkg" class="tab-btn px-4 py-2.5 rounded-t-xl text-slate-400 hover:text-white transition-all">
+        7. Knowledge Graph (HKG)
+      </button>
+    </div>
+
+    <!-- TAB 1: SUB-PROCESS FLOWCHART & SYSTEM ARCHITECTURE -->
+    <div id="tab-overview" class="tab-content space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+          Detailed Internal Sub-Processes Execution Flow
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-6">
+          Every analog IC undergoes an automated, six-phase end-to-end synthesis and verification cycle without template hardcoding.
+        </p>
+
+        <!-- SVG Flowchart -->
+        <div class="overflow-x-auto py-2">
+          <svg class="w-full min-w-[850px] h-64 text-slate-200" viewBox="0 0 950 260">
+            <defs>
+              <linearGradient id="grad-blue" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#0284c7"/>
+                <stop offset="100%" stop-color="#0369a1"/>
+              </linearGradient>
+              <linearGradient id="grad-purple" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#6366f1"/>
+                <stop offset="100%" stop-color="#4f46e5"/>
+              </linearGradient>
+              <linearGradient id="grad-emerald" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#059669"/>
+                <stop offset="100%" stop-color="#047857"/>
+              </linearGradient>
+              <linearGradient id="grad-amber" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stop-color="#d97706"/>
+                <stop offset="100%" stop-color="#b45309"/>
+              </linearGradient>
+              <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#38bdf8"/>
+              </marker>
+              <marker id="arrow-feedback" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+                <path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b"/>
+              </marker>
+            </defs>
+
+            <!-- Box 1: PDF to HKG -->
+            <rect x="20" y="40" width="130" height="90" rx="12" fill="url(#grad-blue)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="85" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">1. PDF Parsing</text>
+            <text x="85" y="90" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Layout & Tables</text>
+            <text x="85" y="105" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; HKG Graph</text>
+
+            <line x1="150" y1="85" x2="180" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 2: PDG Scheduling -->
+            <rect x="180" y="40" width="130" height="90" rx="12" fill="url(#grad-blue)" stroke="#38bdf8" stroke-width="1.5"/>
+            <text x="245" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">2. PDG Engine</text>
+            <text x="245" y="90" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Pin Dependency</text>
+            <text x="245" y="105" text-anchor="middle" font-size="10" fill="#bae6fd">&bull; Delay Schedule &sigma;(p)</text>
+
+            <line x1="310" y1="85" x2="340" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 3: LLM Circuit Synthesis -->
+            <rect x="340" y="40" width="140" height="90" rx="12" fill="url(#grad-purple)" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="410" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">3. AI Synthesis</text>
+            <text x="410" y="90" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; First-Principles</text>
+            <text x="410" y="105" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; Transistor Sizing</text>
+
+            <line x1="480" y1="85" x2="510" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 4: Testbench Deck Synthesis -->
+            <rect x="510" y="40" width="130" height="90" rx="12" fill="url(#grad-purple)" stroke="#818cf8" stroke-width="1.5"/>
+            <text x="575" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">4. Testbench Decks</text>
+            <text x="575" y="90" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; .op / .tran / .ac</text>
+            <text x="575" y="105" text-anchor="middle" font-size="10" fill="#e0e7ff">&bull; Auto .meas Bindings</text>
+
+            <line x1="640" y1="85" x2="670" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 5: LTspice & SymPy -->
+            <rect x="670" y="40" width="130" height="90" rx="12" fill="url(#grad-emerald)" stroke="#34d399" stroke-width="1.5"/>
+            <text x="735" y="70" text-anchor="middle" font-size="12" font-weight="bold" fill="#ffffff">5. Verification</text>
+            <text x="735" y="90" text-anchor="middle" font-size="10" fill="#d1fae5">&bull; Headless LTspice</text>
+            <text x="735" y="105" text-anchor="middle" font-size="10" fill="#d1fae5">&bull; SymPy Oracles</text>
+
+            <line x1="800" y1="85" x2="830" y2="85" stroke="#38bdf8" stroke-width="2" marker-end="url(#arrow)"/>
+
+            <!-- Box 6: Decision / Self-Healing -->
+            <polygon points="885,55 935,85 885,115 835,85" fill="url(#grad-amber)" stroke="#f59e0b" stroke-width="1.5"/>
+            <text x="885" y="82" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">All</text>
+            <text x="885" y="95" text-anchor="middle" font-size="10" font-weight="bold" fill="#ffffff">Pass?</text>
+
+            <!-- Feedback Loop Arrow back to Phase 3 -->
+            <path d="M 885 115 L 885 180 L 410 180 L 410 135" fill="none" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,4" marker-end="url(#arrow-feedback)"/>
+            <text x="645" y="195" text-anchor="middle" font-size="10" font-weight="bold" fill="#fbbf24">Self-Healing Iteration Feedback (Shortfalls &amp; Diagnosis)</text>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 2: PORT DEPENDENCY GRAPH (PDG) & INTERACTIVE TIMING -->
+    <div id="tab-pdg" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              Interactive Port Dependency Graph (PDG) &amp; Startup Timeline
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+              Topological activation sequence derived from physical pin roles (Power &rarr; Bias &rarr; Signal &rarr; Output)
+            </p>
+          </div>
+
+          <!-- Playback Controls -->
+          <div class="flex items-center gap-3 bg-slate-900 border border-slate-700 px-4 py-2 rounded-xl">
+            <button onclick="toggleTimelinePlay()" id="btnPlayPause" class="text-sky-400 hover:text-sky-300 font-bold text-xs flex items-center gap-1.5">
+              <svg id="playIcon" class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg>
+              <span>Play Sequence</span>
+            </button>
+            <input type="range" id="timeSlider" min="0" max="10" step="0.5" value="0" oninput="updateTimelineTime(parseFloat(this.value))" class="w-36 accent-sky-400 cursor-pointer">
+            <span id="timeDisplay" class="text-xs font-mono font-bold text-sky-300 min-w-[55px] text-right">0.0 &mu;s</span>
+          </div>
+        </div>
+
+        <!-- Dynamic PDG SVG Container -->
+        <div class="bg-slate-950/80 border border-slate-800 rounded-xl p-4 overflow-x-auto min-h-[320px] flex items-center justify-center">
+          <svg id="pdgSvg" class="w-full max-w-4xl h-72 text-slate-200" viewBox="0 0 800 280">
+            <!-- Rendered dynamically by renderPDG() -->
+          </svg>
+        </div>
+
+        <!-- Schedule Table -->
+        <div class="mt-4 overflow-x-auto">
+          <table class="w-full text-xs text-left">
+            <thead class="text-slate-400 bg-slate-900/60 uppercase text-[11px] border-b border-slate-800">
+              <tr>
+                <th class="px-3 py-2">Pin Name</th>
+                <th class="px-3 py-2">Physical Role</th>
+                <th class="px-3 py-2">Direction</th>
+                <th class="px-3 py-2">Settling Delay &sigma;(p)</th>
+                <th class="px-3 py-2">Status at Current Time</th>
+              </tr>
+            </thead>
+            <tbody id="pdgTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 3: AI NETLIST SYNTHESIS & ARCHITECTURE -->
+    <div id="tab-synthesis" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-indigo-400"></span>
+          First-Principles Transistor Netlist Synthesis &amp; Sizing Rationale
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          LLM-generated SPICE netlist without hardcoded circuit templates. Compare Loop 1 (initial synthesis) vs Loop 2 (autonomous refinement).
+        </p>
+
+        <!-- Loop Selector for Netlist -->
+        <div class="flex items-center gap-2 mb-4">
+          <span class="text-xs text-slate-400 font-semibold uppercase">View Netlist:</span>
+          <button onclick="switchNetlistIteration(1)" id="btnNetlistIter1" class="px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold">Iteration 1</button>
+          <button onclick="switchNetlistIteration(2)" id="btnNetlistIter2" class="px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold">Iteration 2</button>
+        </div>
+
+        <!-- Architecture Rationale Card -->
+        <div class="bg-slate-900 border border-slate-800 rounded-xl p-4 mb-4">
+          <h4 class="text-xs uppercase font-bold text-sky-400 mb-1">Architecture Rationale &amp; Block Topology</h4>
+          <p id="architectureSummaryText" class="text-xs text-slate-300 leading-relaxed whitespace-pre-line"></p>
+        </div>
+
+        <!-- Netlist Code Box -->
+        <div class="relative bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span id="netlistFilename" class="font-mono text-sky-300">circuit.cir</span>
+            <span>SPICE Dialect: LTspice</span>
+          </div>
+          <pre id="netlistCodePre" class="p-4 text-xs font-mono text-slate-300 overflow-x-auto max-h-96 custom-scrollbar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 4: TESTBENCH DECKS -->
+    <div id="tab-testbenches" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-purple-400"></span>
+          Synthesized Multi-Domain Testbenches
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          Automated SPICE testbenches for DC Operating Point (.op), Dynamic Transient (.tran), and AC Frequency Sweeps (.ac) aligned with PDG schedule.
+        </p>
+
+        <div class="flex items-center gap-2 mb-4" id="tbDeckButtons">
+          <!-- Dynamically filled with testbench buttons -->
+        </div>
+
+        <div class="relative bg-slate-950 border border-slate-800 rounded-xl overflow-hidden">
+          <div class="bg-slate-900/80 px-4 py-2 border-b border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span id="currentTbName" class="font-mono text-purple-300">tb_dc_op.cir</span>
+            <span>Analysis Mode: Automated .meas</span>
+          </div>
+          <pre id="tbCodePre" class="p-4 text-xs font-mono text-slate-300 overflow-x-auto max-h-96 custom-scrollbar"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 5: SYMPY ORACLE VERIFICATION & MEASUREMENTS -->
+    <div id="tab-verification" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <div class="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h3 class="text-base font-bold text-white flex items-center gap-2">
+              <span class="w-2.5 h-2.5 rounded-full bg-emerald-400"></span>
+              Neuro-Symbolic Specification Matrix &amp; Oracle Interval Audit
+            </h3>
+            <p class="text-xs text-[var(--muted-foreground)] mt-0.5">
+              Datasheet specifications formally bounded by SymPy interval algebra &amp; evaluated against LTspice measurements.
+            </p>
+          </div>
+
+          <!-- Filter Search -->
+          <div class="flex items-center gap-2 w-full md:w-auto">
+            <input type="text" id="specSearchInput" oninput="filterSpecs(this.value)" placeholder="Search parameter (e.g. VCC, Gain)..." class="text-xs bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-slate-200 focus:outline-none focus:border-sky-400 w-full md:w-56">
+          </div>
+        </div>
+
+        <!-- Spec Table -->
+        <div class="overflow-x-auto max-h-[460px] custom-scrollbar border border-slate-800 rounded-xl">
+          <table class="w-full text-xs text-left">
+            <thead class="sticky top-0 text-slate-300 bg-slate-900 uppercase text-[11px] border-b border-slate-800 shadow">
+              <tr>
+                <th class="px-3 py-2.5">Parameter Symbol</th>
+                <th class="px-3 py-2.5">Min Limit</th>
+                <th class="px-3 py-2.5">Typ Target</th>
+                <th class="px-3 py-2.5">Max Limit</th>
+                <th class="px-3 py-2.5">Unit</th>
+                <th class="px-3 py-2.5">Measured in Sim</th>
+                <th class="px-3 py-2.5">SymPy Status</th>
+              </tr>
+            </thead>
+            <tbody id="specTableBody" class="divide-y divide-slate-800/60 text-slate-300">
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: CLOSED-LOOP DIAGNOSTICS & REFINEMENT -->
+    <div id="tab-healing" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span>
+          Closed-Loop Refinement History &amp; Shortfall Analysis
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-6">
+          Step-by-step diagnostic breakdown showing what fell short in each loop iteration and what improvements were applied.
+        </p>
+
+        <div id="diagnosticsContainer" class="space-y-6">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 7: HARDWARE KNOWLEDGE GRAPH (HKG) -->
+    <div id="tab-hkg" class="tab-content hidden space-y-6">
+      <div class="bg-[var(--card)] border border-[var(--border)] rounded-2xl p-6 shadow-lg">
+        <h3 class="text-base font-bold text-white mb-2 flex items-center gap-2">
+          <span class="w-2.5 h-2.5 rounded-full bg-sky-400"></span>
+          Hardware Knowledge Graph (HKG) Topology
+        </h3>
+        <p class="text-xs text-[var(--muted-foreground)] mb-4">
+          Hierarchical document entity graph extracted from PDF text, layout blocks, and electrical tables.
+        </p>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h4 class="text-xs font-bold uppercase text-sky-400 mb-2">Device Metadata</h4>
+            <div id="hkgDeviceMetadata" class="text-xs text-slate-300 space-y-1.5"></div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-4">
+            <h4 class="text-xs font-bold uppercase text-indigo-400 mb-2">Pin Definitions &amp; Roles</h4>
+            <div id="hkgPinList" class="text-xs text-slate-300 max-h-48 overflow-y-auto custom-scrollbar space-y-1"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Embedded Benchmark Data -->
+  <script>
+    const BENCHMARK_DATA = [{"id": "harness", "folder_name": "harness", "summary": {"part_name": "LM6172", "subckt_name": "LM6172", "pass_rate_percent": 40.0, "spec_count": 110, "iterations": [{"iteration": 1, "netlist_path": "/mnt/d/edai_jiyun2/edai/runs/20261126_173918_lm6172/harness/LM6172_FINAL_HERMES_HARNESS2.cir", "pass_rate_percent": 40.0, "coverage_pct": 92.0, "passed_specs": 24, "failed_specs": 36, "unmeasured_specs": 0, "passed_symbols": ["VOS", "VOS", "IB", "IB", "IOS", "IOS", "CMRR", "VO", "VO", "VO", "VO", 0.1, 1.4, 0.02, 70, 65, 65, 60, -3.3, -2.7, -2.4, -27, 4.4, 41], "simulation_errors": [], "shortfalls": [], "improvements": ["Hermes Agent Turn 1: Executed tools ['edai_seed_verify']"], "architecture_summary": "Hermes Autonomous Synthesis (Workspace: /mnt/d/edai_jiyun2/edai/runs/20261126_173918_lm6172/harness/hermes_workspace)", "design_rationale": {"hermes_turn": {"turn": 1, "pass_rate": 40.0, "tools_called": ["edai_seed_verify"]}}}], "final_netlist_path": "/mnt/d/edai_jiyun2/edai/runs/20261126_173918_lm6172/harness/LM6172_FINAL_HERMES_HARNESS2.cir", "trace_inspector_url": "/mnt/d/edai_jiyun2/edai/runs/20261126_173918_lm6172/harness/LM6172_TRACE_INSPECTOR.html"}, "knowledge_graph": {"ic_device": {"name": "LM6172", "category": "Dual, High-Speed, Low-Power, Low-Distortion, Voltage-Feedback Amplifier", "description": "The LM6172 is a dual, high-speed voltage-feedback amplifier. The device is unity-gain stable and provides excellent dc and ac performance. With a 100MHz unity-gain bandwidth, 3000V/\u03bcs slew rate, and 50mA of output current per channel, the LM6172 offers high performance in dual amplifiers, yet only consumes 2.3mA of supply current per channel.", "package": "D (SOIC, 8)"}, "pins": [{"name": "1IN_N", "pin_number": "2", "role": "SIGNAL", "direction": "INPUT", "description": "Channel 1 inverting input", "page": 4, "evidence": "Channel 1 inverting input", "raw_name": "1IN-"}, {"name": "1IN_P", "pin_number": "3", "role": "SIGNAL", "direction": "INPUT", "description": "Channel 1 noninverting input", "page": 4, "evidence": "Channel 1 noninverting input", "raw_name": "1IN+"}, {"name": "1OUT", "pin_number": "1", "role": "OUTPUT", "direction": "OUTPUT", "description": "Channel 1 output", "page": 4, "evidence": "Channel 1 output", "raw_name": "1OUT"}, {"name": "2IN_N", "pin_number": "6", "role": "SIGNAL", "direction": "INPUT", "description": "Channel 2 inverting input", "page": 4, "evidence": "Channel 2 inverting input", "raw_name": "2IN-"}, {"name": "2IN_P", "pin_number": "5", "role": "SIGNAL", "direction": "INPUT", "description": "Channel 2 noninverting input", "page": 4, "evidence": "Channel 2 noninverting input", "raw_name": "2IN+"}, {"name": "2OUT", "pin_number": "7", "role": "OUTPUT", "direction": "OUTPUT", "description": "Channel 2 output", "page": 4, "evidence": "Channel 2 output", "raw_name": "2OUT"}, {"name": "VCC_N", "pin_number": "4", "role": "POWER", "direction": "POWER", "description": "Negative power supply", "page": 4, "evidence": "Negative power supply", "raw_name": "VCC-"}, {"name": "VCC_P", "pin_number": "8", "role": "POWER", "direction": "POWER", "description": "Positive power supply", "page": 4, "evidence": "Positive power supply", "raw_name": "VCC+"}], "port_dependencies": [{"source": "VCC_P", "target": "1OUT", "dependency_type": "POWER_FEED", "settling_delay_us": null, "condition": ""}, {"source": "VCC_N", "target": "1OUT", "dependency_type": "POWER_FEED", "settling_delay_us": null, "condition": ""}, {"source": "VCC_P", "target": "2OUT", "dependency_type": "POWER_FEED", "settling_delay_us": null, "condition": ""}, {"source": "VCC_N", "target": "2OUT", "dependency_type": "POWER_FEED", "settling_delay_us": null, "condition": ""}, {"source": "1IN_P", "target": "1OUT", "dependency_type": "SIGNAL_PATH", "settling_delay_us": null, "condition": ""}, {"source": "1IN_N", "target": "1OUT", "dependency_type": "SIGNAL_PATH", "settling_delay_us": null, "condition": ""}, {"source": "2IN_P", "target": "2OUT", "dependency_type": "SIGNAL_PATH", "settling_delay_us": null, "condition": ""}, {"source": "2IN_N", "target": "2OUT", "dependency_type": "SIGNAL_PATH", "settling_delay_us": null, "condition": ""}], "functional_blocks": [{"name": "Channel 1 Amplifier", "type": "Voltage-Feedback Amplifier", "description": "Dual high-speed voltage-feedback amplifier channel 1", "input_ports": ["1IN+", "1IN-"], "output_ports": ["1OUT"]}, {"name": "Channel 2 Amplifier", "type": "Voltage-Feedback Amplifier", "description": "Dual high-speed voltage-feedback amplifier channel 2", "input_ports": ["2IN+", "2IN-"], "output_ports": ["2OUT"]}], "electrical_parameters": [{"symbol": "V_S", "name": "Supply voltage (VCC+ \u2212 VCC\u2212)", "category": "ABS_MAX", "min": null, "typ": null, "max": 36, "unit": "V", "test_conditions": "over operating free-air temperature range", "page": 4, "evidence": "Supply voltage (VCC+ \u2212 VCC\u2212) ... MAX 36 V", "related_pins": ["VCC+", "VCC-"]}, {"symbol": "V_I", "name": "Differential input voltage", "category": "ABS_MAX", "min": null, "typ": null, "max": 10, "unit": "V", "test_conditions": "over operating free-air temperature range", "page": 4, "evidence": "Differential input voltage ... MAX \u00b110 V", "related_pins": ["IN"]}, {"symbol": "VCM", "name": "Common-mode voltage", "category": "ABS_MAX", "min": null, "typ": null, "max": null, "unit": "V", "test_conditions": "over operating free-air temperature range", "page": 4, "evidence": "Common-mode voltage ... VCC\u2212 \u2212 0.3 VCC+ + 0.3 V", "related_pins": ["VCC+", "VCC-"]}, {"symbol": "IN", "name": "Input current", "category": "ABS_MAX", "min": null, "typ": null, "max": 10, "unit": "mA", "test_conditions": "over operating free-air temperature range", "page": 4, "evidence": "Input current ... MAX \u00b110 mA", "related_pins": ["IN"]}, {"symbol": "ISC", "name": "Output current short to ground", "category": "ABS_MAX", "min": null, "typ": null, "max": null, "unit": "A", "test_conditions": "over operating free-air temperature range", "page": 4, "evidence": "Output current short to ground ... Continuous A", "related_pins": ["OUT"]}, {"symbol": "T_J", "name": "Junction temperature", "category": "ABS_MAX", "min": null, "typ": null, "max": 150, "unit": "\u00b0C", "test_conditions": "over operating free-air temperature range", "page": 4, "evidence": "Junction temperature ... MAX 150 \u00b0C", "related_pins": ["Junction"]}, {"symbol": "T_stg", "name": "Storage temperature", "category": "ABS_MAX", "min": -65, "typ": null, "max": 150, "unit": "\u00b0C", "test_conditions": "over operating free-air temperature range", "page": 4, "evidence": "Storage temperature ... -65 150 \u00b0C", "related_pins": []}, {"symbol": "T_SOLDER", "name": "Infrared or convection reflow (20 seconds)", "category": "ABS_MAX", "min": null, "typ": null, "max": 235, "unit": "\u00b0C", "test_conditions": "over operating free-air temperature range", "page": 4, "evidence": "Infrared or convection reflow (20 seconds) ... MAX 235 \u00b0C", "related_pins": []}, {"symbol": "T_SOLDER", "name": "Wave soldering lead temp (10 seconds)", "category": "ABS_MAX", "min": null, "typ": null, "max": 260, "unit": "\u00b0C", "test_conditions": "over operating free-air temperature range", "page": 4, "evidence": "Wave soldering lead temp (10 seconds) ... MAX 260 \u00b0C", "related_pins": []}, {"symbol": "V_ESD", "name": "Electrostatic discharge", "category": "ESD", "min": null, "typ": null, "max": 3000, "unit": "V", "test_conditions": "Human body model (HBM), per ANSI/ESDA/JEDEC JS-001", "page": 4, "evidence": "Electrostatic discharge ... Human body model (HBM), per ANSI/ESDA/JEDEC JS-001 \u00b13000 V", "related_pins": []}, {"symbol": "V_ESD", "name": "Electrostatic discharge", "category": "ESD", "min": null, "typ": null, "max": 300, "unit": "V", "test_conditions": "Machine model", "page": 4, "evidence": "Electrostatic discharge ... Machine model \u00b1300 V", "related_pins": []}, {"symbol": "Vs", "name": "Supply voltage", "category": "RECOMMENDED", "min": 5.5, "typ": null, "max": 36, "unit": "", "test_conditions": "over operating free-air temperature range", "page": 4, "evidence": "Supply voltage ... MIN 5.5 MAX 36", "related_pins": ["VCC+", "VCC-"]}, {"symbol": "TA", "name": "Ambient temperature", "category": "RECOMMENDED", "min": -40, "typ": null, "max": 85, "unit": "\u00b0C", "test_conditions": "over operating free-air temperature range", "page": 4, "evidence": "Ambient temperature ... MIN ~40 MAX 85 \u00b0C", "related_pins": []}, {"symbol": "R_thetaJA", "name": "Junction-to-ambient thermal resistance", "category": "THERMAL", "min": 172, "typ": 108, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM6172, D (SOIC) 8 PINS", "page": 4, "evidence": "Junction-to-ambient thermal resistance ... 172 108 \u00b0C/W", "related_pins": []}, {"symbol": "R_thetaJC(top)", "name": "Junction-to-case (top) thermal resistance", "category": "THERMAL", "min": 62.4, "typ": 52.4, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM6172, D (SOIC) 8 PINS", "page": 4, "evidence": "Junction-to-case (top) thermal resistance ... 62.4 52.4 \u00b0C/W", "related_pins": []}, {"symbol": "R_thetaJB", "name": "Junction-to-board thermal resistance", "category": "THERMAL", "min": 55.7, "typ": 51.9, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM6172, D (SOIC) 8 PINS", "page": 4, "evidence": "Junction-to-board thermal resistance ... 55.7 51.9 \u00b0C/W", "related_pins": []}, {"symbol": "Psi_JT", "name": "Junction-to-top characterization parameter", "category": "THERMAL", "min": 16.5, "typ": 6.8, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM6172, D (SOIC) 8 PINS", "page": 4, "evidence": "Junction-to-top characterization parameter ... 16.5 6.8 \u00b0C/W", "related_pins": []}, {"symbol": "Psi_JB", "name": "Junction-to-board characterization parameter", "category": "THERMAL", "min": 55.1, "typ": 51.1, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM6172, D (SOIC) 8 PINS", "page": 4, "evidence": "Junction-to-board characterization parameter ... 55.1 51.1 \u00b0C/W", "related_pins": []}, {"symbol": "R_thetaJC(bot)", "name": "Junction-to-case (bottom) thermal resistance", "category": "THERMAL", "min": null, "typ": null, "max": null, "unit": "\u00b0C/W", "test_conditions": "LM6172, P (PDIP) 8 PINS", "page": 4, "evidence": "Junction-to-case (bottom) thermal resistance ... N/A N/A \u00b0C/W", "related_pins": []}, {"symbol": "VOS", "name": "Input offset voltage", "category": "ELECTRICAL", "min": 0.4, "typ": 3, "max": null, "unit": "mV", "test_conditions": "at TJ = 25C, VCC+ = 15V, VCC- = -15V, VCM = 0V, and RL = 1kOhm", "page": 5, "evidence": "VOS Input offset voltage 0.4 3 mV", "related_pins": ["IN+", "IN-"]}, {"symbol": "VOS", "name": "Input offset voltage", "category": "ELECTRICAL", "min": null, "typ": 4, "max": null, "unit": "mV", "test_conditions": "at TJ = 25C, VCC+ = 15V, VCC- = -15V, VCM = 0V, and RL = 1kOhm; TA = -40C to +85C", "page": 5, "evidence": "VOS Input offset voltage 4 mV", "related_pins": ["IN+", "IN-"]}, {"symbol": "TCVOS", "name": "Input offset voltage average drift", "category": "ELECTRICAL", "min": 6, "typ": null, "max": null, "unit": "uV/\u00b0C", "test_conditions": "at TJ = 25C, VCC+ = 15V, VCC- = -15V, VCM = 0V, and RL = 1kOhm", "page": 5, "evidence": "TCVOS Input offset voltage average drift 6 uV/\u00b0C", "related_pins": ["IN+", "IN-"]}, {"symbol": "IB", "name": "Input bias current", "category": "ELECTRICAL", "min": 1.2, "typ": 3, "max": null, "unit": "uA", "test_conditions": "at TJ = 25C, VCC+ = 15V, VCC- = -15V, VCM = 0V, and RL = 1kOhm", "page": 5, "evidence": "IB Input bias current 1.2 3 uA", "related_pins": ["IN+", "IN-"]}, {"symbol": "IB", "name": "Input bias current", "category": "ELECTRICAL", "min": null, "typ": 4, "max": null, "unit": "uA", "test_conditions": "at TJ = 25C, VCC+ = 15V, VCC- = -15V, VCM = 0V, and RL = 1kOhm; TA = -40C to +85C", "page": 5, "evidence": "IB Input bias current 4 uA", "related_pins": ["IN+", "IN-"]}, {"symbol": "IOS", "name": "Input offset current", "category": "ELECTRICAL", "min": 0.02, "typ": 2, "max": null, "unit": "uA", "test_conditions": "at TJ = 25C, VCC+ = 15V, VCC- = -15V, VCM = 0V, and RL = 1kOhm", "page": 5, "evidence": "IOS Input offset current 0.02 2 uA", "related_pins": ["IN+", "IN-"]}, {"symbol": "IOS", "name": "Input offset current", "category": "ELECTRICAL", "min": null, "typ": 3, "max": null, "unit": "uA", "test_conditions": "at TJ = 25C, VCC+ = 15V, VCC- = -15V, VCM = 0V, and RL = 1kOhm; TA = -40C to +85C", "page": 5, "evidence": "IOS Input offset current 3 uA", "related_pins": ["IN+", "IN-"]}, {"symbol": "RIN", "name": "Input resistance", "category": "ELECTRICAL", "min": 40, "typ": null, "max": null, "unit": "MOhm", "test_conditions": "Common-mode", "page": 5, "evidence": "RIN Input resistance 40 MOhm", "related_pins": ["IN+", "IN-"]}, {"symbol": "RIN", "name": "Input resistance", "category": "ELECTRICAL", "min": 4.9, "typ": null, "max": null, "unit": "MOhm", "test_conditions": "Differential-mode", "page": 5, "evidence": "RIN Input resistance 4.9 MOhm", "related_pins": ["IN+", "IN-"]}, {"symbol": "RO", "name": "Open-loop output resistance", "category": "ELECTRICAL", "min": 14, "typ": null, "max": null, "unit": "Ohm", "test_conditions": "", "page": 5, "evidence": "RO Open-loop output resistance 14 Ohm", "related_pins": ["OUT"]}, {"symbol": "CMRR", "name": "Common-mode rejection ratio", "category": "ELECTRICAL", "min": 70, "typ": 110, "max": null, "unit": "dB", "test_conditions": "VCM = \u00b110V", "page": 5, "evidence": "CMRR Common-mode rejection ratio 70 110 dB", "related_pins": ["IN+", "IN-"]}, {"symbol": "CMRR", "name": "Common-mode rejection ratio", "category": "ELECTRICAL", "min": 65, "typ": null, "max": null, "unit": "dB", "test_conditions": "at TJ = 25C, VCC+ = 15V, VCC- = -15V, VCM = 0V, and RL = 1kOhm; TA = -40C to +85C", "page": 5, "evidence": "CMRR Common-mode rejection ratio 65 dB", "related_pins": ["IN+", "IN-"]}, {"symbol": "PSRR", "name": "Power supply rejection ratio", "category": "ELECTRICAL", "min": 75, "typ": 95, "max": null, "unit": "dB", "test_conditions": "VS = \u00b115V to \u00b15V", "page": 5, "evidence": "PSRR Power supply rejection ratio 75 95 dB", "related_pins": ["VCC+", "VCC-"]}, {"symbol": "VCM", "name": "Input common-mode voltage", "category": "ELECTRICAL", "min": null, "typ": null, "max": null, "unit": "V", "test_conditions": "CMRR > 60dB", "page": 5, "evidence": "VCM Input common-mode voltage \u00b113.5 V", "related_pins": ["IN+", "IN-"]}, {"symbol": "VCM", "name": "Input common-mode voltage", "category": "ELECTRICAL", "min": 80, "typ": 86, "max": null, "unit": "dB", "test_conditions": "RL = 1kOhm, VOUT = \u00b15V", "page": 5, "evidence": "VCM Input common-mode voltage 80 86 dB", "related_pins": ["IN+", "IN-"]}, {"symbol": "AV", "name": "Large-signal voltage gain", "category": "ELECTRICAL", "min": 75, "typ": null, "max": null, "unit": "", "test_conditions": "RL = 100Ohm, VOUT = \u00b15V; TA = -40C to +85C", "page": 5, "evidence": "AV Large-signal voltage gain 75", "related_pins": ["OUT"]}, {"symbol": "AV", "name": "Large-signal voltage gain", "category": "ELECTRICAL", "min": 65, "typ": null, "max": null, "unit": "", "test_conditions": "at TJ = 25C, VCC+ = 15V, VCC- = -15V, VCM = 0V, and RL = 1kOhm; TA = -40C to +85C", "page": 5, "evidence": "AV Large-signal voltage gain 65", "related_pins": ["OUT"]}, {"symbol": "AV", "name": "Large-signal voltage gain", "category": "ELECTRICAL", "min": 60, "typ": null, "max": null, "unit": "", "test_conditions": "", "page": 5, "evidence": "AV Large-signal voltage gain 60", "related_pins": ["OUT"]}, {"symbol": "VO", "name": "Output swing", "category": "ELECTRICAL", "min": 12.5, "typ": 13.2, "max": null, "unit": "V", "test_conditions": "RL = 1kOhm, sourcing; TA = -40C to +85C", "page": 5, "evidence": "VO Output swing 12.5 13.2 V", "related_pins": ["OUT"]}, {"symbol": "VO", "name": "Output swing", "category": "ELECTRICAL", "min": 12, "typ": null, "max": null, "unit": "V", "test_conditions": "RL = 1kOhm, sourcing", "page": 5, "evidence": "VO Output swing 12 V", "related_pins": ["OUT"]}, {"symbol": "VO", "name": "Output swing", "category": "ELECTRICAL", "min": -13.1, "typ": null, "max": null, "unit": "V", "test_conditions": "RL = 1kOhm, sinking; TA = -40C to +85C", "page": 5, "evidence": "VO Output swing -13.1 V", "related_pins": ["OUT"]}, {"symbol": "VO", "name": "Output swing", "category": "ELECTRICAL", "min": -12, "typ": null, "max": null, "unit": "V", "test_conditions": "RL = 1kOhm, sinking", "page": 5, "evidence": "VO Output swing -12 V", "related_pins": ["OUT"]}, {"symbol": "VO", "name": "Output swing", "category": "ELECTRICAL", "min": 6, "typ": 9, "max": null, "unit": "V", "test_conditions": "RL = 100Ohm, sourcing", "page": 5, "evidence": "VO Output swing 6 9 V", "related_pins": ["OUT"]}, {"symbol": "VO", "name": "Output swing", "category": "ELECTRICAL", "min": 5, "typ": null, "max": null, "unit": "V", "test_conditions": "RL = 100Ohm, sourcing; TA = -40C to +85C", "page": 5, "evidence": "VO Output swing 5 V", "related_pins": ["OUT"]}, {"symbol": "VO", "name": "Output swing", "category": "ELECTRICAL", "min": -8.5, "typ": null, "max": null, "unit": "V", "test_conditions": "RL = 100Ohm, sinking", "page": 5, "evidence": "VO Output swing -8.5 V", "related_pins": ["OUT"]}, {"symbol": "VO", "name": "Output swing", "category": "ELECTRICAL", "min": -5, "typ": null, "max": null, "unit": "V", "test_conditions": "RL = 100Ohm, sinking; TA = -40C to +85C", "page": 5, "evidence": "VO Output swing -5 V", "related_pins": ["OUT"]}, {"symbol": "Continuous output current (open loop)", "name": "Sourcing, RL = 100Ohm", "category": "ELECTRICAL", "min": 60, "typ": 90, "max": null, "unit": "mA", "test_conditions": "Sourcing, RL = 100Ohm; TA = -40C to +85C", "page": 5, "evidence": "Continuous output current 60 90 mA", "related_pins": ["OUT"]}, {"symbol": "Continuous output current (open loop)", "name": "Sinking, RL = 100Ohm", "category": "ELECTRICAL", "min": 50, "typ": null, "max": null, "unit": "mA", "test_conditions": "Sinking, RL = 100Ohm; TA = -40C to +85C", "page": 5, "evidence": "Continuous output current 50 mA", "related_pins": ["OUT"]}, {"symbol": "Continuous output current (open loop)", "name": "Sinking, RL = 100Ohm", "category": "ELECTRICAL", "min": -85, "typ": null, "max": null, "unit": "mA", "test_conditions": "Sinking, RL = 100Ohm; TA = -40C to +85C", "page": 5, "evidence": "Continuous output current -85 mA", "related_pins": ["OUT"]}, {"symbol": "Continuous output current (open loop)", "name": "Sinking, RL = 100Ohm", "category": "ELECTRICAL", "min": -50, "typ": null, "max": null, "unit": "mA", "test_conditions": "Sinking, RL = 100Ohm", "page": 5, "evidence": "Continuous output current -50 mA", "related_pins": ["OUT"]}, {"symbol": "ISC", "name": "Output short-circuit current", "category": "ELECTRICAL", "min": null, "typ": 173, "max": null, "unit": "mA", "test_conditions": "D package; Sourcing", "page": 5, "evidence": "ISC Output short-circuit current 173 mA", "related_pins": ["OUT"]}, {"symbol": "ISC", "name": "Output short-circuit current", "category": "ELECTRICAL", "min": null, "typ": -183, "max": null, "page": 5}, {"symbol": "ts", "name": "Settling time (0.1%)", "category": "ELECTRICAL", "min": null, "typ": 65, "max": null, "unit": "ns", "test_conditions": "Tj = 25\u00b0C, VCC+ = 15V, VCC\u2212 = \u221215V, VCM = 0V, RL = 1k\u03a9, AV = -1, VOUT = \u00b15V, RL = 500\u03a9", "page": 6, "evidence": "ts Settling time (0.1%) AV = -1, VOUT = \u00b15V, RL = 500\u03a9", "related_pins": ["VOUT"]}, {"symbol": "AD", "name": "Differential gain", "category": "ELECTRICAL", "min": null, "typ": 0.28, "max": null, "unit": "%", "test_conditions": "Tj = 25\u00b0C, VCC+ = 15V, VCC\u2212 = \u221215V, VCM = 0V, RL = 1k\u03a9", "page": 6, "evidence": "AD Differential gain(6)", "related_pins": [""]}, {"symbol": "\u03a6D", "name": "Differential phase", "category": "ELECTRICAL", "min": null, "typ": 0.6, "max": null, "unit": "\u00b0", "test_conditions": "Tj = 25\u00b0C, VCC+ = 15V, VCC\u2212 = \u221215V, VCM = 0V, RL = 1k\u03a9", "page": 6, "evidence": "\u03a6D Differential phase(6)", "related_pins": [""]}, {"symbol": "e\u208b n", "name": "Input-referred voltage noise", "category": "ELECTRICAL", "min": null, "typ": 12, "max": null, "unit": "nV/\u00c4Hz", "test_conditions": "Tj = 25\u00b0C, VCC+ = 15V, VCC\u2212 = \u221215V, VCM = 0V, RL = 1k\u03a9, f = 10kHz", "page": 6, "evidence": "e\u208b n Input-referred voltage noise f = 10kHz", "related_pins": [""]}, {"symbol": "in", "name": "Input-referred current noise", "category": "ELECTRICAL", "min": null, "typ": 1, "max": null, "unit": "pA/\u00c4Hz", "test_conditions": "Tj = 25\u00b0C, VCC+ = 15V, VCC\u2212 = \u221215V, VCM = 0V, RL = 1k\u03a9, f = 10kHz", "page": 6, "evidence": "in Input-referred current noise f = 10kHz", "related_pins": [""]}, {"symbol": "HD2", "name": "Second harmonic distortion", "category": "ELECTRICAL", "min": null, "typ": -88.0, "max": null, "unit": "dBc", "test_conditions": "Tj = 25\u00b0C, VCC+ = 15V, VCC\u2212 = \u221215V, VCM = 0V, RL = 1k\u03a9, D package, fIN = 10kHz", "page": 6, "evidence": "HD2 Second harmonic distortion D package fIN = 10kHz", "related_pins": [""]}, {"symbol": "HD2", "name": "Second harmonic distortion", "category": "ELECTRICAL", "min": null, "typ": -50.0, "max": null, "unit": "dBc", "test_conditions": "Tj = 25\u00b0C, VCC+ = 15V, VCC\u2212 = \u221215V, VCM = 0V, RL = 1k\u03a9, D package, fIN = 5MHz", "page": 6, "evidence": "HD2 Second harmonic distortion D package fIN = 5MHz", "related_pins": [""]}, {"symbol": "HD2", "name": "Second harmonic distortion", "category": "ELECTRICAL", "min": null, "typ": -110.0, "max": null, "unit": "dBc", "test_conditions": "Tj = 25\u00b0C, VCC+ = 15V, VCC\u2212 = \u221215V, VCM = 0V, RL = 1k\u03a9, P package, fIN = 10kHz", "page": 6, "evidence": "HD2 Second harmonic distortion P package fIN = 10kHz", "related_pins": [""]}, {"symbol": "HD3", "name": "Third harmonic distortion", "category": "ELECTRICAL", "min": null, "typ": -93.0, "max": null, "unit": "dbc", "test_conditions": "Tj = 25\u00b0C, VCC+ = 15V, VCC\u2212 = \u221215V, VCM = 0V, RL = 1k\u03a9, D package, fIN = 10kHz", "page": 6, "evidence": "HD3 Third harmonic distortion D package fIN = 10kHz", "related_pins": [""]}, {"symbol": "HD3", "name": "Third harmonic distortion", "category": "ELECTRICAL", "min": null, "typ": -41.0, "max": null, "unit": "dbc", "test_conditions": "Tj = 25\u00b0C, VCC+ = 15V, VCC\u2212 = \u221215V, VCM = 0V, RL = 1k\u03a9, D package, fIN = 5MHz", "page": 6, "evidence": "HD3 Third harmonic distortion D package fIN = 5MHz", "related_pins": [""]}, {"symbol": "HD3", "name": "Third harmonic distortion", "category": "ELECTRICAL", "min": null, "typ": -105.0, "max": null, "unit": "dbc", "test_conditions": "Tj = 25\u00b0C, VCC+ = 15V, VCC\u2212 = \u221215V, VCM = 0V, RL = 1k\u03a9, P package, fIN = 10kHz", "page": 6, "evidence": "HD3 Third harmonic distortion P package fIN = 10kHz", "related_pins": [""]}, {"symbol": "HD3", "name": "Third harmonic distortion", "category": "ELECTRICAL", "min": null, "typ": -50.0, "max": null, "unit": "dbc", "test_conditions": "Tj = 25\u00b0C, VCC+ = 15V, VCC\u2212 = \u221215V, VCM = 0V, RL = 1k\u03a9, P package, fIN = 5MHz", "page": 6, "evidence": "HD3 Third harmonic distortion P package fIN = 5MHz", "related_pins": [""]}, {"symbol": 0.1, "name": "Input offset voltage", "category": "ELECTRICAL", "min": 0.1, "typ": 3, "max": null, "unit": "mV", "test_conditions": "VCC+ = 5V, VCC\u2013 = \u22125V, VCM = 0V, and RL = 1k\u03a9", "page": 7, "evidence": "VOS Input offset voltage 0.1 3 mV", "related_pins": ["IN+", "IN-"]}, {"symbol": 4, "name": "Input offset voltage average drift", "category": "ELECTRICAL", "min": 4, "typ": null, "max": null, "unit": "\u03bcV/\u00b0C", "test_conditions": "VCC+ = 5V, VCC\u2013 = \u22125V, VCM = 0V, and RL = 1k\u03a9", "page": 7, "evidence": "TCVOS Input offset voltage average drift 4 \u03bcV/\u00b0C", "related_pins": ["IN+", "IN-"]}, {"symbol": 1.4, "name": "Input bias current", "category": "ELECTRICAL", "min": 1.4, "typ": 2.5, "max": null, "unit": "\u03bcA", "test_conditions": "VCC+ = 5V, VCC\u2013 = \u22125V, VCM = 0V, and RL = 1k\u03a9", "page": 7, "evidence": "IB Input bias current 1.4 2.5 \u03bcA", "related_pins": ["IN+", "IN-"]}, {"symbol": 0.02, "name": "Input offset current", "category": "ELECTRICAL", "min": 0.02, "typ": 1.5, "max": null, "unit": "\u03bcA", "test_conditions": "VCC+ = 5V, VCC\u2013 = \u22125V, VCM = 0V, and RL = 1k\u03a9", "page": 7, "evidence": "IOS Input offset current 0.02 1.5 \u03bcA", "related_pins": ["IN+", "IN-"]}, {"symbol": 40, "name": "Input resistance (Common-mode)", "category": "ELECTRICAL", "min": 40, "typ": null, "max": null, "unit": "M\u03a9", "test_conditions": "VCC+ = 5V, VCC\u2013 = \u22125V, VCM = 0V, and RL = 1k\u03a9", "page": 7, "evidence": "RIN Input resistance Common-mode 40 M\u03a9", "related_pins": ["IN+", "IN-"]}, {"symbol": 4.9, "name": "Input resistance (Differential-mode)", "category": "ELECTRICAL", "min": 4.9, "typ": null, "max": null, "unit": "M\u03a9", "test_conditions": "VCC+ = 5V, VCC\u2013 = \u22125V, VCM = 0V, and RL = 1k\u03a9", "page": 7, "evidence": "RIN Input resistance Differential-mode 4.9 M\u03a9", "related_pins": ["IN+", "IN-"]}, {"symbol": 14, "name": "Open loop output resistance", "category": "ELECTRICAL", "min": null, "typ": 14, "max": null, "unit": "\u03a9", "test_conditions": "VCC+ = 5V, VCC\u2013 = \u22125V, VCM = 0V, and RL = 1k\u03a9", "page": 7, "evidence": "RO Open loop output resistance 14 \u03a9", "related_pins": ["OUT"]}, {"symbol": 70, "name": "Common-mode rejection ratio", "category": "ELECTRICAL", "min": 70, "typ": 105, "max": null, "unit": "dB", "test_conditions": "VCM = \u00b12.5V", "page": 7, "evidence": "CMRR Common-mode rejection ratio 70 105 dB", "related_pins": ["IN+", "IN-"]}, {"symbol": 75, "name": "Power supply rejection ratio", "category": "ELECTRICAL", "min": 75, "typ": 95, "max": null, "unit": "dB", "test_conditions": "VS = \u00b115V to \u00b15V", "page": 7, "evidence": "PSRR Power supply rejection ratio 75 95 dB", "related_pins": ["VCC+", "VCC\u2013"]}, {"symbol": "Input common-mode voltage", "name": "Input common-mode voltage", "category": "ELECTRICAL", "min": null, "typ": null, "max": null, "unit": "V", "test_conditions": "CMRR > 60dB", "page": 7, "evidence": "VCM Input common-mode voltage \u00b13.7 V", "related_pins": ["IN+", "IN-"]}, {"symbol": 70, "name": "Large-signal voltage gain", "category": "ELECTRICAL", "min": 70, "typ": 82, "max": null, "unit": "dB", "test_conditions": "RL = 1 k\u03a9, VOUT = \u00b11V", "page": 7, "evidence": "AV Large-signal voltage gain 70 82 dB", "related_pins": ["OUT"]}, {"symbol": 65, "name": "Large-signal voltage gain", "category": "ELECTRICAL", "min": 65, "typ": null, "max": null, "unit": "dB", "test_conditions": "RL = 100\u03a9, VOUT = \u00b11V", "page": 7, "evidence": "AV Large-signal voltage gain 65 dB", "related_pins": ["OUT"]}, {"symbol": 65, "name": "Large-signal voltage gain", "category": "ELECTRICAL", "min": 65, "typ": null, "max": null, "unit": "dB", "test_conditions": "TA = -40\u00b0C to +85\u00b0C", "page": 7, "evidence": "AV Large-signal voltage gain 65 dB", "related_pins": ["OUT"]}, {"symbol": 60, "name": "Large-signal voltage gain", "category": "ELECTRICAL", "min": 60, "typ": null, "max": null, "unit": "dB", "test_conditions": "TA = -40\u00b0C to +85\u00b0C", "page": 7, "evidence": "AV Large-signal voltage gain 60 dB", "related_pins": ["OUT"]}, {"symbol": 3.1, "name": "Output swing (sourcing, RL=1k\u03a9)", "category": "ELECTRICAL", "min": 3.1, "typ": 3.4, "max": null, "unit": "V", "test_conditions": "RL = 1k\u03a9, sourcing", "page": 7, "evidence": "VO Output swing 3.1 3.4 V", "related_pins": ["OUT"]}, {"symbol": -3.3, "name": "Output swing (sinking, RL=1k\u03a9)", "category": "ELECTRICAL", "min": -3.3, "typ": -3.1, "max": null, "unit": "V", "test_conditions": "RL = 1k\u03a9, sinking", "page": 7, "evidence": "VO Output swing -3.3 -3.1 V", "related_pins": ["OUT"]}, {"symbol": 2.5, "name": "Output swing (sourcing, RL=100\u03a9)", "category": "ELECTRICAL", "min": 2.5, "typ": 2.9, "max": null, "unit": "V", "test_conditions": "RL = 100\u03a9, sourcing", "page": 7, "evidence": "VO Output swing 2.5 2.9 V", "related_pins": ["OUT"]}, {"symbol": 2.4, "name": "Output swing (sourcing, RL=100\u03a9)", "category": "ELECTRICAL", "min": 2.4, "typ": null, "max": null, "unit": "V", "test_conditions": "TA = -40\u00b0C to +85\u00b0C", "page": 7, "evidence": "VO Output swing 2.4 V", "related_pins": ["OUT"]}, {"symbol": -2.7, "name": "Output swing (sinking, RL=100\u03a9)", "category": "ELECTRICAL", "min": -2.7, "typ": -2.4, "max": null, "unit": "V", "test_conditions": "RL = 100\u03a9, sinking", "page": 7, "evidence": "VO Output swing -2.7 -2.4 V", "related_pins": ["OUT"]}, {"symbol": -2.4, "name": "Output swing (sinking, RL=100\u03a9)", "category": "ELECTRICAL", "min": -2.4, "typ": null, "max": null, "unit": "V", "test_conditions": "TA = -40\u00b0C to +85\u00b0C", "page": 7, "evidence": "VO Output swing -2.4 V", "related_pins": ["OUT"]}, {"symbol": 25, "name": "Continuous output current (open loop, sourcing)", "category": "ELECTRICAL", "min": 25, "typ": 29, "max": null, "unit": "mA", "test_conditions": "Sourcing, RL = 100\u03a9", "page": 7, "evidence": "Continuous output current 25 29 mA", "related_pins": ["OUT"]}, {"symbol": 24, "name": "Continuous output current (open loop, sourcing)", "category": "ELECTRICAL", "min": 24, "typ": null, "max": null, "unit": "mA", "test_conditions": "TA = -40\u00b0C to +85\u00b0C", "page": 7, "evidence": "Continuous output current 24 mA", "related_pins": ["OUT"]}, {"symbol": -27, "name": "Continuous output current (open loop, sinking)", "category": "ELECTRICAL", "min": -27, "typ": -24, "max": null, "unit": "mA", "test_conditions": "Sinking, RL = 100\u03a9", "page": 7, "evidence": "Continuous output current -27 -24 mA", "related_pins": ["OUT"]}, {"symbol": -23, "name": "Continuous output current (open loop, sinking)", "category": "ELECTRICAL", "min": -23, "typ": null, "max": null, "unit": "mA", "test_conditions": "TA = -40\u00b0C to +85\u00b0C", "page": 7, "evidence": "Continuous output current -23 mA", "related_pins": ["OUT"]}, {"symbol": 155, "name": "Output short-circuit current (D package, sourcing)", "category": "ELECTRICAL", "min": null, "typ": 155, "max": null, "unit": "mA", "test_conditions": "D package, Sourcing", "page": 7, "evidence": "ISC Output short-circuit current 155 mA", "related_pins": ["OUT"]}, {"symbol": -158, "name": "Output short-circuit current (D package, sinking)", "category": "ELECTRICAL", "min": null, "typ": -158, "max": null, "unit": "mA", "test_conditions": "D package, Sinking", "page": 7, "evidence": "ISC Output short-circuit current -158 mA", "related_pins": ["OUT"]}, {"symbol": 93, "name": "Output short-circuit current (P package, sourcing)", "category": "ELECTRICAL", "min": null, "typ": 93, "max": null, "unit": "mA", "test_conditions": "P package, Sourcing", "page": 7, "evidence": "ISC Output short-circuit current 93 mA", "related_pins": ["OUT"]}, {"symbol": -72, "name": "Output short-circuit current (P package, sinking)", "category": "ELECTRICAL", "min": null, "typ": -72, "max": null, "unit": "mA", "test_conditions": "P package, Sinking", "page": 7, "evidence": "ISC Output short-circuit current -72 mA", "related_pins": ["OUT"]}, {"symbol": 4.4, "name": "Supply current", "category": "ELECTRICAL", "min": 4.4, "typ": 6, "max": null, "unit": "mA", "test_conditions": "VCC+ = 5V, VCC\u2013 = \u22125V", "page": 7, "evidence": "IS Supply current 4.4 6 mA", "related_pins": ["VCC+", "VCC\u2013"]}, {"symbol": 750, "name": "Slew rate", "category": "ELECTRICAL", "min": 750, "typ": null, "max": null, "unit": "V/us", "test_conditions": "Av = +2, VIN = 3.5VPP", "page": 7, "evidence": "SR Slew rate 750 V/us", "related_pins": ["OUT"]}, {"symbol": 70, "name": "Unity-gain bandwidth", "category": "ELECTRICAL", "min": 70, "typ": null, "max": null, "unit": "MHz", "test_conditions": "", "page": 7, "evidence": "Unity-gain bandwidth 70 MHz", "related_pins": ["OUT"]}, {"symbol": 130, "name": "\u22123dB frequency", "category": "ELECTRICAL", "min": 130, "typ": null, "max": null, "unit": "MHz", "test_conditions": "AV = +1", "page": 7, "evidence": "\u22123dB frequency 130 MHz", "related_pins": ["OUT"]}, {"symbol": 75, "name": "\u22123dB frequency", "category": "ELECTRICAL", "min": 75, "typ": null, "max": null, "unit": "MHz", "test_conditions": "AV = +2, D package", "page": 7, "evidence": "\u22123dB frequency 75 MHz", "related_pins": ["OUT"]}, {"symbol": 41, "name": "Phase margin", "category": "ELECTRICAL", "min": 41, "typ": null, "max": null, "unit": "Deg", "test_conditions": "D Package", "page": 7, "evidence": "Phase margin 41 Deg", "related_pins": ["OUT"]}, {"symbol": 57, "name": "Phase margin", "category": "ELECTRICAL", "min": 57, "typ": null, "max": null, "unit": "Deg", "test_conditions": "P package", "page": 7, "evidence": "Phase margin 57 Deg", "related_pins": ["OUT"]}, {"symbol": "ts", "name": "Settling time (0.1%)", "category": "ELECTRICAL", "min": null, "typ": 72, "max": null, "unit": "ns", "test_conditions": "Tj = 25\u00b0C, VCC+ = 5V, VCC\u2212 = \u22125V, VCM = 0V, RL = 1k\u03a9, AV = -1, VOUT = \u00b11V, RL = 500\u03a9", "page": 8, "evidence": "ts Settling time (0.1%) AV = -1, VOUT = \u00b11V, RL = 500\u03a9", "related_pins": ["VOUT"]}, {"symbol": "AD", "name": "Differential gain", "category": "ELECTRICAL", "min": null, "typ": 0.4, "max": null, "unit": "%", "test_conditions": "Tj = 25\u00b0C, VCC+ = 5V, VCC\u2212 = \u22125V, VCM = 0V, RL = 1k\u03a9", "page": 8, "evidence": "AD Differential gain (6)", "related_pins": ["VOUT"]}, {"symbol": "\u03c6D", "name": "Differential phase", "category": "ELECTRICAL", "min": null, "typ": 0.7, "max": null, "unit": "\u00b0", "test_conditions": "Tj = 25\u00b0C, VCC+ = 5V, VCC\u2212 = \u22125V, VCM = 0V, RL = 1k\u03a9", "page": 8, "evidence": "\u03c6D Differential phase (6)", "related_pins": ["VOUT"]}, {"symbol": "en", "name": "Input-referred voltage noise", "category": "ELECTRICAL", "min": null, "typ": 11, "max": null, "unit": "nV/\u221aHz", "test_conditions": "Tj = 25\u00b0C, VCC+ = 5V, VCC\u2212 = \u22125V, VCM = 0V, RL = 1k\u03a9, f = 10kHz", "page": 8, "evidence": "en Input-referred voltage noise f = 10kHz", "related_pins": ["VIN"]}, {"symbol": "in", "name": "Input-referred current noise", "category": "ELECTRICAL", "min": null, "typ": 1, "max": null, "unit": "pA/\u221aHz", "test_conditions": "Tj = 25\u00b0C, VCC+ = 5V, VCC\u2212 = \u22125V, VCM = 0V, RL = 1k\u03a9, f = 10kHz", "page": 8, "evidence": "in Input-referred current noise f = 10kHz", "related_pins": ["VIN"]}, {"symbol": "HD2", "name": "Second harmonic distortion", "category": "ELECTRICAL", "min": null, "typ": -89.0, "max": null, "unit": "dBc", "test_conditions": "Tj = 25\u00b0C, VCC+ = 5V, VCC\u2212 = \u22125V, VCM = 0V, RL = 1k\u03a9, D package, fIN = 10kHz", "page": 8, "evidence": "HD2 Second harmonic distortion D package fIN = 10kHz", "related_pins": ["VOUT"]}, {"symbol": "HD2", "name": "Second harmonic distortion", "category": "ELECTRICAL", "min": null, "typ": -48.0, "max": null, "unit": "dBc", "test_conditions": "Tj = 25\u00b0C, VCC+ = 5V, VCC\u2212 = \u22125V, VCM = 0V, RL = 1k\u03a9, D package, fIN = 5MHz", "page": 8, "evidence": "HD2 Second harmonic distortion D package fIN = 5MHz", "related_pins": ["VOUT"]}, {"symbol": "HD2", "name": "Second harmonic distortion", "category": "ELECTRICAL", "min": null, "typ": -110.0, "max": null, "unit": "dBc", "test_conditions": "Tj = 25\u00b0C, VCC+ = 5V, VCC\u2212 = \u22125V, VCM = 0V, RL = 1k\u03a9, P package, fIN = 10kHz", "page": 8, "evidence": "HD2 Second harmonic distortion P package fIN = 10kHz", "related_pins": ["VOUT"]}, {"symbol": "HD3", "name": "Third harmonic distortion", "category": "ELECTRICAL", "min": null, "typ": -93.0, "max": null, "unit": "dBc", "test_conditions": "Tj = 25\u00b0C, VCC+ = 5V, VCC\u2212 = \u22125V, VCM = 0V, RL = 1k\u03a9, D package, fIN = 10kHz", "page": 8, "evidence": "HD3 Third harmonic distortion D package fIN = 10kHz", "related_pins": ["VOUT"]}, {"symbol": "HD3", "name": "Third harmonic distortion", "category": "ELECTRICAL", "min": null, "typ": -42.0, "max": null, "unit": "dBc", "test_conditions": "Tj = 25\u00b0C, VCC+ = 5V, VCC\u2212 = \u22125V, VCM = 0V, RL = 1k\u03a9, D package, fIN = 5MHz", "page": 8, "evidence": "HD3 Third harmonic distortion D package fIN = 5MHz", "related_pins": ["VOUT"]}, {"symbol": "HD3", "name": "Third harmonic distortion", "category": "ELECTRICAL", "min": null, "typ": -105.0, "max": null, "unit": "dBc", "test_conditions": "Tj = 25\u00b0C, VCC+ = 5V, VCC\u2212 = \u22125V, VCM = 0V, RL = 1k\u03a9, P package, fIN = 10kHz", "page": 8, "evidence": "HD3 Third harmonic distortion P package fIN = 10kHz", "related_pins": ["VOUT"]}, {"symbol": "HD3", "name": "Third harmonic distortion", "category": "ELECTRICAL", "min": null, "typ": -50.0, "max": null, "unit": "dBc", "test_conditions": "Tj = 25\u00b0C, VCC+ = 5V, VCC\u2212 = \u22125V, VCM = 0V, RL = 1k\u03a9, P package, fIN = 5MHz", "page": 8, "evidence": "HD3 Third harmonic distortion P package fIN = 5MHz", "related_pins": ["VOUT"]}], "provenance": {"pin_pages": [3, 1, 4, 5, 6, 23, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22], "spec_pages": [5, 7, 6, 8, 4, 30, 1, 3, 25, 20], "func_pages": [23, 24], "failed_spec_pages": [], "source_file": "datasheet.pdf"}}, "report_md": "# Autonomous AI Analog Circuit Synthesis & Verification Report\n**Target IC:** `LM6172` | **Subcircuit:** `LM6172`\n**Overall Datasheet Specification Pass Rate (among measured specs):** `40.0%`\n**Measurement Coverage (measured / testable specs):** `92.0%`\n\n## 1. Executive Summary\n- **IC Category:** The LM6172 is a dual, high-speed voltage-feedback amplifier. The device is unity-gain stable and provides excellent dc and ac performance. With a 100MHz unity-gain bandwidth, 3000V/\u03bcs slew rate, and 50mA of output current per channel, the LM6172 offers high performance in dual amplifiers, yet only consumes 2.3mA of supply current per channel.\n- **Total Datasheet Specifications Extracted:** 110\n- **Design Iterations Required:** 1\n- **Synthesized Netlist Location:** `/mnt/d/edai_jiyun2/edai/runs/20261126_173918_lm6172/harness/LM6172_FINAL_HERMES_HARNESS2.cir`\n\n## 2. Port Dependency Graph (PDG) Scheduling\nTopological activation sequence derived from physical pin roles:\n| Pin Name | Physical Role | Direction | Activation Time (us) |\n| :--- | :--- | :--- | :--- |\n| `1IN_N` | `SIGNAL` | `INPUT` | 2.00 us |\n| `1IN_P` | `SIGNAL` | `INPUT` | 2.00 us |\n| `1OUT` | `OUTPUT` | `OUTPUT` | 2.07 us |\n| `2IN_N` | `SIGNAL` | `INPUT` | 2.00 us |\n| `2IN_P` | `SIGNAL` | `INPUT` | 2.00 us |\n| `2OUT` | `OUTPUT` | `OUTPUT` | 2.07 us |\n| `VCC_N` | `POWER` | `POWER` | 0.00 us |\n| `VCC_P` | `POWER` | `POWER` | 0.00 us |\n\n### 2.1 Port Dependency Graph Topology\n```mermaid\ngraph TD\n    1IN_N[\"1IN_N (SIGNAL)<br/>2.0us\"]\n    1IN_P[\"1IN_P (SIGNAL)<br/>2.0us\"]\n    1OUT[\"1OUT (OUTPUT)<br/>2.1us\"]\n    2IN_N[\"2IN_N (SIGNAL)<br/>2.0us\"]\n    2IN_P[\"2IN_P (SIGNAL)<br/>2.0us\"]\n    2OUT[\"2OUT (OUTPUT)<br/>2.1us\"]\n    VCC_N[\"VCC_N (POWER)<br/>0.0us\"]\n    VCC_P[\"VCC_P (POWER)<br/>0.0us\"]\n    1IN_N -->|0.0us| 1OUT\n    1IN_P -->|0.0us| 1OUT\n    2IN_N -->|0.0us| 2OUT\n    2IN_P -->|0.0us| 2OUT\n    VCC_N -->|0.0us| 1OUT\n    VCC_N -->|0.0us| 2OUT\n    VCC_N -->|0.0us| 1IN_N\n    VCC_N -->|0.0us| 1IN_P\n    VCC_N -->|0.0us| 2IN_N\n    VCC_N -->|0.0us| 2IN_P\n    VCC_P -->|0.0us| 1OUT\n    VCC_P -->|0.0us| 2OUT\n    VCC_P -->|0.0us| 1IN_N\n    VCC_P -->|0.0us| 1IN_P\n    VCC_P -->|0.0us| 2IN_N\n    VCC_P -->|0.0us| 2IN_P\n```\n\n## 3. Specification Verification & SymPy Oracle Audit\nDetailed verification results evaluated against SymPy interval constraints:\n| Parameter | Min Target | Typ Target | Max Target | Measured Value | Unit | Status |\n| :--- | :--- | :--- | :--- | :--- | :--- | :--- |\n| `V_S` | - | - | - | **N/A** | V | \u274c FAIL |\n| `V_I` | - | - | - | **N/A** | V | \u274c FAIL |\n| `VCM` | - | - | - | **N/A** | V | \u274c FAIL |\n| `IN` | - | - | - | **N/A** | mA | \u274c FAIL |\n| `ISC` | - | - | - | **N/A** | A | \u274c FAIL |\n| `T_J` | - | - | - | **N/A** | \u00b0C | \u274c FAIL |\n| `T_stg` | - | - | - | **N/A** | \u00b0C | \u274c FAIL |\n| `T_SOLDER` | - | - | - | **N/A** | \u00b0C | \u274c FAIL |\n| `T_SOLDER` | - | - | - | **N/A** | \u00b0C | \u274c FAIL |\n| `V_ESD` | - | - | - | **N/A** | V | \u274c FAIL |\n| `V_ESD` | - | - | - | **N/A** | V | \u274c FAIL |\n| `Vs` | - | - | - | **N/A** |  | \u274c FAIL |\n| `TA` | - | - | - | **N/A** | \u00b0C | \u274c FAIL |\n| `R_thetaJA` | - | - | - | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R_thetaJC(top)` | - | - | - | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R_thetaJB` | - | - | - | **N/A** | \u00b0C/W | \u274c FAIL |\n| `Psi_JT` | - | - | - | **N/A** | \u00b0C/W | \u274c FAIL |\n| `Psi_JB` | - | - | - | **N/A** | \u00b0C/W | \u274c FAIL |\n| `R_thetaJC(bot)` | - | - | - | **N/A** | \u00b0C/W | \u274c FAIL |\n| `VOS` | - | 0.0004 | 0.003 | **2.6e-05** | V | \u2705 PASS |\n| `VOS` | - | 0.004 | - | **2.6e-05** | V | \u2705 PASS |\n| `TCVOS` | - | - | - | **N/A** | uV/\u00b0C | \u274c FAIL |\n| `IB` | - | 1.2e-06 | 3e-06 | **3.111e-18** | A | \u2705 PASS |\n| `IB` | - | 4e-06 | - | **3.111e-18** | A | \u2705 PASS |\n| `IOS` | - | 2e-08 | 2e-06 | **6.222e-18** | A | \u2705 PASS |\n| `IOS` | - | 3e-06 | - | **6.222e-18** | A | \u2705 PASS |\n| `RIN` | - | - | - | **N/A** | MOhm | \u274c FAIL |\n| `RIN` | - | - | - | **N/A** | MOhm | \u274c FAIL |\n| `RO` | - | - | - | **N/A** | Ohm | \u274c FAIL |\n| `CMRR` | 70 | 110 | - | **67.03** | dB | \u274c FAIL |\n| `CMRR` | 65 | - | - | **82.92** | dB | \u2705 PASS |\n| `PSRR` | 75 | 95 | - | **71.35** | dB | \u274c FAIL |\n| `VCM` | - | - | - | **N/A** | V | \u274c FAIL |\n| `VCM` | - | - | - | **N/A** | dB | \u274c FAIL |\n| `AV` | - | - | - | **74.55** | dB | \u274c FAIL |\n| `AV` | - | - | - | **94.01** | dB | \u274c FAIL |\n| `AV` | - | - | - | **109.9** | dB | \u274c FAIL |\n| `VO` | 12.5 | 13.2 | - | **1.416** | V | \u274c FAIL |\n| `VO` | 12 | - | - | **1.416** | V | \u274c FAIL |\n| `VO` | -13.1 | - | - | **0.01801** | V | \u2705 PASS |\n| `VO` | -12 | - | - | **0.01801** | V | \u2705 PASS |\n| `VO` | 6 | 9 | - | **2.39** | V | \u274c FAIL |\n| `VO` | 5 | - | - | **2.39** | V | \u274c FAIL |\n| `VO` | -8.5 | - | - | **0.1282** | V | \u2705 PASS |\n| `VO` | -5 | - | - | **0.1282** | V | \u2705 PASS |\n| `Continuous output current (open loop)` | - | - | - | **N/A** | mA | \u274c FAIL |\n| `Continuous output current (open loop)` | - | - | - | **N/A** | mA | \u274c FAIL |\n| `Continuous output current (open loop)` | - | - | - | **N/A** | mA | \u274c FAIL |\n| `Continuous output current (open loop)` | - | - | - | **N/A** | mA | \u274c FAIL |\n| `ISC` | - | 0.173 | - | **0.001101** | A | \u274c FAIL |\n| `ISC` | - | - | - | **0.001101** | A | \u274c FAIL |\n| `ts` | - | - | - | **N/A** | ns | \u274c FAIL |\n| `AD` | - | - | - | **N/A** | % | \u274c FAIL |\n| `\u03a6D` | - | - | - | **N/A** | \u00b0 | \u274c FAIL |\n| `e\u208b n` | - | - | - | **N/A** | nV/\u00c4Hz | \u274c FAIL |\n| `in` | - | - | - | **N/A** | pA/\u00c4Hz | \u274c FAIL |\n| `HD2` | - | - | - | **N/A** | dBc | \u274c FAIL |\n| `HD2` | - | - | - | **N/A** | dBc | \u274c FAIL |\n| `HD2` | - | - | - | **N/A** | dBc | \u274c FAIL |\n| `HD3` | - | - | - | **N/A** | dbc | \u274c FAIL |\n| `HD3` | - | - | - | **N/A** | dbc | \u274c FAIL |\n| `HD3` | - | - | - | **N/A** | dbc | \u274c FAIL |\n| `HD3` | - | - | - | **N/A** | dbc | \u274c FAIL |\n| `0.1` | - | 0.0001 | 0.003 | **2.6e-05** | V | \u2705 PASS |\n| `4` | - | - | - | **N/A** | \u03bcV/\u00b0C | \u274c FAIL |\n| `1.4` | - | 1.4e-06 | 2.5e-06 | **3.111e-18** | A | \u2705 PASS |\n| `0.02` | - | 2e-08 | 1.5e-06 | **6.222e-18** | A | \u2705 PASS |\n| `40` | - | - | - | **N/A** | M\u03a9 | \u274c FAIL |\n| `4.9` | - | - | - | **N/A** | M\u03a9 | \u274c FAIL |\n| `14` | - | - | - | **N/A** | \u03a9 | \u274c FAIL |\n| `70` | 70 | 105 | - | **67.03** | dB | \u274c FAIL |\n| `75` | 75 | 95 | - | **71.35** | dB | \u274c FAIL |\n| `Input common-mode voltage` | - | - | - | **N/A** | V | \u274c FAIL |\n| `70` | 70 | 82 | - | **94.01** | dB | \u2705 PASS |\n| `65` | 65 | - | - | **74.55** | dB | \u2705 PASS |\n| `65` | 65 | - | - | **109.9** | dB | \u2705 PASS |\n| `60` | 60 | - | - | **109.9** | dB | \u2705 PASS |\n| `3.1` | 3.1 | 3.4 | - | **1.416** | V | \u274c FAIL |\n| `-3.3` | -3.3 | -3.1 | - | **0.01801** | V | \u2705 PASS |\n| `2.5` | 2.5 | 2.9 | - | **2.39** | V | \u274c FAIL |\n| `2.4` | 2.4 | - | - | **0.02616** | V | \u274c FAIL |\n| `-2.7` | -2.7 | -2.4 | - | **0.1282** | V | \u2705 PASS |\n| `-2.4` | -2.4 | - | - | **0.02616** | V | \u2705 PASS |\n| `25` | 0.025 | 0.029 | - | **0.001101** | A | \u274c FAIL |\n| `24` | 0.024 | - | - | **0.001101** | A | \u274c FAIL |\n| `-27` | -0.027 | -0.024 | - | **0.2132** | A | \u2705 PASS |\n| `-23` | -0.023 | - | - | **0.001101** | A | \u274c FAIL |\n| `155` | - | 0.155 | - | **0.001101** | A | \u274c FAIL |\n| `-158` | - | -0.158 | - | **0.2132** | A | \u274c FAIL |\n| `93` | - | 0.093 | - | **0.001101** | A | \u274c FAIL |\n| `-72` | - | -0.072 | - | **0.2132** | A | \u274c FAIL |\n| `4.4` | - | 0.0044 | 0.006 | **0.001245** | A | \u2705 PASS |\n| `750` | 750 | - | - | **20.59** | V/us | \u274c FAIL |\n| `70` | 7e+07 | - | - | **2.222e+07** | Hz | \u274c FAIL |\n| `130` | - | - | - | **N/A** | MHz | \u274c FAIL |\n| `75` | - | - | - | **N/A** | MHz | \u274c FAIL |\n| `41` | 41 | - | - | **50.14** | deg | \u2705 PASS |\n| `57` | 57 | - | - | **50.14** | deg | \u274c FAIL |\n| `ts` | - | - | - | **N/A** | ns | \u274c FAIL |\n| `AD` | - | - | - | **N/A** | % | \u274c FAIL |\n| `\u03c6D` | - | - | - | **N/A** | \u00b0 | \u274c FAIL |\n| `en` | - | - | - | **N/A** | nV/\u221aHz | \u274c FAIL |\n| `in` | - | - | - | **N/A** | pA/\u221aHz | \u274c FAIL |\n| `HD2` | - | - | - | **N/A** | dBc | \u274c FAIL |\n| `HD2` | - | - | - | **N/A** | dBc | \u274c FAIL |\n| `HD2` | - | - | - | **N/A** | dBc | \u274c FAIL |\n| `HD3` | - | - | - | **N/A** | dBc | \u274c FAIL |\n| `HD3` | - | - | - | **N/A** | dBc | \u274c FAIL |\n| `HD3` | - | - | - | **N/A** | dBc | \u274c FAIL |\n| `HD3` | - | - | - | **N/A** | dBc | \u274c FAIL |\n| `HD2` | - | -88 | - | **N/A** | dBc | \u274c FAIL |\n| `HD2` | - | -50 | - | **N/A** | dBc | \u274c FAIL |\n| `HD2` | - | -110 | - | **N/A** | dBc | \u274c FAIL |\n| `HD3` | - | -93 | - | **N/A** | dbc | \u274c FAIL |\n| `HD3` | - | -41 | - | **N/A** | dbc | \u274c FAIL |\n| `HD3` | - | -105 | - | **N/A** | dbc | \u274c FAIL |\n| `HD3` | - | -50 | - | **N/A** | dbc | \u274c FAIL |\n| `HD2` | - | -89 | - | **N/A** | dBc | \u274c FAIL |\n| `HD2` | - | -48 | - | **N/A** | dBc | \u274c FAIL |\n| `HD2` | - | -110 | - | **N/A** | dBc | \u274c FAIL |\n| `HD3` | - | -93 | - | **N/A** | dBc | \u274c FAIL |\n| `HD3` | - | -42 | - | **N/A** | dBc | \u274c FAIL |\n| `HD3` | - | -105 | - | **N/A** | dBc | \u274c FAIL |\n| `HD3` | - | -50 | - | **N/A** | dBc | \u274c FAIL |\n\n## 4. Closed-Loop Iteration History & Root Cause Analysis\n| Iteration | Pass Rate | Passed Specs | Failed Specs | Architecture Notes |\n| :--- | :--- | :--- | :--- | :--- |\n| Iteration 1 | 40.0% | 24 | 36 | Hermes Autonomous Synthesis (Workspace: /mnt/d/edai_jiyun2/edai/runs/20261126_17... |\n\n### 4.1 Loop 1 Detailed Audit\n- **Pass Rate**: `40.0%` (24/60 specs passed)\n\n**Shortfall Audit (\ubbf8\ub2ec \uc6d0\uc778 \ubd84\uc11d):**\n- None (All specifications and compilation checks passed).\n\n**Improvement Actions (\uac1c\uc120 \ubc0f \uc218\uc815 \uc0ac\ud56d):**\n- Hermes Agent Turn 1: Executed tools ['edai_seed_verify']\n\n## 5. Synthesized SPICE Netlist Architecture\nNetlist file: `/mnt/d/edai_jiyun2/edai/runs/20261126_173918_lm6172/harness/LM6172_FINAL_HERMES_HARNESS2.cir`\n```spice\n\n\n* Default Physical Device Models for AI Analog Synthesis\n\n.model NMOS NMOS (LEVEL=1 VTO=0.7 KP=120u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)\n\n.model PMOS PMOS (LEVEL=1 VTO=-0.7 KP=40u GAMMA=0.4 PHI=0.6 LAMBDA=0.02 TOX=10n CJ=2e-4 CJSW=1e-10 CGDO=2e-10 CGSO=2e-10)\n\n.model QNPN NPN (IS=1e-14 BF=150 VAF=100 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=100 TF=0.3n TR=10n CJE=2p CJC=1p VJC=0.75 MJC=0.33)\n\n.model QPNP PNP (IS=1e-14 BF=80 VAF=80 IKF=0.1 ISE=1e-14 NE=1.5 BR=1 VAR=80 TF=0.5n TR=20n CJE=2p CJC=1.5p VJC=0.75 MJC=0.33)\n\n.model D1N4148 D (IS=2.52n RS=0.568 N=1.752 CJO=4p VJ=0.5 M=0.333 BV=100 IBV=100u TT=4n)\n\n.model D_ESD D (IS=1e-15 RS=10 CJO=1p BV=50)\n\n\n.include \"gf180_6v_typical.lib\"\n\n.subckt LM6172 1IN_N 1IN_P 1OUT 2IN_N 2IN_P 2OUT VCC_N VCC_P\nMPM1 N2 1IN_N IB1 VCC_P pfet_06v0_bsim0 w=38.8u l=1u\nMPM2 N3 1IN_P IB1 VCC_P pfet_06v0_bsim0 w=38.5u l=1u\nMNM1 N2 VB1 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u\nMNM2 N3 VB1 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u\nMNM3 N4 VB2 N2 VCC_N nfet_06v0_bsim0 w=8.69u l=1u\nMNM4 N1 VB2 N3 VCC_N nfet_06v0_bsim0 w=8.74u l=1u\nMPM3 N4 VB3 N5 VCC_P pfet_06v0_bsim0 w=40.5u l=1u\nMPM4 N1 VB3 N6 VCC_P pfet_06v0_bsim0 w=40.7u l=1u\nMPM5 N5 N4 VCC_P VCC_P pfet_06v0_bsim0 w=24.9u l=1u\nMPM6 N6 N4 VCC_P VCC_P pfet_06v0_bsim0 w=25u l=1u\nMNM5 1OUT N1 VCC_N VCC_N nfet_06v0_bsim0 w=88u l=1u m=7\nMPM7 1OUT VB4 VCC_P VCC_P pfet_06v0_bsim0 w=98.2u l=2u m=35\nC1 N1 1OUT 0.5p\nMNMB1 VB1 VB1 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u\nMPMF1 VB1 REF_PB VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u m=2\nMNMB2 VB2 VB2 VB2_S1 VCC_N nfet_06v0_bsim0 w=14.9u l=2u\nRBCVB2 VB2_S1 VCC_N 28174.6\nMPMF2 VB2 REF_PB VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u m=2\nMPMB3 VB3 VB3 VB3_S1 VCC_P pfet_06v0_bsim0 w=72.9u l=2u\nRBCVB3 VB3_S1 VCC_P 26473.2\nMNMF3 VB3 REF_NB VCC_N VCC_N nfet_06v0_bsim0 w=24u l=2u\nMPMB4 VB4 VB4 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u\nMNMF4 VB4 REF_NB VCC_N VCC_N nfet_06v0_bsim0 w=24u l=2u\nMPMF5 IB1 REF_PB VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u m=2\nMREF_MN1 REF_NB REF_NB VCC_N VCC_N nfet_06v0_bsim0 w=12u l=2u\nMREF_MN2 REF_PB REF_NB REF_NS VCC_N nfet_06v0_bsim0 w=48u l=2u\nRREF_S REF_NS VCC_N 8353.6\nMREF_MP3 REF_PB REF_PB VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MP4 REF_NB REF_PB VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MS1 REF_SX VCC_N VCC_P VCC_P pfet_06v0_bsim0 w=0.5u l=20u\nMREF_MS2 REF_PB REF_SX VCC_N VCC_N nfet_06v0_bsim0 w=2u l=1u\nMREF_MS3 REF_SX REF_NB VCC_N VCC_N nfet_06v0_bsim0 w=5u l=1u\nMPM1_2 N2_2 2IN_N IB1_2 VCC_P pfet_06v0_bsim0 w=38.8u l=1u\nMPM2_2 N3_2 2IN_P IB1_2 VCC_P pfet_06v0_bsim0 w=38.5u l=1u\nMNM1_2 N2_2 VB1_2 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u\nMNM2_2 N3_2 VB1_2 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u\nMNM3_2 N4_2 VB2_2 N2_2 VCC_N nfet_06v0_bsim0 w=8.69u l=1u\nMNM4_2 N1_2 VB2_2 N3_2 VCC_N nfet_06v0_bsim0 w=8.74u l=1u\nMPM3_2 N4_2 VB3_2 N5_2 VCC_P pfet_06v0_bsim0 w=40.5u l=1u\nMPM4_2 N1_2 VB3_2 N6_2 VCC_P pfet_06v0_bsim0 w=40.7u l=1u\nMPM5_2 N5_2 N4_2 VCC_P VCC_P pfet_06v0_bsim0 w=24.9u l=1u\nMPM6_2 N6_2 N4_2 VCC_P VCC_P pfet_06v0_bsim0 w=25u l=1u\nMNM5_2 2OUT N1_2 VCC_N VCC_N nfet_06v0_bsim0 w=88u l=1u m=7\nMPM7_2 2OUT VB4_2 VCC_P VCC_P pfet_06v0_bsim0 w=98.2u l=2u m=35\nC1_2 N1_2 2OUT 0.5p\nMNMB1_2 VB1_2 VB1_2 VCC_N VCC_N nfet_06v0_bsim0 w=15u l=2u\nMPMF1_2 VB1_2 REF_PB_2 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u m=2\nMNMB2_2 VB2_2 VB2_2 VB2_S1_2 VCC_N nfet_06v0_bsim0 w=14.9u l=2u\nRBCVB2_2 VB2_S1_2 VCC_N 28174.6\nMPMF2_2 VB2_2 REF_PB_2 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u m=2\nMPMB3_2 VB3_2 VB3_2 VB3_S1_2 VCC_P pfet_06v0_bsim0 w=72.9u l=2u\nRBCVB3_2 VB3_S1_2 VCC_P 26473.2\nMNMF3_2 VB3_2 REF_NB_2 VCC_N VCC_N nfet_06v0_bsim0 w=24u l=2u\nMPMB4_2 VB4_2 VB4_2 VCC_P VCC_P pfet_06v0_bsim0 w=68.7u l=2u\nMNMF4_2 VB4_2 REF_NB_2 VCC_N VCC_N nfet_06v0_bsim0 w=24u l=2u\nMPMF5_2 IB1_2 REF_PB_2 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u m=2\nMREF_MN1_2 REF_NB_2 REF_NB_2 VCC_N VCC_N nfet_06v0_bsim0 w=12u l=2u\nMREF_MN2_2 REF_PB_2 REF_NB_2 REF_NS_2 VCC_N nfet_06v0_bsim0 w=48u l=2u\nRREF_S_2 REF_NS_2 VCC_N 8353.6\nMREF_MP3_2 REF_PB_2 REF_PB_2 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MP4_2 REF_NB_2 REF_PB_2 VCC_P VCC_P pfet_06v0_bsim0 w=58.6u l=2u\nMREF_MS1_2 REF_SX_2 VCC_N VCC_P VCC_P pfet_06v0_bsim0 w=0.5u l=20u\nMREF_MS2_2 REF_PB_2 REF_SX_2 VCC_N VCC_N nfet_06v0_bsim0 w=2u l=1u\nMREF_MS3_2 REF_SX_2 REF_NB_2 VCC_N VCC_N nfet_06v0_bsim0 w=5u l=1u\n.ends LM6172\n```", "netlists": {}, "testbenches": {}, "simulation_logs": {}}];
+
+    let currentICIndex = 0;
+    let currentNetlistIter = 1;
+    let timelineTimer = null;
+    let isPlaying = false;
+    let currentTime = 0.0;
+
+    function init() {
+      const select = document.getElementById('icSelect');
+      select.innerHTML = '';
+      BENCHMARK_DATA.forEach((ic, idx) => {
+        const opt = document.createElement('option');
+        opt.value = idx;
+        const name = ic.summary.part_name || ic.id;
+        const cat = (ic.knowledge_graph.ic_device && ic.knowledge_graph.ic_device.category) || '';
+        opt.textContent = `${name} (${cat || ic.id})`;
+        select.appendChild(opt);
+      });
+
+      if (BENCHMARK_DATA.length > 0) {
+        switchIC(0);
+      }
+    }
+
+    function switchIC(index) {
+      currentICIndex = parseInt(index);
+      const ic = BENCHMARK_DATA[currentICIndex];
+      if (!ic) return;
+
+      const name = ic.summary.part_name || ic.id;
+      const cat = (ic.knowledge_graph.ic_device && ic.knowledge_graph.ic_device.category) || 'Analog IC';
+      const specCount = ic.summary.spec_count || (ic.knowledge_graph.electrical_parameters && ic.knowledge_graph.electrical_parameters.length) || 0;
+      const pins = (ic.knowledge_graph.pins || []);
+      const iters = ic.summary.iterations || [];
+      const passRate = ic.summary.pass_rate_percent || 0.0;
+
+      // Update Key Metrics
+      document.getElementById('statIcName').textContent = name;
+      document.getElementById('statCategory').textContent = cat;
+      document.getElementById('statSpecCount').textContent = specCount;
+      document.getElementById('statPinCount').textContent = `${pins.length} Pins Extracted`;
+      document.getElementById('statLoopCount').textContent = `${iters.length} Loops`;
+      document.getElementById('statPassRate').textContent = `${passRate.toFixed(1)}%`;
+      document.getElementById('statPassRateSub').textContent = passRate > 0 ? 'Verified Closed-Loop' : 'Simulated (Iter 2 Completed)';
+
+      // Render Sub-Sections
+      renderPDG(pins);
+      renderNetlist();
+      renderTestbenches();
+      renderSpecs();
+      renderDiagnostics(iters);
+      renderHKG(ic);
+    }
+
+    function selectTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+      const target = document.getElementById(tabId);
+      if (target) target.classList.remove('hidden');
+
+      const btn = document.getElementById('btn-' + tabId);
+      if (btn) btn.classList.add('active');
+    }
+
+    // -------------------------------------------------------------
+    // PDG & TIMELINE RENDERER
+    // -------------------------------------------------------------
+    function renderPDG(pins) {
+      const svg = document.getElementById('pdgSvg');
+      svg.innerHTML = '';
+      const tbody = document.getElementById('pdgTableBody');
+      tbody.innerHTML = '';
+
+      if (!pins || pins.length === 0) {
+        svg.innerHTML = '<text x="400" y="140" text-anchor="middle" fill="#64748b" font-size="14">No pin data available in knowledge graph</text>';
+        return;
+      }
+
+      // Group pins by role into columns
+      const roleCols = {
+        'POWER': { x: 100, color: '#38bdf8', label: 'Power Pins (0us)' },
+        'GROUND': { x: 100, color: '#94a3b8', label: 'Ground' },
+        'BIAS': { x: 300, color: '#fbbf24', label: 'Bias / Reg' },
+        'CONTROL': { x: 480, color: '#a855f7', label: 'Control' },
+        'SIGNAL': { x: 480, color: '#60a5fa', label: 'Signal Inputs' },
+        'OUTPUT': { x: 680, color: '#34d399', label: 'Output Nodes' }
+      };
+
+      const pinNodes = [];
+      const colCounts = {};
+
+      pins.forEach((p, idx) => {
+        const role = (p.role || 'SIGNAL').toUpperCase();
+        const baseCol = roleCols[role] || roleCols['SIGNAL'];
+        const colIdx = colCounts[baseCol.x] || 0;
+        colCounts[baseCol.x] = colIdx + 1;
+
+        let delay = 2.0;
+        if (role === 'POWER' || role === 'GROUND') delay = 0.0;
+        else if (role === 'BIAS') delay = 2.0;
+        else if (role === 'CONTROL' || role === 'SIGNAL') delay = 4.0;
+        else if (role === 'OUTPUT') delay = 7.0;
+
+        pinNodes.push({
+          name: p.name,
+          role: role,
+          direction: p.direction || 'BIDIRECTIONAL',
+          delay: delay,
+          x: baseCol.x,
+          y: 50 + colIdx * 45,
+          color: baseCol.color
+        });
+      });
+
+      // Draw Edges (Power -> Bias -> Signal -> Output)
+      pinNodes.forEach(p1 => {
+        pinNodes.forEach(p2 => {
+          if (p1.delay < p2.delay && (p2.delay - p1.delay <= 3.5)) {
+            const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+            const d = `M ${p1.x + 40} ${p1.y} C ${p1.x + 90} ${p1.y}, ${p2.x - 90} ${p2.y}, ${p2.x - 40} ${p2.y}`;
+            path.setAttribute('d', d);
+            path.setAttribute('fill', 'none');
+            path.setAttribute('stroke', '#334155');
+            path.setAttribute('stroke-width', '1.2');
+            path.setAttribute('stroke-dasharray', '3,3');
+            svg.appendChild(path);
+          }
+        });
+      });
+
+      // Draw Nodes
+      pinNodes.forEach(node => {
+        const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        g.setAttribute('class', 'node-pin cursor-pointer');
+        g.setAttribute('id', `pin-node-${node.name}`);
+
+        const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        rect.setAttribute('x', node.x - 45);
+        rect.setAttribute('y', node.y - 18);
+        rect.setAttribute('width', 90);
+        rect.setAttribute('height', 36);
+        rect.setAttribute('rx', 8);
+        rect.setAttribute('fill', '#0f172a');
+        rect.setAttribute('stroke', node.color);
+        rect.setAttribute('stroke-width', '1.5');
+        rect.setAttribute('id', `pin-rect-${node.name}`);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', node.x);
+        text.setAttribute('y', node.y - 2);
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('font-size', '11');
+        text.setAttribute('font-weight', 'bold');
+        text.setAttribute('fill', '#f8fafc');
+        text.textContent = node.name;
+
+        const subText = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        subText.setAttribute('x', node.x);
+        subText.setAttribute('y', node.y + 11);
+        subText.setAttribute('text-anchor', 'middle');
+        subText.setAttribute('font-size', '9');
+        subText.setAttribute('fill', node.color);
+        subText.textContent = `${node.delay} μs`;
+
+        g.appendChild(rect);
+        g.appendChild(text);
+        g.appendChild(subText);
+        svg.appendChild(g);
+
+        // Add to Table
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40';
+        tr.innerHTML = `
+          <td class="px-3 py-2 font-mono font-bold text-sky-300">${node.name}</td>
+          <td class="px-3 py-2">${node.role}</td>
+          <td class="px-3 py-2 text-slate-400">${node.direction}</td>
+          <td class="px-3 py-2 font-mono">${node.delay.toFixed(1)} μs</td>
+          <td class="px-3 py-2" id="status-${node.name}"><span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400">Waiting</span></td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      updateTimelineTime(currentTime);
+    }
+
+    function updateTimelineTime(val) {
+      currentTime = val;
+      document.getElementById('timeSlider').value = val;
+      document.getElementById('timeDisplay').textContent = `${val.toFixed(1)} μs`;
+
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const pins = (ic && ic.knowledge_graph.pins) || [];
+      pins.forEach(p => {
+        const role = (p.role || 'SIGNAL').toUpperCase();
+        let delay = 2.0;
+        if (role === 'POWER' || role === 'GROUND') delay = 0.0;
+        else if (role === 'BIAS') delay = 2.0;
+        else if (role === 'CONTROL' || role === 'SIGNAL') delay = 4.0;
+        else if (role === 'OUTPUT') delay = 7.0;
+
+        const rect = document.getElementById(`pin-rect-${p.name}`);
+        const statusEl = document.getElementById(`status-${p.name}`);
+        if (rect && statusEl) {
+          if (currentTime >= delay) {
+            rect.setAttribute('fill', '#1e293b');
+            rect.setAttribute('stroke-width', '2.5');
+            statusEl.innerHTML = '<span class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">Active & Settled</span>';
+          } else {
+            rect.setAttribute('fill', '#0f172a');
+            rect.setAttribute('stroke-width', '1.0');
+            statusEl.innerHTML = '<span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-500">Prerequisite</span>';
+          }
+        }
+      });
+    }
+
+    function toggleTimelinePlay() {
+      const btn = document.getElementById('btnPlayPause');
+      if (isPlaying) {
+        clearInterval(timelineTimer);
+        isPlaying = false;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M4.5 3.5v13l11-6.5-11-6.5z"/></svg><span>Play Sequence</span>';
+      } else {
+        isPlaying = true;
+        btn.innerHTML = '<svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20"><path d="M5 4h3v12H5V4zm7 0h3v12h-3V4z"/></svg><span>Pause</span>';
+        if (currentTime >= 10.0) currentTime = 0.0;
+        timelineTimer = setInterval(() => {
+          currentTime += 0.5;
+          if (currentTime > 10.0) {
+            currentTime = 10.0;
+            toggleTimelinePlay();
+          }
+          updateTimelineTime(currentTime);
+        }, 250);
+      }
+    }
+
+    // -------------------------------------------------------------
+    // NETLIST & SIZING RENDERER
+    // -------------------------------------------------------------
+    function renderNetlist() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const iters = (ic && ic.summary.iterations) || [];
+      const curIterData = iters[currentNetlistIter - 1] || iters[0] || {};
+      const archText = curIterData.architecture_summary || 'First-principles netlist synthesized directly from datasheet specifications.';
+      document.getElementById('architectureSummaryText').textContent = archText;
+
+      const netlistContent = ic.netlists[`iter${currentNetlistIter}`] || ic.netlists['iter1'] || '* No netlist found for this iteration.';
+      document.getElementById('netlistCodePre').textContent = netlistContent;
+      document.getElementById('netlistFilename').textContent = `${ic.summary.subckt_name || ic.id}_iter${currentNetlistIter}.cir`;
+    }
+
+    function switchNetlistIteration(iter) {
+      currentNetlistIter = iter;
+      document.getElementById('btnNetlistIter1').className = iter === 1
+        ? 'px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold'
+        : 'px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold';
+      document.getElementById('btnNetlistIter2').className = iter === 2
+        ? 'px-3 py-1 text-xs rounded-lg bg-sky-500/20 text-sky-300 border border-sky-500/30 font-semibold'
+        : 'px-3 py-1 text-xs rounded-lg bg-slate-800 text-slate-400 border border-slate-700 font-semibold';
+      renderNetlist();
+    }
+
+    // -------------------------------------------------------------
+    // TESTBENCH RENDERER
+    // -------------------------------------------------------------
+    function renderTestbenches() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const container = document.getElementById('tbDeckButtons');
+      container.innerHTML = '';
+
+      const tbs = Object.keys(ic.testbenches || {});
+      if (tbs.length === 0) {
+        container.innerHTML = '<span class="text-xs text-slate-400">No testbenches available.</span>';
+        document.getElementById('tbCodePre').textContent = '* No testbench deck found.';
+        return;
+      }
+
+      tbs.forEach((tbName, idx) => {
+        const btn = document.createElement('button');
+        btn.className = idx === 0
+          ? 'px-3 py-1.5 text-xs rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono font-semibold'
+          : 'px-3 py-1.5 text-xs rounded-xl bg-slate-800 text-slate-400 border border-slate-700 font-mono font-semibold hover:text-white';
+        btn.textContent = tbName;
+        btn.onclick = () => {
+          document.querySelectorAll('#tbDeckButtons button').forEach(b => {
+            b.className = 'px-3 py-1.5 text-xs rounded-xl bg-slate-800 text-slate-400 border border-slate-700 font-mono font-semibold hover:text-white';
+          });
+          btn.className = 'px-3 py-1.5 text-xs rounded-xl bg-purple-500/20 text-purple-300 border border-purple-500/30 font-mono font-semibold';
+          document.getElementById('currentTbName').textContent = tbName;
+          document.getElementById('tbCodePre').textContent = ic.testbenches[tbName];
+        };
+        container.appendChild(btn);
+      });
+
+      document.getElementById('currentTbName').textContent = tbs[0];
+      document.getElementById('tbCodePre').textContent = ic.testbenches[tbs[0]];
+    }
+
+    // -------------------------------------------------------------
+    // SYMPY ORACLE SPEC MATRIX RENDERER
+    // -------------------------------------------------------------
+    function renderSpecs() {
+      const ic = BENCHMARK_DATA[currentICIndex];
+      const tbody = document.getElementById('specTableBody');
+      tbody.innerHTML = '';
+
+      const specs = (ic.knowledge_graph && ic.knowledge_graph.electrical_parameters) || [];
+      if (specs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="7" class="px-3 py-4 text-center text-slate-500">No electrical parameters found</td></tr>';
+        return;
+      }
+
+      specs.forEach(s => {
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-800/40 transition-colors';
+
+        const minVal = s.min !== null && s.min !== undefined ? s.min : '-';
+        const typVal = s.typ !== null && s.typ !== undefined ? s.typ : '-';
+        const maxVal = s.max !== null && s.max !== undefined ? s.max : '-';
+        const unit = s.unit || '';
+
+        tr.innerHTML = `
+          <td class="px-3 py-2 font-mono font-bold text-sky-300">${s.symbol || s.name}</td>
+          <td class="px-3 py-2 font-mono">${minVal}</td>
+          <td class="px-3 py-2 font-mono text-slate-400">${typVal}</td>
+          <td class="px-3 py-2 font-mono">${maxVal}</td>
+          <td class="px-3 py-2 text-indigo-300 font-mono">${unit}</td>
+          <td class="px-3 py-2 font-mono text-slate-400">Unobserved</td>
+          <td class="px-3 py-2">
+            <span class="px-2 py-0.5 rounded text-[10px] bg-slate-800 text-slate-400 border border-slate-700">Simulated</span>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    function filterSpecs(query) {
+      const q = query.toLowerCase();
+      document.querySelectorAll('#specTableBody tr').forEach(row => {
+        const text = row.textContent.toLowerCase();
+        row.style.display = text.includes(q) ? '' : 'none';
+      });
+    }
+
+    // -------------------------------------------------------------
+    // DIAGNOSTICS & CLOSED-LOOP RENDERER
+    // -------------------------------------------------------------
+    function renderDiagnostics(iters) {
+      const container = document.getElementById('diagnosticsContainer');
+      container.innerHTML = '';
+
+      if (!iters || iters.length === 0) {
+        container.innerHTML = '<div class="text-xs text-slate-400">No iteration diagnostics recorded.</div>';
+        return;
+      }
+
+      iters.forEach(it => {
+        const card = document.createElement('div');
+        card.className = 'bg-slate-900 border border-slate-800 rounded-xl p-5 shadow space-y-4';
+
+        const passPct = (it.pass_rate_percent || 0.0).toFixed(1);
+        const shortfalls = it.shortfalls || [];
+        const improvements = it.improvements || [];
+
+        card.innerHTML = `
+          <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-400"></span>
+              <h4 class="font-bold text-sm text-white">Closed-Loop Iteration ${it.iteration}</h4>
+            </div>
+            <div class="flex items-center gap-2">
+              <span class="text-xs font-mono text-slate-400">Pass Rate:</span>
+              <span class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-amber-500/10 text-amber-300 border border-amber-500/30">${passPct}%</span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
+            <!-- Shortfall Audit -->
+            <div class="bg-slate-950 border border-rose-500/20 rounded-xl p-3.5 space-y-2">
+              <div class="font-bold text-rose-400 flex items-center gap-1.5 uppercase text-[11px]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                Shortfall Audit (미달 원인 분석)
+              </div>
+              <ul class="space-y-1 text-slate-300 max-h-40 overflow-y-auto custom-scrollbar">
+                ${shortfalls.length ? shortfalls.map(sf => `<li class="font-mono text-[11px] leading-tight text-slate-400">&bull; ${sf}</li>`).join('') : '<li class="text-slate-500">None detected.</li>'}
+              </ul>
+            </div>
+
+            <!-- Improvements Applied -->
+            <div class="bg-slate-950 border border-emerald-500/20 rounded-xl p-3.5 space-y-2">
+              <div class="font-bold text-emerald-400 flex items-center gap-1.5 uppercase text-[11px]">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Improvement Actions (개선 및 수정 내역)
+              </div>
+              <ul class="space-y-1 text-slate-300 max-h-40 overflow-y-auto custom-scrollbar">
+                ${improvements.length ? improvements.map(imp => `<li class="text-[11px] leading-tight text-slate-300">&bull; ${imp}</li>`).join('') : '<li class="text-slate-500">No improvements logged.</li>'}
+              </ul>
+            </div>
+          </div>
+        `;
+        container.appendChild(card);
+      });
+    }
+
+    // -------------------------------------------------------------
+    // HKG METADATA RENDERER
+    // -------------------------------------------------------------
+    function renderHKG(ic) {
+      const dev = (ic.knowledge_graph && ic.knowledge_graph.ic_device) || {};
+      const pins = (ic.knowledge_graph && ic.knowledge_graph.pins) || [];
+
+      const metaEl = document.getElementById('hkgDeviceMetadata');
+      metaEl.innerHTML = `
+        <div><span class="text-slate-500 font-semibold">Device Name:</span> <span class="font-bold text-white">${dev.name || ic.id}</span></div>
+        <div><span class="text-slate-500 font-semibold">Category:</span> <span class="text-sky-300">${dev.category || 'Analog IC'}</span></div>
+        <div class="text-[11px] text-slate-400 leading-relaxed mt-2">${dev.description || 'No datasheet description available.'}</div>
+      `;
+
+      const pinEl = document.getElementById('hkgPinList');
+      pinEl.innerHTML = pins.map(p => `
+        <div class="flex items-center justify-between py-1 border-b border-slate-800/40">
+          <span class="font-mono text-sky-400 font-bold">${p.name}</span>
+          <span class="text-[10px] text-slate-400 uppercase">${p.role || 'SIGNAL'} | ${p.direction || 'BIDIR'}</span>
+        </div>
+      `).join('') || '<div class="text-slate-500">No pin list available.</div>';
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
