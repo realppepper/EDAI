@@ -31,6 +31,12 @@ button:disabled { opacity:.5; cursor:default; }
 .item .t { font-weight:600; } .item .m { font-size:12px; color:var(--muted); }
 .st.done { color:var(--ok); } .st.failed { color:var(--bad); } .st.running { color:var(--run); }
 .view { background:var(--panel); border:1px solid var(--line); border-radius:10px; display:flex; flex-direction:column; min-height:0; }
+/* 결과 화면 위 버튼 줄: 메모 고치기 · 다시 돌릴 단계 · 이 단계부터 다시 · 새 창으로 열기 를 한 줄로 */
+.actions { display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+.actions[hidden] { display:none; }
+.actions label { display:inline; margin:0; white-space:nowrap; }
+.actions select { width:auto; max-width:320px; }
+.actions button.ghost { margin:0; white-space:nowrap; }
 .bar { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--line); }
 iframe { flex:1; width:100%; border:0; border-radius:0 0 10px 10px; background:#fff; min-height:0; }
 .empty { margin:auto; color:var(--muted); padding:24px; text-align:center; }
@@ -70,8 +76,8 @@ iframe { flex:1; width:100%; border:0; border-radius:0 0 10px 10px; background:#
   <div class="view">
     <div class="bar">
       <div><b id="vtitle">결과</b> <span class="sub" id="vsub"></span></div>
-      <div><button class="ghost" id="memo" hidden>메모 고치기</button>
-           <span id="rerunBox" hidden><label for="fromStep" class="sub">다시 돌릴 단계</label>
+      <div class="actions"><button class="ghost" id="memo" hidden>메모 고치기</button>
+           <span id="rerunBox" class="actions" hidden><label for="fromStep" class="sub">다시 돌릴 단계</label>
            <select id="fromStep"></select>
            <button class="ghost" id="retry">이 단계부터 다시</button>
            <button class="ghost" id="stop" hidden>멈추기</button></span>
