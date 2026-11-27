@@ -108,14 +108,12 @@ async function loadRuns() {
   if (current) updateBar();
 }
 
-// 모든 실행이 같은 형식: 월/일 시:분 · 메모 · 상태 · 하네스 결과
+// 모든 실행이 같은 형식: 월/일 시:분 · 메모 · 상태 (하네스 결과는 결과 화면 8단계에만)
 function line(r) {
   const parts = [esc(r.when), esc(r.memo)];
   const state = r.state === "running" ? `진행 중 (${r.done}/${r.total}${r.current ? " · " + esc(r.current) : ""})`
               : r.state === "failed" ? `실패 (${r.done}/${r.total})` : (STATE[r.state] || "");
   parts.push(`<span class="st ${r.state}">${state}</span>`);
-  if (r.harness_line) parts.push(esc(r.harness_line));
-  else if (r.pass_rate != null) parts.push(`하네스 에이전트 ${r.pass_rate}%`);
   return parts.filter(Boolean).join(" · ");
 }
 
