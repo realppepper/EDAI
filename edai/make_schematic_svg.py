@@ -125,8 +125,8 @@ def to_yosys(rows: list, sizes: dict) -> dict:
     return {"modules": {"opamp": {"ports": ports, "cells": cells}}}
 
 
-def render(rows: list, sizes: dict, out: Path, skin: Path) -> None:
-    """SVG 와 같은 이름의 PNG 를 함께 만든다."""
+def render(rows: list, sizes: dict, out: Path, skin: Path, png: bool = True) -> None:
+    """SVG 와 같은 이름의 PNG 를 함께 만든다 (png=False 면 SVG 만: 결과 화면의 후보 그림 모음)."""
     netlist = WORK_DIR / f"{out.parent.name}_{out.stem}.json"
     netlist.write_text(json.dumps(to_yosys(rows, sizes)), encoding="utf-8")
     subprocess.run([str(NODE), str(NETLISTSVG / "bin" / "netlistsvg.js"), str(netlist), "--skin", str(skin), "-o", str(out)],
@@ -136,6 +136,8 @@ def render(rows: list, sizes: dict, out: Path, skin: Path) -> None:
     svg = re.sub(r'(<svg[^>]*?width=")(\d+)(")', lambda m: f"{m.group(1)}{int(m.group(2)) + RIGHT_MARGIN_PX}{m.group(3)}",
                  svg, count=1)
     out.write_text(svg, encoding="utf-8")
+    if not png:
+        return
     subprocess.run([str(NODE), str(HERE / "svg_to_png.js"), str(out), str(out.with_suffix(".png"))], check=True,
                    capture_output=True, text=True, timeout=120,
                    env={**os.environ, "NODE_PATH": str(NETLISTSVG.parent)})

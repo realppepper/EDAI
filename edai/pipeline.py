@@ -238,6 +238,13 @@ def step_candidates(run: Run) -> dict:
     run.copy(HERE / "data" / "train" / f"{run.name}_candidates.json", "candidates.json")
     cands = run.read("candidates.json")["candidates"]
     ok = [c for c in cands if not c["problems"]]
+    try:                                            # 결과 화면의 후보 그림 모음 (후보 하나에 1~2초)
+        import report_figures
+        t0 = time.time()
+        drawn = report_figures.draw_candidates(run.dir, log=run.log)
+        run.log(f"  후보 회로도 {drawn}개 ({time.time() - t0:.0f} s)")
+    except Exception as error:                      # 그림을 못 그려도 설계는 계속
+        run.log(f"  후보 회로도 그리기 실패: {error}")
     return {"total": len(cands), "rule_ok": len(ok), "new": sum(not c["in_train"] for c in ok)}
 
 

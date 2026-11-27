@@ -12,6 +12,8 @@ import re
 import sys
 from pathlib import Path
 
+import report_figures
+
 STATE_TEXT = {"wait": "대기", "run": "진행 중", "done": "완료", "fail": "실패"}
 REFRESH_SECONDS = 15        # 진행 중일 때 화면을 다시 읽는 간격
 
@@ -51,7 +53,15 @@ details summary { cursor:pointer; color:var(--accent); }
 pre { white-space:pre-wrap; font-size:12px; max-height:420px; overflow:auto; background:var(--bg); padding:8px;
       border:1px solid var(--line); border-radius:6px; }
 @media print { section { background:none; } .noprint { display:none; } }
-"""
+""" + report_figures.CSS
+
+
+def duration(seconds) -> str:
+    """걸린 시간: 368 -> '6m 8s', 45 -> '45s'."""
+    if seconds is None:
+        return ""
+    seconds = int(round(float(seconds)))
+    return f"{seconds // 60}m {seconds % 60}s" if seconds >= 60 else f"{seconds}s"
 
 
 def esc(x) -> str:
@@ -188,10 +198,19 @@ def pdg_details(run_dir: Path) -> str:
 
 def body_candidates(run_dir: Path, s: dict) -> str:
     return (f"<p>모델(FLAN-T5)이 만든 서로 다른 후보 <b>{s.get('total')}</b>개 → 규칙 검사 통과 <b>{s.get('rule_ok')}</b>개 "
-            f"(그중 학습 데이터에 없던 구조 {s.get('new')}개)</p>")
+            f"(그중 학습 데이터에 없던 구조 {s.get('new')}개)</p>" + report_figures.gallery_html(run_dir))
 
 
 def body_select(run_dir: Path, s: dict) -> str:
+    return _body_select_text(run_dir, s) + report_figures.funnel_html(run_dir, _step_summaries(run_dir))         + report_figures.spec_grid_html(run_dir)
+
+
+def _step_summaries(run_dir: Path) -> dict:
+    status = read(run_dir, "status.json") or {}
+    return {x["key"]: x.get("summary") or {} for x in status.get("steps", [])}
+
+
+def _body_select_text(run_dir: Path, s: dict) -> str:
     out = (f"<p>후보 {s.get('evaluated')}개마다 바이어스를 실제 소자로 채우고 크기를 정해 측정 → 동작한 후보 <b>{s.get('working')}</b>개, "
            f"가장 많이 통과한 것 {esc(s.get('best_passed'))}</p>")
     if s.get("forms") is not None:              # 고쳐 보기 (--repair)
@@ -232,7 +251,7 @@ def body_tune(run_dir: Path, s: dict) -> str:
     best = tune["best"]
     out = [f"<p>구조는 그대로 두고 전류원 전류, 출력단 배율, 보상 커패시터(출력 트랜지스터 게이트 "
            f"{esc(', '.join(tune.get('miller_nodes') or []) or '없음')} ↔ OUT)를 바꿔 가며 {len(tune['trials'])}번 쟀어요 "
-           f"({esc(tune['stopped'])}, {tune['seconds']} s).</p>"]
+           f"({esc(tune['stopped'])}, {duration(tune['seconds'])}).</p>"]
     if tune.get("jump_ua") is not None:
         out.append(f"<p class='sub'>공급 전류가 목표를 넘어, 전류원 전류를 목표에 맞을 값({tune['jump_ua']:.3g} µA)으로 "
                    "건너뛴 점에서도 한 번 더 찾았어요.</p>")
@@ -246,12 +265,14 @@ def body_tune(run_dir: Path, s: dict) -> str:
                    "이 회로를 하네스로 넘겼어요.</p>")
     else:
         out.append("<p>더 나아진 조합이 없어 6단계 회로를 그대로 하네스로 넘겼어요.</p>")
+    out.append(report_figures.tune_html(tune))
+    out.append("<details><summary>시도마다 보기</summary>")
     out.append("<table><tr><th>전류 (µA)</th><th>출력단 배율</th><th>보상 (pF)</th><th>결과</th><th>못 맞춘 항목</th><th>걸린 시간 (s)</th></tr>")
     for t in tune["trials"]:
         res = f"{t['passed']}/{t['judged']}" if t["valid"] else f"<span class='failc'>실패</span> {esc((t.get('reason') or '')[:60])}"
         out.append(f"<tr><td>{t['unit_current_ua']:.3g}</td><td>x{num(t['scale'], 0)}</td><td>{num(t['cap_pf'], 1)}</td>"
                    f"<td>{res}</td><td>{esc(', '.join(t.get('failed') or []))}</td><td>{num(t['seconds'], 0)}</td></tr>")
-    out.append("</table>")
+    out.append("</table></details>")
     if tune["improved"]:
         out.append("<p class='sub'>하네스로 넘긴 회로의 판정</p>" + spec_table(best["spec"]))
     return "".join(out)
@@ -326,7 +347,7 @@ def body_harness(run_dir: Path, s: dict) -> str:
     if c.get("judged"):
         out.append(f"<p>판정 <b>{c['judged']}</b>개 중 <b>{c['passed']}</b>개 통과 "
                    f"(<b>{100 * c['passed'] / c['judged']:.1f}%</b>), 실패 {c['failed']}개. "
-                   f"데이터시트 {c['total']}줄 중 아래 줄은 판정에서 뺐습니다 ({result.get('seconds')} s)</p>")
+                   f"데이터시트 {c['total']}줄 중 아래 줄은 판정에서 뺐습니다 ({duration(result.get('seconds'))})</p>")
         if c.get("old"):
             out.append("<p class='sub'>2026-11-27 전 채점입니다. 그때는 같은 데이터시트의 다른 칩 줄, 공정 한계를 넘는 전원 조건 줄, "
                        "측정값이 없는 왜곡 줄도 판정에 넣어 지금 기준과 다릅니다.</p>")
@@ -541,7 +562,7 @@ def render(run_dir: Path) -> str:
     for s in status["steps"]:
         if s["state"] == "wait":
             continue
-        took = f" · {s['seconds']} s" if s.get("seconds") is not None else ""
+        took = f" · {duration(s['seconds'])}" if s.get("seconds") is not None else ""
         body = ""
         if s["state"] == "fail":
             body = f"<p class='err'>{esc(s.get('error'))}</p>"
