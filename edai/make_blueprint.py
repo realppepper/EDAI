@@ -21,8 +21,13 @@ from pathlib import Path
 MODEL_OF = {"nfet_06v0": "nfet_06v0_bsim0", "pfet_06v0": "pfet_06v0_bsim0"}   # L 0.7~50 µm 구간 (우리 L = 1, 2 µm)
 
 
+def _plus(text: str) -> str:
+    """PDF 글자 변환에서 '+' 가 '*' 로 바뀌어 들어오기도 한다 (OPA2376 2026-11-27: 'Input signal A*', 'Supply voltage*')."""
+    return text.replace("*", "+")
+
+
 def _desc(p: dict) -> str:
-    return (p.get("description") or "").lower()
+    return _plus(p.get("description") or "").lower()
 
 
 def channel_of(p: dict):
@@ -36,14 +41,18 @@ def channel_of(p: dict):
 
 def signal_of(p: dict):
     """INP / INN / OUT / None. 원래 이름의 +/- , 이름 끝 _P/_N, 설명(non-inverting, positive input ...) 순으로 본다."""
-    role, raw, d = str(p.get("role")).upper(), str(p.get("raw_name") or p["name"]), _desc(p)
+    role, raw, d = str(p.get("role")).upper(), _plus(str(p.get("raw_name") or p["name"])), _desc(p)
+    name = p["name"].upper()
     if role == "OUTPUT":
         return "OUT"
     if role != "SIGNAL":
         return None
-    if raw.endswith("+") or re.search(r"IN_?P(_[A-D])?$", p["name"]) or re.search(r"non-?inverting|positive input|\+", d):
+    # 이름 모양: IN+ / IN_P / INP_A / PIN_A (앞 P = +, 뒤에 채널) / +IN_A, 반대쪽은 N / -
+    if (raw.endswith("+") or re.search(r"IN_?P(_[A-D])?$", name) or re.match(r"^(?:P|\+)IN(?:_?[A-D1-4])?$", name)
+            or re.search(r"non-?inverting|positive input|\+", d)):
         return "INP"
-    if raw.endswith("-") or re.search(r"IN_?N(_[A-D])?$", p["name"]) or re.search(r"inverting|negative input|–|-", d):
+    if (raw.endswith("-") or re.search(r"IN_?N(_[A-D])?$", name) or re.match(r"^(?:N|-)IN(?:_?[A-D1-4])?$", name)
+            or re.search(r"inverting|negative input|–|-", d)):
         return "INN"
     return None
 
