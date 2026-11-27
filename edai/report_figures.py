@@ -27,7 +27,7 @@ CSS = """
 .cand a.pic img { width:100%; height:100%; object-fit:contain; display:block; }
 .cand .pic.none { display:grid; place-items:center; color:#888; font-size:11px; }
 .cand .name { font-weight:600; font-size:13px; display:flex; justify-content:space-between; gap:6px; }
-.cand .tags { display:flex; flex-wrap:wrap; gap:4px; }
+.cand .tags { display:flex; flex-wrap:nowrap; justify-content:flex-start; gap:4px; overflow:hidden; }
 .tag { font-size:11px; border:1px solid var(--line); border-radius:999px; padding:0 7px; color:var(--muted); white-space:nowrap; }
 .tag.new { color:var(--accent); border-color:var(--accent); }
 .res { font-size:12px; } .res.ok { color:var(--ok); } .res.no { color:var(--muted); }
@@ -56,19 +56,28 @@ table.spec-grid tr.picked th, table.spec-grid tr.picked td { box-shadow:inset 0 
 table.spec-grid th.row small { display:block; color:var(--muted); font-weight:400; }
 .more-btn { font:inherit; font-size:13px; color:var(--accent); background:none; border:0; padding:4px 0; cursor:pointer; }
 .more-btn:focus-visible { outline:2px solid var(--accent); outline-offset:2px; }
-/* 튜닝 그래프 */
-.multiples { display:grid; grid-template-columns:repeat(auto-fit, minmax(230px, 1fr)); gap:12px; margin:10px 0; }
-.mini { border:1px solid var(--line); border-radius:8px; background:var(--bg); padding:8px 10px 4px; min-width:0; }
-.mini h4 { font-size:13px; margin:0 0 2px; font-weight:600; } .mini h4 small { color:var(--muted); font-weight:400; }
-.mini svg { width:100%; height:auto; display:block; }
-.mini .band { fill:var(--ok); opacity:.12; }
+/* 튜닝 그래프: 한 줄에 2개, 커서를 대면 안내선과 말풍선 (SCRIPT) */
+.multiples { display:grid; grid-template-columns:repeat(auto-fit, minmax(min(340px, 100%), 1fr)); gap:14px; margin:12px 0; }
+.mini { position:relative; border:1px solid var(--line); border-radius:10px; background:var(--bg); padding:10px 12px 6px; min-width:0; }
+.mini h4 { font-size:14px; margin:0 0 4px; font-weight:600; } .mini h4 small { color:var(--muted); font-weight:400; margin-left:4px; }
+.mini svg { width:100%; height:auto; display:block; overflow:visible; cursor:crosshair; touch-action:pan-y; }
+.mini .band { fill:var(--ok); opacity:.13; }
 .mini .grid { stroke:var(--line); stroke-width:1; }
 .mini .axis { fill:var(--muted); font-size:12px; font-variant-numeric:tabular-nums; }
-.mini .line { fill:none; stroke:var(--accent); stroke-width:2; }
-.mini .dot { fill:var(--accent); stroke:var(--bg); stroke-width:1.5; }
-.mini .best { fill:var(--ok); stroke:var(--bg); stroke-width:2; }
-.mini .jump { stroke:var(--muted); stroke-dasharray:3 3; }
+.mini .line { fill:none; stroke:var(--accent); stroke-width:2.5; stroke-linejoin:round; stroke-linecap:round;
+              stroke-dasharray:1; stroke-dashoffset:0; animation:draw .9s ease-out; }
+@keyframes draw { from { stroke-dashoffset:1; } to { stroke-dashoffset:0; } }
+.mini .dot { fill:var(--accent); stroke:var(--bg); stroke-width:1.5; transition:r .15s ease; }
+.mini .best { fill:var(--ok); stroke:var(--bg); stroke-width:2; transition:r .15s ease; }
+.mini circle.on { r:7.5; }
+.mini .guide { stroke:var(--muted); stroke-width:1; stroke-dasharray:3 3; }
+.mini .jump { stroke:var(--muted); stroke-dasharray:4 4; }
 .mini .jlab { fill:var(--muted); font-size:11px; }
+.mini .tip { position:absolute; pointer-events:none; transform:translate(-50%, calc(-100% - 12px)); white-space:nowrap;
+             background:var(--fg); color:var(--bg); font-size:12px; line-height:1.45; padding:6px 10px; border-radius:6px;
+             box-shadow:0 4px 14px rgba(0,0,0,.18); z-index:2; }
+.mini .tip b { font-size:13px; } .mini .tip small { opacity:.8; display:block; }
+@media (prefers-reduced-motion: reduce) { .mini .line { animation:none; } .mini circle { transition:none; } }
 """
 
 esc = html.escape
@@ -143,8 +152,8 @@ def gallery_html(run_dir: Path) -> str:
                f"<img src='{CANDIDATE_DIR}/c{n:02d}.svg' alt='후보 {n} 회로도' loading='lazy'></a>"
                if svg.exists() else "<div class='pic none'>회로도 없음</div>")
         how = "빔 탐색" if cand.get("how") == "beam" else "무작위"
-        tags = [f"<span class='tag'>{how}</span>",
-                "<span class='tag new'>새 구조</span>" if not cand.get("in_train") else "<span class='tag'>학습에 있던 구조</span>"]
+        tags = ["<span class='tag new'>새 구조</span>" if not cand.get("in_train") else "<span class='tag'>기존 구조</span>",
+                f"<span class='tag'>{how}</span>"]          # 새 구조인지가 먼저, 한 줄에 왼쪽부터
         r = results.get(n, {})
         if "passed" in r:
             res = f"<div class='res ok'>✓ 동작 · {r['passed']}/{r['judged']} 통과</div>"
@@ -275,8 +284,10 @@ def _nice_ticks(lo: float, hi: float, count: int = 3) -> list:
     return ticks
 
 
-def _mini(title: str, unit: str, ys: list, band, best_k: int, jump_k, fmt, integer: bool = False) -> str:
-    w, h, l, r, t, b = 260, 150, 38, 8, 10, 24
+def _mini(title: str, unit: str, ys: list, band, best_k: int, jump_k, fmt, integer: bool = False,
+          notes: list = None) -> str:
+    """작은 선 그래프 하나. notes: 시도마다 말풍선에 붙일 글 (전류·배율·보상). 커서를 대면 SCRIPT 가 말풍선을 띄운다."""
+    w, h, l, r, t, b = 420, 210, 46, 12, 14, 28
     pts = [(k, y) for k, y in enumerate(ys, 1) if y is not None]
     if not pts:
         return ""
@@ -288,27 +299,38 @@ def _mini(title: str, unit: str, ys: list, band, best_k: int, jump_k, fmt, integ
     lo, hi = ticks[0], ticks[-1]
     X = lambda k: l + (w - l - r) * (k - 1) / max(1, len(ys) - 1)
     Y = lambda y: t + (h - t - b) * (1 - (y - lo) / ((hi - lo) or 1))
-    out = [f"<div class='mini'><h4>{esc(title)} <small>{esc(unit)}</small></h4>"
-           f"<svg viewBox='0 0 {w} {h}' role='img' aria-label='{esc(title)}'>"]
     b_lo, b_hi = band
+
+    def verdict(y):
+        if b_lo is None and b_hi is None:
+            return ""
+        ok = (b_lo is None or y >= b_lo) and (b_hi is None or y <= b_hi)
+        return " · 통과" if ok else " · 실패"
+
+    data = [{"x": round(X(k), 1), "y": round(Y(y), 1), "k": k,
+             "v": f"{fmt(y)} {unit}{verdict(y)}", "n": (notes or [""] * len(ys))[k - 1]} for k, y in pts]
+    out = [f"<div class='mini'><h4>{esc(title)} <small>{esc(unit)}</small></h4>"
+           f"<svg viewBox='0 0 {w} {h}' role='img' aria-label='{esc(title)}' "
+           f"data-pts='{esc(json.dumps(data, ensure_ascii=False))}'>"]
     if b_lo is not None or b_hi is not None:      # 통과 구간을 옅게 칠한다
         top_y = Y(min(hi, b_hi)) if b_hi is not None else t
         bot_y = Y(max(lo, b_lo)) if b_lo is not None else h - b
         out.append(f"<rect class='band' x='{l}' y='{top_y:.1f}' width='{w - l - r}' height='{max(0, bot_y - top_y):.1f}'/>")
     for gy in ticks:
         out.append(f"<line class='grid' x1='{l}' x2='{w - r}' y1='{Y(gy):.1f}' y2='{Y(gy):.1f}'/>"
-                   f"<text class='axis' x='{l - 5}' y='{Y(gy) + 4:.1f}' text-anchor='end'>{fmt(gy)}</text>")
+                   f"<text class='axis' x='{l - 6}' y='{Y(gy) + 4:.1f}' text-anchor='end'>{fmt(gy)}</text>")
     for k in sorted({1, len(ys), (len(ys) + 1) // 2}):
-        out.append(f"<text class='axis' x='{X(k):.1f}' y='{h - 6}' text-anchor='middle'>{k}</text>")
+        out.append(f"<text class='axis' x='{X(k):.1f}' y='{h - 8}' text-anchor='middle'>{k}</text>")
     if jump_k:
         out.append(f"<line class='jump' x1='{X(jump_k):.1f}' x2='{X(jump_k):.1f}' y1='{t}' y2='{h - b}'/>"
-                   f"<text class='jlab' x='{X(jump_k) + 3:.1f}' y='{t + 10}'>전류 건너뜀</text>")
-    out.append(f"<polyline class='line' points='{' '.join(f'{X(k):.1f},{Y(y):.1f}' for k, y in pts)}'/>")
+                   f"<text class='jlab' x='{X(jump_k) + 4:.1f}' y='{t + 12}'>전류 건너뜀</text>")
+    out.append(f"<line class='guide' x1='0' x2='0' y1='{t}' y2='{h - b}' visibility='hidden'/>")
+    line_pts = " ".join(f"{X(k):.1f},{Y(y):.1f}" for k, y in pts)
+    out.append(f"<polyline class='line' pathLength='1' points='{line_pts}'/>")
     for k, y in pts:
         cls = "best" if k == best_k else "dot"
-        out.append(f"<circle class='{cls}' cx='{X(k):.1f}' cy='{Y(y):.1f}' r='{5.5 if k == best_k else 3}'>"
-                   f"<title>시도 {k}: {fmt(y)} {esc(unit)}</title></circle>")
-    out.append("</svg></div>")
+        out.append(f"<circle class='{cls}' data-k='{k}' cx='{X(k):.1f}' cy='{Y(y):.1f}' r='{6 if k == best_k else 3.5}'/>")
+    out.append("</svg><div class='tip' role='tooltip' hidden></div></div>")
     return "".join(out)
 
 
@@ -325,15 +347,46 @@ def tune_html(tune: dict) -> str:
     spec = {r["measure"]: r for r in (tune.get("start") or {}).get("spec") or []}
     first_failed = trials[0].get("failed") or []
     shown = (first_failed + [m for m in ("idd", "pm", "avd", "ugbw") if m not in first_failed])[:3]
+    notes = [f"전류 {tr['unit_current_ua']:.3g} µA · 출력단 x{tr['scale']:g} · 보상 {tr['cap_pf']:g} pF"
+             + (" · 채택" if k == best_k else "") for k, tr in enumerate(trials, 1)]
     charts = [_mini("통과한 스펙 개수", f"{trials[0].get('judged')}개 중",
                     [tr.get("passed") if tr.get("valid") else None for tr in trials], (None, None), best_k, jump_k,
-                    lambda v: f"{v:.0f}", integer=True)]
+                    lambda v: f"{v:.0f}", integer=True, notes=notes)]
     for m in shown:
         row = spec.get(m) or {}
         ys = [(tr.get("values") or {}).get(m) for tr in trials]
         if all(y is None for y in ys):
             continue
         charts.append(_mini(row.get("label") or m, row.get("unit") or "", ys, _bounds(row.get("target")), best_k, jump_k,
-                            lambda v: f"{v:.0f}" if abs(v) >= 10 else f"{v:.2g}"))
+                            lambda v: f"{v:.0f}" if abs(v) >= 10 else f"{v:.2g}", notes=notes))
     return (f"<div class='multiples'>{''.join(charts)}</div>"
-            "<div class='fig-note'>가로축은 시도 순서, 초록 구간이 통과 범위, 큰 초록 점이 채택된 조합이에요.</div>")
+            "<div class='fig-note'>가로축은 시도 순서, 초록 구간이 통과 범위, 큰 초록 점이 채택된 조합이에요. "
+            "그래프에 커서를 대면 그 시도의 값과 조합이 나와요.</div>")
+
+
+# 튜닝 그래프 말풍선: 커서와 가장 가까운 시도의 점을 키우고 안내선·값을 보여 준다 (결과 화면 끝에 한 번 넣음)
+SCRIPT = """<script>
+document.querySelectorAll('.mini svg[data-pts]').forEach(svg => {
+  const pts = JSON.parse(svg.dataset.pts), box = svg.parentElement, tip = box.querySelector('.tip');
+  const guide = svg.querySelector('.guide'), dots = svg.querySelectorAll('circle');
+  function show(ev) {
+    const m = svg.getScreenCTM(); if (!m) return;
+    const x = (ev.clientX - m.e) / m.a;
+    let p = pts[0];
+    for (const q of pts) if (Math.abs(q.x - x) < Math.abs(p.x - x)) p = q;
+    guide.setAttribute('x1', p.x); guide.setAttribute('x2', p.x); guide.setAttribute('visibility', 'visible');
+    dots.forEach(d => d.classList.toggle('on', +d.dataset.k === p.k));
+    tip.innerHTML = '<b>' + p.v + '</b><small>시도 ' + p.k + (p.n ? ' · ' + p.n : '') + '</small>';
+    tip.hidden = false;
+    const sx = svg.getBoundingClientRect(), bx = box.getBoundingClientRect();
+    const left = sx.left - bx.left + p.x * m.a, top = sx.top - bx.top + p.y * m.d;
+    const half = tip.offsetWidth / 2;
+    tip.style.left = Math.min(Math.max(left, half + 4), bx.width - half - 4) + 'px';
+    tip.style.top = top + 'px';
+  }
+  svg.addEventListener('pointermove', show);
+  svg.addEventListener('pointerdown', show);
+  svg.addEventListener('pointerleave', () => { tip.hidden = true; guide.setAttribute('visibility', 'hidden');
+    dots.forEach(d => d.classList.remove('on')); });
+});
+</script>"""

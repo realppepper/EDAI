@@ -597,7 +597,7 @@ def render(run_dir: Path) -> str:
 <body><main><h1>{esc(info['title'])}</h1><div class="sub">{times} · 실행 폴더 {esc(run_dir.name)}</div>
 {f"<p class='sub'>{esc(status['note'])}</p>" if status.get("note") else ""}<div class="steps">{chips}</div>{''.join(parts)}
 <details class="noprint"><summary>진행 기록 (log.txt)</summary><pre>{esc(log)}</pre></details>
-</main></body></html>"""
+</main>{report_figures.SCRIPT}</body></html>"""
 
 
 def write(run_dir: Path) -> Path:
