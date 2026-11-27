@@ -60,9 +60,19 @@ RULE_SCALES = (20.0, 50.0)      # 규칙을 적용한 회로를 잴 때 해 보�
 LLM_CALLS = []          # 이 실행에서 부른 LLM 호출 (박준석 LLMClient._log 를 감싸서 모음)
 
 
+DEFAULT_LLM = "openrouter"   # 실행 설정(input.json)에 "llm" 이 없을 때. 2026-11-27 비교: 단계 합 23분 (NVIDIA 36분), 실행당 약 $0.01
+FALLBACK_LLM = "nim"         # 기본 공급자의 키가 없는 서버에서 쓸 공급자 (NVIDIA_API_KEY)
+PROVIDER_KEYS = {"openrouter": "OPENROUTER_API_KEY", "nim": "NVIDIA_API_KEY", "groq": "GROQ_API_KEY"}
+
+
 def setup_llm(run) -> None:
     import os
-    provider = (run.input.get("llm") or "nim").lower()
+    import extract_datasheet
+    extract_datasheet.load_keys()                   # .env 의 키를 먼저 읽어야 기본 공급자 키가 있는지 안다
+    provider = (run.input.get("llm") or DEFAULT_LLM).lower()
+    if not run.input.get("llm") and not os.environ.get(PROVIDER_KEYS.get(provider, "")):
+        run.log(f"{PROVIDER_KEYS[provider]} 가 없어 {FALLBACK_LLM} 로 돌림")
+        provider = FALLBACK_LLM
     os.environ["LLM_PROVIDER"] = provider
     if run.input.get("llm_model"):
         os.environ["LLM_MODEL"] = run.input["llm_model"]
