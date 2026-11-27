@@ -55,7 +55,6 @@ iframe { flex:1; width:100%; border:0; border-radius:0 0 10px 10px; background:#
       </label>
       <label for="preset">또는 준비된 데이터시트에서 고르기</label>
       <select id="preset"><option value="">고르세요</option></select>
-      <div class="sub" id="presetNote"></div>
       <button id="start" disabled>설계 시작</button>
       <div class="msg" id="msg"></div>
     </div>
@@ -148,7 +147,7 @@ function choose(file) {
   const msg = document.getElementById("msg");
   if (!file || !/\.pdf$/i.test(file.name)) { msg.className = "msg bad"; msg.textContent = "PDF 파일만 넣을 수 있어요"; return; }
   chosen = file;
-  document.getElementById("preset").value = ""; document.getElementById("presetNote").textContent = "";
+  document.getElementById("preset").value = "";
   msg.textContent = "";
   document.getElementById("dropText").textContent = file.name;  document.getElementById("drop").classList.add("has");
   document.getElementById("start").disabled = false;
@@ -165,20 +164,16 @@ async function loadPresets() {
   let groups = [];
   try { groups = await (await fetch("/api/datasheets")).json(); } catch (e) { return; }
   const sel = document.getElementById("preset");
-  for (const g of groups) {
-    if (!g.items.length) continue;
-    const og = document.createElement("optgroup"); og.label = g.title;
-    for (const it of g.items) {
-      presets[it.file] = it;
-      const o = document.createElement("option"); o.value = it.file; o.textContent = `${it.part} — ${it.note}`;
-      og.appendChild(o);
-    }
-    sel.appendChild(og);
+  // 목록에는 칩 이름만 (묶음·설명은 datasheets/catalog.json 에 기록으로만 둔다)
+  const items = groups.flatMap(g => g.items).sort((a, b) => a.part.localeCompare(b.part));
+  for (const it of items) {
+    presets[it.file] = it;
+    const o = document.createElement("option"); o.value = it.file; o.textContent = it.part;
+    sel.appendChild(o);
   }
 }
 document.getElementById("preset").onchange = async e => {
   const it = presets[e.target.value], msg = document.getElementById("msg");
-  document.getElementById("presetNote").textContent = it ? it.note : "";
   if (!it) return;
   msg.className = "msg"; msg.textContent = "데이터시트 받는 중…";
   try {
