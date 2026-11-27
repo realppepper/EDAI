@@ -121,7 +121,7 @@ LOWER_IS_BETTER = {"idd", "ts", "voh_1ma", "voh_5ma", "vol_1ma", "vol_5ma", "vio
 TEMPERATURE_NOTE = "Full-temperature"
 # 조건에 적힌 온도 범위 (예: "TA = –40°C to 125°C", "Full range") -> 25°C 줄이 아니므로 뺀다
 TEMPERATURE_RANGE = re.compile(r"[–−-]?\d+\s*°?\s*C\s*to\s*\+?\d+|Full range|Temperature\s*\(", re.I)
-CURRENT_IN_COND = re.compile(r"I\s*OUT\s*=\s*(\d+\.?\d*)\s*([mµu]?)A", re.I)
+CURRENT_IN_COND = re.compile(r"I\s*OUT\s*=\s*(\d+\.?\d*)\s*([mµμu]?)A", re.I)
 
 # 측정 종류 -> 우리 측정을 못 하는 이유
 NOT_MEASURED = {
@@ -152,7 +152,10 @@ def measure_of(kind: str, row: dict):
         m = CURRENT_IN_COND.search(text)
         if not m:
             return None, "출력 스윙: 부하 전류 조건이 없어 우리 측정과 맞지 않음"
-        amps = float(m.group(1)) * {"m": 1e-3, "µ": 1e-6, "u": 1e-6, "": 1}[m.group(2)]
+        # 마이크로는 µ(U+00B5)와 μ(그리스 뮤, U+03BC) 두 글자로 들어온다. 정규식이 대소문자를 무시해 'M', 'U' 도 걸린다
+        # (LM324 2026-11-27: 'μ' 로 KeyError 가 나 1단계가 멈춤)
+        prefix = m.group(2).replace("μ", "µ").replace("Μ", "µ")
+        amps = float(m.group(1)) * {"m": 1e-3, "M": 1e-3, "µ": 1e-6, "u": 1e-6, "U": 1e-6, "": 1}.get(prefix, 1e-6)
         side = "voh" if re.search(r"positive|V\+", text, re.I) else "vol" if re.search(r"negative|V-|V–", text, re.I) else None
         tag = {1e-3: "1ma", 5e-3: "5ma"}.get(round(amps, 6))
         if side and tag:

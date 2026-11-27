@@ -112,7 +112,6 @@ def run_list() -> list:
                     "state": s.get("state"), "started": s.get("started"),
                     "done": sum(x["state"] == "done" for x in steps), "total": len(steps), "current": current,
                     "pass_rate": (harness.get("summary") or {}).get("pass_rate"),
-                    "harness_line": make_run_report.harness_line(d),
                     "steps": [{"key": x["key"], "title": x["title"], "state": x["state"]} for x in steps],
                     "suggest_from": suggest_from(steps)})
     return out

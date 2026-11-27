@@ -92,14 +92,29 @@ def run_info(run_dir: Path) -> dict:
             "when": f"{m.group(1)}/{m.group(2)} {m.group(3)}:{m.group(4)}" if m else ""}
 
 
+_TITLE_INDEX = {"at": 0.0, "parent": None, "runs": []}
+TITLE_INDEX_TTL_S = 10      # 실행 폴더들의 (칩 이름, 시작 시각) 목록을 다시 읽는 간격
+
+
+def _title_index(parent: Path) -> list:
+    """runs/ 의 [(칩 이름, 시작 시각, 폴더 이름)]. 잠깐 기억해 둔다: 실행 목록을 만들 때 실행마다 모든 폴더를 다시 읽어
+    (21 x 21 번) WSL 에서 D 드라이브 읽기가 느려 목록이 20~30초 걸리고 화면이 비었다 (2026-11-27)."""
+    import time
+    if _TITLE_INDEX["parent"] != parent or time.time() - _TITLE_INDEX["at"] > TITLE_INDEX_TTL_S:
+        runs = []
+        for d in parent.iterdir():
+            inp = read(d, "input.json") if d.is_dir() else None
+            if inp is not None:
+                status = read(d, "status.json") or {}
+                runs.append((inp.get("title") or d.name, status.get("started") or "9999", d.name))
+        _TITLE_INDEX.update(at=time.time(), parent=parent, runs=runs)
+    return _TITLE_INDEX["runs"]
+
+
 def chip_number(run_dir: Path, title: str) -> int:
     """같은 칩 이름의 실행 중 몇 번째로 시작했나 (1부터). 옆 실행 폴더들(runs/)의 시작 시각 순서.
     새 실행은 항상 뒤 번호를 받으므로 이미 붙은 번호는 바뀌지 않는다."""
-    same = []
-    for d in Path(run_dir).resolve().parent.iterdir():
-        inp, status = read(d, "input.json"), read(d, "status.json")
-        if inp is not None and (inp.get("title") or d.name) == title:
-            same.append(((status or {}).get("started") or "9999", d.name))
+    same = [(started, name) for t, started, name in _title_index(Path(run_dir).resolve().parent) if t == title]
     order = sorted(same)
     return 1 + next((i for i, (_, name) in enumerate(order) if name == Path(run_dir).resolve().name), len(order))
 
