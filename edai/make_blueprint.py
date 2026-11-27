@@ -35,7 +35,7 @@ def channel_of(p: dict):
     설명의 channel X. 없으면 None."""
     m = (re.search(r"_([A-D])$", p["name"]) or re.match(r"^([1-4])(?=[A-Z])", p["name"])
          or re.match(r"^V?(?:IN|OUT)([1-4])(?=_|[+-]|$)", p["name"], re.I)
-         or re.search(r"channel\s*([a-d1-4])", _desc(p)))
+         or re.search(r"channel\s*([a-d1-4])\b", _desc(p)))
     return m.group(1).upper() if m else None
 
 

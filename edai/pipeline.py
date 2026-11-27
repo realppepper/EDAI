@@ -182,17 +182,49 @@ def step_extract(run: Run) -> dict:
         inp["title"] = target or part
         inp["extracted_part"] = part
         (run.dir / "input.json").write_text(json.dumps(inp, ensure_ascii=False, indent=1), encoding="utf-8")
+    kind = not_opamp_kind(hkg["ic_device"], spec.get("device_class"))
+    if kind:
+        raise Unsupported(f"생성 불가: op-amp가 아님 ({kind})")
     other = spec.get("other_supply") or {}
     if not spec["specs"] and other.get("rows"):
         # 판정할 5 V 근처 조건 줄이 없음 (예: LM6172 는 ±5 V = 10 V, ±15 V = 30 V 표뿐). 2~9단계를 돌려도 비교할 기준이 없다
         volts = ", ".join(f"{v:g} V" for v in other.get("supplies_v") or [])
-        raise Unsupported(f"전압 조건 때문에 생성 불가 (데이터시트 조건 {volts})")
+        raise Unsupported(f"생성 불가: 전압 조건 (데이터시트 조건 {volts})")
     return {"part": hkg["ic_device"].get("name"), "rows": len(hkg["electrical_parameters"]), "pins": len(hkg["pins"]),
             "judged": len(spec["specs"]), "model_input": run.read("model_input.json")["input"]}
 
 
 class Unsupported(Exception):
     """이 칩은 우리 공정·전원으로 설계할 수 없음 (실패가 아니라 '생성 불가'로 멈춘다)."""
+
+
+# op-amp 가 아닌 칩: 칩 종류(1단계 추출의 category·이름) 글에 이 말이 있으면 -> 화면에 쓸 이름. 위에서부터 먼저 맞는 것
+NOT_OPAMP_WORDS = [
+    (r"fully[- ]differential", "완전 차동 증폭기 (출력 두 개)"), (r"instrumentation", "계측 증폭기"), (r"comparator", "비교기"), (r"front[- ]?end|\bafe\b", "아날로그 프런트엔드"),
+    (r"analog[- ]to[- ]digital|\badc\b|converter", "변환기(ADC 등)"), (r"isolat", "절연 증폭기"),
+    (r"current[- ]sens|current[- ]shunt|current monitor", "전류 감지 증폭기"), (r"difference amplifier", "차동(디퍼런스) 증폭기"),
+    (r"programmable[- ]gain|variable[- ]gain|\bpga\b|\bvga\b", "가변 이득 증폭기"), (r"logarithmic|\blog amp", "로그 증폭기"),
+    (r"transconductance|\bota\b", "OTA"), (r"regulator|\bldo\b|dc[- ]dc|buck|boost", "전원 IC"),
+    (r"reference", "기준 전압원"), (r"timer", "타이머"), (r"audio power|power amplifier|class[- ]d", "전력 증폭기"),
+    (r"driver", "드라이버"), (r"multiplier|integrator|clock|buffer", "op-amp 가 아닌 IC"),
+]
+# 측정 계획(spec_planner.detect_device_class)의 분류 -> 이름. 'opamp' 는 아무 말에도 안 걸릴 때의 기본값이라 그것만으로는 믿지 않는다
+NOT_OPAMP_CLASS = {"inamp": "계측 증폭기", "comparator": "비교기", "ldo": "전원 IC", "timer": "타이머",
+                   "shunt_ref": "기준 전압원", "audio_amp": "전력 증폭기"}
+OPAMP_WORDS = r"operational amplifier|op[- ]?amp|voltage[- ]feedback amplifier|\bamplifier"
+
+
+def not_opamp_kind(ic_device: dict, device_class: str = None):
+    """op-amp 가 아니면 그 종류 이름, op-amp 면 None. AD8232(심전도 프런트엔드)를 op-amp 처럼 끝까지 돌려
+    '판정할 항목 없음'으로 끝난 일 (2026-11-27). LLM 을 더 부르지 않고 1단계 결과(칩 종류 글, 측정 계획 분류)만 본다."""
+    kind_text = " ".join(str(ic_device.get(k) or "") for k in ("category", "name")).lower()
+    for pattern, label in NOT_OPAMP_WORDS:
+        if re.search(pattern, kind_text):
+            return label
+    if device_class in NOT_OPAMP_CLASS:
+        return NOT_OPAMP_CLASS[device_class]
+    whole = kind_text + " " + str(ic_device.get("description") or "").lower()
+    return None if re.search(OPAMP_WORDS, whole) else "op-amp 가 아닌 IC"
 
 
 def step_candidates(run: Run) -> dict:

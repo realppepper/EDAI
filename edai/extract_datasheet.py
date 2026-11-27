@@ -170,6 +170,7 @@ def plan_specs(hkg_file: Path, name: str, log=print) -> Path:
     spec = spec_from_plan.build(ev, hkg, part, whole=True, pages=pages)
     spec["extraction"]["file"] = hkg_file.name
     spec["plan"]["file"] = ev_file.name
+    spec["device_class"] = plan.get("device_class")       # 측정 계획의 소자 분류 (op-amp 가 아니면 1단계에서 멈춤, pipeline)
     spec_file = HERE / f"spec_{name}.json"
     spec_file.write_text(json.dumps(spec, ensure_ascii=False, indent=1), encoding="utf-8")
     sentence = spec_from_hkg.model_input(spec)
