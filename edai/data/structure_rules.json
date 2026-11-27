@@ -15,8 +15,8 @@
    }
   ],
   "text": "자체 바이어스 네트워크가 레퍼런스 전류 미러 없이 다이오드 연결된 트랜지스터들로만 루프를 구성하여 바이어스 전류가 정의되지 않고 바이어스 트랜지스터가 트라이오드 영역에 진입할 때, 외부 레퍼런스 전류원을 추가하거나 바이어스 회로를 검증된 구조로 교체하여 바이어스 전류를 고정해야 합니다.",
-  "status": "candidate",
-  "tries": 5,
+  "status": "retired",
+  "tries": 7,
   "wins": 2,
   "chips": [
    "LM324B"
@@ -27,7 +27,7 @@
    "candidate": 6,
    "call": 2
   },
-  "last_used": "2026-11-23 12:52"
+  "last_used": "2026-11-24 22:12"
  },
  {
   "id": "R2",
@@ -88,7 +88,7 @@
   ],
   "text": "자체 바이어스 회로를 가진 대칭 입력 단일 게인 노드 증폭기에서 바이어스 블록 실패로 포화 영역 문제가 발생하면 바이어스 회로를 교체하여 출력 스테이지 트랜지스터의 트라이오드 영역 진입과 전류 미러링 불일치를 방지하십시오.",
   "status": "candidate",
-  "tries": 1,
+  "tries": 3,
   "wins": 1,
   "chips": [
    "LM324B"
@@ -98,6 +98,126 @@
    "run": "20261122_220739_lm324",
    "candidate": 12,
    "call": 10
+  },
+  "last_used": "2026-11-24 22:12"
+ },
+ {
+  "id": "R4",
+  "if": {
+   "failure": "포화 영역",
+   "input_pair": "pmos",
+   "input_stage": "symmetric",
+   "output_stage": "none",
+   "gain_nodes": 1,
+   "has_compensation": true,
+   "own_bias": true,
+   "failed_blocks": [
+    "bias"
+   ]
+  },
+  "then": [
+   {
+    "type": "replace_bias",
+    "params": {}
+   },
+   {
+    "type": "rebuild",
+    "params": {
+     "input_stage": "folded_cascode",
+     "input_pair": "nmos",
+     "output_stage": "common_source_pmos",
+     "compensation": "miller"
+    }
+   }
+  ],
+  "text": "PMOS 입력 대칭 스테이지에 출력 스테이지가 없고 바이어스 블록이 실패하면, NMOS 입력 폴디드 캐스코드와 PMOS 공통 소스 출력 스테이지 및 밀러 보상으로 재구성하라. 입력 스테이지 출력 노드가 VSS 근처로 고정되어 NMOS 출력 디바이스를 구동할 수 없기 때문이다.",
+  "status": "candidate",
+  "tries": 1,
+  "wins": 1,
+  "chips": [
+   "LM6172"
+  ],
+  "created": "2026-11-26 17:51",
+  "source": {
+   "run": "20261126_173918_lm6172",
+   "candidate": 42,
+   "call": 5
+  }
+ },
+ {
+  "id": "R5",
+  "if": {
+   "failure": "출력이 VCM",
+   "input_pair": "pmos",
+   "input_covers_range": true,
+   "input_stage": "symmetric",
+   "output_stage": "none",
+   "gain_nodes": 1,
+   "has_compensation": true,
+   "own_bias": true,
+   "failed_blocks": [
+    "bias",
+    "tail"
+   ]
+  },
+  "then": [
+   {
+    "type": "replace_bias",
+    "params": {}
+   }
+  ],
+  "text": "PMOS 입력쌍 대칭 구조에서 바이어스/테일 블록이 실패해 출력 스테이지 게이트가 레일 근처로 고정되면 바이어스 회로를 교체해 게이트 전압을 정상 범위로 복구하라.",
+  "status": "candidate",
+  "tries": 1,
+  "wins": 1,
+  "chips": [
+   "LM6172"
+  ],
+  "created": "2026-11-26 17:52",
+  "source": {
+   "run": "20261126_173918_lm6172",
+   "candidate": 36,
+   "call": 10
+  }
+ },
+ {
+  "id": "R6",
+  "if": {
+   "input_stage": "five_transistor",
+   "input_pair": "nmos",
+   "output_stage": "other",
+   "gain_nodes": 1,
+   "has_compensation": true,
+   "own_bias": true,
+   "failed_blocks": [
+    "input_pair",
+    "stage1"
+   ],
+   "failure": "출력이 VCM"
+  },
+  "then": [
+   {
+    "type": "rebuild",
+    "params": {
+     "input_stage": "folded_cascode",
+     "input_pair": "nmos",
+     "output_stage": "common_source_pmos",
+     "compensation": "miller"
+    }
+   }
+  ],
+  "text": "5트랜지스터 NMOS 입력 스테이지와 기타 출력 스테이지 구성에서 입력 쌍과 1단 게인 노드가 실패하면, 폴디드 캐스코드 입력 스테이지와 PMOS 공통 소스 출력 스테이지, 밀러 보상으로 재구성하여 출력 노드 전압 헤드룸을 확보하고 게이트 드라이브 능력을 향상시키십시오.",
+  "status": "candidate",
+  "tries": 1,
+  "wins": 1,
+  "chips": [
+   "LM6172"
+  ],
+  "created": "2026-11-26 17:53",
+  "source": {
+   "run": "20261126_173918_lm6172",
+   "candidate": 40,
+   "call": 15
   }
  }
 ]
