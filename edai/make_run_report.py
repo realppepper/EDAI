@@ -151,7 +151,6 @@ def body_extract(run_dir: Path, s: dict) -> str:
                        f"<td>{num(it.get('max'))}</td><td>{esc(it.get('unit'))}</td><td>{esc(it.get('condition'))}</td>"
                        f"<td>{evidence_cell(it.get('extracted') or {})}</td></tr>")
         out.append("</table>")
-    out.append(f"<p class='sub'>모델 입력 문장</p><p class='mono'>{esc(s.get('model_input'))}</p>")
     out.append(hkg_details(run_dir) + pdg_details(run_dir))
     return "".join(out)
 
@@ -212,7 +211,10 @@ def pdg_details(run_dir: Path) -> str:
 
 
 def body_candidates(run_dir: Path, s: dict) -> str:
-    return (f"<p>모델(FLAN-T5)이 만든 서로 다른 후보 <b>{s.get('total')}</b>개 → 규칙 검사 통과 <b>{s.get('rule_ok')}</b>개 "
+    model_input = (read(run_dir, "model_input.json") or {}).get("input") or _step_summaries(run_dir).get("extract", {}).get("model_input")
+    lead = (f"<p class='sub'>모델에 넣은 문장 (1단계 판정 항목으로 만듦)</p><p class='mono'>{esc(model_input)}</p>"
+            if model_input else "")
+    return lead + (f"<p>모델(FLAN-T5)이 만든 서로 다른 후보 <b>{s.get('total')}</b>개 → 규칙 검사 통과 <b>{s.get('rule_ok')}</b>개 "
             f"(그중 학습 데이터에 없던 구조 {s.get('new')}개)</p>" + report_figures.gallery_html(run_dir))
 
 
@@ -281,6 +283,8 @@ def body_tune(run_dir: Path, s: dict) -> str:
                    "이 회로를 하네스로 넘겼어요.</p>")
     else:
         out.append("<p>더 나아진 조합이 없어 6단계 회로를 그대로 하네스로 넘겼어요.</p>")
+    if len(tune.get("trials") or []) < 2:          # 처음 잰 회로가 이미 모두 통과하면 바꿔 볼 게 없다
+        out.append("<p class='sub'>처음 잰 조합이 이미 모든 항목을 통과해서 더 바꿔 볼 필요가 없었어요. 그래서 그래프가 없어요.</p>")
     out.append(report_figures.tune_html(tune))
     out.append("<details><summary>튜닝 횟수마다 보기</summary>")
     out.append("<table><tr><th>튜닝</th><th>전류 (µA)</th><th>출력단 배율</th><th>보상 (pF)</th><th>결과</th><th>못 맞춘 항목</th><th>걸린 시간 (s)</th></tr>")
