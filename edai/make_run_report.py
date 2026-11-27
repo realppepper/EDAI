@@ -516,9 +516,9 @@ def body_fix(run_dir: Path, s: dict) -> str:
            f"고쳐서 동작한 회로 <b>{len(fixed)}개</b>"
            + (" (" + ", ".join(f"{how.get(f.get('how'), '')} {f['passed']}/{f['judged']}" for f in fixed) + ")" if fixed else "")
            + ".</p>",
-           "<p class='sub'>먼저 쌓인 규칙(조건 → 블록 변환)을 LLM 없이 적용하고, 그래도 안 되면 LLM 이 구조를 블록(입력단, 출력단, "
+           "<details class='sub'><summary>고치는 방식</summary><p>먼저 쌓인 규칙(조건 → 블록 변환)을 LLM 없이 적용하고, 그래도 안 되면 LLM 이 구조를 블록(입력단, 출력단, "
            "보상, 자체 바이어스)으로 나눠 보고 블록을 바꾸거나 새로 조합해요. 고친 회로는 시뮬레이션으로 다시 확인하고, LLM 이 고친 "
-           "방법은 규칙으로 남겨 다음 칩에 먼저 써요. LLM 에 보낸 내용과 받은 답 원문은 실행 폴더의 doctor/ 에 있어요.</p>"]
+           "방법은 규칙으로 남겨 다음 칩에 먼저 써요. LLM 에 보낸 내용과 받은 답 원문은 실행 폴더의 doctor/ 에 있어요.</p></details>"]
     if doctor.get("rules_tried"):
         out.append("<h3>규칙 자동 적용</h3><table><tr><th>후보</th><th>규칙</th><th>내용</th><th>변환</th><th>결과</th></tr>")
         for r in doctor["rules_tried"]:
@@ -534,14 +534,17 @@ def body_fix(run_dir: Path, s: dict) -> str:
             params = json.dumps(a.get("params") or {}, ensure_ascii=False)
             ok = (a.get("result") or "").startswith("동작함")
             out.append(f"<tr><td>{a['call']}</td><td>{a['candidate']}</td><td>{esc((a.get('failure') or '')[:60])}</td>"
-                       f"<td>{esc(a.get('diagnosis'))}<br><span class='sub'>{esc(a.get('why'))}</span></td>"
+                       f"<td>{esc(a.get('diagnosis'))}"
+                       + (f"<details class='sub'><summary>고친 이유</summary>{esc(a.get('why'))}</details>" if a.get("why") else "")
+                       + "</td>"
                        f"<td class='mono'>{esc(a.get('action'))} {esc(params if params != '{}' else '')}</td>"
                        f"<td class='{'pass' if ok else 'failc'}'>{esc(a.get('result'))}</td></tr>")
         out.append("</table>")
     if doctor.get("rules_written") or doctor.get("rule_changes"):
         out.append("<h3>규칙 모음에 남긴 것</h3><ul>")
         out += [f"<li>{'새 규칙' if w.get('new') else '같은 규칙에 통한 기록 추가'}: {esc(w.get('text'))}"
-                f"<br><span class='mono sub'>{esc(w.get('rule_text'))}</span></li>" for w in doctor.get("rules_written") or []]
+                + (f"<details class='sub'><summary>규칙 조건</summary><span class='mono'>{esc(w.get('rule_text'))}</span></details>"
+                   if w.get("rule_text") else "") + "</li>" for w in doctor.get("rules_written") or []]
         out += [f"<li>상태 바뀜: {esc(c)}</li>" for c in doctor.get("rule_changes") or []]
         out.append("</ul>")
     return "".join(out)
