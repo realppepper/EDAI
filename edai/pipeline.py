@@ -28,9 +28,15 @@ import re
 import shutil
 import subprocess
 import sys
+import os
 import time
 import traceback
 from pathlib import Path
+
+# 기록 시간은 한국 시간으로. 팀원 서버(Daytona)는 UTC 라 9시간 이르게 찍혔다 (2026-11-27). 하위 과정(하네스 등)도 물려받는다
+os.environ["TZ"] = os.environ.get("EDAI_TZ", "Asia/Seoul")
+if hasattr(time, "tzset"):
+    time.tzset()
 
 HERE = Path(__file__).resolve().parent
 PY = sys.executable
