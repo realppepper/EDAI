@@ -250,22 +250,130 @@ def body_tune(run_dir: Path, s: dict) -> str:
     return "".join(out)
 
 
+# 하네스 채점 묶음 (run_harness.spec_counts) -> 결과 화면에 쓰는 설명. 이 줄들은 통과율 계산에서 빠진다
+EXCLUDED_GROUPS = [
+    ("not_testable", "시뮬레이션으로 확인할 수 없는 줄 (열 저항·ESD·절대 최대·권장 조건 등)"),
+    ("supply", "전원 조건이 공정 한계(5 V)를 넘는 줄"),
+    ("no_method", "측정 방법이 없는 줄 (왜곡·잡음·임피던스 등)"),
+    ("no_limit", "숫자 기준이 없는 줄"),
+    ("sim_error", "시뮬레이션이 멈춰 못 잰 줄"),
+]
+JUDGED = ("PASS", "PASS_TYP", "FAIL", "FAIL_TYP")
+STATUS_WORD = {"PASS": "통과", "PASS_TYP": "통과 (보통값 기준)", "FAIL": "실패", "FAIL_TYP": "실패 (보통값 기준)"}
+
+
+def harness_counts(run_dir: Path) -> dict:
+    """하네스 채점 개수. result.json 에 없으면(2026-11-27 전 실행) 채점 파일에서 센다."""
+    result = read(run_dir, "harness/result.json") or {}
+    if result.get("counts"):
+        return result["counts"]
+    if not (run_dir / "harness").is_dir():
+        return {}
+    from file_find import find_files
+    from run_harness import spec_counts
+    counts = spec_counts(run_dir / "harness")
+    files = find_files(run_dir / "harness", "*_SPEC_EVALUATION.json")
+    if counts and files:            # 통과·실패는 그때 하네스가 센 값 그대로 (그때는 다른 칩 줄·측정값 없는 왜곡 줄도 셈)
+        summary = json.loads(files[0].read_text(encoding="utf-8"))
+        counts.update(passed=summary.get("passed_specs", counts["passed"]), failed=summary.get("failed_specs", counts["failed"]),
+                      old=True)
+        counts["judged"] = counts["passed"] + counts["failed"]
+    return counts
+
+
+def harness_line(run_dir: Path) -> str:
+    """실행 목록 한 줄에 붙는 하네스 결과 (예: '하네스 에이전트 22/30 통과 (73.3%)'). 결과가 없으면 빈 글."""
+    c = harness_counts(run_dir)
+    if not c:
+        return ""
+    if not c.get("judged"):
+        return "하네스 에이전트 판정할 항목 없음"
+    old = " (예전 채점)" if c.get("old") else ""
+    return f"하네스 에이전트 {c['passed']}/{c['judged']} 통과 ({100 * c['passed'] / c['judged']:.1f}%){old}"
+
+
+SI_PREFIXES = [(1e9, "G"), (1e6, "M"), (1e3, "k"), (1, ""), (1e-3, "m"), (1e-6, "µ"), (1e-9, "n"), (1e-12, "p"), (1e-15, "f")]
+SI_UNITS = {"A", "V", "Hz", "F", "Ohm", "Ω", "s", "W", "V/s"}       # 접두어(µ, m, k ...)를 붙여 읽기 쉽게 쓰는 단위
+
+
+def _value(x, unit) -> str:
+    """하네스 값(SI 단위) -> '525.6 µA' 처럼. dB·° 같은 단위는 그대로."""
+    if x is None:
+        return "—"
+    try:
+        v = float(x)
+    except (TypeError, ValueError):
+        return esc(x)
+    unit = unit or ""
+    if unit in SI_UNITS and v != 0:
+        scale, prefix = next(((s, p) for s, p in SI_PREFIXES if abs(v) >= s), SI_PREFIXES[-1])
+        return f"{v / scale:.4g} {prefix}{unit}"
+    return f"{v:.4g} {esc(unit)}".strip()
+
+
 def body_harness(run_dir: Path, s: dict) -> str:
     result = read(run_dir, "harness/result.json") or {}
-    out = [f"<p>하네스가 LLM 으로 회로를 고치며 반복 → 데이터시트 전체 항목 통과율 "
-           f"<b>{num(result.get('pass_rate_percent'))}%</b> (반복 {result.get('iterations_count')}번, {result.get('seconds')} s)</p>"]
+    c = harness_counts(run_dir)
+    out = ["<p>하네스 에이전트(박준석 시스템의 채점기)가 최종 회로를 데이터시트의 모든 줄로 따로 채점합니다. "
+           "회로는 바꾸지 않습니다. 앞 단계는 스펙 파일의 몇 항목만 재지만, 여기서는 데이터시트의 부하·전원 조건대로 전체를 잽니다.</p>"]
+    if c.get("judged"):
+        out.append(f"<p>판정 <b>{c['judged']}</b>개 중 <b>{c['passed']}</b>개 통과 "
+                   f"(<b>{100 * c['passed'] / c['judged']:.1f}%</b>), 실패 {c['failed']}개. "
+                   f"데이터시트 {c['total']}줄 중 아래 줄은 판정에서 뺐습니다 ({result.get('seconds')} s)</p>")
+        if c.get("old"):
+            out.append("<p class='sub'>2026-11-27 전 채점입니다. 그때는 같은 데이터시트의 다른 칩 줄, 공정 한계를 넘는 전원 조건 줄, "
+                       "측정값이 없는 왜곡 줄도 판정에 넣어 지금 기준과 다릅니다.</p>")
+    elif c:
+        out.append(f"<p><b>판정할 항목이 없습니다.</b> 데이터시트 {c['total']}줄이 모두 아래 이유로 빠졌습니다.</p>")
+    else:
+        out.append(f"<p>통과율 <b>{num(result.get('pass_rate_percent'))}%</b></p>")
+    if c:
+        rows = [(label, c.get(key, 0)) for key, label in EXCLUDED_GROUPS if c.get(key)]
+        if result.get("other_part_rows_dropped"):
+            rows.append(("같은 데이터시트의 다른 칩 줄 (하네스에 넘기기 전에 뺌)", result["other_part_rows_dropped"]))
+        if rows:
+            out.append("<table><tr><th>판정에서 뺀 줄</th><th>개수</th></tr>" + "".join(
+                f"<tr><td>{esc(label)}</td><td>{n}</td></tr>" for label, n in rows) + "</table>")
+    out.append(harness_rows_html(run_dir))
     if result.get("note"):
         out.append(f"<p class='sub'>{esc(result['note'])}</p>")
     progress = harness_progress_html(run_dir)
     its = result.get("iterations") or []
-    if progress:
-        out.append(progress)
-    elif its:
-        out.append("<table><tr><th>반복</th><th>통과율</th></tr>" + "".join(
-            f"<tr><td>{esc(it.get('iteration', i + 1))}</td><td>{num(it.get('pass_rate_percent'))}%</td></tr>"
-            for i, it in enumerate(its)) + "</table>")
+    if (result.get("iterations_count") or 0) > 1:           # 하네스가 LLM 으로 회로를 고치던 때(2026-11-23 전) 실행
+        if progress:
+            out.append(progress)
+        elif its:
+            out.append("<table><tr><th>반복</th><th>통과율</th></tr>" + "".join(
+                f"<tr><td>{esc(it.get('iteration', i + 1))}</td><td>{num(it.get('pass_rate_percent'))}%</td></tr>"
+                for i, it in enumerate(its)) + "</table>")
     if result.get("final_netlist"):
         out.append(f"<details><summary>최종 넷리스트</summary><pre>{esc(result['final_netlist'][:20000])}</pre></details>")
+    return "".join(out)
+
+
+def harness_rows_html(run_dir: Path) -> str:
+    """판정한 줄 표 (실패 먼저) + 판정에서 뺀 줄 접기."""
+    from file_find import find_files
+    files = find_files(run_dir / "harness", "*_SPEC_EVALUATION.json") if (run_dir / "harness").is_dir() else []
+    if not files:
+        return ""
+    rows = json.loads(files[0].read_text(encoding="utf-8")).get("spec_evaluations") or []
+    judged = sorted((r for r in rows if r.get("status") in JUDGED), key=lambda r: r["status"].startswith("PASS"))
+    def target(r):
+        parts = [f"{k} {_value(r.get(f'{k}_target'), r.get('unit'))}" for k in ("min", "typ", "max")
+                 if r.get(f"{k}_target") is not None]
+        return " · ".join(parts) or "—"
+    out = []
+    if judged:
+        out.append("<table><tr><th>결과</th><th>항목</th><th>측정값</th><th>데이터시트 기준</th><th>조건</th></tr>" + "".join(
+            f"<tr><td class='{'pass' if r['status'].startswith('PASS') else 'failc'}'>{STATUS_WORD[r['status']]}</td>"
+            f"<td>{esc(r.get('symbol'))} {esc(r.get('name'))}</td><td>{_value(r.get('measured'), r.get('unit'))}</td>"
+            f"<td>{target(r)}</td><td>{esc(r.get('conditions'))}</td></tr>" for r in judged) + "</table>")
+    others = [r for r in rows if r.get("status") not in JUDGED]
+    if others:
+        out.append(f"<details><summary>판정에서 뺀 줄 {len(others)}개</summary><table><tr><th>이유</th><th>항목</th><th>조건</th></tr>"
+                   + "".join(f"<tr><td>{esc(r.get('status'))}</td><td>{esc(r.get('symbol'))} {esc(r.get('name'))}</td>"
+                             f"<td>{esc(r.get('conditions'))}</td></tr>" for r in others) + "</table></details>")
     return "".join(out)
 
 

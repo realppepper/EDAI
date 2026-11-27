@@ -78,7 +78,8 @@ const idOf = hash => (RUNS.find(r => hashOf(r.id) === hash.replace(/^#/, "")) ||
 function line(r) {
   const state = r.state === "done" ? "완료" : `${STATE[r.state] || ""} (${r.done}/${r.total}단계)`;
   const parts = [esc(r.when), esc(r.memo), `<span class="st-${r.state}">${state}</span>`];
-  if (r.pass_rate != null) parts.push(`하네스 <span class="pass">${r.pass_rate}%</span>`);
+  if (r.harness_line) parts.push(`<span class="pass">${esc(r.harness_line)}</span>`);
+  else if (r.pass_rate != null) parts.push(`하네스 에이전트 <span class="pass">${r.pass_rate}%</span>`);
   return parts.filter(Boolean).join(" · ");
 }
 

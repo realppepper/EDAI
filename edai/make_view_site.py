@@ -47,7 +47,8 @@ def collect() -> list:
             runs.append({"id": d.name, "dir": d, "title": info["title"], "chip": info["chip"], "when": info["when"],
                          "memo": info["memo"], "state": status.get("state"), "started": status.get("started") or "",
                          "done": sum(s["state"] == "done" for s in steps), "total": len(steps),
-                         "pass_rate": (harness.get("summary") or {}).get("pass_rate")})
+                         "pass_rate": (harness.get("summary") or {}).get("pass_rate"),
+                         "harness_line": make_run_report.harness_line(d)})
     return sorted(runs, key=lambda r: r["started"], reverse=True)
 
 
