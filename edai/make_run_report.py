@@ -267,11 +267,11 @@ def body_tune(run_dir: Path, s: dict) -> str:
     else:
         out.append("<p>더 나아진 조합이 없어 6단계 회로를 그대로 하네스로 넘겼어요.</p>")
     out.append(report_figures.tune_html(tune))
-    out.append("<details><summary>시도마다 보기</summary>")
-    out.append("<table><tr><th>전류 (µA)</th><th>출력단 배율</th><th>보상 (pF)</th><th>결과</th><th>못 맞춘 항목</th><th>걸린 시간 (s)</th></tr>")
-    for t in tune["trials"]:
+    out.append("<details><summary>튜닝 횟수마다 보기</summary>")
+    out.append("<table><tr><th>튜닝</th><th>전류 (µA)</th><th>출력단 배율</th><th>보상 (pF)</th><th>결과</th><th>못 맞춘 항목</th><th>걸린 시간 (s)</th></tr>")
+    for k, t in enumerate(tune["trials"], 1):
         res = f"{t['passed']}/{t['judged']}" if t["valid"] else f"<span class='failc'>실패</span> {esc((t.get('reason') or '')[:60])}"
-        out.append(f"<tr><td>{t['unit_current_ua']:.3g}</td><td>x{num(t['scale'], 0)}</td><td>{num(t['cap_pf'], 1)}</td>"
+        out.append(f"<tr><td>{k}번째</td><td>{t['unit_current_ua']:.3g}</td><td>x{num(t['scale'], 0)}</td><td>{num(t['cap_pf'], 1)}</td>"
                    f"<td>{res}</td><td>{esc(', '.join(t.get('failed') or []))}</td><td>{num(t['seconds'], 0)}</td></tr>")
     out.append("</table></details>")
     if tune["improved"]:

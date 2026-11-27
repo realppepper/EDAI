@@ -37,6 +37,9 @@ button:disabled { opacity:.5; cursor:default; }
 .actions label { display:inline; margin:0; white-space:nowrap; }
 .actions select { width:auto; max-width:320px; }
 .actions button.ghost { margin:0; white-space:nowrap; }
+a.ghost-btn { border:1px solid var(--accent); color:var(--accent); border-radius:6px; padding:3px 8px; font-size:12px;
+              text-decoration:none; white-space:nowrap; }
+a.ghost-btn:hover { background:var(--accent); color:#fff; }
 .bar { display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--line); }
 iframe { flex:1; width:100%; border:0; border-radius:0 0 10px 10px; background:#fff; min-height:0; }
 .empty { margin:auto; color:var(--muted); padding:24px; text-align:center; }
@@ -80,6 +83,7 @@ iframe { flex:1; width:100%; border:0; border-radius:0 0 10px 10px; background:#
       <div class="actions"><span id="rerunBox" class="actions" hidden><select id="fromStep" aria-label="다시 돌릴 단계"></select>
            <button class="ghost" id="retry">이 단계부터 다시</button>
            <button class="ghost" id="stop" hidden>멈추기</button></span>
+           <a id="zip" class="ghost-btn" hidden>최종 회로 받기 (ZIP)</a>
            <a id="open" class="sub" target="_blank" hidden>새 창으로 열기</a></div>
     </div>
     <div class="empty" id="empty">왼쪽에서 새 설계를 시작하거나 지난 결과를 고르세요</div>
@@ -126,6 +130,9 @@ function updateBar() {
   const running = r && r.state === "running";
   document.getElementById("retry").textContent = running ? "멈추고 이 단계부터 다시" : "이 단계부터 다시";
   document.getElementById("stop").hidden = !running;
+  const zip = document.getElementById("zip");               // 끝난 실행만: 넷리스트 + 회로도 PNG + 설명.txt
+  zip.hidden = !(r && r.state === "done");
+  if (r) zip.href = `/api/zip?id=${encodeURIComponent(r.id)}`;
   if (r && r.steps && box.dataset.run !== r.id + r.state + r.done) {   // 고른 값이 10초마다 되돌아가지 않게
     box.dataset.run = r.id + r.state + r.done;
     document.getElementById("fromStep").innerHTML = r.steps.map(s =>

@@ -360,8 +360,9 @@ def tune_html(tune: dict) -> str:
         charts.append(_mini(row.get("label") or m, row.get("unit") or "", ys, _bounds(row.get("target")), best_k, jump_k,
                             lambda v: f"{v:.0f}" if abs(v) >= 10 else f"{v:.2g}", notes=notes))
     return (f"<div class='multiples'>{''.join(charts)}</div>"
-            "<div class='fig-note'>가로축은 시도 순서, 초록 구간이 통과 범위, 큰 초록 점이 채택된 조합이에요. "
-            "그래프에 커서를 대면 그 시도의 값과 조합이 나와요.</div>")
+            "<div class='fig-note'>가로축은 튜닝 횟수(전류원 전류·출력단 배율·보상 커패시터 조합을 바꿔 잰 순서), 초록 구간이 통과 범위예요. "
+            "큰 초록 점은 채택된 조합(통과 개수가 가장 많은 조합)이라, 그 조합에서도 못 맞춘 항목은 초록 구간 밖에 있어요. "
+            "그래프에 커서를 대면 그때의 값과 조합이 나와요.</div>")
 
 
 # 튜닝 그래프 말풍선: 커서와 가장 가까운 시도의 점을 키우고 안내선·값을 보여 준다 (결과 화면 끝에 한 번 넣음)
@@ -376,7 +377,7 @@ document.querySelectorAll('.mini svg[data-pts]').forEach(svg => {
     for (const q of pts) if (Math.abs(q.x - x) < Math.abs(p.x - x)) p = q;
     guide.setAttribute('x1', p.x); guide.setAttribute('x2', p.x); guide.setAttribute('visibility', 'visible');
     dots.forEach(d => d.classList.toggle('on', +d.dataset.k === p.k));
-    tip.innerHTML = '<b>' + p.v + '</b><small>시도 ' + p.k + (p.n ? ' · ' + p.n : '') + '</small>';
+    tip.innerHTML = '<b>' + p.v + '</b><small>튜닝 ' + p.k + '번째' + (p.n ? ' · ' + p.n : '') + '</small>';
     tip.hidden = false;
     const sx = svg.getBoundingClientRect(), bx = box.getBoundingClientRect();
     const left = sx.left - bx.left + p.x * m.a, top = sx.top - bx.top + p.y * m.d;

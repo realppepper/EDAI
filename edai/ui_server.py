@@ -200,6 +200,24 @@ class Handler(BaseHTTPRequestHandler):
             return self.send(200, UI_FILE.read_bytes(), CONTENT_TYPES[".html"])
         if path == "/api/runs":
             return self.send_json(run_list())
+        if path == "/api/zip":                     # 최종 회로 ZIP (넷리스트 + 회로도 PNG + 설명.txt), final_zip.py
+            query = dict(urllib.parse.parse_qsl(url.query))
+            run_dir = (RUNS_DIR / query.get("id", "")).resolve()
+            if run_dir.parent != RUNS_DIR.resolve() or not run_dir.is_dir():
+                return self.send_json({"error": "실행을 찾지 못했어요"}, 404)
+            import final_zip
+            try:
+                name, data = final_zip.build(run_dir)
+            except ValueError as error:
+                return self.send_json({"error": str(error)}, 409)
+            self.send_response(200)
+            self.send_header("Content-Type", "application/zip")
+            self.send_header("Content-Disposition", "attachment; filename=\"final.zip\"; "
+                             f"filename*=UTF-8''{urllib.parse.quote(name)}")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            self.wfile.write(data)
+            return
         if path == "/api/datasheets":              # 준비된 데이터시트 목록 (파일이 있는 것만)
             return self.send_json(datasheet_catalog())
         if path.startswith("/datasheets/"):         # 고른 데이터시트 PDF (화면이 받아서 /api/run 으로 다시 올림)
