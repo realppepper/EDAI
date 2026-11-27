@@ -149,7 +149,7 @@ def gallery_html(run_dir: Path) -> str:
             res = f"<div class='res no'>✕ 규칙 검사 탈락</div>"
         else:
             res = f"<div class='res no'>✕ {esc((r.get('reason') or '동작 안 함')[:28])}</div>"
-        mark = "<span class='tag new'>고른 후보</span>" if n == picked else ""
+        mark = "<span class='tag new'>채택</span>" if n == picked else ""
         return (f"<div class='cand{' picked' if n == picked else ''}'>{pic}"
                 f"<div class='name'><span>후보 {n}</span>{mark}</div><div class='tags'>{''.join(tags)}</div>{res}</div>")
 
@@ -240,7 +240,7 @@ def spec_grid_html(run_dir: Path) -> str:
     return (f"<div class='gridwrap'><table class='spec-grid'><thead><tr><th>동작한 회로 {len(groups)}가지</th>{head}"
             f"<th>통과</th></tr></thead><tbody><tr class='count'><td>통과한 회로 수</td>{count_row}<td></td></tr>"
             f"{''.join(body)}</tbody></table></div>"
-            "<div class='fig-note'>파란 테두리 줄이 5단계가 고른 후보예요. 열마다 통과한 회로 수를 보면 다 같이 막힌 항목이 보여요.</div>")
+            "<div class='fig-note'>파란 테두리 줄이 채택된 후보예요 (5단계). 열마다 통과한 회로 수를 보면 다 같이 막힌 항목이 보여요.</div>")
 
 
 # ---------------------------------------------------------------- 튜닝 그래프 (7단계)
@@ -326,4 +326,4 @@ def tune_html(tune: dict) -> str:
         charts.append(_mini(row.get("label") or m, row.get("unit") or "", ys, _bounds(row.get("target")), best_k, jump_k,
                             lambda v: f"{v:.0f}" if abs(v) >= 10 else f"{v:.2g}"))
     return (f"<div class='multiples'>{''.join(charts)}</div>"
-            "<div class='fig-note'>가로축은 시도 순서, 초록 구간이 통과 범위, 큰 초록 점이 최종으로 고른 조합이에요.</div>")
+            "<div class='fig-note'>가로축은 시도 순서, 초록 구간이 통과 범위, 큰 초록 점이 채택된 조합이에요.</div>")
