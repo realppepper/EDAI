@@ -103,6 +103,24 @@ def load_parsed(pdf: Path):
     return parsed
 
 
+def write_parsed(path: Path, parsed: dict) -> None:
+    """PDF 읽기 결과를 JSON 으로 (쪽 번호 키는 글자로, 밑줄로 시작하는 내부 값은 뺌)."""
+    path.parent.mkdir(parents=True, exist_ok=True)
+    keep = {k: v for k, v in parsed.items() if not k.startswith("_")}
+    keep["pages"] = {str(k): v for k, v in (parsed.get("pages") or {}).items()}
+    path.write_text(json.dumps(keep, ensure_ascii=False), encoding="utf-8")
+
+
+def read_parsed(path: Path):
+    """write_parsed 로 쓴 파일 -> PDF 읽기 결과 (쪽 번호 키를 정수로). 없거나 깨졌으면 None."""
+    try:
+        parsed = json.loads(Path(path).read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    parsed["pages"] = {int(k): v for k, v in (parsed.get("pages") or {}).items()}
+    return parsed
+
+
 def save_parsed(pdf: Path, parsed: dict) -> bool:
     """모든 쪽이 정상으로 읽혔으면 저장하고 True. 글자만 읽은(서비스 실패) 쪽이 있으면 저장하지 않는다."""
     pages = parsed.get("pages") or {}
@@ -137,6 +155,8 @@ def extract(pdf: Path, name: str, log=print, target: str = None) -> Path:
         saved = save_parsed(pdf, parsed)
         log(f"PDF 읽기 끝 ({time.time() - t0:.0f} s)" + ("" if saved else " - 글자만 읽은 쪽이 있어 다음에 다시 읽음"))
         LAST_PARSE.update(cached=False, seconds=round(time.time() - t0), saved=saved)
+    # 이 실행이 쓴 PDF 읽기 결과 (8단계 하네스가 PDF 를 다시 읽지 않고 같은 결과를 쓰게, pipeline 이 실행 폴더로 복사)
+    write_parsed(OUT_DIR / f"{name}_parsed.json", parsed)
     builder = HardwareKnowledgeGraphBuilder()
     hkg = builder.build_kg_from_parsed_pdf(parsed, progress_callback=lambda done, total, page, err:
                                            log(f"스펙 표 추출 {done}/{total} (쪽 {page}){' - 다시 시도' if err else ''}"),

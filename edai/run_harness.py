@@ -277,6 +277,12 @@ def main() -> None:
     try:
         agent = AutonomousAnalogDesignAgent(output_dir=str(out_dir), max_iterations=ITERATIONS,
                                             reuse_hkg_path=str(hkg_file))
+        # PDF 읽기: 하네스는 원래 PDF 를 처음부터 다시 읽는다 (NVIDIA Nemotron-Parse, 서비스가 붐비면 20분 넘게,
+        # LM358 2026-11-28). 이 실행의 1단계가 읽은 결과(pdf_parsed.json)를 그대로 쓴다. 없으면 같은 PDF 의 저장본
+        parsed = extract_datasheet.read_parsed(run_dir / "pdf_parsed.json") or extract_datasheet.load_parsed(run_dir / "datasheet.pdf")
+        if parsed is not None:
+            agent.pdf_parser.parse_pdf = lambda *args, **kwargs: parsed
+            print("PDF 읽기: 1단계에서 읽은 결과를 씀", flush=True)
         mode = os.environ.get("EDAI_HARNESS_MODE", "verify")
         print(f"하네스 방식: {mode} ({'우리 회로 채점만' if mode == 'verify' else '하네스 LLM 합성·개선 포함'})", flush=True)
         if mode == "verify":

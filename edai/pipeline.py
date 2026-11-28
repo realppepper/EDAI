@@ -188,6 +188,9 @@ def step_extract(run: Run) -> dict:
     pages = HERE / "data" / "extraction" / f"{run.name}_pages.json"
     if pages.exists():
         run.copy(pages, "pages.json")
+    parsed = HERE / "data" / "extraction" / f"{run.name}_parsed.json"
+    if parsed.exists():                             # 8단계 하네스가 PDF 를 다시 읽지 않고 이 실행의 읽기 결과를 씀
+        run.copy(parsed, "pdf_parsed.json")
     extract_datasheet.build_pdg(run.dir / "hkg.json", run.dir, log=run.log, pages_file=run.dir / "pages.json")
     hkg, spec = run.read("hkg.json"), run.read("spec.json")
     part = str(hkg["ic_device"].get("name") or "").strip().upper()
