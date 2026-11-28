@@ -68,12 +68,12 @@ ACTIONS = {
                     "VB# port, so the flow biases it from its proven reference mirror. Use when OFF/TRIODE devices or "
                     "an unresolved loop sit in the model's own bias network. params: {}",
     "replace_input_stage": "replace input pair + tail + input stage with a library block; later stages are kept and "
-                           "driven from the same node. params: {\"block\": \"five_transistor|folded_cascode|rail_to_rail\", "
+                           "driven from the same node. params: {\"block\": \"" + "|".join(sb.INPUT_STAGES) + "\", "
                            "\"input_pair\": \"nmos|pmos\"}",
     "replace_output_stage": "replace everything after the input stage (and its compensation) with a library output "
-                            "stage. params: {\"block\": \"common_source_nmos|common_source_pmos|push_pull_nmos|push_pull_pmos|none\"}",
+                            "stage. params: {\"block\": \"" + "|".join(sb.OUTPUT_STAGES) + "\"}",
     "set_compensation": "replace the compensation between the input-stage output and OUT. "
-                        "params: {\"type\": \"none|miller|miller_rz\"}",
+                        "params: {\"type\": \"" + "|".join(sb.COMPENSATIONS) + "\"}",
     "rebuild": "throw the structure away and compose a new one from library blocks (all bias by the flow). "
                "params: {\"input_stage\": ..., \"input_pair\": \"nmos|pmos\", \"output_stage\": ..., \"compensation\": ...}",
     "flip": "complementary flip of the whole circuit (NMOS<->PMOS, VDD<->VSS). Use when the input pair type cannot "
