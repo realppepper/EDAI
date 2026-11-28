@@ -118,8 +118,13 @@ FLOW_NOTES = """HOW THE FLOW WORKS (so you know what you can change):
 - Output swing / output current under load with low supply current: a class-A output stage needs its quiescent
   current above the load current; a push_pull (class-AB) output stage drives mA loads at small quiescent current.
 - Supply current too high: lower the unit current or the output scale, or use a push_pull output stage.
-- PSRR too low: the supply reaches the output through the second-stage load and the bias; cascode the gain nodes,
-  or move the gain node so that its load is referred to the quieter rail (flip).
+- PSRR too low (measured as the input offset change while VDD is swept at DC): look for ASYMMETRY between the two
+  halves of the input stage. If the input-stage output node sits near one rail while its mirror/diode counterpart
+  sits near the other, one cascode device carries a much larger Vds than its partner; at high Vds it leaks
+  drain-to-body current (impact ionization), which grows with VDD and unbalances the halves. Keep the input-stage
+  output node at about the same level as its mirror counterpart: choose the second-stage device type so that its
+  gate naturally sits near that level (e.g. a PMOS mirror load on the input stage -> PMOS second-stage driver).
+  Compare the node voltages of the two halves in the transistor list.
 - Prefer changing a whole block over tweaking one number: a wrong structure is never fixed by a number."""
 
 SYSTEM_PROMPT = (
@@ -635,7 +640,9 @@ def run(run_dir: Path, log=print) -> dict:
 
 # ---------------------------------------------------------------- 튜닝 뒤 남은 실패 고치기 (2026-11-28)
 REFINE_TRIES = 4            # LLM 에 묻는 횟수
-REFINE_LIMIT_S = 300        # 전체 시간 [s]
+REFINE_LIMIT_S = 600        # 전체 시간 [s]
+REFINE_TUNE_S = 120         # 구조를 바꾼 뒤 다시 튜닝하는 시간 [s]. 튜닝 때 고른 값 그대로 재면 맞는 방향의 구조도 버려졌다
+REFINE_START_CAP_F = 2e-12  # 새 구조에 보상 커패시터가 없을 때 튜닝을 시작하는 값 (0 pF 에서 시작하면 발진해 시간 초과)
 REFINE_SYSTEM_PROMPT = (
     "You are an experienced analog CMOS IC designer (GF180MCU 6 V devices, VDD = 5 V, VCM = 2.5 V). "
     "An automatic flow generated an op-amp, sized it by gm/ID and tuned the bias current, output-stage scale and "
@@ -669,28 +676,32 @@ def refine(run_dir: Path, final: dict, table: dict, point: tuple, spec: dict, lo
     end = time.time() + REFINE_LIMIT_S
     targets = {k: tuple(v) for k, v in (final.get("target_overrides") or {}).items()}
 
-    def measure(state):
-        nodes = tune_sizing.miller_nodes(state["table"])
-        best_v = None
-        for c in ((cap, cap * 2) if cap else (0.0, 2e-12)):
-            t, values = tune_sizing.with_caps(state["table"], nodes, c)
-            auto_size.TARGET_OVERRIDES = dict(state["targets"])
-            run_sim.CANDIDATE_DEADLINE = min(time.time() + tune_sizing.TRIAL_LIMIT_S, end + 60)
-            try:
-                v = ss.evaluate_variant(t, state["unit_current"], state["scale"], spec, values)
-            except run_sim.CandidateTimeout:
-                v = {"valid": False, "reason": "시간 초과"}
-            finally:
-                auto_size.TARGET_OVERRIDES = {}
-                run_sim.CANDIDATE_DEADLINE = None
-            v.update(cap_f=c, table_with_caps=t, unit_current_a=state["unit_current"],
-                     target_overrides={k: list(x) for k, x in state["targets"].items()})
-            if best_v is None or tune_sizing.score(v) < tune_sizing.score(best_v):
-                best_v = v
-            pm = next((r for r in v.get("spec") or [] if r["measure"] == "pm"), None)
-            if not (v.get("valid") and pm and pm["status"] == run_sim.STATUS_FAIL):
-                break                                   # 위상 여유가 모자랄 때만 커패시터 두 배를 더 재 봄
-        return best_v
+    def measure(state, retune=False):
+        """retune=False: 지금 값(전류·배율·커패시터)으로 한 번 잼. True: 구조를 바꾼 뒤 짧게 다시 튜닝해서 가장 나은 것.
+        돌려주는 측정 결과에 point(전류, 배율, 커패시터) 와 table_with_caps 를 붙인다."""
+        auto_size.TARGET_OVERRIDES = dict(state["targets"])
+        try:
+            if retune:
+                left = end + 60 - time.time()
+                r = tune_sizing.tune(state["table"], spec, state["unit_current"], state["scale"], log=log,
+                                     start_cap=cap or REFINE_START_CAP_F, limit_s=max(30, min(REFINE_TUNE_S, left)))
+                v, point, t = r["best"]["variant"], r["best"]["point"], r["best"]["table"]
+            else:
+                nodes = tune_sizing.miller_nodes(state["table"])
+                t, values = tune_sizing.with_caps(state["table"], nodes, cap)
+                run_sim.CANDIDATE_DEADLINE = time.time() + tune_sizing.TRIAL_LIMIT_S
+                try:
+                    v = ss.evaluate_variant(t, state["unit_current"], state["scale"], spec, values)
+                except run_sim.CandidateTimeout:
+                    v = {"valid": False, "reason": "시간 초과"}
+                finally:
+                    run_sim.CANDIDATE_DEADLINE = None
+                point = (state["unit_current"], state["scale"], cap)
+        finally:
+            auto_size.TARGET_OVERRIDES = {}
+        v = dict(v, point=point, table_with_caps=t, cap_f=point[2], unit_current_a=point[0],
+                 target_overrides={k: list(x) for k, x in state["targets"].items()})
+        return v
 
     state = {"table": table, "unit_current": current, "scale": scale, "targets": targets, "prev": None}
     variant = measure(state)                        # 진단 정보(동작점·노드 전압)를 얻으려고 튜닝한 회로를 다시 잰다
@@ -735,7 +746,7 @@ def refine(run_dir: Path, final: dict, table: dict, point: tuple, spec: dict, lo
             history.append(f"  {action.get('type')} {json.dumps(action.get('params') or {})} -> rejected: {exc}")
             log(f"  시도 {attempt}: {action.get('type')} 적용 못 함 ({exc})")
             continue
-        new_v = measure(new_state)
+        new_v = measure(new_state, retune=action.get("type") not in ("set_unit_current", "set_output_scale"))
         ok = bool(new_v.get("valid"))
         fails = [r["measure"] for r in new_v.get("spec") or [] if r["status"] == run_sim.STATUS_FAIL]
         record["result"] = (f"{new_v['passed']}/{new_v['judged']} (실패: {', '.join(fails) or '없음'})" if ok
@@ -750,7 +761,8 @@ def refine(run_dir: Path, final: dict, table: dict, point: tuple, spec: dict, lo
                            "failure": "스펙 미달: " + names, "action": action.get("type"),
                            "params": action.get("params"), "worked": bool(improved), "result": record["result"]})
         save_experience(experience)
-        if improved:
+        if improved:                                # 다시 튜닝한 값(전류·배율)을 다음 시도의 시작점으로
+            new_state = dict(new_state, unit_current=new_v["point"][0], scale=new_v["point"][1])
             best = (new_state, new_v)
             record["kept"] = True
             if new_v["passed"] >= new_v["judged"]:

@@ -129,13 +129,14 @@ def idd_jump(variant: dict, spec: dict, current: float):
     return below[-1] if below else CURRENTS_A[0]
 
 
-def tune(table: dict, spec: dict, unit_current: float, output_scale: float, log=print) -> dict:
+def tune(table: dict, spec: dict, unit_current: float, output_scale: float, log=print, start_cap: float = None,
+         limit_s: float = None) -> dict:
     """언덕 오르기로 (전류, 배율, 커패시터)를 고른다. 돌려주는 값: {"start", "best", "trials", "stopped"}.
     start/best 는 {"point": (전류, 배율, 커패시터), "variant": ss.evaluate_variant 결과, "table"}.
     공급 전류가 목표를 넘으면 목표에 맞을 전류로 건너뛴 점에서도 언덕 오르기를 한 번 더 하고 둘 중 나은 것을 고른다."""
     nodes = miller_nodes(table)
     started = time.time()
-    end = started + TUNE_LIMIT_S
+    end = started + (limit_s or TUNE_LIMIT_S)
     seen, trials = {}, []
 
     def measure(point):
@@ -171,11 +172,15 @@ def tune(table: dict, spec: dict, unit_current: float, output_scale: float, log=
         return a is not None and score(a["variant"]) < score(b["variant"])
 
     caps = CAPS_F
-    start_cap = 0.0
+    initial_cap = 0.0
     if existing_caps(table, nodes):             # 이미 있는 보상 커패시터는 기본값(1 pF)에서 시작하고 없애지는 않는다
-        start_cap = float(nt.DEFAULT_VALUE["cap"].rstrip("p")) * 1e-12
+        initial_cap = float(nt.DEFAULT_VALUE["cap"].rstrip("p")) * 1e-12
         caps = tuple(c for c in CAPS_F if c > 0)
-    start = measure((unit_current, output_scale, start_cap))
+    if start_cap is not None and nodes:
+        # 부르는 쪽이 시작 커패시터를 정함 (튜닝 뒤 LLM 구조 개선). 보상이 없는 새 출력단을 0 pF 에서 재면 발진해
+        # 시뮬레이션이 시간 초과로 끊겼다 (LM358 2026-11-28)
+        initial_cap = min(caps, key=lambda c: abs(c - start_cap))
+    start = measure((unit_current, output_scale, initial_cap))
     axes = [(0, CURRENTS_A), (1, SCALES)] + ([(2, caps)] if nodes else [])
     # 공급 전류가 목표를 넘으면 목표에 맞을 전류로 건너뛴 점부터 찾는다. 원래 점부터 찾으면 전류를 키우는 쪽(이득·대역폭)으로
     # 가며 시간을 다 써서 건너뛴 점을 거의 못 봤다 (LMV321 2026-11-27: 10분 중 9.5분). 원래 점은 남은 시간에 찾는다
@@ -183,7 +188,7 @@ def tune(table: dict, spec: dict, unit_current: float, output_scale: float, log=
     best, stopped = start, "더 나아지지 않음"
     if jump is not None:
         log(f"  공급 전류가 목표를 넘어 전류원 전류를 {unit_current * 1e6:g} µA -> {jump * 1e6:g} µA 로 건너뛰어 먼저 찾음")
-        other = measure((jump, output_scale, start_cap))
+        other = measure((jump, output_scale, initial_cap))
         if other is not None:
             other_best, other_stopped = climb(other, axes, caps, nodes, measure, better, end)
             if better(other_best, best):
