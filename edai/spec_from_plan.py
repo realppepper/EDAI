@@ -176,13 +176,44 @@ def measure_of(kind: str, row: dict):
     return None, NOT_MEASURED.get(kind, f"{kind}: 우리 측정에 없는 종류")
 
 
+# 추출 값 점검 (2026-11-28). 추출 LLM 이 표 칸을 밀려 읽으면 맞는 회로도 실패가 된다
+# (LM358: VOL "0.75 1 V" 를 최소 0.75 / 보통 1 로 읽어 "0.75 V 이상"이 됨). 칸 머리글이 근거 글에 없어
+# LLM 에 다시 물어도 어느 칸인지 알 수 없으므로, 물리적으로 뜻이 있는 방향으로 바로잡고 안 되면 판정에서 뺀다.
+# 작을수록 좋은 항목(레일에서 떨어진 폭 포함, 추출 원래 값 기준): 최소만 있으면 뜻이 없다 -> 칸이 밀린 것
+SHIFT_UP = {"idd", "voh_1ma", "voh_5ma", "vol_1ma", "vol_5ma", "iib", "iio", "ts", "vn_1k", "vn_10k", "in_1k", "thd_av1"}
+# 클수록 좋은 항목: 최대만 있으면 뜻이 없다 -> 칸이 밀린 것
+SHIFT_DOWN = {"avd", "cmrr", "psrr", "ugbw", "sr"}
+# 우리 단위로 바꾼 뒤 말이 되는 범위 (벗어나면 단위나 숫자를 잘못 읽은 것)
+PLAUSIBLE = {"avd": (20, 200), "cmrr": (20, 200), "psrr": (20, 200), "idd": (0.01, 1e5), "ugbw": (1e-4, 1e3),
+             "sr": (1e-4, 1e4), "voh_1ma": (0, TEST_SUPPLY), "voh_5ma": (0, TEST_SUPPLY), "vol_1ma": (0, TEST_SUPPLY),
+             "vol_5ma": (0, TEST_SUPPLY), "pm": (1, 120)}
+
+
+def check_values(measure: str, lo, typ, hi) -> tuple:
+    """추출한 (최소, 보통, 최대) 를 점검한다. 돌려주는 값: (최소, 보통, 최대, 고친 내용 또는 None, 오류 또는 None)."""
+    fixed = None
+    if measure in SHIFT_UP and lo is not None and hi is None:
+        lo, typ, hi = None, (lo if typ is not None else None), (typ if typ is not None else lo)
+        fixed = "작을수록 좋은 항목에 최소값만 있어 칸이 밀린 것으로 보고 보통/최대로 읽음"
+    elif measure in SHIFT_DOWN and hi is not None and lo is None:
+        lo, typ, hi = (typ if typ is not None else hi), (hi if typ is not None else None), None
+        fixed = "클수록 좋은 항목에 최대값만 있어 칸이 밀린 것으로 보고 최소/보통으로 읽음"
+    values = [v for v in (lo, typ, hi) if v is not None]
+    if any(a > b for a, b in zip(values, values[1:])):
+        return lo, typ, hi, fixed, f"최소 ≤ 보통 ≤ 최대 순서가 아님 ({lo} / {typ} / {hi})"
+    return lo, typ, hi, fixed, None
+
+
+def plausible_error(measure: str, values: tuple):
+    """우리 단위로 바꾼 값이 말이 되는 범위 밖이면 그 설명, 아니면 None."""
+    bounds = PLAUSIBLE.get(measure)
+    bad = [v for v in values if v is not None and bounds and not bounds[0] <= v <= bounds[1]]
+    return f"값이 말이 되는 범위({bounds[0]:g}~{bounds[1]:g}) 밖: {bad[0]:g}" if bad else None
+
+
 def to_ours(measure: str, row: dict):
     """측정 계획의 목표값(단위 정리됨) -> 우리 단위의 (min, typ, max)."""
     lo, typ, hi = row["min_target"], row["typ_target"], row["max_target"]
-    if measure.startswith(("voh", "vol")) and lo is not None and hi is None:
-        # 레일에서 떨어진 폭은 '최대'만 뜻이 있다. 최소만 있으면 칸이 밀린 것: 두 값이면 보통/최대, 하나면 최대로 읽는다
-        # (LM358 2026-11-28: "0.75 1 V" 를 최소 0.75, 보통 1 로 읽어 VOL 이 "0.75 V 이상"으로 판정됨)
-        lo, typ, hi = None, (lo if typ is not None else None), (typ if typ is not None else lo)
     if measure == "idd":
         return tuple(None if v is None else v * 1e6 for v in (lo, typ, hi))
     if measure == "ugbw":
@@ -275,9 +306,18 @@ def build(plan: dict, hkg: dict, part: str, fix: dict | None = None, whole: bool
         seen.add(measure)
         base = template[measure]
         item = {k: base[k] for k in ("measure", "label", "unit", "scale", "plain", "headline") if k in base}
-        low, typ, high = (spec_from_hkg.rounded(v) for v in to_ours(measure, row))
+        lo, ty, hi, fixed, error = check_values(measure, row["min_target"], row["typ_target"], row["max_target"])
+        low, typ, high = (spec_from_hkg.rounded(v) for v in to_ours(measure, dict(row, min_target=lo, typ_target=ty,
+                                                                                    max_target=hi)))
+        error = error or plausible_error(measure, (low, typ, high))
         item.update({k: v for k, v in (("min", low), ("typ", typ), ("max", high)) if v is not None})
-        if low is None and high is None:
+        if fixed:
+            item["value_fix"] = fixed
+        if error:                                      # 판정에서 빼고 결과 화면에 '추출 오류'로 보여 줌
+            item.update(reference=True, extract_error=error)
+            item.pop("min", None)
+            item.pop("max", None)
+        elif low is None and high is None:
             if measure == "pm":                        # 발진 방지용 우리 안전 조건 (데이터시트 기준 아님)
                 item.update(min=PM_GUARD_DEG, basis="guard")
             else:

@@ -13,6 +13,7 @@ pipeline.py 6단계: 우리 회로(final.json)를 설계도로 넣고 박준석 
 """
 
 import json
+import re
 import os
 import shutil
 import sys
@@ -221,6 +222,63 @@ def drop_temperature_rows(hkg: dict) -> tuple:
     return {**hkg, "electrical_parameters": kept}, len(hkg.get("electrical_parameters", [])) - len(kept)
 
 
+# 추출 값 점검 (2026-11-28, spec_from_plan.check_values 와 같은 생각). 이름으로 좋은 방향을 정한다.
+# 크기(절댓값)로 본다: 바이어스 전류처럼 음수로 적힌 줄(-10 / -35 nA)은 크기 10 -> 35 가 정상 순서
+LOWER_BETTER_NAME = re.compile(r"swing from rail|supply current|quiescent|bias current|offset current|noise", re.I)
+HIGHER_BETTER_NAME = re.compile(r"gain|rejection|bandwidth|slew|output current", re.I)
+# 제거비·이득을 µV/V, mV/V 처럼 비로 적으면 작을수록 좋아 방향이 거꾸로다. 단락 전류(short-circuit)는 한계라 뺀다
+RATIO_UNIT = re.compile(r"V\s*/\s*V|µ|μ|u|ppm|%", re.I)
+NOT_DIRECTED = re.compile(r"short.circuit", re.I)
+
+
+def direction(row: dict):
+    """'lower' / 'higher' / None (모름: 손대지 않음)."""
+    name, unit = str(row.get("name") or ""), str(row.get("unit") or "")
+    if NOT_DIRECTED.search(name):
+        return None
+    if LOWER_BETTER_NAME.search(name):
+        return "lower"
+    if HIGHER_BETTER_NAME.search(name):
+        ratio = re.search(r"rejection|gain", name, re.I) and RATIO_UNIT.search(unit) and "dB" not in unit
+        return "lower" if ratio else "higher"
+    return None
+NUMBER = re.compile(r"[-+−–]?\d+(\.\d+)?")
+
+
+def check_rows(hkg: dict) -> tuple:
+    """칸이 밀린 줄을 바로잡고, 바로잡을 수 없는 줄(기호가 숫자, 최소=보통=최대, 크기 순서가 거꾸로)은 뺀다.
+    돌려주는 값: (hkg, 바로잡은 줄 수, 뺀 줄 [{"symbol", "name", "why"}])."""
+    kept, fixed, dropped = [], 0, []
+    for row in hkg.get("electrical_parameters", []):
+        lo, typ, hi = (row.get(k) if isinstance(row.get(k), (int, float)) else None for k in ("min", "typ", "max"))
+        name = str(row.get("name") or "")
+        why = None
+        if NUMBER.fullmatch(str(row.get("symbol") or "").strip()):
+            why = "기호 자리에 숫자"
+        elif lo is not None and lo == typ == hi:
+            why = "최소 = 보통 = 최대"
+        way = direction(row)
+        if why is None and way == "lower" and lo is not None and hi is None:
+            row = dict(row, min=None, typ=lo if typ is not None else row.get("typ"), max=typ if typ is not None else lo,
+                       value_fix="작을수록 좋은 항목에 최소값만 있어 보통/최대로 읽음")
+            fixed += 1
+        elif why is None and way == "higher" and hi is not None and lo is None:
+            row = dict(row, min=typ if typ is not None else hi, typ=hi if typ is not None else row.get("typ"), max=None,
+                       value_fix="클수록 좋은 항목에 최대값만 있어 최소/보통으로 읽음")
+            fixed += 1
+        values = [row.get(k) for k in ("min", "typ", "max") if isinstance(row.get(k), (int, float))]
+        if why is None and len({v > 0 for v in values if v}) == 1:      # 부호가 같을 때만 크기 순서를 본다
+            mags = [abs(v) for v in values]
+            if way and any(a > b for a, b in zip(mags, mags[1:])):
+                why = "최소 ≤ 보통 ≤ 최대 순서가 아님"
+        if why:
+            dropped.append({"symbol": row.get("symbol"), "name": name, "why": why,
+                            "values": [row.get("min"), row.get("typ"), row.get("max")]})
+            continue
+        kept.append(row)
+    return {**hkg, "electrical_parameters": kept}, fixed, dropped
+
+
 def make_subckt_name(part: str) -> str:
     """하네스와 같은 규칙의 subckt 이름 (hermes_workflow: 영숫자·_ 외는 _ , 대문자)."""
     import re
@@ -256,13 +314,14 @@ def main() -> None:
     (out_dir / "blueprint.json").write_text(json.dumps(experience, ensure_ascii=False, indent=1), encoding="utf-8")
     target_hkg, dropped = target_rows_only(hkg)
     target_hkg, temp_dropped = drop_temperature_rows(target_hkg)
+    target_hkg, value_fixed, bad_rows = check_rows(target_hkg)
     pages_file = run_dir / "pages.json"
     pages = json.loads(pages_file.read_text(encoding="utf-8")) if pages_file.exists() else None
     target_hkg, titled = with_title_supply(target_hkg, pages)
     hkg_file = out_dir / "hkg_target.json"
     hkg_file.write_text(json.dumps(target_hkg, ensure_ascii=False, indent=1), encoding="utf-8")
-    print(f"하네스에 넘기는 항목: {len(target_hkg['electrical_parameters'])}줄 (다른 칩 줄 {dropped}개, 온도 범위 줄 {temp_dropped}개 뺌, "
-          f"표 제목 전원을 붙인 줄 {titled}개)", flush=True)
+    print(f"하네스에 넘기는 항목: {len(target_hkg['electrical_parameters'])}줄 (다른 칩 줄 {dropped}개, 온도 범위 줄 {temp_dropped}개, "
+          f"추출 오류 줄 {len(bad_rows)}개 뺌, 칸을 바로잡은 줄 {value_fixed}개, 표 제목 전원을 붙인 줄 {titled}개)", flush=True)
 
     sys.path.insert(0, str(AV_DIR))
     os.chdir(AV_DIR)                    # 하네스는 harness2_library 를 현재 폴더 기준으로 찾는다
@@ -301,7 +360,7 @@ def main() -> None:
                              for it in iterations if isinstance(it, dict)],
               "final_netlist": netlist, "pin_map": {k: v for k, v in mapping.items() if isinstance(v, str)},
               "seed": seed_name, "seconds": round(time.time() - t0), "other_part_rows_dropped": dropped, "temperature_rows_dropped": temp_dropped,
-              "title_supply_rows": titled}
+              "title_supply_rows": titled, "extract_error_rows": bad_rows, "value_fixed_rows": value_fixed}
     record["counts"] = spec_counts(out_dir)
     if record["counts"]:                        # 통과율도 최소·최대가 있는 줄로만 다시 계산 (하네스 원래 값은 보통값 줄 포함)
         c = record["counts"]

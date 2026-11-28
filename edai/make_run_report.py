@@ -165,8 +165,11 @@ def body_extract(run_dir: Path, s: dict) -> str:
         out.append("<table><tr><th>판정 항목</th><th>최소</th><th>보통</th><th>최대</th><th>단위</th><th>판정</th><th>조건</th>"
                    "<th>데이터시트 근거</th></tr>")
         for it in spec["specs"]:
-            how = ("참고 (보통값만)" if it.get("reference") else
+            how = (f"<span title='{esc(it['extract_error'])}'>추출 오류로 제외</span>" if it.get("extract_error") else
+                   "참고 (보통값만)" if it.get("reference") else
                    "설계 안전 조건" if it.get("basis") == "guard" else "데이터시트 기준")
+            if it.get("value_fix") and not it.get("extract_error"):
+                how += f" <span class='sub' title='{esc(it['value_fix'])}'>(칸 바로잡음)</span>"
             minimum = f"{num(it.get('min'))}*" if it.get("basis") == "guard" else num(it.get("min"))
             out.append(f"<tr><td>{esc(it.get('label') or it['measure'])}</td><td>{minimum}</td><td>{num(it.get('typ'))}</td>"
                        f"<td>{num(it.get('max'))}</td><td>{esc(it.get('unit'))}</td><td>{how}</td><td>{esc(it.get('condition'))}</td>"
@@ -175,6 +178,12 @@ def body_extract(run_dir: Path, s: dict) -> str:
         if any(it.get("reference") or it.get("basis") == "guard" for it in spec["specs"]):
             out.append("<p class='sub'>데이터시트에 최소·최대가 있는 항목만 통과·실패로 판정해요. 보통값만 있는 항목은 보장값이 아니라 "
                        "참고로만 재요. * 위상 여유 45° 이상은 발진하지 않는 회로를 고르기 위한 우리 설계 안전 조건이에요.</p>")
+        checked = [it for it in spec["specs"] if it.get("extract_error") or it.get("value_fix")]
+        if checked:
+            out.append("<details><summary>추출 값 점검 (" + str(len(checked)) + "개)</summary><ul>" + "".join(
+                f"<li>{esc(it.get('label') or it['measure'])}: "
+                + (f"판정에서 뺌 - {esc(it['extract_error'])}" if it.get("extract_error") else esc(it["value_fix"]))
+                + "</li>" for it in checked) + "</ul></details>")
     out.append(hkg_details(run_dir) + pdg_details(run_dir))
     return "".join(out)
 
@@ -410,9 +419,19 @@ def body_harness(run_dir: Path, s: dict) -> str:
             rows.append(("같은 데이터시트의 다른 칩 줄 (하네스에 넘기기 전에 뺌)", result["other_part_rows_dropped"]))
         if result.get("temperature_rows_dropped"):
             rows.append(("온도 범위만 적힌 줄 (시뮬레이션은 25°C 하나라 확인할 수 없음)", result["temperature_rows_dropped"]))
+        if result.get("extract_error_rows"):
+            rows.append(("추출 오류 줄 (기호 자리에 숫자, 최소=보통=최대, 크기 순서가 거꾸로)", len(result["extract_error_rows"])))
         if rows:
             out.append("<table><tr><th>판정에서 뺀 줄</th><th>개수</th></tr>" + "".join(
                 f"<tr><td>{esc(label)}</td><td>{n}</td></tr>" for label, n in rows) + "</table>")
+    bad = result.get("extract_error_rows") or []
+    if bad or result.get("value_fixed_rows"):
+        out.append("<details><summary>추출 값 점검 (뺀 줄 " + str(len(bad)) + "개, 칸을 바로잡은 줄 "
+                   + str(result.get("value_fixed_rows") or 0) + "개)</summary>"
+                   + ("<table><tr><th>기호</th><th>이름</th><th>최소 / 보통 / 최대</th><th>뺀 이유</th></tr>" + "".join(
+                       f"<tr><td>{esc(r.get('symbol'))}</td><td>{esc(r.get('name'))}</td>"
+                       f"<td>{' / '.join(num(v) for v in r.get('values') or [])}</td><td>{esc(r.get('why'))}</td></tr>"
+                       for r in bad) + "</table>" if bad else "") + "</details>")
     out.append(harness_rows_html(run_dir))
     if result.get("note"):
         out.append(f"<p class='sub'>{esc(result['note'])}</p>")
