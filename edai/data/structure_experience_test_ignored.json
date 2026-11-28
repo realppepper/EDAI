@@ -1,0 +1,43 @@
+{
+ "note": "테스트용 기록 (Claude Opus 5.5 로 돌린 LM358 비교 실험, 2026-11-28). structure_doctor 는 이 파일을 읽지 않는다.",
+ "entries": [
+  {
+   "time": "2026-11-28 17:07",
+   "chip": "상보 뒤집기 + AB급 출력단 + 튜닝",
+   "failure": "스펙 미달: psrr",
+   "action": "replace_output_stage",
+   "params": {
+    "block": "push_pull_pmos"
+   },
+   "worked": false,
+   "result": "6/8 (실패: pm, vol_1ma)",
+   "model": "anthropic/claude-opus-5.5"
+  },
+  {
+   "time": "2026-11-28 17:27",
+   "chip": "Opus 시도 1 구조",
+   "failure": "스펙 미달: pm, vol_1ma",
+   "action": "set_compensation",
+   "params": {
+    "type": "miller_rz"
+   },
+   "worked": true,
+   "result": "7/8 (실패: vol_1ma)",
+   "model": "anthropic/claude-opus-5.5"
+  },
+  {
+   "time": "2026-11-28 17:29",
+   "chip": "Opus 시도 1 구조",
+   "failure": "스펙 미달: pm, vol_1ma",
+   "action": "set_device_target",
+   "params": {
+    "device": "PM8",
+    "gm_id": 18,
+    "length_um": 1
+   },
+   "worked": false,
+   "result": "7/8 (실패: vol_1ma)",
+   "model": "anthropic/claude-opus-5.5"
+  }
+ ]
+}
