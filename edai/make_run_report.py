@@ -143,6 +143,12 @@ def evidence_cell(e: dict) -> str:
 def body_extract(run_dir: Path, s: dict) -> str:
     spec = read(run_dir, "spec.json")
     out = [f"<p>부품 <b>{esc(s.get('part'))}</b> · 추출한 사양 {s.get('rows')}줄 · 핀 {s.get('pins')}개 · 판정 항목 {s.get('judged')}개</p>"]
+    read_info = s.get("pdf_read") or {}
+    if read_info:
+        how = ("저장된 결과 사용 (같은 PDF 를 전에 읽은 결과)" if read_info.get("cached") else
+               f"새로 읽음 ({duration(read_info.get('seconds'))})"
+               + ("" if read_info.get("saved") else " · 글자만 읽은 쪽이 있어 저장하지 않음"))
+        out.append(f"<p class='sub'>PDF 읽기: {how}. 다시 읽으려면 위에서 1단계를 고르고 'PDF 새로 읽기'를 체크하세요.</p>")
     if spec:
         out.append("<table><tr><th>판정 항목</th><th>최소</th><th>보통</th><th>최대</th><th>단위</th><th>조건</th>"
                    "<th>데이터시트 근거</th></tr>")

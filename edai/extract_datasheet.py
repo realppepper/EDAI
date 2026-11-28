@@ -78,6 +78,7 @@ def part_from_filename(pdf: Path, filename: str):
 # 정확도는 그대로다. 스펙 추출(LLM)부터는 매번 새로 돈다. 모든 쪽이 정상으로 읽힌 경우만 저장한다
 PARSE_CACHE_DIR = HERE / "data" / "pdf_cache"
 PARSE_CACHE_VERSION = 1      # 읽기 방식(쪽 수, 파서)이 바뀌면 올려서 예전 저장을 쓰지 않게
+LAST_PARSE = {}              # 마지막 PDF 읽기: {"cached": 저장된 결과를 썼나, "seconds", "saved": 새로 읽어 저장했나}
 
 
 def _parse_key(pdf: Path) -> str:
@@ -128,12 +129,14 @@ def extract(pdf: Path, name: str, log=print, target: str = None) -> Path:
     parsed = load_parsed(pdf)
     if parsed is not None:
         log(f"PDF 읽기: 같은 PDF 를 전에 읽은 결과를 씀 ({time.time() - t0:.0f} s)")
+        LAST_PARSE.update(cached=True, seconds=round(time.time() - t0), saved=False)
     else:
         parser = PDFDatasheetParser(max_pages=MAX_PAGES)
         parsed = parser.parse_pdf(str(pdf), progress_callback=lambda done, total, page, err:
                                   log(f"PDF 읽기 {done}/{total} (쪽 {page}){' - 글자만 읽음' if err else ''}"))
-        log(f"PDF 읽기 끝 ({time.time() - t0:.0f} s)" + ("" if save_parsed(pdf, parsed) else
-            " - 글자만 읽은 쪽이 있어 다음에 다시 읽음"))
+        saved = save_parsed(pdf, parsed)
+        log(f"PDF 읽기 끝 ({time.time() - t0:.0f} s)" + ("" if saved else " - 글자만 읽은 쪽이 있어 다음에 다시 읽음"))
+        LAST_PARSE.update(cached=False, seconds=round(time.time() - t0), saved=saved)
     builder = HardwareKnowledgeGraphBuilder()
     hkg = builder.build_kg_from_parsed_pdf(parsed, progress_callback=lambda done, total, page, err:
                                            log(f"스펙 표 추출 {done}/{total} (쪽 {page}){' - 다시 시도' if err else ''}"),

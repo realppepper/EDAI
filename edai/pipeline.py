@@ -207,7 +207,8 @@ def step_extract(run: Run) -> dict:
         volts = ", ".join(f"{v:g} V" for v in other.get("supplies_v") or [])
         raise Unsupported(f"생성 불가: 전압 조건 (데이터시트 조건 {volts})")
     return {"part": hkg["ic_device"].get("name"), "rows": len(hkg["electrical_parameters"]), "pins": len(hkg["pins"]),
-            "judged": len(spec["specs"]), "model_input": run.read("model_input.json")["input"]}
+            "judged": len(spec["specs"]), "model_input": run.read("model_input.json")["input"],
+            "pdf_read": dict(extract_datasheet.LAST_PARSE)}
 
 
 class Unsupported(Exception):
@@ -557,6 +558,8 @@ STEP_FUNCS = {"extract": step_extract, "candidates": step_candidates, "select": 
 def main() -> None:
     run = Run(Path(sys.argv[1]))
     start = sys.argv[sys.argv.index("--from") + 1] if "--from" in sys.argv else None
+    if "--reparse" in sys.argv:                     # UI 의 'PDF 새로 읽기': 저장된 PDF 읽기 결과를 쓰지 않음
+        os.environ["EDAI_NO_PDF_CACHE"] = "1"
     keys = [k for k, _ in STEPS]
     todo = keys[keys.index(start):] if start else keys
     run.status["state"] = "running"

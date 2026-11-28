@@ -37,6 +37,8 @@ button:disabled { opacity:.5; cursor:default; }
 .actions label { display:inline; margin:0; white-space:nowrap; }
 .actions select { width:auto; max-width:320px; }
 .actions button.ghost { margin:0; white-space:nowrap; }
+.actions label.check { display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--fg); white-space:nowrap; cursor:pointer; }
+.actions label.check[hidden] { display:none; }
 a.ghost-btn { border:1px solid var(--accent); color:var(--accent); border-radius:6px; padding:3px 8px; font-size:12px;
               text-decoration:none; white-space:nowrap; }
 a.ghost-btn:hover { background:var(--accent); color:#fff; }
@@ -81,6 +83,7 @@ iframe { flex:1; width:100%; border:0; border-radius:0 0 10px 10px; background:#
       <div class="actions"><span><b id="vtitle">결과</b> <span class="sub" id="vsub"></span></span>
            <button class="ghost" id="memo" hidden>메모 고치기</button></div>
       <div class="actions"><span id="rerunBox" class="actions" hidden><select id="fromStep" aria-label="다시 돌릴 단계"></select>
+           <label class="check" id="reparseBox" hidden><input type="checkbox" id="reparse"> PDF 새로 읽기</label>
            <button class="ghost" id="retry">이 단계부터 다시</button>
            <button class="ghost" id="stop" hidden>멈추기</button></span>
            <a id="zip" class="ghost-btn" hidden>최종 회로 받기 (ZIP)</a>
@@ -137,6 +140,7 @@ function updateBar() {
     box.dataset.run = r.id + r.state + r.done;
     document.getElementById("fromStep").innerHTML = r.steps.map(s =>
       `<option value="${s.key}" ${s.key === r.suggest_from ? "selected" : ""}>${esc(s.title)}</option>`).join("");
+    syncReparse();
   }
 }
 
@@ -151,6 +155,12 @@ function openRun(id) {
   open.hidden = false;
   loadRuns();
 }
+
+// 'PDF 새로 읽기' 는 1단계(데이터시트 분석)부터 다시 돌릴 때만 보인다
+function syncReparse() {
+  document.getElementById("reparseBox").hidden = document.getElementById("fromStep").value !== "extract";
+}
+document.getElementById("fromStep").addEventListener("change", syncReparse);
 
 let chosen = null;
 function choose(file) {
@@ -220,7 +230,9 @@ document.getElementById("retry").onclick = async () => {
   const title = r.steps.find(s => s.key === from)?.title || from;
   if (r.state === "running" && !confirm(`지금 돌고 있는 과정을 멈추고 '${title}'부터 다시 돌릴까요?`)) return;
   document.getElementById("retry").disabled = true;
-  await fetch(`/api/rerun?id=${encodeURIComponent(current)}&from=${from}`, { method: "POST" });
+  const reparse = from === "extract" && document.getElementById("reparse").checked ? "&reparse=1" : "";
+  await fetch(`/api/rerun?id=${encodeURIComponent(current)}&from=${from}${reparse}`, { method: "POST" });
+  document.getElementById("reparse").checked = false;
   setTimeout(() => { document.getElementById("retry").disabled = false; openRun(current); }, 1500);
 };
 

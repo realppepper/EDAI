@@ -174,8 +174,9 @@ def stop_pipeline(run_dir: Path) -> bool:
     return bool(pids)
 
 
-def start_pipeline(run_dir: Path, start: str = None) -> None:
-    cmd = [sys.executable, str(HERE / "pipeline.py"), str(run_dir)] + (["--from", start] if start else [])
+def start_pipeline(run_dir: Path, start: str = None, reparse: bool = False) -> None:
+    """reparse: 저장된 PDF 읽기 결과를 쓰지 않고 PDF 를 새로 읽는다 (1단계부터 다시 돌릴 때만 뜻이 있음)."""
+    cmd = [sys.executable, str(HERE / "pipeline.py"), str(run_dir)] + (["--from", start] if start else [])         + (["--reparse"] if reparse else [])
     log = open(run_dir / "pipeline_stdout.txt", "a", encoding="utf-8")
     subprocess.Popen(cmd, cwd=HERE, stdout=log, stderr=subprocess.STDOUT, start_new_session=True)
 
@@ -275,7 +276,7 @@ class Handler(BaseHTTPRequestHandler):
             if not (run_dir / "input.json").exists() or start not in STEP_KEYS:
                 return self.send_json({"error": "실행 폴더나 단계 이름이 잘못됐습니다"}, 400)
             stop_pipeline(run_dir)                  # 돌고 있으면 멈추고 다시
-            start_pipeline(run_dir, start)
+            start_pipeline(run_dir, start, reparse=query.get("reparse") == "1" and start == "extract")
             return self.send_json({"id": run_dir.name})
         if url.path == "/api/stop":                 # 돌고 있는 과정 멈추기
             run_dir = RUNS_DIR / query.get("id", "")
