@@ -517,8 +517,12 @@ def figure(run_dir: Path, stem: str, caption: str) -> str:
 
 
 def body_schematic(run_dir: Path, s: dict) -> str:
-    return (figure(run_dir, "after_harness", "하네스 후 최종 회로")
-            + figure(run_dir, "before_harness", "하네스 전 우리 회로 (모델 구조 + 규칙 + 바이어스 + 크기)"))
+    """최종 회로도 하나. 하네스는 검증만 하므로(회로를 바꾸지 않음) 하네스 전 회로가 최종 회로다.
+    하네스가 LLM 으로 회로를 고치던 실행(반복 2번 이상, EDAI_HARNESS_MODE=full)만 하네스 후 회로를 보여 준다."""
+    result = read(run_dir, "harness/result.json") or {}
+    if (result.get("iterations_count") or 0) > 1 and (run_dir / "schematic" / "after_harness.png").exists():
+        return figure(run_dir, "after_harness", "최종 회로 (하네스가 고친 회로)")
+    return figure(run_dir, "before_harness", "최종 회로 (모델 구조 + 규칙 + 바이어스 + 크기 + 튜닝)")
 
 
 def body_fix(run_dir: Path, s: dict) -> str:

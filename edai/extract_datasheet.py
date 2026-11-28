@@ -73,6 +73,47 @@ def part_from_filename(pdf: Path, filename: str):
     return stem if key in re.sub(r"[^A-Z0-9]", "", text.upper()) else None
 
 
+# PDF 읽기 결과 저장 (같은 PDF 는 다시 읽지 않음). 쪽마다 NVIDIA Nemotron-Parse 를 부르고 표를 한 번 더 찾느라
+# LM324 30쪽에 1~5분 걸렸다 (서비스가 붐비면 더 길다, 2026-11-27). 결과는 PDF 내용이 같으면 같으므로 다시 써도
+# 정확도는 그대로다. 스펙 추출(LLM)부터는 매번 새로 돈다. 모든 쪽이 정상으로 읽힌 경우만 저장한다
+PARSE_CACHE_DIR = HERE / "data" / "pdf_cache"
+PARSE_CACHE_VERSION = 1      # 읽기 방식(쪽 수, 파서)이 바뀌면 올려서 예전 저장을 쓰지 않게
+
+
+def _parse_key(pdf: Path) -> str:
+    import hashlib
+    digest = hashlib.sha256(Path(pdf).read_bytes()).hexdigest()[:24]
+    return f"{digest}_p{MAX_PAGES}_v{PARSE_CACHE_VERSION}"
+
+
+def load_parsed(pdf: Path):
+    """전에 읽어 둔 같은 PDF 의 읽기 결과 (없으면 None). 쪽 번호 키를 정수로 되돌린다."""
+    if os.environ.get("EDAI_NO_PDF_CACHE") == "1":
+        return None
+    path = PARSE_CACHE_DIR / f"{_parse_key(pdf)}.json"
+    if not path.exists():
+        return None
+    try:
+        parsed = json.loads(path.read_text(encoding="utf-8"))
+    except ValueError:
+        return None
+    parsed["pages"] = {int(k): v for k, v in parsed["pages"].items()}
+    parsed["source_path"] = str(Path(pdf).resolve())
+    return parsed
+
+
+def save_parsed(pdf: Path, parsed: dict) -> bool:
+    """모든 쪽이 정상으로 읽혔으면 저장하고 True. 글자만 읽은(서비스 실패) 쪽이 있으면 저장하지 않는다."""
+    pages = parsed.get("pages") or {}
+    if not pages or any(p.get("error") for p in pages.values()) or "nemotron" not in str(parsed.get("parser_engine")):
+        return False
+    PARSE_CACHE_DIR.mkdir(parents=True, exist_ok=True)
+    keep = {k: v for k, v in parsed.items() if not k.startswith("_")}
+    keep["pages"] = {str(k): v for k, v in pages.items()}
+    (PARSE_CACHE_DIR / f"{_parse_key(pdf)}.json").write_text(json.dumps(keep, ensure_ascii=False), encoding="utf-8")
+    return True
+
+
 def extract(pdf: Path, name: str, log=print, target: str = None) -> Path:
     """PDF 하나를 추출해 저장하고 결과 파일 경로를 돌려준다. log 는 진행 상황을 받는 함수.
     target 은 사용자가 고른 칩 이름 (예: LMV321). 여러 칩이 같이 실린 데이터시트에서 그 칩의 핀·스펙을 뽑게 한다."""
@@ -84,10 +125,15 @@ def extract(pdf: Path, name: str, log=print, target: str = None) -> Path:
     from ai_analog_designer.pdf_to_graph.hardware_kg_builder import HardwareKnowledgeGraphBuilder
 
     t0 = time.time()
-    parser = PDFDatasheetParser(max_pages=MAX_PAGES)
-    parsed = parser.parse_pdf(str(pdf), progress_callback=lambda done, total, page, err:
-                              log(f"PDF 읽기 {done}/{total} (쪽 {page}){' - 글자만 읽음' if err else ''}"))
-    log(f"PDF 읽기 끝 ({time.time() - t0:.0f} s)")
+    parsed = load_parsed(pdf)
+    if parsed is not None:
+        log(f"PDF 읽기: 같은 PDF 를 전에 읽은 결과를 씀 ({time.time() - t0:.0f} s)")
+    else:
+        parser = PDFDatasheetParser(max_pages=MAX_PAGES)
+        parsed = parser.parse_pdf(str(pdf), progress_callback=lambda done, total, page, err:
+                                  log(f"PDF 읽기 {done}/{total} (쪽 {page}){' - 글자만 읽음' if err else ''}"))
+        log(f"PDF 읽기 끝 ({time.time() - t0:.0f} s)" + ("" if save_parsed(pdf, parsed) else
+            " - 글자만 읽은 쪽이 있어 다음에 다시 읽음"))
     builder = HardwareKnowledgeGraphBuilder()
     hkg = builder.build_kg_from_parsed_pdf(parsed, progress_callback=lambda done, total, page, err:
                                            log(f"스펙 표 추출 {done}/{total} (쪽 {page}){' - 다시 시도' if err else ''}"),
