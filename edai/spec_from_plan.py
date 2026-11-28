@@ -179,6 +179,10 @@ def measure_of(kind: str, row: dict):
 def to_ours(measure: str, row: dict):
     """측정 계획의 목표값(단위 정리됨) -> 우리 단위의 (min, typ, max)."""
     lo, typ, hi = row["min_target"], row["typ_target"], row["max_target"]
+    if measure.startswith(("voh", "vol")) and lo is not None and hi is None:
+        # 레일에서 떨어진 폭은 '최대'만 뜻이 있다. 최소만 있으면 칸이 밀린 것: 두 값이면 보통/최대, 하나면 최대로 읽는다
+        # (LM358 2026-11-28: "0.75 1 V" 를 최소 0.75, 보통 1 로 읽어 VOL 이 "0.75 V 이상"으로 판정됨)
+        lo, typ, hi = None, (lo if typ is not None else None), (typ if typ is not None else lo)
     if measure == "idd":
         return tuple(None if v is None else v * 1e6 for v in (lo, typ, hi))
     if measure == "ugbw":

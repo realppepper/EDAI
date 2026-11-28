@@ -553,8 +553,8 @@ def judge(result: dict, spec: dict) -> list:
         row.update(min=low, max=high, basis=basis)
         if item.get("scope", SCOPE_TARGET) != SCOPE_TARGET:
             row.update(value=None, status=STATUS_EXCLUDED, margin=item.get("reason", ""))
-        elif result.get(item["measure"]) is None:
-            row.update(value=None, status=STATUS_UNMEASURED, margin="")
+        elif result.get(item["measure"]) is None:     # 참고 항목(기준 없음)은 못 재도 '참고' (판정 개수에 넣지 않음)
+            row.update(value=None, status=STATUS_INFO if low is None and high is None else STATUS_UNMEASURED, margin="")
         else:
             value = result[item["measure"]] * item.get("scale", 1)
             if low is None and high is None:
