@@ -12,6 +12,8 @@ structure_doctor.py 의 블록 단위 고치기와 LLM 이 쓰는 규칙(structu
     bias      : 나머지 (모델이 만든 자체 바이어스 회로)
 
 블록 모음 (LIBRARY) 은 NMOS 입력 기준으로 적고, PMOS 입력은 상보 뒤집기로 만든다.
+    블록은 표준 op-amp 구조를 Claude Code 가 일반 지식으로 적은 것이고, 같은 구조를 다룬 IEEE 논문을
+    docs/블록_출처.md 에 출처로 정리했다 (IEEE Xplore API 로 찾음, 초록 근거와 검증 방법 포함).
     @a  : 블록 안쪽 노드 (새 N 번호)       $VB1, $IB1 : 새 바이어스 단자 (흐름이 실제 소자로 채움)
     X   : 1단 출력 = 2단 입력 노드
 """
