@@ -47,6 +47,8 @@ def model_extra_body(provider: str, model: str) -> dict[str, Any]:
         body: dict[str, Any] = {"usage": {"include": True}}       # returns exact USD cost per call
         if os.environ.get("LLM_THINKING") != "1":
             body["reasoning"] = {"enabled": False}
+        elif os.environ.get("LLM_REASONING_EFFORT"):           # 추론을 끌 수 없는 모델(Opus 5.5)의 비용을 줄일 때 (low 등)
+            body["reasoning"] = {"effort": os.environ["LLM_REASONING_EFFORT"]}
         return body
     if provider != "nim" or os.environ.get("LLM_THINKING") == "1":
         return {}

@@ -691,7 +691,8 @@ def refine(run_dir: Path, final: dict, table: dict, point: tuple, spec: dict, lo
                 t, values = tune_sizing.with_caps(state["table"], nodes, cap)
                 run_sim.CANDIDATE_DEADLINE = time.time() + tune_sizing.TRIAL_LIMIT_S
                 try:
-                    v = ss.evaluate_variant(t, state["unit_current"], state["scale"], spec, values)
+                    with run_sim.hard_limit(tune_sizing.TRIAL_LIMIT_S + 10):
+                        v = ss.evaluate_variant(t, state["unit_current"], state["scale"], spec, values)
                 except run_sim.CandidateTimeout:
                     v = {"valid": False, "reason": "시간 초과"}
                 finally:

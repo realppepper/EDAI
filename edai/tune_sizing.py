@@ -150,7 +150,8 @@ def tune(table: dict, spec: dict, unit_current: float, output_scale: float, log=
         run_sim.TIME_SCALE = min(MAX_TIME_SCALE, max(1.0, REFERENCE_CURRENT_A / current))   # 느린 회로는 시간 창을 늘림
         t0 = time.time()
         try:
-            v = ss.evaluate_variant(t, current, scale, spec, values)
+            with run_sim.hard_limit(run_sim.CANDIDATE_DEADLINE - time.time() + 10):
+                v = ss.evaluate_variant(t, current, scale, spec, values)
         except run_sim.CandidateTimeout:
             v = {"valid": False, "reason": f"시간 초과 ({time.time() - t0:.0f} s)"}
         finally:

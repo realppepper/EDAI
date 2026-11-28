@@ -67,6 +67,34 @@ def sim_timeout(limit: float) -> float:
     return min(limit, left)
 
 
+class hard_limit:
+    """with hard_limit(초): 그 안의 일이 초를 넘기면 어디서 멈춰 있든 CandidateTimeout (SIGALRM, 리눅스/WSL 메인 스레드만).
+    ngspice 호출마다 거는 시간 제한(sim_timeout)만으로는 튜닝 시도 하나가 773 s 까지 간 일이 있었다 (LM358 2026-11-28,
+    원인은 못 찾음). 다른 환경에서는 아무것도 하지 않는다."""
+
+    def __init__(self, seconds: float):
+        self.seconds = seconds
+        self.armed = False
+
+    def __enter__(self):
+        import signal
+        import threading
+        if hasattr(signal, "setitimer") and threading.current_thread() is threading.main_thread() and self.seconds > 0:
+            def _raise(signum, frame):
+                raise CandidateTimeout()
+            self.old = signal.signal(signal.SIGALRM, _raise)
+            signal.setitimer(signal.ITIMER_REAL, self.seconds)
+            self.armed = True
+        return self
+
+    def __exit__(self, *exc):
+        if self.armed:
+            import signal
+            signal.setitimer(signal.ITIMER_REAL, 0)
+            signal.signal(signal.SIGALRM, self.old)
+        return False
+
+
 def check_deadline() -> None:
     """ngspice 가 시간 초과로 끝난 뒤 부른다. 후보 마감 때문에 끊긴 것이면 CandidateTimeout."""
     if CANDIDATE_DEADLINE is not None and time.time() >= CANDIDATE_DEADLINE - 1:
