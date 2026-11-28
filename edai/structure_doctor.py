@@ -638,6 +638,26 @@ def run(run_dir: Path, log=print) -> dict:
     return report
 
 
+def write_spec_rule(doctor, rules, feats, action, diagnosis, chip, run_dir, report, log) -> None:
+    """튜닝 뒤 LLM 구조 개선에서 통과 수를 늘린 방법을 규칙 후보로 쓴다 (4단계 write_rule 과 같은 형식).
+    소자 이름이 들어간 방법(edit_table, set_device_target)은 다른 칩에 그대로 못 쓰므로 규칙으로 만들지 않는다."""
+    applied = [{"type": action.get("type"), "params": action.get("params") or {}}]
+    if not structure_rules.generalizable(applied):
+        log(f"  {action.get('type')} 은 소자 이름이 들어 있어 규칙으로 만들지 않음")
+        return
+    answer, error = doctor.ask(structure_rules.write_prompt(feats, applied, diagnosis),
+                               "You write concise, general analog design rules. Answer JSON only.",
+                               {"purpose": "write_rule"})
+    cond = structure_rules.validate_if(answer.get("if"), feats) if not error else {}
+    cond["failure"] = "스펙 미달"                   # 동작 실패 규칙과 섞이지 않게
+    cond.setdefault("failing_specs", feats["failing_specs"])   # 어떤 실패를 고친 규칙인지는 꼭 남김
+    rule, new = structure_rules.add(rules, cond, applied, answer.get("text") or diagnosis or "",
+                                    chip, {"run": Path(run_dir).name, "stage": "refine", "call": report["llm_calls"]})
+    structure_rules.save(rules)
+    report["rules_written"].append({"rule": rule["id"], "new": new, "rule_text": structure_rules.rule_text(rule)})
+    log(f"  규칙 {'새로 씀' if new else '이미 있음(통한 기록 더함)'}: {structure_rules.rule_text(rule)}")
+
+
 # ---------------------------------------------------------------- 튜닝 뒤 남은 실패 고치기 (2026-11-28)
 REFINE_TRIES = 4            # LLM 에 묻는 횟수
 REFINE_LIMIT_S = 600        # 전체 시간 [s]
@@ -651,6 +671,21 @@ REFINE_SYSTEM_PROMPT = (
     "Do not break specs that already pass. Never repeat a fix listed as already tried. Write 'diagnosis' and 'why' "
     "in Korean, short and concrete (name the block, device and node)."
 )
+
+
+def spec_features(state: dict, variant: dict) -> dict:
+    """스펙 미달 규칙의 조건에 쓰는 특징: 구조 특징 + 실패한 측정 항목 (칩·소자 이름·숫자 없음)."""
+    import run_sim
+    feats = sb.features(state["table"], "스펙 미달", set())
+    feats["failing_specs"] = sorted(r["measure"] for r in variant.get("spec") or [] if r["status"] == run_sim.STATUS_FAIL)
+    return feats
+
+
+def run_chip(run_dir: Path):
+    try:
+        return (json.loads((Path(run_dir) / "hkg.json").read_text(encoding="utf-8")).get("ic_device") or {}).get("name")
+    except (OSError, ValueError):
+        return None
 
 
 def refine(run_dir: Path, final: dict, table: dict, point: tuple, spec: dict, log=print) -> dict:
@@ -711,9 +746,46 @@ def refine(run_dir: Path, final: dict, table: dict, point: tuple, spec: dict, lo
     best = (state, variant)
     failing = [r for r in variant.get("spec") or [] if r["status"] == run_sim.STATUS_FAIL] or failing
     names = ", ".join(r["measure"] for r in failing)
-    log(f"튜닝 뒤에도 실패한 항목({names})을 LLM 에 알려 구조를 바꿔 봄 (최대 {REFINE_TRIES}번, {REFINE_LIMIT_S // 60}분)")
+    chip = run_chip(run_dir)
+    rules = structure_rules.load()
+    report.update(rules_tried=[], rules_written=[], rule_changes=[])
+    # 1. 쌓인 스펙 미달 규칙을 LLM 없이 먼저 적용 (정식 규칙 먼저). 통함 = 통과 수가 늘어남
+    for rule in structure_rules.matching(rules, spec_features(best[0], best[1]))[:MAX_RULES_TRIED]:
+        if time.time() >= end or best[1]["passed"] >= best[1]["judged"]:
+            break
+        item = {"rule": rule["id"], "status": rule.get("status"), "text": rule.get("text"),
+                "then": actions_text(rule["then"]), "result": None}
+        report["rules_tried"].append(item)
+        try:
+            new_state = best[0]
+            for action in rule["then"]:
+                new_state = apply(action, new_state)
+        except (ValueError, TypeError, KeyError, AttributeError, StopIteration) as exc:
+            item["result"] = f"적용 못 함: {exc}"
+            worked = False
+        else:
+            new_v = measure(new_state, retune=True)
+            worked = bool(new_v.get("valid")) and new_v["passed"] > best[1]["passed"]
+            item["result"] = (f"{new_v['passed']}/{new_v['judged']}" if new_v.get("valid")
+                              else f"동작 안 함: {new_v.get('reason')}")
+            if worked:
+                best = (dict(new_state, unit_current=new_v["point"][0], scale=new_v["point"][1]), new_v)
+                item["kept"] = True
+        change = structure_rules.record(rule, worked, chip)
+        structure_rules.save(rules)
+        if change:
+            report["rule_changes"].append(change)
+        log(f"  규칙 {rule['id']} ({rule.get('status')}) {item['then']} -> {item['result']}"
+            + (" (채택)" if worked else "") + (f" [{change}]" if change else ""))
+    failing = [r for r in best[1].get("spec") or [] if r["status"] == run_sim.STATUS_FAIL]
+    names = ", ".join(r["measure"] for r in failing)
+    if not failing:
+        log("  쌓인 규칙으로 모두 통과해서 LLM 은 부르지 않음")
+    log(f"튜닝 뒤에도 실패한 항목({names or '없음'})을 LLM 에 알려 구조를 바꿔 봄 (최대 {REFINE_TRIES}번, {REFINE_LIMIT_S // 60}분)")
     history, tried = [], set()
     for attempt in range(1, REFINE_TRIES + 1):
+        if best[1]["passed"] >= best[1]["judged"]:
+            break
         if time.time() >= end:
             log("  시간 한도에 닿아 멈춤")
             break
@@ -763,6 +835,8 @@ def refine(run_dir: Path, final: dict, table: dict, point: tuple, spec: dict, lo
                            "params": action.get("params"), "worked": bool(improved), "result": record["result"]})
         save_experience(experience)
         if improved:                                # 다시 튜닝한 값(전류·배율)을 다음 시도의 시작점으로
+            write_spec_rule(doctor, rules, spec_features(best[0], best[1]), action, record.get("diagnosis"),
+                            chip, run_dir, report, log)
             new_state = dict(new_state, unit_current=new_v["point"][0], scale=new_v["point"][1])
             best = (new_state, new_v)
             record["kept"] = True
@@ -773,7 +847,8 @@ def refine(run_dir: Path, final: dict, table: dict, point: tuple, spec: dict, lo
         state, v = best
         report.update(improved=True, best=v, table=v["table_with_caps"],
                       point=(state["unit_current"], state["scale"], v["cap_f"]))
-    summary = {k: report[k] for k in ("needed", "llm_calls", "attempts", "improved")}
+    summary = {k: report[k] for k in ("needed", "llm_calls", "attempts", "improved", "rules_tried", "rules_written",
+                                      "rule_changes")}
     summary.update(before=f"{variant['passed']}/{variant['judged']}",
                    after=f"{best[1]['passed']}/{best[1]['judged']}", llm=report.get("llm"))
     (run_dir / "refine.json").write_text(json.dumps(summary, ensure_ascii=False, indent=1, default=str),

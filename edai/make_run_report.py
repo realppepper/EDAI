@@ -346,7 +346,15 @@ def refine_html(run_dir: Path) -> str:
         f"<td>{esc(a.get('action') or '')} {esc(json.dumps(a.get('params') or {}, ensure_ascii=False))}</td>"
         f"<td>{esc(a.get('result') or '')}{' (채택)' if a.get('kept') else ''}</td></tr>"
         for a in r.get("attempts") or [])
-    return (f"<p>{head}</p><details><summary>LLM 시도 보기</summary><table><tr><th>시도</th><th>진단</th>"
+    rules = ""
+    if r.get("rules_tried"):
+        rules += "<p class='sub'>쌓인 규칙을 LLM 보다 먼저 적용: " + "; ".join(
+            f"{esc(x.get('rule'))} {esc(x.get('then'))} → {esc(x.get('result'))}{' (채택)' if x.get('kept') else ''}"
+            for x in r["rules_tried"]) + "</p>"
+    if r.get("rules_written"):
+        rules += "<p class='sub'>통과 수를 늘린 방법을 규칙으로 남김: " + "; ".join(
+            esc(x.get("rule_text")) for x in r["rules_written"]) + "</p>"
+    return (f"<p>{head}</p>{rules}<details><summary>LLM 시도 보기</summary><table><tr><th>시도</th><th>진단</th>"
             f"<th>바꾼 것</th><th>결과</th></tr>{rows}</table></details>")
 
 

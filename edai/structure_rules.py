@@ -2,6 +2,10 @@
 LLM 이 만든 구조 규칙 모음 (2026-11-23). 파일: data/structure_rules.json
 
 규칙 하나 = "이런 구조 특징 + 이런 실패면 -> 이 블록 변환을 차례로 한다"
+    실패는 두 종류다 (2026-11-28 부터):
+      동작 실패 (4단계): "포화 영역", "꺼진 소자" 같은 이유. 통함 = 고친 회로가 동작함
+      스펙 미달 (7단계 끝 LLM 구조 개선): failure = "스펙 미달", failing_specs = 튜닝 뒤에도 실패한 측정 항목.
+        통함 = 판정 통과 수가 늘어남. failing_specs 는 부분 집합으로 맞춘다 (규칙에 적힌 항목이 모두 실패 중이면 걸림)
     {"id": "R3", "if": {"failure": "포화 영역", "own_bias": true, "failed_blocks": ["bias"]},
      "then": [{"type": "replace_bias", "params": {}}], "text": "설명 (한국어)",
      "status": "candidate|confirmed|retired", "tries": 4, "wins": 3, "chips": ["LM324B", "TLV271"], ...}
@@ -38,7 +42,10 @@ FEATURE_TEXT = {
     "has_compensation": "whether a compensation capacitor exists",
     "own_bias": "whether the model drew its own bias network",
     "failed_blocks": "blocks that contain OFF/TRIODE devices (rule matches if all listed blocks are among them)",
+    "failing_specs": "datasheet specs that still fail after tuning, by measure name such as psrr, pm, vol_1ma, avd "
+                     "(rule matches if all listed specs are among them; only for failure kind '스펙 미달')",
 }
+SUBSET_FEATURES = ("failed_blocks", "failing_specs")     # 규칙의 값이 지금 값의 부분 집합이면 맞음
 
 
 def load() -> list:
@@ -56,7 +63,7 @@ def save(rules: list) -> None:
 def matches(rule: dict, feats: dict) -> bool:
     for key, want in (rule.get("if") or {}).items():
         have = feats.get(key)
-        if key == "failed_blocks":
+        if key in SUBSET_FEATURES:
             if not set(want or ()) <= set(have or ()):
                 return False
         elif have != want:
@@ -101,7 +108,7 @@ def validate_if(cond: dict, feats: dict) -> dict:
     for key, value in (cond or {}).items():
         if key not in FEATURE_TEXT:
             continue
-        if key == "failed_blocks":
+        if key in SUBSET_FEATURES:
             value = sorted(set(value or ()) & set(feats.get(key) or ()))
             if value:
                 out[key] = value
@@ -129,7 +136,8 @@ def rule_text(rule: dict) -> str:
     return f"{rule['id']} [{rule.get('status')}, {rule.get('wins', 0)}/{rule.get('tries', 0)}]: IF {cond} THEN {then}"
 
 
-WRITE_PROMPT = """A structural fix just made a failing op-amp work. Turn it into a reusable rule for OTHER chips.
+WRITE_PROMPT = """A structural fix just improved a failing op-amp (it made a broken circuit work, or it made a working
+circuit pass more datasheet specs). Turn it into a reusable rule for OTHER chips.
 Pick only the features that explain WHY the fix was needed (a rule with too many conditions never matches again,
 a rule with too few conditions fires where it does not help). Use the exact feature values given.
 
