@@ -391,7 +391,7 @@ def step_tune(run: Run) -> dict:
     import tune_sizing
     rules_file = run.dir / "final_rules.json"
     final = run.read("final.json")
-    if final.get("tuned") and rules_file.exists():
+    if (final.get("tuned") or final.get("refined")) and rules_file.exists():
         final = json.loads(rules_file.read_text(encoding="utf-8"))      # 튜닝을 다시 돌림: 6단계 회로에서 시작
     else:
         rules_file.write_text(json.dumps(final, ensure_ascii=False, indent=1), encoding="utf-8")
@@ -424,9 +424,39 @@ def step_tune(run: Run) -> dict:
     else:
         run.dir.joinpath("final.json").write_text(json.dumps(final, ensure_ascii=False, indent=1), encoding="utf-8")
     before = f"{start.get('passed')}/{start.get('judged')}" if start.get("valid") else "다시 재기 실패"
-    return {"before": before, "after": f"{best.get('passed')}/{best.get('judged')}" if improved else before,
-            "improved": bool(improved), "trials": len(result["trials"]), "stopped": result["stopped"],
-            "unit_current_ua": current * 1e6, "scale": scale, "cap_pf": cap * 1e12}
+    summary = {"before": before, "after": f"{best.get('passed')}/{best.get('judged')}" if improved else before,
+               "improved": bool(improved), "trials": len(result["trials"]), "stopped": result["stopped"],
+               "unit_current_ua": current * 1e6, "scale": scale, "cap_pf": cap * 1e12}
+    summary["refine"] = refine_after_tune(run, spec)
+    if summary["refine"].get("improved"):
+        summary["after"] = summary["refine"]["after"]
+    return summary
+
+
+def refine_after_tune(run: Run, spec: dict) -> dict:
+    """튜닝 뒤에도 실패한 항목이 있으면 LLM 이 구조를 바꿔 본다 (structure_doctor.refine). 나아지면 final.json 을 바꾼다."""
+    import auto_size
+    import netlist_table as nt
+    import structure_doctor
+    import tune_sizing
+    final = run.read("final.json")
+    auto_size.BIAS_MODE = "devices"
+    point = (final.get("unit_current") or auto_size.UNIT_CURRENT, final["output_scale"],
+             (final.get("compensation_pf") or 0) * 1e-12)
+    report = structure_doctor.refine(run.dir, final, tune_sizing.table_from_text(final["table"]), point, spec, log=run.log)
+    if report.get("improved"):
+        v = report["best"]
+        current, scale, cap = report["point"]
+        better = dict(final, label=final["label"] + " + LLM 구조 개선", refined=True,
+                      table=" ; ".join(nt.table_text(report["table"]).splitlines()),
+                      unit_current=current, output_scale=scale, compensation_pf=cap * 1e12,
+                      target_overrides=v.get("target_overrides") or {},
+                      subckt=v["subckt"], sizes=v.get("sizes"), bias=v.get("bias"),
+                      spec=v["spec"], passed=v["passed"], judged=v["judged"])
+        run.dir.joinpath("final.json").write_text(json.dumps(better, ensure_ascii=False, indent=1), encoding="utf-8")
+    return {"needed": report["needed"], "llm_calls": report["llm_calls"], "improved": report["improved"],
+            "tries": len(report["attempts"]),
+            "after": f"{report['best']['passed']}/{report['best']['judged']}" if report.get("best") else None}
 
 
 def step_harness(run: Run) -> dict:

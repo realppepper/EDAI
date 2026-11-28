@@ -148,7 +148,10 @@ def decompose(table: dict) -> dict:
     pair = [r for r in mos if r["pins"]["G"] in INPUTS]
     tail_nets = {r["pins"]["S"] for r in pair} - set(RAILS)
     tail = [r for r in mos if r not in pair and r["pins"]["D"] in tail_nets]
-    stage = [r for r in mos if r not in pair and r not in tail and r["pins"]["D"] in sig]
+    # 소스 팔로워(드레인이 전원, 게이트·소스가 신호 노드)도 신호 경로다. 빠지면 AB급 출력단의 팔로워가 '모델이 그린
+    # 바이어스'로 잡혀 출력단을 바꿀 때 남았다 (2026-11-28)
+    stage = [r for r in mos if r not in pair and r not in tail
+             and (r["pins"]["D"] in sig or (r["pins"]["D"] in RAILS and r["pins"]["S"] in sig and r["pins"]["G"] in sig))]
     nxt, hz = _flow(table), high_z_nodes(table) | {"OUT"}
     drains = {r["pins"]["D"] for r in pair} - set(RAILS)
     y = next((hits[0] for hits in ([n for n in level if n in hz] for level in _reach(drains, nxt)) if hits), None)
@@ -195,10 +198,13 @@ def decompose(table: dict) -> dict:
         stage1_type = "five_transistor"
     else:
         stage1_type = "other"
-    out_devs = [r for r in later if r["pins"]["D"] == "OUT"]
+    out_devs = [r for r in later if r["pins"]["D"] == "OUT" or (r["pins"]["S"] == "OUT" and r["pins"]["D"] in RAILS)]
     driven = [r for r in out_devs if r["pins"]["G"] in sig]
+    sinks = [r for r in driven if r["pins"]["D"] == "OUT"]
     if outputs == ["OUT"]:
         output_type = "none"
+    elif len(driven) >= 2 and sinks:
+        output_type = "push_pull_" + sinks[0]["kind"]          # 블록 모음 이름 (OUTPUT_STAGES)
     elif len(driven) >= 2:
         output_type = "push_pull"
     elif len(driven) == 1:

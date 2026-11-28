@@ -31,6 +31,10 @@ def gain_path_nodes(table: dict) -> set:
         g, d = r["pins"]["G"], r["pins"]["D"]
         if d not in RAILS and d != g:
             nxt.setdefault(g, set()).add(d)
+        elif d in RAILS and r["pins"]["S"] not in RAILS and r["pins"]["S"] != g:
+            nxt.setdefault(g, set()).add(r["pins"]["S"])     # 소스 팔로워 (AB급 출력단): 게이트 -> 소스
+        if g.startswith("VB") and r["pins"]["S"] not in RAILS and d not in RAILS:
+            nxt.setdefault(r["pins"]["S"], set()).add(d)     # 공통 게이트(폴디드 캐스코드): 소스 -> 드레인 (gain_path.gain_nodes 와 같게)
     reach_out = {}
 
     def to_out(node, seen):
@@ -57,7 +61,17 @@ def cascode(table: dict, include_out: bool = False, input_side=None) -> tuple:
     import auto_size
     rows = [dict(r, pins=dict(r["pins"])) for r in table["rows"]]
     ports = list(table["ports"])
-    targets = sorted(n for n in gain_path_nodes(table) if include_out or n != "OUT")
+    mos = [r for r in rows if r["kind"] in ("nmos", "pmos")]
+    sources = {r["pins"]["S"] for r in mos}
+
+    def already_cascoded(x):
+        """노드에 붙은 드레인 소자가 모두 소스가 전원이 아닌 소자(캐스코드 또는 입력쌍)면 더 쌓지 않는다."""
+        devs = [r for r in mos if r["pins"]["D"] == x]
+        return bool(devs) and all(r["pins"]["S"] not in RAILS for r in devs)
+
+    # 다른 소자의 소스인 노드(폴디드 캐스코드의 접는 노드)는 저임피던스라 캐스코드 대상이 아니다
+    targets = sorted(n for n in gain_path_nodes(table) if (include_out or n != "OUT")
+                     and n not in sources and not already_cascoded(n))
     # 입력 차동쌍 한쪽 드레인을 바꾸면 반대쪽 드레인 노드도 같이 바꿔 좌우를 맞춘다 (다이오드 부하는 게이트를 그대로 둠)
     inputs = [r for r in rows if r["kind"] in ("nmos", "pmos") and r["pins"]["G"] in ("IN1", "IN2")]
     for r in inputs:

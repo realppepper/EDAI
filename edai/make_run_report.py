@@ -326,9 +326,28 @@ def body_tune(run_dir: Path, s: dict) -> str:
         out.append(f"<tr><td>{k}번째</td><td>{t['unit_current_ua']:.3g}</td><td>x{num(t['scale'], 0)}</td><td>{num(t['cap_pf'], 1)}</td>"
                    f"<td>{res}</td><td>{esc(', '.join(t.get('failed') or []))}</td><td>{num(t['seconds'], 0)}</td></tr>")
     out.append("</table></details>")
-    if tune["improved"]:
-        out.append("<p class='sub'>하네스로 넘긴 회로의 판정</p>" + spec_table(best["spec"]))
+    out.append(refine_html(run_dir))
+    final = read(run_dir, "final.json") or {}
+    if tune["improved"] or final.get("refined"):
+        out.append("<p class='sub'>하네스로 넘긴 회로의 판정</p>" + spec_table(final.get("spec") or best["spec"]))
     return "".join(out)
+
+
+def refine_html(run_dir: Path) -> str:
+    """튜닝 뒤 LLM 구조 개선 (structure_doctor.refine, refine.json)."""
+    r = read(run_dir, "refine.json")
+    if not r or not r.get("needed"):
+        return ""
+    head = (f"튜닝 뒤에도 실패한 항목을 LLM 에 알려 구조를 바꿔 봤어요 (LLM {r.get('llm_calls', 0)}번): "
+            + (f"<b>{esc(r.get('before'))} → {esc(r.get('after'))}</b>" if r.get("improved")
+               else "나아진 구조가 없어 튜닝한 회로를 그대로 썼어요"))
+    rows = "".join(
+        f"<tr><td>{a.get('attempt')}</td><td>{esc(a.get('diagnosis') or '')}</td>"
+        f"<td>{esc(a.get('action') or '')} {esc(json.dumps(a.get('params') or {}, ensure_ascii=False))}</td>"
+        f"<td>{esc(a.get('result') or '')}{' (채택)' if a.get('kept') else ''}</td></tr>"
+        for a in r.get("attempts") or [])
+    return (f"<p>{head}</p><details><summary>LLM 시도 보기</summary><table><tr><th>시도</th><th>진단</th>"
+            f"<th>바꾼 것</th><th>결과</th></tr>{rows}</table></details>")
 
 
 # 하네스 채점 묶음 (run_harness.spec_counts) -> 결과 화면에 쓰는 설명. 이 줄들은 통과율 계산에서 빠진다

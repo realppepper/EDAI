@@ -71,7 +71,7 @@ ACTIONS = {
                            "driven from the same node. params: {\"block\": \"five_transistor|folded_cascode|rail_to_rail\", "
                            "\"input_pair\": \"nmos|pmos\"}",
     "replace_output_stage": "replace everything after the input stage (and its compensation) with a library output "
-                            "stage. params: {\"block\": \"common_source_nmos|common_source_pmos|none\"}",
+                            "stage. params: {\"block\": \"common_source_nmos|common_source_pmos|push_pull_nmos|push_pull_pmos|none\"}",
     "set_compensation": "replace the compensation between the input-stage output and OUT. "
                         "params: {\"type\": \"none|miller|miller_rz\"}",
     "rebuild": "throw the structure away and compose a new one from library blocks (all bias by the flow). "
@@ -115,6 +115,11 @@ FLOW_NOTES = """HOW THE FLOW WORKS (so you know what you can change):
 - Unloaded gain < 20 dB: the input signal does not reach OUT through a gain stage (missing or diode-loaded node).
 - Input common-mode range: an NMOS pair needs VCM well above VSS, a PMOS pair well below VDD; covering both rails
   needs rail_to_rail.
+- Output swing / output current under load with low supply current: a class-A output stage needs its quiescent
+  current above the load current; a push_pull (class-AB) output stage drives mA loads at small quiescent current.
+- Supply current too high: lower the unit current or the output scale, or use a push_pull output stage.
+- PSRR too low: the supply reaches the output through the second-stage load and the bias; cascode the gain nodes,
+  or move the gain node so that its load is referred to the quieter rail (flip).
 - Prefer changing a whole block over tweaking one number: a wrong structure is never fixed by a number."""
 
 SYSTEM_PROMPT = (
@@ -625,6 +630,143 @@ def run(run_dir: Path, log=print) -> dict:
     (run_dir / "doctor.json").write_text(json.dumps(report, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
     log(f"고치기 끝: 규칙 적용 {len(report['rules_tried'])}번, LLM 호출 {report['llm_calls']}번, "
         f"고친 회로 {len(report['fixed'])}개, 새 규칙 {sum(w['new'] for w in report['rules_written'])}개")
+    return report
+
+
+# ---------------------------------------------------------------- 튜닝 뒤 남은 실패 고치기 (2026-11-28)
+REFINE_TRIES = 4            # LLM 에 묻는 횟수
+REFINE_LIMIT_S = 300        # 전체 시간 [s]
+REFINE_SYSTEM_PROMPT = (
+    "You are an experienced analog CMOS IC designer (GF180MCU 6 V devices, VDD = 5 V, VCM = 2.5 V). "
+    "An automatic flow generated an op-amp, sized it by gm/ID and tuned the bias current, output-stage scale and "
+    "compensation capacitor. The circuit WORKS but some datasheet specs still fail after tuning, so numbers alone did "
+    "not fix them. Find the structural cause of the failing specs and choose ONE fix from the allowed actions. "
+    "Do not break specs that already pass. Never repeat a fix listed as already tried. Write 'diagnosis' and 'why' "
+    "in Korean, short and concrete (name the block, device and node)."
+)
+
+
+def refine(run_dir: Path, final: dict, table: dict, point: tuple, spec: dict, log=print) -> dict:
+    """튜닝 뒤에도 실패한 스펙(최소·최대가 있는 것)을 LLM 에 알려 구조를 바꿔 본다. 통과 수가 늘 때만 받아들인다.
+    돌려주는 값: {"needed", "llm_calls", "attempts", "improved", "best": 측정 결과 또는 None, "table", "point"}.
+    보상 커패시터는 튜닝에서 고른 값을 구조를 바꾼 뒤의 밀러 노드에 다시 단다 (위상 여유가 모자라면 두 배도 재 봄)."""
+    import auto_size
+    import run_sim
+    import select_structure as ss
+    import tune_sizing
+    run_dir = Path(run_dir)
+    current, scale, cap = point
+    report = {"needed": False, "llm_calls": 0, "attempts": [], "improved": False, "best": None}
+    failing = [r for r in final.get("spec") or [] if r["status"] == run_sim.STATUS_FAIL]
+    if not failing:
+        log("튜닝 뒤 실패한 항목이 없어 LLM 구조 개선은 건너뜀")
+        return report
+    report["needed"] = True
+    raw_dir = run_dir / "refine"
+    raw_dir.mkdir(exist_ok=True)
+    doctor = Doctor(raw_dir, report)
+    experience = load_experience()
+    end = time.time() + REFINE_LIMIT_S
+    targets = {k: tuple(v) for k, v in (final.get("target_overrides") or {}).items()}
+
+    def measure(state):
+        nodes = tune_sizing.miller_nodes(state["table"])
+        best_v = None
+        for c in ((cap, cap * 2) if cap else (0.0, 2e-12)):
+            t, values = tune_sizing.with_caps(state["table"], nodes, c)
+            auto_size.TARGET_OVERRIDES = dict(state["targets"])
+            run_sim.CANDIDATE_DEADLINE = min(time.time() + tune_sizing.TRIAL_LIMIT_S, end + 60)
+            try:
+                v = ss.evaluate_variant(t, state["unit_current"], state["scale"], spec, values)
+            except run_sim.CandidateTimeout:
+                v = {"valid": False, "reason": "시간 초과"}
+            finally:
+                auto_size.TARGET_OVERRIDES = {}
+                run_sim.CANDIDATE_DEADLINE = None
+            v.update(cap_f=c, table_with_caps=t, unit_current_a=state["unit_current"],
+                     target_overrides={k: list(x) for k, x in state["targets"].items()})
+            if best_v is None or tune_sizing.score(v) < tune_sizing.score(best_v):
+                best_v = v
+            pm = next((r for r in v.get("spec") or [] if r["measure"] == "pm"), None)
+            if not (v.get("valid") and pm and pm["status"] == run_sim.STATUS_FAIL):
+                break                                   # 위상 여유가 모자랄 때만 커패시터 두 배를 더 재 봄
+        return best_v
+
+    state = {"table": table, "unit_current": current, "scale": scale, "targets": targets, "prev": None}
+    variant = measure(state)                        # 진단 정보(동작점·노드 전압)를 얻으려고 튜닝한 회로를 다시 잰다
+    if not variant.get("valid"):
+        variant = dict(final, valid=True)
+    best = (state, variant)
+    failing = [r for r in variant.get("spec") or [] if r["status"] == run_sim.STATUS_FAIL] or failing
+    names = ", ".join(r["measure"] for r in failing)
+    log(f"튜닝 뒤에도 실패한 항목({names})을 LLM 에 알려 구조를 바꿔 봄 (최대 {REFINE_TRIES}번, {REFINE_LIMIT_S // 60}분)")
+    history, tried = [], set()
+    for attempt in range(1, REFINE_TRIES + 1):
+        if time.time() >= end:
+            log("  시간 한도에 닿아 멈춤")
+            break
+        prompt = "\n\n".join([
+            FLOW_NOTES, spec_text(spec), failure_text(best[1], best[0]), sb.library_text(),
+            experience_text(experience),
+            "ALREADY TRIED (do not repeat):\n" + ("\n".join(history) if history else "  none"),
+            "ALLOWED ACTIONS:\n" + "\n".join(f"  {k}: {v}" for k, v in ACTIONS.items()
+                                             if k not in ("next_candidate", "undo")),
+            'Answer JSON: {"diagnosis": "...", "action": {"type": "<one action>", "params": {...}}, "why": "..."}'])
+        answer, error = doctor.ask(prompt, REFINE_SYSTEM_PROMPT, {"attempt": attempt, "failing": names})
+        action = answer.get("action") or {}
+        record = {"attempt": attempt, "diagnosis": answer.get("diagnosis"), "why": answer.get("why"),
+                  "action": action.get("type"), "params": action.get("params"), "result": None}
+        report["attempts"].append(record)
+        if error:
+            record["result"] = f"LLM 호출 실패: {error[:120]}"
+            log(f"  시도 {attempt}: {record['result']}")
+            break
+        key = action_key(action)
+        if key in tried:
+            record["result"] = "이미 해 본 방법"
+            history.append(f"  {action.get('type')} {json.dumps(action.get('params') or {})} -> REPEATED, not allowed")
+            log(f"  시도 {attempt}: 같은 방법 반복이라 건너뜀")
+            continue
+        tried.add(key)
+        try:
+            new_state = apply(action, best[0])
+        except (ValueError, TypeError, KeyError, AttributeError, StopIteration) as exc:
+            record["result"] = f"적용 못 함: {exc}"
+            history.append(f"  {action.get('type')} {json.dumps(action.get('params') or {})} -> rejected: {exc}")
+            log(f"  시도 {attempt}: {action.get('type')} 적용 못 함 ({exc})")
+            continue
+        new_v = measure(new_state)
+        ok = bool(new_v.get("valid"))
+        fails = [r["measure"] for r in new_v.get("spec") or [] if r["status"] == run_sim.STATUS_FAIL]
+        record["result"] = (f"{new_v['passed']}/{new_v['judged']} (실패: {', '.join(fails) or '없음'})" if ok
+                            else f"동작 안 함: {new_v.get('reason')}")
+        log(f"  시도 {attempt}: 진단 '{record['diagnosis']}' -> {action.get('type')} "
+            f"{json.dumps(action.get('params') or {}, ensure_ascii=False)} -> {record['result']}")
+        improved = ok and new_v["passed"] > best[1]["passed"]
+        history.append(f"  {action.get('type')} {json.dumps(action.get('params') or {})} -> "
+                       + (f"passes {new_v['passed']}/{new_v['judged']}, failing {fails}" if ok
+                          else f"broke the circuit: {new_v.get('reason')}") + (" (KEPT)" if improved else " (discarded)"))
+        experience.append({"time": time.strftime("%Y-%m-%d %H:%M"), "chip": final.get("label"),
+                           "failure": "스펙 미달: " + names, "action": action.get("type"),
+                           "params": action.get("params"), "worked": bool(improved), "result": record["result"]})
+        save_experience(experience)
+        if improved:
+            best = (new_state, new_v)
+            record["kept"] = True
+            if new_v["passed"] >= new_v["judged"]:
+                log("  모두 통과해서 멈춤")
+                break
+    if best[1] is not variant:
+        state, v = best
+        report.update(improved=True, best=v, table=v["table_with_caps"],
+                      point=(state["unit_current"], state["scale"], v["cap_f"]))
+    summary = {k: report[k] for k in ("needed", "llm_calls", "attempts", "improved")}
+    summary.update(before=f"{variant['passed']}/{variant['judged']}",
+                   after=f"{best[1]['passed']}/{best[1]['judged']}", llm=report.get("llm"))
+    (run_dir / "refine.json").write_text(json.dumps(summary, ensure_ascii=False, indent=1, default=str),
+                                         encoding="utf-8")
+    log(f"LLM 구조 개선 끝: LLM 호출 {report['llm_calls']}번, "
+        + (f"{summary['before']} -> {summary['after']}" if report["improved"] else "나아진 구조 없음 (튜닝한 회로 그대로)"))
     return report
 
 
