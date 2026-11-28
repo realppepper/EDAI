@@ -43,6 +43,10 @@ th { color:var(--muted); font-weight:600; }
 .pass { color:var(--ok); font-weight:600; } .failc { color:var(--bad); font-weight:600; }
 .mono { font-family:Consolas,"D2Coding",monospace; font-size:12px; word-break:break-all; }
 .err { color:var(--bad); white-space:pre-wrap; }
+.reparse-line { display:flex; flex-wrap:wrap; align-items:center; gap:10px; }
+.reparse-btn { font:inherit; font-size:12px; color:var(--accent); background:none; border:1px solid var(--accent); border-radius:6px;
+               padding:2px 8px; cursor:pointer; } .reparse-btn:hover { background:var(--accent); color:var(--bg); }
+.reparse-btn:disabled { opacity:.6; cursor:default; }
 h3 { font-size:15px; margin:18px 0 6px; }
 .warn { border:1px solid var(--bad); color:var(--bad); border-radius:6px; padding:8px 10px; margin-bottom:10px; font-size:13px; }
 .pdg svg { width:100%; height:auto; background:#fff; border:1px solid var(--line); border-radius:6px; }
@@ -148,7 +152,15 @@ def body_extract(run_dir: Path, s: dict) -> str:
         how = ("저장된 결과 사용 (같은 PDF 를 전에 읽은 결과)" if read_info.get("cached") else
                f"새로 읽음 ({duration(read_info.get('seconds'))})"
                + ("" if read_info.get("saved") else " · 글자만 읽은 쪽이 있어 저장하지 않음"))
-        out.append(f"<p class='sub'>PDF 읽기: {how}. 다시 읽으려면 위에서 1단계를 고르고 'PDF 새로 읽기'를 체크하세요.</p>")
+        # 버튼은 UI 서버로 열었을 때만 동작한다 (파일로 열면 숨김). 누르면 저장된 읽기 결과 대신 PDF 를 새로 읽고 1단계부터 다시
+        out.append(f"<p class='sub reparse-line'>PDF 읽기: {how}"
+                   f"<button type='button' class='reparse-btn' data-run='{esc(run_dir.name)}' hidden>PDF 새로 읽고 다시 돌리기</button></p>"
+                   "<script>(function(){const b=document.currentScript.previousElementSibling.querySelector('.reparse-btn');"
+                   "if(location.protocol==='file:')return;b.hidden=false;b.onclick=async()=>{"
+                   "if(!confirm('PDF를 새로 읽고 1단계부터 다시 돌릴까요? 지금 결과는 새 결과로 바뀌어요.'))return;"
+                   "b.disabled=true;b.textContent='다시 돌리는 중…';"
+                   "await fetch('/api/rerun?id='+encodeURIComponent(b.dataset.run)+'&from=extract&reparse=1',{method:'POST'});"
+                   "setTimeout(()=>location.reload(),1500);};})();</script>")
     if spec:
         out.append("<table><tr><th>판정 항목</th><th>최소</th><th>보통</th><th>최대</th><th>단위</th><th>조건</th>"
                    "<th>데이터시트 근거</th></tr>")
