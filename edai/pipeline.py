@@ -202,12 +202,14 @@ def step_extract(run: Run) -> dict:
     if kind:
         raise Unsupported(f"생성 불가: op-amp가 아님 ({kind})")
     other = spec.get("other_supply") or {}
-    if not spec["specs"] and other.get("rows"):
+    if not [x for x in spec["specs"] if not x.get("reference")] and other.get("rows"):
         # 판정할 5 V 근처 조건 줄이 없음 (예: LM6172 는 ±5 V = 10 V, ±15 V = 30 V 표뿐). 2~9단계를 돌려도 비교할 기준이 없다
         volts = ", ".join(f"{v:g} V" for v in other.get("supplies_v") or [])
         raise Unsupported(f"생성 불가: 전압 조건 (데이터시트 조건 {volts})")
     return {"part": hkg["ic_device"].get("name"), "rows": len(hkg["electrical_parameters"]), "pins": len(hkg["pins"]),
-            "judged": len(spec["specs"]), "model_input": run.read("model_input.json")["input"],
+            "judged": sum(1 for x in spec["specs"] if not x.get("reference")),
+            "reference": sum(1 for x in spec["specs"] if x.get("reference")),
+            "model_input": run.read("model_input.json")["input"],
             "pdf_read": dict(extract_datasheet.LAST_PARSE)}
 
 

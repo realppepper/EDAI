@@ -119,6 +119,12 @@ def page_supplies(pages: dict | None) -> dict:
 LOWER_IS_BETTER = {"idd", "ts", "voh_1ma", "voh_5ma", "vol_1ma", "vol_5ma", "vio", "vio_drift", "iio", "iib",
                    "cic", "vn_1k", "vn_10k", "in_1k", "thd_av1"}
 TEMPERATURE_NOTE = "Full-temperature"
+# 조건에 25°C 가 적힌 줄은 온도 범위가 같이 적혀 있어도 25°C 줄로 본다. 추출 LLM 이 표 위 조건(TA = 25°C)과
+# 줄 조건(TA = -40°C to +125°C)을 한데 붙여 적어, LM358 공급 전류 25°C 줄이 온도 범위 줄로 빠졌다 (2026-11-28)
+AT_25C = re.compile(r"T\s*A\s*=\s*25\s*°?\s*C|25\s*°\s*C", re.I)
+# 보통값만 있는 항목은 데이터시트가 정한 합격 기준이 없어 판정하지 않고 참고로만 잰다 (2026-11-28 결정).
+# 위상 여유만은 발진하지 않는 회로를 고르도록 우리 설계 안전 조건(PM_GUARD_DEG 이상)으로 판정한다
+PM_GUARD_DEG = 45.0
 # 조건에 적힌 온도 범위 (예: "TA = –40°C to 125°C", "Full range") -> 25°C 줄이 아니므로 뺀다
 TEMPERATURE_RANGE = re.compile(r"[–−-]?\d+\s*°?\s*C\s*to\s*\+?\d+|Full range|Temperature\s*\(", re.I)
 CURRENT_IN_COND = re.compile(r"I\s*OUT\s*=\s*(\d+\.?\d*)\s*([mµμu]?)A", re.I)
@@ -244,10 +250,11 @@ def build(plan: dict, hkg: dict, part: str, fix: dict | None = None, whole: bool
     for i in planned:
         row = rows[i]
         named = set(PART_NAME.findall(row.get("conditions") or ""))
-        if (named and not any(same_part(n, part) for n in named)) or (row.get("note") or "").startswith(TEMPERATURE_NOTE):
+        at_25c = bool(AT_25C.search(row.get("conditions") or ""))
+        if (named and not any(same_part(n, part) for n in named)) or                 ((row.get("note") or "").startswith(TEMPERATURE_NOTE) and not at_25c):
             continue
-        if whole and TEMPERATURE_RANGE.search(row.get("conditions") or ""):
-            continue
+        if whole and TEMPERATURE_RANGE.search(row.get("conditions") or "") and not at_25c:
+            continue                                    # 온도 범위만 적힌 줄은 무시 (시뮬레이션은 25°C 하나)
         if whole and all(row.get(k) is None for k in ("min_target", "typ_target", "max_target")):
             continue                                    # 목표값이 하나도 없는 줄
         kind = row["fixture"].rsplit("_", 1)[0]
@@ -267,7 +274,10 @@ def build(plan: dict, hkg: dict, part: str, fix: dict | None = None, whole: bool
         low, typ, high = (spec_from_hkg.rounded(v) for v in to_ours(measure, row))
         item.update({k: v for k, v in (("min", low), ("typ", typ), ("max", high)) if v is not None})
         if low is None and high is None:
-            item["typ_rule"] = "lower" if measure in LOWER_IS_BETTER else "higher"
+            if measure == "pm":                        # 발진 방지용 우리 안전 조건 (데이터시트 기준 아님)
+                item.update(min=PM_GUARD_DEG, basis="guard")
+            else:
+                item["reference"] = True               # 판정하지 않고 참고로만 (run_sim.judge 가 '참고'로 둠)
         item.update(symbol=row["symbol"], condition=row.get("conditions"), extracted=evidence,
                     plan={"kind": kind, "fixture": row["fixture"], "row": i})
         if table_supply(i) is not None and supply_range(row.get("conditions") or "") is None:

@@ -162,13 +162,19 @@ def body_extract(run_dir: Path, s: dict) -> str:
                    "await fetch('/api/rerun?id='+encodeURIComponent(b.dataset.run)+'&from=extract&reparse=1',{method:'POST'});"
                    "setTimeout(()=>location.reload(),1500);};})();</script>")
     if spec:
-        out.append("<table><tr><th>판정 항목</th><th>최소</th><th>보통</th><th>최대</th><th>단위</th><th>조건</th>"
+        out.append("<table><tr><th>판정 항목</th><th>최소</th><th>보통</th><th>최대</th><th>단위</th><th>판정</th><th>조건</th>"
                    "<th>데이터시트 근거</th></tr>")
         for it in spec["specs"]:
-            out.append(f"<tr><td>{esc(it.get('label') or it['measure'])}</td><td>{num(it.get('min'))}</td><td>{num(it.get('typ'))}</td>"
-                       f"<td>{num(it.get('max'))}</td><td>{esc(it.get('unit'))}</td><td>{esc(it.get('condition'))}</td>"
+            how = ("참고 (보통값만)" if it.get("reference") else
+                   "설계 안전 조건" if it.get("basis") == "guard" else "데이터시트 기준")
+            minimum = f"{num(it.get('min'))}*" if it.get("basis") == "guard" else num(it.get("min"))
+            out.append(f"<tr><td>{esc(it.get('label') or it['measure'])}</td><td>{minimum}</td><td>{num(it.get('typ'))}</td>"
+                       f"<td>{num(it.get('max'))}</td><td>{esc(it.get('unit'))}</td><td>{how}</td><td>{esc(it.get('condition'))}</td>"
                        f"<td>{evidence_cell(it.get('extracted') or {})}</td></tr>")
         out.append("</table>")
+        if any(it.get("reference") or it.get("basis") == "guard" for it in spec["specs"]):
+            out.append("<p class='sub'>데이터시트에 최소·최대가 있는 항목만 통과·실패로 판정해요. 보통값만 있는 항목은 보장값이 아니라 "
+                       "참고로만 재요. * 위상 여유 45° 이상은 발진하지 않는 회로를 고르기 위한 우리 설계 안전 조건이에요.</p>")
     out.append(hkg_details(run_dir) + pdg_details(run_dir))
     return "".join(out)
 
@@ -318,23 +324,28 @@ def body_tune(run_dir: Path, s: dict) -> str:
 
 # 하네스 채점 묶음 (run_harness.spec_counts) -> 결과 화면에 쓰는 설명. 이 줄들은 통과율 계산에서 빠진다
 EXCLUDED_GROUPS = [
+    ("typ_only", "보통값만 있는 줄 (데이터시트 보장값이 아니라 판정하지 않고 아래 표에 참고로)"),
     ("not_testable", "시뮬레이션으로 확인할 수 없는 줄 (열 저항·ESD·절대 최대·권장 조건 등)"),
     ("supply", "전원 조건이 설계 전원(5 V, 4.5~5.5 V)과 다른 줄 (예: 2.7 V 표, ±15 V 표)"),
     ("no_method", "측정 방법이 없는 줄 (왜곡·잡음·임피던스 등)"),
     ("no_limit", "숫자 기준이 없는 줄"),
     ("sim_error", "시뮬레이션이 멈춰 못 잰 줄"),
 ]
-JUDGED = ("PASS", "PASS_TYP", "FAIL", "FAIL_TYP")
-STATUS_WORD = {"PASS": "통과", "PASS_TYP": "통과 (보통값 기준)", "FAIL": "실패", "FAIL_TYP": "실패 (보통값 기준)"}
+JUDGED = ("PASS", "FAIL")       # 최소·최대가 있는 줄만 판정 (보통값만 있는 줄은 참고)
+TYP_ONLY = ("PASS_TYP", "FAIL_TYP")
+STATUS_WORD = {"PASS": "통과", "FAIL": "실패"}
 
 
 def harness_counts(run_dir: Path) -> dict:
     """하네스 채점 개수. result.json 에 없으면(2026-11-27 전 실행) 채점 파일에서 센다."""
     result = read(run_dir, "harness/result.json") or {}
-    if result.get("counts"):
+    if result.get("counts") and "typ_only" in result["counts"]:
         return result["counts"]
     if not (run_dir / "harness").is_dir():
         return {}
+    if result.get("counts"):        # 11/27~28 실행: 보통값 줄을 판정에 넣어 셌던 것을 지금 기준으로 다시 셈
+        from run_harness import spec_counts
+        return spec_counts(run_dir / "harness") or result["counts"]
     from file_find import find_files
     from run_harness import spec_counts
     counts = spec_counts(run_dir / "harness")
@@ -397,6 +408,8 @@ def body_harness(run_dir: Path, s: dict) -> str:
         rows = [(label, c.get(key, 0)) for key, label in EXCLUDED_GROUPS if c.get(key)]
         if result.get("other_part_rows_dropped"):
             rows.append(("같은 데이터시트의 다른 칩 줄 (하네스에 넘기기 전에 뺌)", result["other_part_rows_dropped"]))
+        if result.get("temperature_rows_dropped"):
+            rows.append(("온도 범위만 적힌 줄 (시뮬레이션은 25°C 하나라 확인할 수 없음)", result["temperature_rows_dropped"]))
         if rows:
             out.append("<table><tr><th>판정에서 뺀 줄</th><th>개수</th></tr>" + "".join(
                 f"<tr><td>{esc(label)}</td><td>{n}</td></tr>" for label, n in rows) + "</table>")
@@ -435,7 +448,19 @@ def harness_rows_html(run_dir: Path) -> str:
             f"<tr><td class='{'pass' if r['status'].startswith('PASS') else 'failc'}'>{STATUS_WORD[r['status']]}</td>"
             f"<td>{esc(r.get('symbol'))} {esc(r.get('name'))}</td><td>{_value(r.get('measured'), r.get('unit'))}</td>"
             f"<td>{target(r)}</td><td>{esc(r.get('conditions'))}</td></tr>" for r in judged) + "</table>")
-    others = [r for r in rows if r.get("status") not in JUDGED]
+    typ_rows = [r for r in rows if r.get("status") in TYP_ONLY]
+    if typ_rows:
+        def ratio(r):
+            try:
+                return f"{float(r['measured']) / float(r['typ_target']):.2g}배"
+            except (TypeError, ValueError, ZeroDivisionError):
+                return "—"
+        out.append(f"<details><summary>보통값과 비교 (참고, {len(typ_rows)}줄)</summary>"
+                   "<table><tr><th>항목</th><th>측정값</th><th>데이터시트 보통값</th><th>보통값 대비</th><th>조건</th></tr>"
+                   + "".join(f"<tr><td>{esc(r.get('symbol'))} {esc(r.get('name'))}</td><td>{_value(r.get('measured'), r.get('unit'))}</td>"
+                             f"<td>{_value(r.get('typ_target'), r.get('unit'))}</td><td>{ratio(r)}</td>"
+                             f"<td>{esc(r.get('conditions'))}</td></tr>" for r in typ_rows) + "</table></details>")
+    others = [r for r in rows if r.get("status") not in JUDGED + TYP_ONLY]
     if others:
         out.append(f"<details><summary>판정에서 뺀 줄 {len(others)}개</summary><table><tr><th>이유</th><th>항목</th><th>조건</th></tr>"
                    + "".join(f"<tr><td>{esc(r.get('status'))}</td><td>{esc(r.get('symbol'))} {esc(r.get('name'))}</td>"

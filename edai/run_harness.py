@@ -140,7 +140,9 @@ def target_rows_only(hkg: dict) -> tuple:
 
 # 하네스 판정 결과(status) -> 결과 화면에 보여 줄 묶음
 COUNT_GROUPS = {
-    "PASS": "passed", "PASS_TYP": "passed", "FAIL": "failed", "FAIL_TYP": "failed",
+    "PASS": "passed", "FAIL": "failed",
+    # 보통값만 있는 줄: 데이터시트가 정한 합격 기준이 없어 판정하지 않고 참고로만 (2026-11-28 결정)
+    "PASS_TYP": "typ_only", "FAIL_TYP": "typ_only",
     "NOT_TESTABLE_SUPPLY": "supply", "NOT_MEASURED_SIM_ERROR": "sim_error",
     "NO_NUMERIC_LIMIT": "no_limit", "UNSUPPORTED_KIND": "no_method",
 }
@@ -155,7 +157,7 @@ def spec_counts(out_dir: Path) -> dict:
         return {}
     rows = json.loads(files[0].read_text(encoding="utf-8")).get("spec_evaluations") or []
     counts = {"total": len(rows), "passed": 0, "failed": 0, "not_testable": 0, "supply": 0, "sim_error": 0,
-              "no_limit": 0, "no_method": 0}
+              "no_limit": 0, "no_method": 0, "typ_only": 0}
     for row in rows:
         status = str(row.get("status") or "")
         group = COUNT_GROUPS.get(status, "not_testable" if status.startswith("NOT_TESTABLE") else "no_method")
@@ -205,6 +207,20 @@ def with_title_supply(hkg: dict, pages: dict | None) -> tuple:
     return {**hkg, "electrical_parameters": rows}, added
 
 
+def drop_temperature_rows(hkg: dict) -> tuple:
+    """온도 범위만 적힌 줄("TA = -40°C to +125°C", "Full range")을 뺀 hkg 와 뺀 줄 수.
+    시뮬레이션은 25°C 하나라 온도 범위 전체의 한계는 확인할 수 없다 (2026-11-28 결정: 온도 줄은 무시).
+    25°C 가 같이 적힌 줄은 25°C 줄로 보고 남긴다 (spec_from_plan.AT_25C)."""
+    import spec_from_plan
+    kept = []
+    for row in hkg.get("electrical_parameters", []):
+        text = f"{row.get('test_conditions') or ''} {row.get('conditions') or ''}"
+        if spec_from_plan.TEMPERATURE_RANGE.search(text) and not spec_from_plan.AT_25C.search(text):
+            continue
+        kept.append(row)
+    return {**hkg, "electrical_parameters": kept}, len(hkg.get("electrical_parameters", [])) - len(kept)
+
+
 def make_subckt_name(part: str) -> str:
     """하네스와 같은 규칙의 subckt 이름 (hermes_workflow: 영숫자·_ 외는 _ , 대문자)."""
     import re
@@ -239,12 +255,13 @@ def main() -> None:
     out_dir.mkdir(exist_ok=True)
     (out_dir / "blueprint.json").write_text(json.dumps(experience, ensure_ascii=False, indent=1), encoding="utf-8")
     target_hkg, dropped = target_rows_only(hkg)
+    target_hkg, temp_dropped = drop_temperature_rows(target_hkg)
     pages_file = run_dir / "pages.json"
     pages = json.loads(pages_file.read_text(encoding="utf-8")) if pages_file.exists() else None
     target_hkg, titled = with_title_supply(target_hkg, pages)
     hkg_file = out_dir / "hkg_target.json"
     hkg_file.write_text(json.dumps(target_hkg, ensure_ascii=False, indent=1), encoding="utf-8")
-    print(f"하네스에 넘기는 항목: {len(target_hkg['electrical_parameters'])}줄 (다른 칩 줄 {dropped}개 뺌, "
+    print(f"하네스에 넘기는 항목: {len(target_hkg['electrical_parameters'])}줄 (다른 칩 줄 {dropped}개, 온도 범위 줄 {temp_dropped}개 뺌, "
           f"표 제목 전원을 붙인 줄 {titled}개)", flush=True)
 
     sys.path.insert(0, str(AV_DIR))
@@ -277,11 +294,13 @@ def main() -> None:
               "iterations": [{k: it.get(k) for k in ("iteration", "pass_rate_percent", "status") if k in it}
                              for it in iterations if isinstance(it, dict)],
               "final_netlist": netlist, "pin_map": {k: v for k, v in mapping.items() if isinstance(v, str)},
-              "seed": seed_name, "seconds": round(time.time() - t0), "other_part_rows_dropped": dropped,
+              "seed": seed_name, "seconds": round(time.time() - t0), "other_part_rows_dropped": dropped, "temperature_rows_dropped": temp_dropped,
               "title_supply_rows": titled}
     record["counts"] = spec_counts(out_dir)
-    if record["counts"] and record["counts"]["judged"] == 0:
-        record["pass_rate_percent"] = None      # 판정할 항목이 없으면 0% 가 아니라 '판정 없음' (LM6172: 전부 ±15 V·±5 V 조건)
+    if record["counts"]:                        # 통과율도 최소·최대가 있는 줄로만 다시 계산 (하네스 원래 값은 보통값 줄 포함)
+        c = record["counts"]
+        record["pass_rate_harness_percent"] = record["pass_rate_percent"]
+        record["pass_rate_percent"] = round(100 * c["passed"] / c["judged"], 1) if c["judged"] else None
     (out_dir / "result.json").write_text(json.dumps(record, ensure_ascii=False, indent=1, default=str), encoding="utf-8")
     print(f"하네스 끝: 통과율 {record['pass_rate_percent']}%, 반복 {record['iterations_count']}번, {record['seconds']} s", flush=True)
 

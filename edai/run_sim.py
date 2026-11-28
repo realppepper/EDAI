@@ -86,7 +86,8 @@ STATUS_EXCLUDED = "제외"    # 스펙 파일에서 범위 외로 표시한 항�
 STATUS_UNMEASURED = "미측정"  # 측정 함수가 아직 이 값을 내지 않는 항목
 CURVE_MAX_POINTS = 400     # 파형 기록 파일에 남기는 점 수의 상한
 BASIS_DATASHEET = "데이터시트"
-BASIS_TEAM = "팀 기준"       # typ 값만 있는 항목에 스펙 파일의 typ_rule을 적용한 기준
+BASIS_TEAM = "팀 기준"       # typ 값만 있는 항목에 스펙 파일의 typ_rule을 적용한 기준 (2026-11-28 전 스펙 파일)
+BASIS_GUARD = "설계 안전 조건"  # 데이터시트 기준이 아니라 우리가 지키는 조건 (위상 여유 45° 이상, spec_from_plan)
 # 여유를 비율(%)이 아니라 차이로 표시하는 단위
 DIFFERENCE_UNITS = ("dB", "°")
 
@@ -488,6 +489,8 @@ def set_cm_range_from_spec(spec: dict) -> tuple:
 def effective_bounds(item: dict, spec: dict) -> tuple:
     """판정에 쓸 (하한, 상한, 근거). 데이터시트에 min/max가 없고 typ만 있으면 팀 기준을 적용한다."""
     low, high = item.get("min"), item.get("max")
+    if item.get("basis") == "guard":
+        return low, high, BASIS_GUARD
     rule = spec.get("typ_rule")
     if low is None and high is None and rule and item.get("typ") is not None:
         if item.get("typ_rule") == "higher":

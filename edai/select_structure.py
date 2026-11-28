@@ -80,7 +80,8 @@ def evaluate_variant(table: dict, unit_current: float, output_scale: float, spec
     if record["valid"]:
         rows = spec_rows(record["measured"], spec)
         variant.update(measured=record["measured"], spec=rows,
-                       passed=sum(r["status"] == run_sim.STATUS_PASS for r in rows), judged=len(rows))
+                       passed=sum(r["status"] == run_sim.STATUS_PASS for r in rows),
+                       judged=len(rows))      # '참고'(보통값만 있는 항목)는 spec_rows 가 이미 뺌
     return variant
 
 
