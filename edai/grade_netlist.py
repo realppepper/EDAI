@@ -177,9 +177,11 @@ def main() -> None:
           f"(출력 {record['op'].get('vout')}, 꺼진 소자 {record['op'].get('off')}, 포화 밖 {record['op'].get('triode')})", flush=True)
     try:
         rows = measure(subckt, spec)
-        record["spec"] = [{k: r.get(k) for k in ("measure", "label", "unit", "value", "target", "status")} for r in rows]
+        record["spec"] = [dict({k: r.get(k) for k in ("measure", "label", "unit", "value", "status")},
+                               target=run_sim.target_text(r)) for r in rows]
         record["passed"] = sum(r["status"] == run_sim.STATUS_PASS for r in rows)
-        record["judged"] = len(rows)
+        record["judged"] = sum(r["status"] in (run_sim.STATUS_PASS, run_sim.STATUS_FAIL, run_sim.STATUS_UNMEASURED)
+                               for r in rows)      # '참고'(보통값만 있는 항목)는 판정에 넣지 않음
         print(f"우리 측정: {record['passed']}/{record['judged']} 통과", flush=True)
     except Exception as error:
         record.update(spec=[], passed=0, judged=len(spec.get("specs", [])), measure_error=str(error)[:300])
