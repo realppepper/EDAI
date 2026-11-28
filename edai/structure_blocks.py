@@ -50,7 +50,52 @@ INPUT_STAGES = {
                  "NM D=@n2 G=IN1 S=$IB1 B=VSS", "NM D=@n1 G=IN2 S=$IB1 B=VSS",
                  "NM D=X G=$VB1 S=@n4 B=VSS", "NM D=@n5 G=$VB1 S=@n3 B=VSS",
                  "NM D=@n3 G=@n5 S=VSS B=VSS", "NM D=@n4 G=@n5 S=VSS B=VSS"]},
+    # 2026-11-28 추가 (출처: docs/블록_출처.md)
+    "symmetric": {
+        "text": "current-mirror (symmetrical) OTA: diode-loaded pair mirrored to X from both sides (wide output "
+                "swing, X in the middle of the supply, gain set by the mirror ratio)",
+        "rows": ["NM D=@a G=IN1 S=$IB1 B=VSS", "NM D=@b G=IN2 S=$IB1 B=VSS",
+                 "PM D=@a G=@a S=VDD B=VDD", "PM D=@b G=@b S=VDD B=VDD",
+                 "PM D=X G=@b S=VDD B=VDD", "PM D=@c G=@a S=VDD B=VDD",
+                 "NM D=@c G=@c S=VSS B=VSS", "NM D=X G=@c S=VSS B=VSS"]},
 }
+
+
+# 보류 블록 (2026-11-28): 행은 적어 두었지만 LM358 스펙에서 동작점이 나오지 않아 LLM 메뉴(INPUT_STAGES 등)에는 넣지 않았다.
+#   텔레스코픽: 바이어스 거울 PMF1 이 포화 영역 밖 (5 V 에서 입력쌍 + 캐스코드 두 층의 여유 부족, 바이어스 전압 계산 필요)
+#   플로팅 AB급: 출력 소자 평소 전류가 9.4 mA 로 폭주 (출력 소자와 다이오드 복제 소자의 폭 비로 전류를 정해야 하는데
+#               크기 정하기(auto_size)가 역할별 gm/ID 로만 정함)
+#   3단 + 중첩 밀러: 시뮬레이션 시간 초과 (발진으로 보임, 두 보상 커패시터 값 정하기 필요)
+PENDING_TELESCOPIC = ["NM D=@a G=IN1 S=$IB1 B=VSS", "NM D=@b G=IN2 S=$IB1 B=VSS",
+                 "NM D=@c G=$VB1 S=@a B=VSS", "NM D=X G=$VB1 S=@b B=VSS",
+                 "PM D=@c G=$VB2 S=@d B=VDD", "PM D=X G=$VB2 S=@e B=VDD",
+                 "PM D=@d G=@c S=VDD B=VDD", "PM D=@e G=@c S=VDD B=VDD"]
+
+
+def _flipped(rows: list) -> list:
+    """NMOS<->PMOS, VDD<->VSS 를 바꾼 블록 행 (X 가 반대 레일 가까이 있을 때 쓰는 짝)."""
+    return [re.sub(r"\b(NM|PM|VDD|VSS)\b", lambda m: FLIP_TOKEN[m.group()], line) for line in rows]
+
+
+# 출력단 추가분 (2026-11-28, 출처: docs/블록_출처.md). NMOS 판 = X 가 VSS 가까이 있을 때, PMOS 판은 뒤집은 짝
+_SOURCE_FOLLOWER = ["NM D=@y G=X S=VSS B=VSS", "PM D=@y G=$VB1 S=VDD B=VDD",
+                    "NM D=VDD G=@y S=OUT B=OUT", "NM D=OUT G=$VB2 S=VSS B=VSS"]
+# 플로팅 AB급 (Monticelli 형): X 가 아래 출력 NMOS 를 직접 구동하고, 플로팅 소자 한 쌍이 위 출력 PMOS 게이트(@p)를
+# 같이 움직인다. 플로팅 소자의 게이트 전압은 블록 안의 다이오드 두 개 쌓기(출력 소자 + 플로팅 소자 복제)로 정해
+# 평소 전류가 출력 소자 크기 비로 정해진다. X 에 들어오는 플로팅 전류는 X 의 싱크(VB4)가 받는다
+_CLASS_AB_FLOATING = ["NM D=OUT G=X S=VSS B=VSS", "PM D=OUT G=@p S=VDD B=VDD",
+                      "PM D=@p G=$VB1 S=VDD B=VDD",
+                      "NM D=@p G=@gn S=X B=VSS", "PM D=X G=@gp S=@p B=VDD",
+                      "NM D=X G=$VB4 S=VSS B=VSS",
+                      "NM D=@gn G=@gn S=@sn B=VSS", "NM D=@sn G=@sn S=VSS B=VSS", "PM D=@gn G=$VB2 S=VDD B=VDD",
+                      "PM D=@gp G=@gp S=@sp B=VDD", "PM D=@sp G=@sp S=VDD B=VDD", "NM D=@gp G=$VB3 S=VSS B=VSS"]
+# 3단 + 중첩 밀러: 2단은 거울로 반전하지 않고(X↑ -> @m↑), 3단은 반전하는 공통 소스. 안쪽 밀러(@m-OUT)는 블록 안에,
+# 바깥 밀러(X-OUT)는 보상 블록(miller)으로 단다
+_THREE_STAGE_NMC = ["NM D=@m1 G=X S=VSS B=VSS", "PM D=@m1 G=@m1 S=VDD B=VDD",
+                    "PM D=@m G=@m1 S=VDD B=VDD", "NM D=@m G=$VB1 S=VSS B=VSS",
+                    "PM D=OUT G=@m S=VDD B=VDD", "NM D=OUT G=$VB2 S=VSS B=VSS",
+                    "C P=@m N=OUT"]
+
 OUTPUT_STAGES = {
     "common_source_pmos": {"text": "PMOS gain device driven by X + NMOS current-source load (X should sit near VDD)",
                            "rows": ["PM D=OUT G=X S=VDD B=VDD", "NM D=OUT G=$VB1 S=VSS B=VSS"]},
@@ -65,12 +110,30 @@ OUTPUT_STAGES = {
     "push_pull_pmos": {"text": "PMOS common source driven by X + NMOS load at an inner node, then class-AB output: "
                                 "PMOS source follower to OUT plus a PMOS source driven by X (low quiescent current, "
                                 "mA source and sink; X should sit near VDD)", "rows": None, "base": "common_source_pmos"},
+    "source_follower_nmos": {"text": "NMOS common source driven by X to an inner node, then NMOS source follower to OUT "
+                                     "with a current-sink load (class A, low output impedance; X should sit near VSS)",
+                             "rows": _SOURCE_FOLLOWER},
+    "source_follower_pmos": {"text": "mirror image of source_follower_nmos (X should sit near VDD)",
+                             "rows": _flipped(_SOURCE_FOLLOWER)},
+
 }
 COMPENSATIONS = {
     "none": {"text": "no compensation", "rows": []},
     "miller": {"text": "Miller capacitor between X and OUT", "rows": ["C P=X N=OUT"]},
     "miller_rz": {"text": "Miller capacitor with series nulling resistor between X and OUT",
                   "rows": ["R P=X N=@z", "C P=@z N=OUT"]},
+    # 2026-11-28 추가 (출처: docs/블록_출처.md)
+    "voltage_buffer": {"text": "Miller capacitor driven from OUT through a source follower (blocks the feedforward "
+                               "path, removes the right-half-plane zero)",
+                       "rows": ["NM D=VDD G=OUT S=@k B=@k", "NM D=@k G=$VB1 S=VSS B=VSS", "C P=@k N=X"]},
+    "current_buffer_nmos": {"text": "Miller capacitor from OUT into the source of an NMOS common-gate device whose "
+                                    "drain is X (Ahuja / current-buffer compensation: wider capacitive-load range and "
+                                    "better PSRR than plain Miller; X should sit near VDD so the stack has headroom)",
+                            "rows": ["NM D=X G=$VB1 S=@k B=VSS", "NM D=@k G=$VB2 S=VSS B=VSS",
+                                     "PM D=X G=$VB3 S=VDD B=VDD", "C P=OUT N=@k"]},
+    "current_buffer_pmos": {"text": "mirror image of current_buffer_nmos (X should sit near VSS)",
+                            "rows": ["PM D=X G=$VB1 S=@k B=VDD", "PM D=@k G=$VB2 S=VDD B=VDD",
+                                     "NM D=X G=$VB3 S=VSS B=VSS", "C P=OUT N=@k"]},
 }
 PAIR_TYPES = ("nmos", "pmos")
 
@@ -205,10 +268,15 @@ def decompose(table: dict) -> dict:
     sinks = [r for r in driven if r["pins"]["D"] == "OUT"]
     if outputs == ["OUT"]:
         output_type = "none"
+    elif len(sinks) >= 2 and len({r["kind"] for r in sinks}) == 2:
+        x_driven = next((r for r in sinks if r["pins"]["G"] == y), sinks[0])
+        output_type = "class_ab_floating_" + x_driven["kind"]   # 위아래 공통 소스가 둘 다 OUT 을 구동
     elif len(driven) >= 2 and sinks:
         output_type = "push_pull_" + sinks[0]["kind"]          # 블록 모음 이름 (OUTPUT_STAGES)
     elif len(driven) >= 2:
         output_type = "push_pull"
+    elif len(driven) == 1 and driven[0]["pins"]["S"] == "OUT":
+        output_type = "source_follower_" + driven[0]["kind"]
     elif len(driven) == 1:
         output_type = "common_source_" + driven[0]["kind"]
     else:
