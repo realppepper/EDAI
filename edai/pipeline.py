@@ -51,7 +51,8 @@ STEPS = [
     ("harness", "8. 데이터시트 전체 검증 (하네스 에이전트)"),
     ("schematic", "9. 최종 회로도"),
 ]
-RULE_SCALES = (20.0, 50.0)      # 규칙을 적용한 회로를 잴 때 해 보는 출력단 배율 (구조 선택과 같은 값)
+RULE_SCALES = (20.0, 50.0)     # 규칙을 적용한 회로를 잴 때 해 보는 출력단 배율 (구조 선택과 같은 값)
+PUSH_PULL_SCALES = (2.0, 5.0)  # AB급 출력단의 싱크 배율 (평소 전류 = 2단 전류 x 배율, 큰 전류는 신호가 있을 때만)
 
 
 # ---------------------------------------------------------------- LLM 공급자와 호출 기록
@@ -329,7 +330,7 @@ def step_rules(run: Run) -> dict:
         auto_size.TARGET_OVERRIDES = {complement.SWAP_PREFIX.get(k[:2], k[:2]) + k[2:]: v for k, v in overrides.items()}
         tried += evaluate(run, ss, unit_current, table, spec, "상보 뒤집기", list(rules))
     target = rank_v2.target_value(next((r["target"] for r in base_v["spec"] if r["measure"] == "avd"), ""))[0]
-    best_avd = max((row["value"] or 0) for t in tried for row in t["variant"]["spec"] if row["measure"] == "avd") \
+    best_avd = max(((row["value"] or 0) for t in tried for row in t["variant"].get("spec") or [] if row["measure"] == "avd"), default=0) \
         if target else None
     if target and best_avd < target:
         new, nodes = cascode.cascode(table)
@@ -337,6 +338,21 @@ def step_rules(run: Run) -> dict:
             rules.append("캐스코드")
             run.log(f"AVD {best_avd:.1f} dB < 목표 {target} dB -> 이득 노드 {nodes} 캐스코드")
             tried += evaluate(run, ss, unit_current, new, spec, " + ".join(rules), list(rules))
+    # 푸시풀(AB급) 출력단: 공통 소스 2단이면 해 본다 (structure_blocks.push_pull_output). 평소 전류가 작아도 mA 를
+    # 내보내고 받으므로 출력단 배율은 작게 (PUSH_PULL_SCALES). 캐스코드를 했으면 캐스코드한 회로에도
+    import structure_blocks
+    bases = [("상보 뒤집기", ["상보 뒤집기"], table) if flipped else ("", [], table)]
+    if "캐스코드" in rules:
+        bases.append((" + ".join(rules), list(rules), new))
+    for base_label, base_rules, base_table in bases:
+        try:
+            pp = structure_blocks.push_pull_output(base_table)
+        except (ValueError, StopIteration) as error:
+            run.log(f"AB급 출력단을 붙이지 못함: {error}")
+            continue
+        label = (base_label + " + " if base_label else "") + "AB급 출력단"
+        run.log(f"{label}: 2단 뒤에 푸시풀 출력단(소스 팔로워 + 싱크)")
+        tried += evaluate(run, ss, unit_current, pp, spec, label, base_rules + ["AB급 출력단"], PUSH_PULL_SCALES)
     auto_size.TARGET_OVERRIDES = {}
     working = [t for t in tried if t["variant"].get("valid")]
     chosen = min(working, key=lambda t: (-t["variant"]["passed"], rank_v2.shortfall(t["variant"]["spec"])))
@@ -352,11 +368,12 @@ def step_rules(run: Run) -> dict:
     return {"chosen": chosen["label"], "passed": f"{v['passed']}/{v['judged']}", "tried": len(tried)}
 
 
-def evaluate(run: Run, ss, unit_current: float, table: dict, spec: dict, label: str, rules: list) -> list:
+def evaluate(run: Run, ss, unit_current: float, table: dict, spec: dict, label: str, rules: list,
+             scales: tuple = None) -> list:
     import auto_size
     import netlist_table as nt
     out = []
-    for scale in RULE_SCALES:
+    for scale in scales or RULE_SCALES:
         v = ss.evaluate_variant(table, unit_current, scale, spec)
         run.log(f"  {label} x{scale:g}: " + (f"{v['passed']}/{v['judged']}" if v["valid"] else f"실패 ({v['reason'][:50]})"))
         out.append({"label": label, "rules": rules, "variant": v, "overrides": dict(auto_size.TARGET_OVERRIDES),
@@ -562,6 +579,9 @@ STEP_FUNCS = {"extract": step_extract, "candidates": step_candidates, "select": 
 
 def main() -> None:
     run = Run(Path(sys.argv[1]))
+    import label_dataset
+    # 시뮬레이션 파일 이름을 실행마다 다르게: 같은 이름이면 UI 에서 두 실행이 동시에 돌 때 서로의 파일을 덮어쓴다 (2026-11-28)
+    label_dataset.DESIGN_NAME = "opamp_" + re.sub(r"\W", "", run.dir.name) + "_"
     start = sys.argv[sys.argv.index("--from") + 1] if "--from" in sys.argv else None
     if "--reparse" in sys.argv:                     # UI 의 'PDF 새로 읽기': 저장된 PDF 읽기 결과를 쓰지 않음
         os.environ["EDAI_NO_PDF_CACHE"] = "1"

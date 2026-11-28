@@ -55,6 +55,14 @@ OUTPUT_STAGES = {
     "common_source_nmos": {"text": "NMOS gain device driven by X + PMOS current-source load (X should sit near VSS)",
                            "rows": ["NM D=OUT G=X S=VSS B=VSS", "PM D=OUT G=$VB1 S=VDD B=VDD"]},
     "none": {"text": "no second stage: the first-stage output X is OUT (single-stage op-amp)", "rows": []},
+    # 푸시풀(class-AB): 공통 소스 2단 뒤에 소스 팔로워 + X 가 구동하는 싱크/소스 (push_pull_output). 공급 전류를 작게
+    # 두면서 mA 단위로 내보내고 받는다. 행은 replace_output_stage 가 공통 소스를 붙인 뒤 push_pull_output 으로 만든다
+    "push_pull_nmos": {"text": "NMOS common source driven by X + PMOS load at an inner node, then class-AB output: "
+                                "NMOS source follower to OUT plus an NMOS sink driven by X (low quiescent current, "
+                                "mA source and sink; X should sit near VSS)", "rows": None, "base": "common_source_nmos"},
+    "push_pull_pmos": {"text": "PMOS common source driven by X + NMOS load at an inner node, then class-AB output: "
+                                "PMOS source follower to OUT plus a PMOS source driven by X (low quiescent current, "
+                                "mA source and sink; X should sit near VDD)", "rows": None, "base": "common_source_pmos"},
 }
 COMPENSATIONS = {
     "none": {"text": "no compensation", "rows": []},
@@ -365,9 +373,42 @@ def replace_output_stage(table: dict, block: str) -> dict:
         y = new
     if block == "none":
         rows = _rename(rows, {y: "OUT"})
+    elif OUTPUT_STAGES[block].get("base"):              # 푸시풀: 공통 소스를 붙이고 출력단을 더함
+        rows = _add(rows, OUTPUT_STAGES[OUTPUT_STAGES[block]["base"]]["rows"], y)
+        return push_pull_output(_table(prune_unused_bias(rows)))
     else:
         rows = _add(rows, OUTPUT_STAGES[block]["rows"], y)
     return _table(prune_unused_bias(rows))
+
+
+def push_pull_output(table: dict) -> dict:
+    """2단(공통 소스 + 전류원 부하)의 출력에 푸시풀(class-AB) 출력단을 붙인다. 2단이 아니면 ValueError.
+
+    2단이 NMOS 공통 소스면 (PMOS 면 위아래를 뒤집은 모양)
+        X -[NMOS 구동]- Y -[PMOS 전류원 부하]- VDD       (지금 OUT 이던 2단 출력을 안쪽 노드 Y 로)
+        Y -[NMOS 소스 팔로워]- OUT                          출력이 올라갈 때 전류를 내보냄
+        X -[NMOS 싱크]- OUT                                 출력이 내려갈 때 당김 (구동 소자와 게이트가 같아 평소 전류는 배율로 정해짐)
+        밀러 보상: X-OUT 사이 -> X-Y 사이
+    A급 출력단은 출력 전류만큼 늘 전류를 흘려 공급 전류와 부하 구동을 함께 맞추기 어려웠다. LM358 비교 실험에서
+    챗봇 회로가 같은 방식(NMOS 팔로워 + 1단 출력이 구동하는 싱크)으로 192 µA 에 5 mA 출력을 냈다 (2026-11-28)."""
+    b = decompose(table)
+    if b["output_stage"] not in ("common_source_nmos", "common_source_pmos"):
+        raise ValueError(f"2단이 공통 소스가 아님 ({b['output_stage']})")
+    out_devs = [r for r in table["rows"] if r["name"] in b["output"]]
+    driver = next(r for r in out_devs if r["pins"]["G"] in b["signal_nets"])
+    kind = driver["kind"]
+    prefix, rail, other_rail = ("NM", "VSS", "VDD") if kind == "nmos" else ("PM", "VDD", "VSS")
+    y = _new_net("N", _nets(table["rows"]))
+    moved = set(b["output"]) | set(b["compensation"])
+    rows = _rename(table["rows"], {"OUT": y}, only=moved)
+    names = {r["name"] for r in rows}
+    follower = free_name(prefix + "1", names)
+    sink = free_name(prefix + "1", names | {follower})
+    # 팔로워 바디는 자기 소스(OUT)에 묶는다. 전원에 묶으면 출력이 오를수록 문턱 전압이 커져서(바디 효과)
+    # 1 mA 부하에서 출력이 3.1 V까지만 올라갔다. 실제 칩에서는 이 소자를 분리된 웰(NMOS는 deep N-well)에 만들어야 한다
+    text = (f"{follower} D={other_rail} G={y} S=OUT B=OUT\n"
+            f"{sink} D=OUT G={driver['pins']['G']} S={rail} B={rail}")
+    return _table(rows + nt.parse_table_text(text)["rows"])
 
 
 def set_compensation(table: dict, kind: str) -> dict:
@@ -391,8 +432,11 @@ def rebuild(input_stage: str, input_pair: str, output_stage: str, compensation: 
     x = "OUT" if output_stage == "none" else "N1"
     rows = _add([], INPUT_STAGES[input_stage]["rows"], x, flip=input_pair == "pmos" and input_stage != "rail_to_rail")
     if output_stage != "none":
-        rows = _add(rows, OUTPUT_STAGES[output_stage]["rows"], x)
+        base = OUTPUT_STAGES[output_stage].get("base") or output_stage
+        rows = _add(rows, OUTPUT_STAGES[base]["rows"], x)
         rows = _add(rows, COMPENSATIONS[compensation]["rows"], x)
+        if base != output_stage:                      # 푸시풀: 보상까지 붙인 뒤 출력단을 더함 (보상은 X-Y 로 옮겨짐)
+            return push_pull_output(_table(rows))
     return _table(rows)
 
 

@@ -43,6 +43,17 @@ def netlist_text(final: dict, part: str) -> str:
     ])
 
 
+def isolated_bodies(final: dict) -> list:
+    """바디가 전원(VDD/VSS)이 아닌 MOS 이름. AB급 출력단의 소스 팔로워가 그렇다 (structure_blocks.push_pull_output)."""
+    names = []
+    for part in str(final.get("table") or "").split(";"):
+        tokens = part.split()
+        pins = dict(x.split("=", 1) for x in tokens[1:] if "=" in x)
+        if tokens and pins.get("B") not in (None, "VDD", "VSS"):
+            names.append(tokens[0])
+    return names
+
+
 def readme_text(run_dir: Path, final: dict, part: str) -> str:
     status = _read(run_dir, "status.json") or {}
     harness = _read(run_dir, "harness/result.json") or {}
@@ -54,6 +65,9 @@ def readme_text(run_dir: Path, final: dict, part: str) -> str:
              f"전류원 전류: {final.get('unit_current', 20e-6) * 1e6:.3g} µA, 출력단 배율: x{final.get('output_scale', 0):g}"
              + (f", 보상 커패시터: {final['compensation_pf']:g} pF" if final.get("compensation_pf") else ""), "",
              f"우리 측정 판정: {final.get('passed')}/{final.get('judged')} 통과"]
+    isolated = isolated_bodies(final)
+    if isolated:
+        lines[-1:-1] = [f"주의: {', '.join(isolated)} 는 바디를 소스에 묶었다. 실제 칩에서는 분리된 웰(NMOS 는 deep N-well)에 만든다", ""]
     for row in final.get("spec") or []:
         value = row.get("value")
         shown = "-" if value is None else f"{value:.4g} {row.get('unit', '')}"

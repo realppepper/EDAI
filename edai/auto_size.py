@@ -35,7 +35,9 @@ VDD = run_sim.OPAMP_VDD
 VCM = VDD / 2
 RAILS = ("VDD", "VSS")
 # 역할 -> (gm/ID 목표 [1/V], 채널 길이 [um])
-ROLE_TARGETS = {"input": (12.0, 1.0), "diode": (8.0, 2.0), "source": (8.0, 2.0),
+# follower: 출력 팔로워는 평소 전류가 작아도 mA 를 내보낼 때 게이트-소스 전압이 크게 늘지 않도록 넓게 (약반전 쪽 gm/ID).
+# 좁게 두면 LM358 AB급 출력단에서 1 mA 부하일 때 출력이 2.1 V 까지만 올라갔다 (2026-11-28)
+ROLE_TARGETS = {"follower": (18.0, 1.0), "input": (12.0, 1.0), "diode": (8.0, 2.0), "source": (8.0, 2.0),
                 "cascode": (12.0, 1.0), "gain": (10.0, 1.0), "other": (10.0, 1.0)}
 UNIT_CURRENT = 20e-6        # 바이어스 단자로 정해지는 전류원 하나의 전류 [A]
 BIAS_CURRENT = 20e-6        # IB# 단자에 넣는 기준 전류 [A]
@@ -148,6 +150,8 @@ def assign_roles(table: dict) -> dict:
         gate, drain, source = row["pins"]["G"], row["pins"]["D"], row["pins"]["S"]
         if gate in ("IN1", "IN2"):
             roles[row["name"]] = "input"
+        elif source == "OUT" and drain in RAILS:
+            roles[row["name"]] = "follower"         # AB급 출력단의 소스 팔로워 (structure_blocks.push_pull_output)
         elif gate == drain:
             roles[row["name"]] = "diode"
         elif gate in mirror_nets:
